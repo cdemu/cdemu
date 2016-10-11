@@ -4,663 +4,666 @@
 # Henrik Stokseth <hstokset AT users DOT sourceforge DOT net>, 2006-2014.
 #
 #
-#: ../src/cdemu:88 ../src/cdemu:166 ../src/cdemu:314 ../src/cdemu:352
-#: ../src/cdemu:389 ../src/cdemu:420 ../src/cdemu:501 ../src/cdemu:580
-#: ../src/cdemu:660 ../src/cdemu:740 ../src/cdemu:820 ../src/cdemu:903
-#: ../src/cdemu:931 ../src/cdemu:956 ../src/cdemu:984 ../src/cdemu:1008
-#: ../src/cdemu:1032 ../src/cdemu:1135 ../src/cdemu:1156
+#: ../src/cdemu:105 ../src/cdemu:183 ../src/cdemu:333 ../src/cdemu:371
+#: ../src/cdemu:408 ../src/cdemu:439 ../src/cdemu:520 ../src/cdemu:599
+#: ../src/cdemu:679 ../src/cdemu:759 ../src/cdemu:839 ../src/cdemu:922
+#: ../src/cdemu:950 ../src/cdemu:975 ../src/cdemu:1003 ../src/cdemu:1027
+#: ../src/cdemu:1051 ../src/cdemu:1152 ../src/cdemu:1173
 msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-08 16:50+0200\n"
-"Last-Translator: Henrik Stokseth <hstokset AT users DOT sourceforge DOT net>\n"
+"POT-Creation-Date: 2016-10-11 11:28+0200\n"
+"PO-Revision-Date: 2014-05-08 16:50+0200\n"
+"Last-Translator: Henrik Stokseth <hstokset AT users DOT sourceforge DOT "
+"net>\n"
 "Language-Team: Norwegian\n"
 "Language: no\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2014-05-08 16:50+0200\n"
 
-#: ../src/cdemu:67
+#: ../src/cdemu:84
 #, c-format
 msgid "ERROR: %s"
 msgstr "FEIL: %s"
 
-#: ../src/cdemu:72
+#: ../src/cdemu:89
 #, c-format
 msgid "WARNING: %s"
 msgstr "ADVARSEL: %s"
 
-#: ../src/cdemu:89
+#: ../src/cdemu:106
 #, fuzzy
 msgid "loads an image to the device"
 msgstr "laster bilde til enheten"
 
-#: ../src/cdemu:94 ../src/cdemu:172 ../src/cdemu:320 ../src/cdemu:426
-#: ../src/cdemu:507 ../src/cdemu:586 ../src/cdemu:666 ../src/cdemu:746
-#: ../src/cdemu:826
+#: ../src/cdemu:111 ../src/cdemu:189 ../src/cdemu:339 ../src/cdemu:445
+#: ../src/cdemu:526 ../src/cdemu:605 ../src/cdemu:685 ../src/cdemu:765
+#: ../src/cdemu:845
 #, fuzzy
 msgid "device"
 msgstr "enhet"
 
-#: ../src/cdemu:95
+#: ../src/cdemu:112
 msgid "image file(s)"
 msgstr "bilde-fil(er)"
 
-#: ../src/cdemu:96
+#: ../src/cdemu:113
 msgid "password for encrypted images"
 msgstr "passord for krypterte bilde-filer"
 
-#: ../src/cdemu:97
+#: ../src/cdemu:114
 msgid "encoding for text-based images"
 msgstr "tegnsett for tekst-baserte bilde-filer"
 
-#: ../src/cdemu:98
+#: ../src/cdemu:115
 msgid "flag the DVD disc as CSS-encoded"
 msgstr "flagg DVD skiven som CSS-kryptert"
 
-#: ../src/cdemu:118 ../src/cdemu:201 ../src/cdemu:328 ../src/cdemu:363
-#: ../src/cdemu:400 ../src/cdemu:442 ../src/cdemu:470 ../src/cdemu:522
-#: ../src/cdemu:550 ../src/cdemu:601 ../src/cdemu:629 ../src/cdemu:681
-#: ../src/cdemu:709 ../src/cdemu:761 ../src/cdemu:789 ../src/cdemu:841
-#: ../src/cdemu:870
+#: ../src/cdemu:135 ../src/cdemu:218 ../src/cdemu:347 ../src/cdemu:382
+#: ../src/cdemu:419 ../src/cdemu:461 ../src/cdemu:489 ../src/cdemu:541
+#: ../src/cdemu:569 ../src/cdemu:620 ../src/cdemu:648 ../src/cdemu:700
+#: ../src/cdemu:728 ../src/cdemu:780 ../src/cdemu:808 ../src/cdemu:860
+#: ../src/cdemu:889
 #, c-format
 msgid "Failed to get number of devices: %s"
 msgstr "Mislyktes i å innhente antall enheter: %s"
 
-#: ../src/cdemu:125 ../src/cdemu:208 ../src/cdemu:371
+#: ../src/cdemu:142 ../src/cdemu:225 ../src/cdemu:390
 #, c-format
 msgid "Failed to get status of device %i: %s"
 msgstr "Mislyktes i å innhente status for enhet %i: %s"
 
-#: ../src/cdemu:136 ../src/cdemu:219
+#: ../src/cdemu:153 ../src/cdemu:236
 msgid "No empty device found"
 msgstr "Ingen tom enhet funnet"
 
-#: ../src/cdemu:141 ../src/cdemu:224 ../src/cdemu:343 ../src/cdemu:436
-#: ../src/cdemu:455 ../src/cdemu:490 ../src/cdemu:516 ../src/cdemu:535
-#: ../src/cdemu:569 ../src/cdemu:595 ../src/cdemu:614 ../src/cdemu:649
-#: ../src/cdemu:675 ../src/cdemu:694 ../src/cdemu:729 ../src/cdemu:755
-#: ../src/cdemu:774 ../src/cdemu:809 ../src/cdemu:854 ../src/cdemu:892
+#: ../src/cdemu:158 ../src/cdemu:241 ../src/cdemu:362 ../src/cdemu:455
+#: ../src/cdemu:474 ../src/cdemu:509 ../src/cdemu:535 ../src/cdemu:554
+#: ../src/cdemu:588 ../src/cdemu:614 ../src/cdemu:633 ../src/cdemu:668
+#: ../src/cdemu:694 ../src/cdemu:713 ../src/cdemu:748 ../src/cdemu:774
+#: ../src/cdemu:793 ../src/cdemu:828 ../src/cdemu:873 ../src/cdemu:911
 #, c-format
 msgid "String '%s' is not a number"
 msgstr "Streng '%s' er ikke et nummer"
 
-#: ../src/cdemu:153
+#: ../src/cdemu:170
 msgid "The image you are trying to load is encrypted."
 msgstr "Bilde-filen du prøver å laste er kryptert."
 
-#: ../src/cdemu:154
+#: ../src/cdemu:171
 msgid "Password: "
 msgstr "Passord: "
 
-#: ../src/cdemu:157
+#: ../src/cdemu:175
 #, c-format
 msgid "Failed to load image: %s"
 msgstr "Mislyktes i å laste bilde: %s"
 
-#: ../src/cdemu:167
+#: ../src/cdemu:184
 msgid "load blank/recordable image to the device"
 msgstr "last blankt/skrivbart bilde til enheten"
 
-#: ../src/cdemu:173
+#: ../src/cdemu:190
 msgid "image filename/basename"
 msgstr "bilde filnavn"
 
-#: ../src/cdemu:174
+#: ../src/cdemu:191
 msgid "ID of image writer to use"
 msgstr "ID å benytte for bilde-skriver"
 
-#: ../src/cdemu:175
+#: ../src/cdemu:192
 msgid "medium type"
 msgstr "medium type"
 
-#: ../src/cdemu:176
+#: ../src/cdemu:193
 msgid "additional writer parameter(s)"
 msgstr "øvrige skriver parametere"
 
-#: ../src/cdemu:234
+#: ../src/cdemu:251
 #, fuzzy, c-format
 msgid "Failed to load blank image: %s"
 msgstr "Mislyktes i å laste bilde: %s"
 
-#: ../src/cdemu:252
+#: ../src/cdemu:269
 #, c-format
 msgid "Parameter token '%s' is not a key=value pair!"
 msgstr "Parameter kjennetegn '%s' er ikke et nøkkel/verdi par!"
 
-#: ../src/cdemu:265 ../src/cdemu:1045 ../src/cdemu:1081
+#: ../src/cdemu:282 ../src/cdemu:1064 ../src/cdemu:1100
 #, fuzzy, c-format
 msgid "Failed to get parameter sheet for writer: %s"
 msgstr "Mislyktes i å innhente antall enheter: %s"
 
-#: ../src/cdemu:277
+#: ../src/cdemu:294
 #, c-format
 msgid "Parameter '%s' not found in writer's parameter sheet!"
 msgstr "Parameter '%s' ikke funnet i skriverens parameter liste!"
 
-#: ../src/cdemu:288
+#: ../src/cdemu:307
 #, fuzzy, c-format
 msgid "Invalid value '%s' given for parameter '%s'!"
 msgstr "Ugyldig verdi '%s' oppgitt for parameter '%s'!"
 
-#: ../src/cdemu:300
+#: ../src/cdemu:319
 #, c-format
 msgid "String '%s' given as value for parameter '%s' is not a number!"
 msgstr "Streng '%s' gitt som verdi for parameter '%s' er ikke et nummer!"
 
-#: ../src/cdemu:302
+#: ../src/cdemu:321
 #, c-format
 msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
 msgstr "Uhåndterbar parameter type '%s' satt or parameter '%s'!"
 
-#: ../src/cdemu:315
+#: ../src/cdemu:334
 msgid "unloads the device"
 msgstr "løser ut enheten"
 
-#: ../src/cdemu:334 ../src/cdemu:341
+#: ../src/cdemu:353 ../src/cdemu:360
 #, c-format
 msgid "Failed to unload device %i: %s"
 msgstr "Mislyktes i å løse ut enhet %i: %s"
 
-#: ../src/cdemu:353
+#: ../src/cdemu:372
 msgid "displays the devices' status"
 msgstr "viser enhetenes status"
 
-#: ../src/cdemu:365
+#: ../src/cdemu:384
 msgid "Devices' status:"
 msgstr "Status enheter:"
 
-#: ../src/cdemu:366 ../src/cdemu:403 ../src/cdemu:473 ../src/cdemu:553
-#: ../src/cdemu:632 ../src/cdemu:712 ../src/cdemu:792 ../src/cdemu:873
+#: ../src/cdemu:385 ../src/cdemu:422 ../src/cdemu:492 ../src/cdemu:572
+#: ../src/cdemu:651 ../src/cdemu:731 ../src/cdemu:811 ../src/cdemu:892
 msgid "DEV"
 msgstr "ENH"
 
-#: ../src/cdemu:366
+#: ../src/cdemu:385
 msgid "LOADED"
 msgstr "LASTET"
 
-#: ../src/cdemu:366
+#: ../src/cdemu:385
 msgid "FILENAME"
 msgstr "FIL NAVN"
 
-#: ../src/cdemu:390
+#: ../src/cdemu:409
 msgid "displays the device mapping information"
 msgstr "viser enhetstilordnings-informasjon"
 
-#: ../src/cdemu:402
+#: ../src/cdemu:421
 msgid "Device mapping:"
 msgstr "Enhetenes tilordninger:"
 
-#: ../src/cdemu:403
+#: ../src/cdemu:422
 msgid "SCSI CD-ROM"
 msgstr "SCSI CD-ROM"
 
-#: ../src/cdemu:403
+#: ../src/cdemu:422
 msgid "SCSI generic"
 msgstr "SCSI generisk"
 
-#: ../src/cdemu:408
+#: ../src/cdemu:427
 #, c-format
 msgid "Failed to get device mapping of device %i: %s"
 msgstr "Mislyktes i å innhente tilordning for enhet %i: %s"
 
-#: ../src/cdemu:421
+#: ../src/cdemu:440
 msgid "displays/sets daemon debug mask"
 msgstr "viser/setter demonens feilsøkings-maske"
 
-#: ../src/cdemu:427 ../src/cdemu:508 ../src/cdemu:587 ../src/cdemu:667
-#: ../src/cdemu:747
+#: ../src/cdemu:446 ../src/cdemu:527 ../src/cdemu:606 ../src/cdemu:686
+#: ../src/cdemu:766
 #, fuzzy
 msgid "new value"
 msgstr "ny verdi"
 
-#: ../src/cdemu:444
+#: ../src/cdemu:463
 #, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr "Setter demonens feilsøkings-maske for alle enheter til 0x%X."
 
-#: ../src/cdemu:449 ../src/cdemu:461
+#: ../src/cdemu:468 ../src/cdemu:480
 #, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr ""
 "Mislyktes i å sette demonens feilsøkings-maske for enhet %i til 0x%X: %s"
 
-#: ../src/cdemu:457
+#: ../src/cdemu:476
 #, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
 msgstr "Setter demonens feilsøkings-maske for enhet %i til 0x%X."
 
-#: ../src/cdemu:472
+#: ../src/cdemu:491
 msgid "Devices' daemon debug masks:"
 msgstr "Enhetenes demon feilsøkings-masker:"
 
-#: ../src/cdemu:473 ../src/cdemu:553
+#: ../src/cdemu:492 ../src/cdemu:572
 msgid "DEBUG MASK"
 msgstr "FEILSØKINGS-MASKE"
 
-#: ../src/cdemu:479 ../src/cdemu:488
+#: ../src/cdemu:498 ../src/cdemu:507
 #, c-format
 msgid "Failed to get daemon debug mask of device %i: %s"
 msgstr "Mislyktes i å innhente demon feilsøkings-maske for enhet %i: %s"
 
-#: ../src/cdemu:492
+#: ../src/cdemu:511
 #, c-format
 msgid "Daemon debug mask of device %i: 0x%X"
 msgstr "Demon feilsøkings-maske for enhet %i: 0x%X"
 
-#: ../src/cdemu:502
+#: ../src/cdemu:521
 msgid "displays/sets library debug mask"
 msgstr "viser/setter bibliotek feilsøkings-maske"
 
-#: ../src/cdemu:524
+#: ../src/cdemu:543
 #, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
 msgstr "Setter bibliotek feilsøkings-maske for alle enheter til 0x%X."
 
-#: ../src/cdemu:529 ../src/cdemu:541
+#: ../src/cdemu:548 ../src/cdemu:560
 #, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr ""
 "Mislyktes i å sette bibliotek feilsøkings-maske for enhet %i til 0x%X: %s"
 
-#: ../src/cdemu:537
+#: ../src/cdemu:556
 #, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
 msgstr "Setter bibliotek feilsøkings-maske for enhet %i til 0x%X."
 
-#: ../src/cdemu:552
+#: ../src/cdemu:571
 msgid "Devices' library debug masks:"
 msgstr "Enhetenes bibliotek feilsøkings-masker:"
 
-#: ../src/cdemu:559 ../src/cdemu:567
+#: ../src/cdemu:578 ../src/cdemu:586
 #, c-format
 msgid "Failed to get library debug mask of device %i: %s"
 msgstr "Mislyktes i å innhente bibliotek feilsøkings-maske for enhet %i: %s"
 
-#: ../src/cdemu:571
+#: ../src/cdemu:590
 #, c-format
 msgid "Library debug mask of device %i: 0x%X"
 msgstr "Bibliotek feilsøkings-maske for enhet %i: 0x%X"
 
-#: ../src/cdemu:581
+#: ../src/cdemu:600
 msgid "displays/sets DPM emulation flag"
 msgstr "viser/setter DPM emulerings flagg"
 
-#: ../src/cdemu:603
+#: ../src/cdemu:622
 #, c-format
 msgid "Setting DPM emulation flag of all devices to %i."
 msgstr "Setter DPM emulerings flagg for alle enheter til %i."
 
-#: ../src/cdemu:608 ../src/cdemu:620
+#: ../src/cdemu:627 ../src/cdemu:639
 #, c-format
 msgid "Failed to set DPM emulation flag of device %i to %i: %s"
 msgstr "Mislyktes i å sette DPM emulerings flagg for enhet %i til %i: %s"
 
-#: ../src/cdemu:616
+#: ../src/cdemu:635
 #, c-format
 msgid "Setting DPM emulation flag of device %i to %i."
 msgstr "Setter DPM emulerings flagg for enhet %i til %i."
 
-#: ../src/cdemu:631
+#: ../src/cdemu:650
 msgid "Devices' DPM emulation flag:"
 msgstr "Enhetenes DPM emulerings flagg:"
 
-#: ../src/cdemu:632 ../src/cdemu:712 ../src/cdemu:792
+#: ../src/cdemu:651 ../src/cdemu:731 ../src/cdemu:811
 msgid "ENABLED"
 msgstr "AKTIVERT"
 
-#: ../src/cdemu:638 ../src/cdemu:647
+#: ../src/cdemu:657 ../src/cdemu:666
 #, c-format
 msgid "Failed to get DPM emulation flag of device %i: %s"
 msgstr "Mislyktes i å innhente DPM emulerings flagg for enhet %i: %s"
 
-#: ../src/cdemu:651
+#: ../src/cdemu:670
 #, c-format
 msgid "DPM emulation flag of device %i: %i"
 msgstr "DPM emulerings flaggene til enheten %i: %i"
 
-#: ../src/cdemu:661
+#: ../src/cdemu:680
 msgid "displays/sets transfer rate emulation flag"
 msgstr "viser/setter overførings-hastighet emulerings flagg"
 
-#: ../src/cdemu:683
+#: ../src/cdemu:702
 #, c-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr "Setter overførings-hastighet emulerings flagg for alle enheter til %i."
 
-#: ../src/cdemu:688 ../src/cdemu:700
+#: ../src/cdemu:707 ../src/cdemu:719
 #, c-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
 "Mislyktes i å sette overførings-hastighet emulerings flagg for enhet %i til "
 "%i: %s"
 
-#: ../src/cdemu:696
+#: ../src/cdemu:715
 #, c-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr "Setter overførings-hastighet emulerings flagg for enhet %i til %i."
 
-#: ../src/cdemu:711
+#: ../src/cdemu:730
 msgid "Devices' transfer rate emulation flag:"
 msgstr "Enhetenes overførings-hastighet emulasjons flagg:"
 
-#: ../src/cdemu:718 ../src/cdemu:727
+#: ../src/cdemu:737 ../src/cdemu:746
 #, c-format
 msgid "Failed to get transfer rate emulation flag of device %i: %s"
 msgstr ""
 "Mislyktes i å innhente overførings-hastighet emulerings flagg for enhet %i: "
 "%s"
 
-#: ../src/cdemu:731
+#: ../src/cdemu:750
 #, c-format
 msgid "Transfer rate emulation flag of device %i: %i"
 msgstr "Overførings-hastighet emulerings flagg for enhet %i: %i"
 
-#: ../src/cdemu:741
+#: ../src/cdemu:760
 #, fuzzy
 msgid "displays/sets bad sector emulation flag"
 msgstr "viser/setter dårlig sektor emulerings flagg"
 
-#: ../src/cdemu:763
+#: ../src/cdemu:782
 #, fuzzy, c-format
 msgid "Setting bad sector emulation flag of all devices to %i."
 msgstr "Setter dårlig sektor emulerings flagg for alle enheter til %i."
 
-#: ../src/cdemu:768 ../src/cdemu:780
+#: ../src/cdemu:787 ../src/cdemu:799
 #, fuzzy, c-format
 msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
-msgstr "Mislyktes i å sette dårlig sektor emulerings flagg for enhet %i til %i: %s"
+msgstr ""
+"Mislyktes i å sette dårlig sektor emulerings flagg for enhet %i til %i: %s"
 
-#: ../src/cdemu:776
+#: ../src/cdemu:795
 #, fuzzy, c-format
 msgid "Setting bad sector emulation flag of device %i to %i."
 msgstr "Setter dårlig sektor emulerings flagg for enhet %i til %i."
 
-#: ../src/cdemu:791
+#: ../src/cdemu:810
 #, fuzzy
 msgid "Devices' bad sector emulation flag:"
 msgstr "Enhetenes dårlig sektor emulasjons flagg:"
 
-#: ../src/cdemu:798 ../src/cdemu:807
+#: ../src/cdemu:817 ../src/cdemu:826
 #, fuzzy, c-format
 msgid "Failed to get bad sector emulation flag of device %i: %s"
 msgstr "Mislyktes i å innhente dårlig sektor emulerings flagg for enhet %i: %s"
 
-#: ../src/cdemu:811
+#: ../src/cdemu:830
 #, fuzzy, c-format
 msgid "Bad sector emulation flag of device %i: %i"
 msgstr "Dårlig sektor emulerings flaggene til enheten %i: %i"
 
-#: ../src/cdemu:821
+#: ../src/cdemu:840
 msgid "displays/sets device ID"
 msgstr "viser/setter enhets ID"
 
-#: ../src/cdemu:827
+#: ../src/cdemu:846
 #, fuzzy
 msgid ""
 "new device ID: vendor ID, product ID, revision and vendor-specific string"
 msgstr ""
 "ny enhets ID: fabrikat ID, produkt ID, revisjon og fabrikat spesifikk streng"
 
-#: ../src/cdemu:835
+#: ../src/cdemu:854
 msgid "New device ID must consist of exactly four strings!"
 msgstr "Ny enhets ID må bestå av nøyatig fire strenger!"
 
-#: ../src/cdemu:843
+#: ../src/cdemu:862
 #, c-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Setter enhets ID for alle enheter til %s."
 
-#: ../src/cdemu:848 ../src/cdemu:860
+#: ../src/cdemu:867 ../src/cdemu:879
 #, c-format
 msgid "Failed to set device ID of device %i to %s: %s"
 msgstr "Mislyktes i å sette enhets ID for enhet %i til %s: %s"
 
-#: ../src/cdemu:856
+#: ../src/cdemu:875
 #, c-format
 msgid "Setting device ID of device %i to %s."
 msgstr "Setter enhets ID for enhet %i til %s."
 
-#: ../src/cdemu:872
+#: ../src/cdemu:891
 msgid "Devices' IDs:"
 msgstr "Enhetenes IDer:"
 
-#: ../src/cdemu:873
+#: ../src/cdemu:892
 msgid "DEVICE ID"
 msgstr "ENHETS ID"
 
-#: ../src/cdemu:880 ../src/cdemu:890
+#: ../src/cdemu:899 ../src/cdemu:909
 #, c-format
 msgid "Failed to get device ID of device %i: %s"
 msgstr "Mislyktes i å innhente ID for enhet %i: %s"
 
-#: ../src/cdemu:894
+#: ../src/cdemu:913
 #, c-format
 msgid "Device ID of device %i: %s"
 msgstr "ID for enhet %i: %s"
 
-#: ../src/cdemu:904
+#: ../src/cdemu:923
 msgid "enumerates supported parsers"
 msgstr "viser listen over støttede bilde-tolkere"
 
-#: ../src/cdemu:914
+#: ../src/cdemu:933
 #, c-format
 msgid "Failed to enumerate supported parsers: %s"
 msgstr "Mislyktes i å innhente liste over støttede bilde-tolkere: %s"
 
-#: ../src/cdemu:918
+#: ../src/cdemu:937
 msgid "Supported parsers:"
 msgstr "Støttede bilde-tolkere:"
 
-#: ../src/cdemu:932
+#: ../src/cdemu:951
 #, fuzzy
 msgid "enumerates supported writers"
 msgstr "viser listen over støttede bilde-skrivere"
 
-#: ../src/cdemu:942
+#: ../src/cdemu:961
 #, fuzzy, c-format
 msgid "Failed to enumerate supported writers: %s"
 msgstr "Mislyktes i å innhente liste over støttede bilde-skrivere: %s"
 
-#: ../src/cdemu:945
+#: ../src/cdemu:964
 #, fuzzy
 msgid "Supported writers:"
 msgstr "Støttede bilde-skrivere:"
 
-#: ../src/cdemu:957
+#: ../src/cdemu:976
 #, fuzzy
 msgid "enumerates supported filter streams"
 msgstr "viser listen over støttede strømmere"
 
-#: ../src/cdemu:967
+#: ../src/cdemu:986
 #, fuzzy, c-format
 msgid "Failed to enumerate supported filter streams: %s"
 msgstr "Mislyktes i å innhente liste over støttede strømmere: %s"
 
-#: ../src/cdemu:970
+#: ../src/cdemu:989
 #, fuzzy
 msgid "Supported filter streams:"
 msgstr "Støttede filter strømmere:"
 
-#: ../src/cdemu:973
+#: ../src/cdemu:992
 #, c-format
 msgid "    write support: %d"
 msgstr "    skriver støtte: %d"
 
-#: ../src/cdemu:985
+#: ../src/cdemu:1004
 msgid "enumerates valid daemon debug masks"
 msgstr "viser listen over gyldige demon feilsøkings-masker"
 
-#: ../src/cdemu:995
+#: ../src/cdemu:1014
 #, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
-msgstr "Mislyktes i å innhente liste over støttede demon feilsøkings-masker: %s"
+msgstr ""
+"Mislyktes i å innhente liste over støttede demon feilsøkings-masker: %s"
 
-#: ../src/cdemu:997
+#: ../src/cdemu:1016
 msgid "Supported daemon debug masks:"
 msgstr "Støttede demon feilsøkings-masker:"
 
-#: ../src/cdemu:1009
+#: ../src/cdemu:1028
 msgid "enumerates valid library debug masks"
 msgstr "viser listen over gyldige bibliotek feilsøkings-masker"
 
-#: ../src/cdemu:1019
+#: ../src/cdemu:1038
 #, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr ""
 "Mislyktes i å innhente liste over støttede bibliotek feilsøkings-masker: %s"
 
-#: ../src/cdemu:1021
+#: ../src/cdemu:1040
 msgid "Supported library debug masks:"
 msgstr "Støttede bibliotek feilsøkings-masker:"
 
-#: ../src/cdemu:1033
+#: ../src/cdemu:1052
 msgid "prints the list of writer's parameters"
 msgstr "viser listen over skriveren's parametere"
 
-#: ../src/cdemu:1038
+#: ../src/cdemu:1057
 msgid "writer ID"
 msgstr "skriver ID"
 
-#: ../src/cdemu:1048
+#: ../src/cdemu:1067
 msgid "Writer's parameter sheet:"
 msgstr "Skriver's parameter liste"
 
-#: ../src/cdemu:1053
+#: ../src/cdemu:1072
 #, c-format
 msgid "  Name: %s"
 msgstr "  Navn: %s"
 
-#: ../src/cdemu:1054
+#: ../src/cdemu:1073
 #, c-format
 msgid "  Description: %s"
 msgstr "  Beskrivelse: %s"
 
-#: ../src/cdemu:1055
+#: ../src/cdemu:1074
 #, c-format
 msgid "  Type: %s"
 msgstr "  Type: %s"
 
-#: ../src/cdemu:1056
+#: ../src/cdemu:1075
 #, c-format
 msgid "  Default value: %s"
 msgstr "  Initiell verdi: %s"
 
-#: ../src/cdemu:1059
+#: ../src/cdemu:1078
 #, c-format
 msgid "  Possible value: %s"
 msgstr "  Mulig verdi: %s"
 
-#: ../src/cdemu:1063
+#: ../src/cdemu:1082
 msgid "enum"
 msgstr "enum"
 
-#: ../src/cdemu:1065
+#: ../src/cdemu:1084
 msgid "string"
 msgstr "streng"
 
-#: ../src/cdemu:1067
+#: ../src/cdemu:1086
 msgid "boolean"
 msgstr "boolean"
 
-#: ../src/cdemu:1069
+#: ../src/cdemu:1088
 msgid "integer"
 msgstr "heltall"
 
-#: ../src/cdemu:1071
+#: ../src/cdemu:1090
 msgid "unknown"
 msgstr "ukjent"
 
-#: ../src/cdemu:1090
+#: ../src/cdemu:1107
 #, fuzzy, c-format
 msgid "Unsupported writer: %s"
 msgstr "Ikke støttet bilde-skriver: %s"
 
-#: ../src/cdemu:1096
+#: ../src/cdemu:1113
 #, fuzzy, c-format
 msgid "Failed to parse parameter sheet: %s"
 msgstr "Mislyktes i å innhente parmeter liste: %s"
 
-#: ../src/cdemu:1108
+#: ../src/cdemu:1125
 msgid "displays version information"
 msgstr "viser versjons informasjon"
 
-#: ../src/cdemu:1118
+#: ../src/cdemu:1135
 #, c-format
 msgid "Failed to get library version: %s"
 msgstr "Mislyktes i å innhente biblioteks versjon: %s"
 
-#: ../src/cdemu:1123
+#: ../src/cdemu:1140
 #, c-format
 msgid "Failed to get daemon version: %s"
 msgstr "Mislyktes i å innhente demon versjon: %s"
 
-#: ../src/cdemu:1125
+#: ../src/cdemu:1142
 #, c-format
 msgid "Library version: %s"
 msgstr "Bibliotek versjon: %s"
 
-#: ../src/cdemu:1126
+#: ../src/cdemu:1143
 #, c-format
 msgid "Daemon version: %s"
 msgstr "Demon versjon: %s"
 
-#: ../src/cdemu:1136
+#: ../src/cdemu:1153
 msgid "creates another virtual device"
 msgstr "oppretter en ny virtuell enhet"
 
-#: ../src/cdemu:1145
+#: ../src/cdemu:1162
 #, fuzzy, c-format
 msgid "Failed to add device: %s"
 msgstr "Mislyktes i å legge til enhet: %s"
 
-#: ../src/cdemu:1147
+#: ../src/cdemu:1164
 msgid "Device added successfully."
 msgstr "Enhet lagt til."
 
-#: ../src/cdemu:1157
+#: ../src/cdemu:1174
 msgid "removes the last virtual device"
 msgstr "fjerner den siste virtuelle enheten"
 
-#: ../src/cdemu:1166
+#: ../src/cdemu:1183
 #, fuzzy, c-format
 msgid "Failed to remove device: %s"
 msgstr "Mislyktes i å fjerne enheten: %s"
 
-#: ../src/cdemu:1168
+#: ../src/cdemu:1185
 msgid "Device removed successfully."
 msgstr "Enhet fjernet."
 
-#: ../src/cdemu:1186
+#: ../src/cdemu:1203
 msgid "Command-line CDEmu client."
 msgstr "Kommandolinje CDEmu klient."
 
-#: ../src/cdemu:1187
+#: ../src/cdemu:1204
 msgid "sets D-BUS bus type to use"
 msgstr "setter D-BUS buss type å benytte"
 
-#: ../src/cdemu:1190
+#: ../src/cdemu:1207
 #, fuzzy
 msgid "valid commands"
 msgstr "gyldige kommandoer"
 
-#: ../src/cdemu:1190
+#: ../src/cdemu:1207
 msgid "command help"
 msgstr "kommando hjelp"
 
-#: ../src/cdemu:1227
+#: ../src/cdemu:1249
 #, c-format
 msgid "Invalid bus parameter '%s', using default!"
 msgstr "Ugyldig buss parameter '%s', benytter initiell verdi!"
 
-#: ../src/cdemu:1233
+#: ../src/cdemu:1254
 #, c-format
 msgid "Failed to connect to CDEmu daemon: %s"
 msgstr "Mislyktes i å koble til CDEmu demon: %s"
 
-#: ../src/cdemu:1239
+#: ../src/cdemu:1260
 #, c-format
 msgid ""
 "Failed to acquire daemon interface version (this most likely means your "
@@ -669,14 +672,15 @@ msgstr ""
 "Mislyktes i å innhente demonens grensesnitt versjon (Dette betyr mest "
 "sannsynligat demonen har gått ut på dato): %s"
 
-#: ../src/cdemu:1243
+#: ../src/cdemu:1264
 #, fuzzy, c-format
 msgid ""
 "CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
 msgstr ""
-"CDEmu demon grensesnitt versjon %i.%i ble detektert, men versjon %i.%i er påkrevd!"
+"CDEmu demon grensesnitt versjon %i.%i ble detektert, men versjon %i.%i er "
+"påkrevd!"
 
-#: ../src/cdemu:1274
+#: ../src/cdemu:1352
 #, c-format
 msgid "Failed to load configuration from file '%s': %s"
 msgstr "Mislyktes i å laste konfigurasjon fra filen '%s': %s"

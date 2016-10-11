@@ -8,7 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-05 12:00+0100\n"
+"POT-Creation-Date: 2016-10-11 11:34+0200\n"
+"PO-Revision-Date: 2016-01-15 21:54+0300\n"
 "Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
 "AND_DOT_HERE com>\n"
 "Language-Team: Russian\n"
@@ -16,7 +17,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-01-15 21:54+0300\n"
 "X-Generator: Poedit 1.8.4\n"
 
 #: ../data/gcdemu.desktop.in.h:1
@@ -106,11 +106,11 @@ msgstr ""
 "иконка никогда не отображается.При установке атрибута \"при_подключении\" "
 "иконка отображается только в том случае, когда gCDEmu подключен к демону."
 
-#: ../src/gcdemu:279
+#: ../src/gcdemu:294
 msgid "Daemon autostart error"
 msgstr "Ошибка автозапуска демона"
 
-#: ../src/gcdemu:279
+#: ../src/gcdemu:294
 #, c-format
 msgid ""
 "Daemon autostart failed. Error:\n"
@@ -119,21 +119,21 @@ msgstr ""
 "Не удалось выполнить автозапуск демона. Ошибка:\n"
 "%s"
 
-#: ../src/gcdemu:288
+#: ../src/gcdemu:303
 msgid "Incompatible daemon interface"
 msgstr "Несовместимый интерфейс демона"
 
-#: ../src/gcdemu:288
+#: ../src/gcdemu:303
 #, c-format
 msgid ""
 "CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
 msgstr "Версия демона CDEmu — %i.%i. Необходима версия %i.%i."
 
-#: ../src/gcdemu:345
+#: ../src/gcdemu:360
 msgid "Failed to add device"
 msgstr "Не удалось добавить накопитель"
 
-#: ../src/gcdemu:345
+#: ../src/gcdemu:360
 #, c-format
 msgid ""
 "Failed to add new device. Error:\n"
@@ -142,11 +142,11 @@ msgstr ""
 "Не удалось добавить новый накопитель. Ошибка:\n"
 "%s"
 
-#: ../src/gcdemu:351
+#: ../src/gcdemu:366
 msgid "Failed to remove device"
 msgstr "Не удалось удалить накопитель"
 
-#: ../src/gcdemu:351
+#: ../src/gcdemu:366
 #, c-format
 msgid ""
 "Failed to remove device. Error:\n"
@@ -155,7 +155,7 @@ msgstr ""
 "Не удалось удалить накопитель. Ошибка:\n"
 "%s"
 
-#: ../src/gcdemu:479
+#: ../src/gcdemu:494
 #, c-format
 msgid ""
 "Failed to unload device #%02d:\n"
@@ -164,7 +164,7 @@ msgstr ""
 "Не удалось демонтировать образ из накопителя #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:490
+#: ../src/gcdemu:505
 #, c-format
 msgid ""
 "Failed to load image %s to device #%02d:\n"
@@ -173,7 +173,7 @@ msgstr ""
 "Не удалось смонтировать образ %s в накопитель #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:496
+#: ../src/gcdemu:511
 #, c-format
 msgid ""
 "Failed to create blank disc on device #%02d:\n"
@@ -182,7 +182,7 @@ msgstr ""
 "Не удалось создать пустой диск в накопителе #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:506
+#: ../src/gcdemu:521
 #, c-format
 msgid ""
 "Failed to set device ID for device #%02d to %s:\n"
@@ -191,7 +191,7 @@ msgstr ""
 "Не удалось установить идентификатор для накопителя #%02d в значение %s:\n"
 "%s"
 
-#: ../src/gcdemu:516
+#: ../src/gcdemu:531
 #, c-format
 msgid ""
 "Failed to set DPM emulation for device #%02d to %i:\n"
@@ -200,7 +200,7 @@ msgstr ""
 "Не удалось установить эмуляцию местоположения данных (DPM) %i:\n"
 " для накопителя #%02d%s"
 
-#: ../src/gcdemu:525
+#: ../src/gcdemu:540
 #, c-format
 msgid ""
 "Failed to set TR emulation for device #%02d to %i:\n"
@@ -209,7 +209,7 @@ msgstr ""
 "Не удалось установить эмуляцию скорости считывания данных (TR) %i:\n"
 " для накопителя #%02d%s"
 
-#: ../src/gcdemu:534
+#: ../src/gcdemu:549
 #, c-format
 msgid ""
 "Failed to set bad sector emulation for device #%02d to %i:\n"
@@ -218,7 +218,7 @@ msgstr ""
 "Не удалось установить эмуляцию плохих секторов %i:\n"
 " для накопителя #%02d%s"
 
-#: ../src/gcdemu:544
+#: ../src/gcdemu:559
 #, c-format
 msgid ""
 "Failed to set daemon debug mask for device #%02d to 0x%X:\n"
@@ -228,7 +228,7 @@ msgstr ""
 "значение 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu:553
+#: ../src/gcdemu:568
 #, c-format
 msgid ""
 "Failed to set library debug mask for device #%02d to 0x%X:\n"
@@ -238,248 +238,248 @@ msgstr ""
 "значение 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu:605 ../src/gcdemu:1462
+#: ../src/gcdemu:620 ../src/gcdemu:1477
 msgid "Status"
 msgstr "Состояние"
 
-#: ../src/gcdemu:618
+#: ../src/gcdemu:633
 msgid "Loaded: "
 msgstr "Смонтирован: "
 
-#: ../src/gcdemu:628
+#: ../src/gcdemu:643
 msgid "File name(s): "
 msgstr "Имя файла(-ов): "
 
-#: ../src/gcdemu:644 ../src/gcdemu:718
+#: ../src/gcdemu:659 ../src/gcdemu:733
 msgid "Load"
 msgstr "Смонтировать"
 
-#: ../src/gcdemu:650
+#: ../src/gcdemu:665
 msgid "Create blank"
 msgstr "Создать пустой образ диска"
 
-#: ../src/gcdemu:657
+#: ../src/gcdemu:672
 msgid "Device mapping"
 msgstr "Карта накопителя"
 
-#: ../src/gcdemu:669
+#: ../src/gcdemu:684
 msgid "SCSI CD-ROM device: "
 msgstr "Накопитель SCSI CD-ROM: "
 
-#: ../src/gcdemu:679
+#: ../src/gcdemu:694
 msgid "SCSI generic device: "
 msgstr "Общий накопитель SCSI: "
 
-#: ../src/gcdemu:694
+#: ../src/gcdemu:709
 msgid "Remove device"
 msgstr "Удалить накопитель"
 
-#: ../src/gcdemu:710
+#: ../src/gcdemu:725
 msgid "Yes"
 msgstr "Да"
 
-#: ../src/gcdemu:712
+#: ../src/gcdemu:727
 msgid "Unload"
 msgstr "Демонтировать"
 
-#: ../src/gcdemu:716
+#: ../src/gcdemu:731
 msgid "No"
 msgstr "Нет"
 
-#: ../src/gcdemu:751
+#: ../src/gcdemu:766
 msgid "Device ID"
 msgstr "Идентификатор накопителя"
 
-#: ../src/gcdemu:764
+#: ../src/gcdemu:779
 msgid "Vendor ID: "
 msgstr "Идентификатор производителя: "
 
-#: ../src/gcdemu:775
+#: ../src/gcdemu:790
 msgid "Product ID: "
 msgstr "Идентификатор продукта: "
 
-#: ../src/gcdemu:786
+#: ../src/gcdemu:801
 msgid "Revision: "
 msgstr "Версия: "
 
-#: ../src/gcdemu:797
+#: ../src/gcdemu:812
 msgid "Vendor-specific: "
 msgstr "Атрибут производителя: "
 
-#: ../src/gcdemu:812
+#: ../src/gcdemu:827
 msgid "Set device ID"
 msgstr "Установить идентификатор накопителя"
 
-#: ../src/gcdemu:818
+#: ../src/gcdemu:833
 msgid "DPM emulation"
 msgstr "Эмуляция местоположения данных (DPM)"
 
-#: ../src/gcdemu:824
+#: ../src/gcdemu:839
 msgid "Transfer rate emulation"
 msgstr "Эмуляция скорости считывания данных (TR)"
 
-#: ../src/gcdemu:830
+#: ../src/gcdemu:845
 msgid "Bad sector emulation"
 msgstr "Эмуляция плохих секторов"
 
-#: ../src/gcdemu:914
+#: ../src/gcdemu:929
 msgid "Set debug mask"
 msgstr "Установить отладочную маску"
 
-#: ../src/gcdemu:946
+#: ../src/gcdemu:961
 msgid "Open file"
 msgstr "Открыть файл"
 
-#: ../src/gcdemu:946 ../src/gcdemu:1099 ../src/gcdemu:1145 ../src/gcdemu:1232
+#: ../src/gcdemu:961 ../src/gcdemu:1114 ../src/gcdemu:1160 ../src/gcdemu:1247
 msgid "Cancel"
 msgstr "Отмена"
 
-#: ../src/gcdemu:946
+#: ../src/gcdemu:961
 msgid "Open"
 msgstr "Открыть"
 
-#: ../src/gcdemu:953
+#: ../src/gcdemu:968
 msgid "All files"
 msgstr "Все файлы"
 
-#: ../src/gcdemu:958
+#: ../src/gcdemu:973
 msgid "All image files"
 msgstr "Все файлы образа диска"
 
-#: ../src/gcdemu:1019
+#: ../src/gcdemu:1034
 msgid "Extra Options"
 msgstr "Дополнительные настройки"
 
-#: ../src/gcdemu:1028
+#: ../src/gcdemu:1043
 msgid "Encoding: "
 msgstr "Декодирование: "
 
-#: ../src/gcdemu:1047 ../src/gcdemu:1115
+#: ../src/gcdemu:1062 ../src/gcdemu:1130
 msgid "Password: "
 msgstr "Пароль: "
 
-#: ../src/gcdemu:1058
+#: ../src/gcdemu:1073
 msgid "Raw image of CSS-encrypted DVD"
 msgstr "Точный образ CSS-зашифрованного DVD"
 
-#: ../src/gcdemu:1099
+#: ../src/gcdemu:1114
 msgid "Enter password"
 msgstr "Введите пароль"
 
-#: ../src/gcdemu:1099 ../src/gcdemu:1145
+#: ../src/gcdemu:1114 ../src/gcdemu:1160
 msgid "OK"
 msgstr "OK"
 
-#: ../src/gcdemu:1111
+#: ../src/gcdemu:1126
 msgid "The image you are trying to load is encrypted."
 msgstr "Монтируемый образ зашифрован."
 
-#: ../src/gcdemu:1145
+#: ../src/gcdemu:1160
 msgid "Create blank disc image"
 msgstr "Создать пустой образ диска"
 
-#: ../src/gcdemu:1150
+#: ../src/gcdemu:1165
 msgid "Image"
 msgstr "Образ"
 
-#: ../src/gcdemu:1162
+#: ../src/gcdemu:1177
 msgid "Filename: "
 msgstr "Имя файла: "
 
-#: ../src/gcdemu:1170 ../src/gcdemu:1232
+#: ../src/gcdemu:1185 ../src/gcdemu:1247
 msgid "Choose"
 msgstr "Выбрать"
 
-#: ../src/gcdemu:1175
+#: ../src/gcdemu:1190
 msgid "Medium type: "
 msgstr "Тип содержимого: "
 
-#: ../src/gcdemu:1198
+#: ../src/gcdemu:1213
 msgid "Writer: "
 msgstr "Образ: "
 
-#: ../src/gcdemu:1218
+#: ../src/gcdemu:1233
 msgid "Writer options"
 msgstr "Настройки образа"
 
-#: ../src/gcdemu:1232
+#: ../src/gcdemu:1247
 msgid "Choose file"
 msgstr "Выбрать файл"
 
-#: ../src/gcdemu:1388
+#: ../src/gcdemu:1403
 msgid "Image filename/basename not set!"
 msgstr "Не задано имя файла образа!"
 
-#: ../src/gcdemu:1391
+#: ../src/gcdemu:1406
 msgid "No image writer is chosen!"
 msgstr "Не выбран тип образа!"
 
-#: ../src/gcdemu:1396
+#: ../src/gcdemu:1411
 msgid "Invalid option"
 msgstr "Неверные настройки"
 
-#: ../src/gcdemu:1439
+#: ../src/gcdemu:1454
 #, c-format
 msgid "Device #%02d: properties"
 msgstr "Свойства накопителя #%02d:"
 
-#: ../src/gcdemu:1439
+#: ../src/gcdemu:1454
 msgid "Close"
 msgstr "Закрыть"
 
-#: ../src/gcdemu:1447
+#: ../src/gcdemu:1462
 #, c-format
 msgid "Device #%02d"
 msgstr "Накопитель #%02d"
 
-#: ../src/gcdemu:1470
+#: ../src/gcdemu:1485
 msgid "Options"
 msgstr "Настройки"
 
-#: ../src/gcdemu:1477
+#: ../src/gcdemu:1492
 msgid "Daemon debug mask"
 msgstr "Отладочная маска демона"
 
-#: ../src/gcdemu:1478
+#: ../src/gcdemu:1493
 msgid "Daemon"
 msgstr "Демон"
 
-#: ../src/gcdemu:1482
+#: ../src/gcdemu:1497
 msgid "Library debug mask"
 msgstr "Отладочная маска библиотеки"
 
-#: ../src/gcdemu:1483
+#: ../src/gcdemu:1498
 msgid "Library"
 msgstr "Библиотека"
 
-#: ../src/gcdemu:1531 ../src/gcdemu:1533
+#: ../src/gcdemu:1546 ../src/gcdemu:1548
 msgid "Device"
 msgstr "Накопитель"
 
-#: ../src/gcdemu:1533
+#: ../src/gcdemu:1548
 msgid "Empty"
 msgstr "Пусто"
 
-#: ../src/gcdemu:1541 ../src/gcdemu:1543
+#: ../src/gcdemu:1556 ../src/gcdemu:1558
 msgid "Device status change"
 msgstr "Изменение состояния накопителя"
 
-#: ../src/gcdemu:1541
+#: ../src/gcdemu:1556
 #, c-format
 msgid "Device #%02d has been loaded."
 msgstr "Образ смонтирован в накопитель #%02d."
 
-#: ../src/gcdemu:1543
+#: ../src/gcdemu:1558
 #, c-format
 msgid "Device #%02d has been emptied."
 msgstr "Образ демонтирован из накопителя #%02d."
 
-#: ../src/gcdemu:1548 ../src/gcdemu:1553 ../src/gcdemu:1558 ../src/gcdemu:1563
-#: ../src/gcdemu:1568 ../src/gcdemu:1573
+#: ../src/gcdemu:1563 ../src/gcdemu:1568 ../src/gcdemu:1573 ../src/gcdemu:1578
+#: ../src/gcdemu:1583 ../src/gcdemu:1588
 msgid "Device option change"
 msgstr "Изменить настройки накопителя"
 
-#: ../src/gcdemu:1548
+#: ../src/gcdemu:1563
 #, c-format
 msgid ""
 "Device #%02d has had its device ID changed:\n"
@@ -494,21 +494,21 @@ msgstr ""
 "  Версия: '%s'\n"
 "  Атрибут производителя: '%s'"
 
-#: ../src/gcdemu:1553
+#: ../src/gcdemu:1568
 #, c-format
 msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
 msgstr ""
 "Настройки эмуляции местоположения данных (DPM) накопителя #%02d были "
 "изменены. Новое значение: %s"
 
-#: ../src/gcdemu:1558
+#: ../src/gcdemu:1573
 #, c-format
 msgid "Device #%02d has had its TR emulation option changed. New value: %s"
 msgstr ""
 "Настройки эмуляции скорости считывания данных (TR) накопителя #%02d были "
 "изменены. Новое значение: %s"
 
-#: ../src/gcdemu:1563
+#: ../src/gcdemu:1578
 #, c-format
 msgid ""
 "Device #%02d has had its bad sector emulation option changed. New value: %s"
@@ -516,115 +516,115 @@ msgstr ""
 "Настройки эмуляции плохих секторов накопителя #%02d были изменены. Новое "
 "значение: %s"
 
-#: ../src/gcdemu:1568
+#: ../src/gcdemu:1583
 #, c-format
 msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
 msgstr ""
 "Отладочная маска демона накопителя #%02d была изменена. Новое значение: 0x%X"
 
-#: ../src/gcdemu:1573
+#: ../src/gcdemu:1588
 #, c-format
 msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
 msgstr ""
 "Отладочная маски библиотеки накопителя #%02d была изменена. Новое значение: "
 "0x%X"
 
-#: ../src/gcdemu:1619
+#: ../src/gcdemu:1634
 msgid "Device error"
 msgstr "Ошибка накопителя"
 
-#: ../src/gcdemu:1655
+#: ../src/gcdemu:1670
 msgid "Left click for Property Dialog, right click to unload."
 msgstr ""
 "Щелкните левой кнопкой мыши, чтобы открыть свойства, правой — демонтировать "
 "образ."
 
-#: ../src/gcdemu:1657
+#: ../src/gcdemu:1672
 msgid "Left click for Property Dialog, right click to load."
 msgstr ""
 "Щелкните левой кнопкой мыши, чтобы открыть свойства, правой — смонтировать "
 "образ."
 
-#: ../src/gcdemu:1664
+#: ../src/gcdemu:1679
 msgid "Click for Property Dialog"
 msgstr "Щелкните, чтобы открыть свойства."
 
-#: ../src/gcdemu:1756
+#: ../src/gcdemu:1771
 msgid "A GUI for controlling CDEmu devices."
 msgstr ""
 "Графический интерфейс программы CDEmu\n"
 "для управления дисковыми накопителями."
 
-#: ../src/gcdemu:1758
+#: ../src/gcdemu:1773
 msgid "The CDEmu project website"
 msgstr "Сайт программы CDEmu"
 
-#: ../src/gcdemu:1761
+#: ../src/gcdemu:1776
 msgid "translator-credits"
 msgstr "Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>"
 
-#: ../src/gcdemu:1768
+#: ../src/gcdemu:1783
 msgid "Devices"
 msgstr "Накопители"
 
-#: ../src/gcdemu:1772
+#: ../src/gcdemu:1787
 msgid "New device..."
 msgstr "Добавить новый накопитель"
 
-#: ../src/gcdemu:1789
+#: ../src/gcdemu:1804
 msgid "Show _notifications"
 msgstr "Показывать уведомления"
 
-#: ../src/gcdemu:1799
+#: ../src/gcdemu:1814
 msgid "About"
 msgstr "О программе..."
 
-#: ../src/gcdemu:1807
+#: ../src/gcdemu:1822
 msgid "Quit"
 msgstr "Выйти"
 
-#: ../src/gcdemu:1880
+#: ../src/gcdemu:1895
 msgid "Daemon started"
 msgstr "Демон запущен"
 
-#: ../src/gcdemu:1880
+#: ../src/gcdemu:1895
 msgid "CDEmu daemon has been started."
 msgstr "Демон CDEmu запущен."
 
-#: ../src/gcdemu:1883
+#: ../src/gcdemu:1898
 msgid "Daemon stopped"
 msgstr "Демон остановлен"
 
-#: ../src/gcdemu:1883
+#: ../src/gcdemu:1898
 msgid "CDEmu daemon has been stopped."
 msgstr "Демон CDEmu остановлен."
 
-#: ../src/gcdemu:1908
+#: ../src/gcdemu:1923
 msgid "Device added"
 msgstr "Накопитель создан"
 
-#: ../src/gcdemu:1908
+#: ../src/gcdemu:1923
 #, c-format
 msgid "Device #%02d has been created."
 msgstr "Накопитель #%02d создан."
 
-#: ../src/gcdemu:1912
+#: ../src/gcdemu:1927
 msgid "Device removed"
 msgstr "Накопитель удален"
 
-#: ../src/gcdemu:1912
+#: ../src/gcdemu:1927
 #, c-format
 msgid "Device #%02d has been removed."
 msgstr "Накопитель #%02d удален."
 
-#: ../src/gcdemu:2080
+#: ../src/gcdemu:2095
 msgid "Failed to load AppIndicator library!"
 msgstr "Не удалось загрузить библиотеку AppIndicator!"
 
-#: ../src/gcdemu:2081
+#: ../src/gcdemu:2096
 msgid "AppIndicator not available"
 msgstr "AppIndicator недоступен"
 
-#: ../src/gcdemu:2115
+#: ../src/gcdemu:2130
 msgid "gCDEmu tray mode"
 msgstr "Режим области уведомлений gCDEmu"

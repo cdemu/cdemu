@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcdemu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-14 16:34+0200\n"
+"POT-Creation-Date: 2016-10-11 11:34+0200\n"
 "PO-Revision-Date: 2014-06-14 16:35+0100\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -104,11 +104,11 @@ msgstr ""
 "\"when_connected\" så visas ikonen endast då gCDEmu är ansluten till en "
 "bakgrundsprocess."
 
-#: ../src/gcdemu:279
+#: ../src/gcdemu:294
 msgid "Daemon autostart error"
 msgstr "Autostart-fel för bakgrundsprocess"
 
-#: ../src/gcdemu:279
+#: ../src/gcdemu:294
 #, c-format
 msgid ""
 "Daemon autostart failed. Error:\n"
@@ -117,11 +117,11 @@ msgstr ""
 "Autostart av bakgrundsprocess misslyckades. Fel:\n"
 "%s"
 
-#: ../src/gcdemu:288
+#: ../src/gcdemu:303
 msgid "Incompatible daemon interface"
 msgstr "Inkompatibelt gränssnitt för bakgrundsprocess"
 
-#: ../src/gcdemu:288
+#: ../src/gcdemu:303
 #, c-format
 msgid ""
 "CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
@@ -129,11 +129,11 @@ msgstr ""
 "CDEmu-bakgrundsprocess med gränssnittsversion %i.%i upptäcktes, men version "
 "%i.%i krävs!"
 
-#: ../src/gcdemu:345
+#: ../src/gcdemu:360
 msgid "Failed to add device"
 msgstr "Misslyckades med att lägga till enhet"
 
-#: ../src/gcdemu:345
+#: ../src/gcdemu:360
 #, c-format
 msgid ""
 "Failed to add new device. Error:\n"
@@ -142,11 +142,11 @@ msgstr ""
 "Misslyckades med att lägga till ny enhet. Fel:\n"
 "%s"
 
-#: ../src/gcdemu:351
+#: ../src/gcdemu:366
 msgid "Failed to remove device"
 msgstr "Misslyckades med att ta bort enhet"
 
-#: ../src/gcdemu:351
+#: ../src/gcdemu:366
 #, c-format
 msgid ""
 "Failed to remove device. Error:\n"
@@ -155,7 +155,7 @@ msgstr ""
 "Misslyckades med att ta bort enhet. Fel:\n"
 "%s"
 
-#: ../src/gcdemu:479
+#: ../src/gcdemu:494
 #, c-format
 msgid ""
 "Failed to unload device #%02d:\n"
@@ -164,7 +164,7 @@ msgstr ""
 "Misslyckades med att frigöra enhet #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:490
+#: ../src/gcdemu:505
 #, c-format
 msgid ""
 "Failed to load image %s to device #%02d:\n"
@@ -173,7 +173,7 @@ msgstr ""
 "Misslyckades med att läsa in avbilden %s till enhet #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:496
+#: ../src/gcdemu:511
 #, c-format
 msgid ""
 "Failed to create blank disc on device #%02d:\n"
@@ -182,7 +182,7 @@ msgstr ""
 "Misslyckades med att skapa tom skiva på enhet #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:506
+#: ../src/gcdemu:521
 #, c-format
 msgid ""
 "Failed to set device ID for device #%02d to %s:\n"
@@ -191,7 +191,7 @@ msgstr ""
 "Misslyckades med att ställa in enhets-ID för enhet #%02d till %s:\n"
 "%s"
 
-#: ../src/gcdemu:516
+#: ../src/gcdemu:531
 #, c-format
 msgid ""
 "Failed to set DPM emulation for device #%02d to %i:\n"
@@ -201,7 +201,7 @@ msgstr ""
 "%s"
 
 # TR står för Transfer Rate = Överföringshastighet
-#: ../src/gcdemu:525
+#: ../src/gcdemu:540
 #, c-format
 msgid ""
 "Failed to set TR emulation for device #%02d to %i:\n"
@@ -210,7 +210,7 @@ msgstr ""
 "Misslyckades med att ställa in ÖH-emulering för enhet #%02d till %i:\n"
 "%s"
 
-#: ../src/gcdemu:534
+#: ../src/gcdemu:549
 #, c-format
 msgid ""
 "Failed to set bad sector emulation for device #%02d to %i:\n"
@@ -220,7 +220,7 @@ msgstr ""
 "till %i:\n"
 "%s"
 
-#: ../src/gcdemu:544
+#: ../src/gcdemu:559
 #, c-format
 msgid ""
 "Failed to set daemon debug mask for device #%02d to 0x%X:\n"
@@ -230,7 +230,7 @@ msgstr ""
 "enhet #%02d till 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu:553
+#: ../src/gcdemu:568
 #, c-format
 msgid ""
 "Failed to set library debug mask for device #%02d to 0x%X:\n"
@@ -240,248 +240,248 @@ msgstr ""
 "till 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu:605 ../src/gcdemu:1462
+#: ../src/gcdemu:620 ../src/gcdemu:1477
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gcdemu:618
+#: ../src/gcdemu:633
 msgid "Loaded: "
 msgstr "Inläst: "
 
-#: ../src/gcdemu:628
+#: ../src/gcdemu:643
 msgid "File name(s): "
 msgstr "Filnamn: "
 
-#: ../src/gcdemu:644 ../src/gcdemu:718
+#: ../src/gcdemu:659 ../src/gcdemu:733
 msgid "Load"
 msgstr "Läs in"
 
-#: ../src/gcdemu:650
+#: ../src/gcdemu:665
 msgid "Create blank"
 msgstr "Skapa tom"
 
-#: ../src/gcdemu:657
+#: ../src/gcdemu:672
 msgid "Device mapping"
 msgstr "Enhetstilldelning"
 
-#: ../src/gcdemu:669
+#: ../src/gcdemu:684
 msgid "SCSI CD-ROM device: "
 msgstr "SCSI CD-ROM-enhet: "
 
-#: ../src/gcdemu:679
+#: ../src/gcdemu:694
 msgid "SCSI generic device: "
 msgstr "SCSI generisk enhet: "
 
-#: ../src/gcdemu:694
+#: ../src/gcdemu:709
 msgid "Remove device"
 msgstr "Ta bort enhet"
 
-#: ../src/gcdemu:710
+#: ../src/gcdemu:725
 msgid "Yes"
 msgstr "Ja"
 
-#: ../src/gcdemu:712
+#: ../src/gcdemu:727
 msgid "Unload"
 msgstr "Frigör"
 
-#: ../src/gcdemu:716
+#: ../src/gcdemu:731
 msgid "No"
 msgstr "Nej"
 
-#: ../src/gcdemu:751
+#: ../src/gcdemu:766
 msgid "Device ID"
 msgstr "Enhets-ID"
 
-#: ../src/gcdemu:764
+#: ../src/gcdemu:779
 msgid "Vendor ID: "
 msgstr "Tillverkar-ID: "
 
-#: ../src/gcdemu:775
+#: ../src/gcdemu:790
 msgid "Product ID: "
 msgstr "Produkt-ID: "
 
-#: ../src/gcdemu:786
+#: ../src/gcdemu:801
 msgid "Revision: "
 msgstr "Revidering: "
 
-#: ../src/gcdemu:797
+#: ../src/gcdemu:812
 msgid "Vendor-specific: "
 msgstr "Tillverkarspecifik: "
 
-#: ../src/gcdemu:812
+#: ../src/gcdemu:827
 msgid "Set device ID"
 msgstr "Ställ in enhets-ID"
 
-#: ../src/gcdemu:818
+#: ../src/gcdemu:833
 msgid "DPM emulation"
 msgstr "DPM-emulering"
 
-#: ../src/gcdemu:824
+#: ../src/gcdemu:839
 msgid "Transfer rate emulation"
 msgstr "Emulering av överföringshastighet"
 
-#: ../src/gcdemu:830
+#: ../src/gcdemu:845
 msgid "Bad sector emulation"
 msgstr "Emulering av trasiga sektorer"
 
-#: ../src/gcdemu:914
+#: ../src/gcdemu:929
 msgid "Set debug mask"
 msgstr "Ställ in felsökningsmask"
 
-#: ../src/gcdemu:946
+#: ../src/gcdemu:961
 msgid "Open file"
 msgstr "Öppna fil"
 
-#: ../src/gcdemu:946 ../src/gcdemu:1099 ../src/gcdemu:1145 ../src/gcdemu:1232
+#: ../src/gcdemu:961 ../src/gcdemu:1114 ../src/gcdemu:1160 ../src/gcdemu:1247
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: ../src/gcdemu:946
+#: ../src/gcdemu:961
 msgid "Open"
 msgstr "Öppna"
 
-#: ../src/gcdemu:953
+#: ../src/gcdemu:968
 msgid "All files"
 msgstr "Alla filer"
 
-#: ../src/gcdemu:958
+#: ../src/gcdemu:973
 msgid "All image files"
 msgstr "Alla avbildsfiler"
 
-#: ../src/gcdemu:1019
+#: ../src/gcdemu:1034
 msgid "Extra Options"
 msgstr "Extra alternativ"
 
-#: ../src/gcdemu:1028
+#: ../src/gcdemu:1043
 msgid "Encoding: "
 msgstr "Teckenkodning: "
 
-#: ../src/gcdemu:1047 ../src/gcdemu:1115
+#: ../src/gcdemu:1062 ../src/gcdemu:1130
 msgid "Password: "
 msgstr "Lösenord: "
 
-#: ../src/gcdemu:1058
+#: ../src/gcdemu:1073
 msgid "Raw image of CSS-encrypted DVD"
 msgstr "Obearbetad avbild av CSS-krypterad DVD"
 
-#: ../src/gcdemu:1099
+#: ../src/gcdemu:1114
 msgid "Enter password"
 msgstr "Ange lösenord"
 
-#: ../src/gcdemu:1099 ../src/gcdemu:1145
+#: ../src/gcdemu:1114 ../src/gcdemu:1160
 msgid "OK"
 msgstr "OK"
 
-#: ../src/gcdemu:1111
+#: ../src/gcdemu:1126
 msgid "The image you are trying to load is encrypted."
 msgstr "Avbildsfilen du försöker läsa in är krypterad."
 
-#: ../src/gcdemu:1145
+#: ../src/gcdemu:1160
 msgid "Create blank disc image"
 msgstr "Skapa tom skivavbild"
 
-#: ../src/gcdemu:1150
+#: ../src/gcdemu:1165
 msgid "Image"
 msgstr "Avbild"
 
-#: ../src/gcdemu:1162
+#: ../src/gcdemu:1177
 msgid "Filename: "
 msgstr "Filnamn: "
 
-#: ../src/gcdemu:1170 ../src/gcdemu:1232
+#: ../src/gcdemu:1185 ../src/gcdemu:1247
 msgid "Choose"
 msgstr "Välj"
 
-#: ../src/gcdemu:1175
+#: ../src/gcdemu:1190
 msgid "Medium type: "
 msgstr "Mediatyp: "
 
-#: ../src/gcdemu:1198
+#: ../src/gcdemu:1213
 msgid "Writer: "
 msgstr "Skrivare: "
 
-#: ../src/gcdemu:1218
+#: ../src/gcdemu:1233
 msgid "Writer options"
 msgstr "Skrivaralternativ"
 
-#: ../src/gcdemu:1232
+#: ../src/gcdemu:1247
 msgid "Choose file"
 msgstr "Välj fil"
 
-#: ../src/gcdemu:1388
+#: ../src/gcdemu:1403
 msgid "Image filename/basename not set!"
 msgstr "Filnamn/basnamn för avbild ej inställt!"
 
-#: ../src/gcdemu:1391
+#: ../src/gcdemu:1406
 msgid "No image writer is chosen!"
 msgstr "Ingen avbildsskrivare är vald!"
 
-#: ../src/gcdemu:1396
+#: ../src/gcdemu:1411
 msgid "Invalid option"
 msgstr "Ogiltigt alternativ"
 
-#: ../src/gcdemu:1439
+#: ../src/gcdemu:1454
 #, c-format
 msgid "Device #%02d: properties"
 msgstr "Egenskaper för enhet #%02d"
 
-#: ../src/gcdemu:1439
+#: ../src/gcdemu:1454
 msgid "Close"
 msgstr "Stäng"
 
-#: ../src/gcdemu:1447
+#: ../src/gcdemu:1462
 #, c-format
 msgid "Device #%02d"
 msgstr "Enhet #%02d"
 
-#: ../src/gcdemu:1470
+#: ../src/gcdemu:1485
 msgid "Options"
 msgstr "Alternativ"
 
-#: ../src/gcdemu:1477
+#: ../src/gcdemu:1492
 msgid "Daemon debug mask"
 msgstr "Felsökningsmask för bakgrundsprocess"
 
-#: ../src/gcdemu:1478
+#: ../src/gcdemu:1493
 msgid "Daemon"
 msgstr "Bakgrundsprocess"
 
-#: ../src/gcdemu:1482
+#: ../src/gcdemu:1497
 msgid "Library debug mask"
 msgstr "Felsökningsmask för bibliotek"
 
-#: ../src/gcdemu:1483
+#: ../src/gcdemu:1498
 msgid "Library"
 msgstr "Bibliotek"
 
-#: ../src/gcdemu:1531 ../src/gcdemu:1533
+#: ../src/gcdemu:1546 ../src/gcdemu:1548
 msgid "Device"
 msgstr "Enhet"
 
-#: ../src/gcdemu:1533
+#: ../src/gcdemu:1548
 msgid "Empty"
 msgstr "Tom"
 
-#: ../src/gcdemu:1541 ../src/gcdemu:1543
+#: ../src/gcdemu:1556 ../src/gcdemu:1558
 msgid "Device status change"
 msgstr "Ändring av enhetsstatus"
 
-#: ../src/gcdemu:1541
+#: ../src/gcdemu:1556
 #, c-format
 msgid "Device #%02d has been loaded."
 msgstr "Enhet #%02d har lästs in."
 
-#: ../src/gcdemu:1543
+#: ../src/gcdemu:1558
 #, c-format
 msgid "Device #%02d has been emptied."
 msgstr "Enhet #%02d har tömts."
 
-#: ../src/gcdemu:1548 ../src/gcdemu:1553 ../src/gcdemu:1558 ../src/gcdemu:1563
-#: ../src/gcdemu:1568 ../src/gcdemu:1573
+#: ../src/gcdemu:1563 ../src/gcdemu:1568 ../src/gcdemu:1573 ../src/gcdemu:1578
+#: ../src/gcdemu:1583 ../src/gcdemu:1588
 msgid "Device option change"
 msgstr "Ändring av enhetsflagga"
 
-#: ../src/gcdemu:1548
+#: ../src/gcdemu:1563
 #, c-format
 msgid ""
 "Device #%02d has had its device ID changed:\n"
@@ -496,18 +496,18 @@ msgstr ""
 "  Revidering: '%s'\n"
 "  Tillverkarspecifik: '%s'"
 
-#: ../src/gcdemu:1553
+#: ../src/gcdemu:1568
 #, c-format
 msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
 msgstr "Device #%02d har fått sin DPM-emuleringsflagga ändrad. Nytt värde: %s"
 
 # TR står för Transfer Rate = Överföringshastighet
-#: ../src/gcdemu:1558
+#: ../src/gcdemu:1573
 #, c-format
 msgid "Device #%02d has had its TR emulation option changed. New value: %s"
 msgstr "Device #%02d har fått sin ÖH-emuleringsflagga ändrad. Nytt värde: %s"
 
-#: ../src/gcdemu:1563
+#: ../src/gcdemu:1578
 #, c-format
 msgid ""
 "Device #%02d has had its bad sector emulation option changed. New value: %s"
@@ -515,110 +515,110 @@ msgstr ""
 "Device #%02d har fått sin flagga för emulering av trasiga sektorer ändrad. "
 "Nytt värde: %s"
 
-#: ../src/gcdemu:1568
+#: ../src/gcdemu:1583
 #, c-format
 msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
 msgstr ""
 "Device #%02d har fått sin felsökningsmask för bakgrundsprocess ändrad. Nytt "
 "värde: 0x%X"
 
-#: ../src/gcdemu:1573
+#: ../src/gcdemu:1588
 #, c-format
 msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
 msgstr ""
 "Device #%02d har fått sin felsökningsmask för bibliotek ändrad. Nytt värde: "
 "0x%X"
 
-#: ../src/gcdemu:1619
+#: ../src/gcdemu:1634
 msgid "Device error"
 msgstr "Enhetsfel"
 
-#: ../src/gcdemu:1655
+#: ../src/gcdemu:1670
 msgid "Left click for Property Dialog, right click to unload."
 msgstr "Vänsterklicka för egenskapsdialog, högerklicka för att frigöra."
 
-#: ../src/gcdemu:1657
+#: ../src/gcdemu:1672
 msgid "Left click for Property Dialog, right click to load."
 msgstr "Vänsterklicka för egenskapsdialog, högerklicka för att läsa in."
 
-#: ../src/gcdemu:1664
+#: ../src/gcdemu:1679
 msgid "Click for Property Dialog"
 msgstr "Klicka för egenskapsdialog"
 
-#: ../src/gcdemu:1756
+#: ../src/gcdemu:1771
 msgid "A GUI for controlling CDEmu devices."
 msgstr "Ett grafiskt användargränssnitt för att kontrollera CDEmu-enheter."
 
-#: ../src/gcdemu:1758
+#: ../src/gcdemu:1773
 msgid "The CDEmu project website"
 msgstr "CDEmu-projektets webbplats"
 
-#: ../src/gcdemu:1761
+#: ../src/gcdemu:1776
 msgid "translator-credits"
 msgstr "Anders Jonsson <anders.jonsson@norsjovallen.se>"
 
-#: ../src/gcdemu:1768
+#: ../src/gcdemu:1783
 msgid "Devices"
 msgstr "Enheter"
 
-#: ../src/gcdemu:1772
+#: ../src/gcdemu:1787
 msgid "New device..."
 msgstr "Ny enhet..."
 
-#: ../src/gcdemu:1789
+#: ../src/gcdemu:1804
 msgid "Show _notifications"
 msgstr "Visa _notifieringar"
 
-#: ../src/gcdemu:1799
+#: ../src/gcdemu:1814
 msgid "About"
 msgstr "Om"
 
-#: ../src/gcdemu:1807
+#: ../src/gcdemu:1822
 msgid "Quit"
 msgstr "Avsluta"
 
-#: ../src/gcdemu:1880
+#: ../src/gcdemu:1895
 msgid "Daemon started"
 msgstr "Bakgrundsprocess startad"
 
-#: ../src/gcdemu:1880
+#: ../src/gcdemu:1895
 msgid "CDEmu daemon has been started."
 msgstr "CDEmus bakgrundsprocess har startats"
 
-#: ../src/gcdemu:1883
+#: ../src/gcdemu:1898
 msgid "Daemon stopped"
 msgstr "Bakgrundsprocess stoppad"
 
-#: ../src/gcdemu:1883
+#: ../src/gcdemu:1898
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmus bakgrundsprocess har stoppats"
 
-#: ../src/gcdemu:1908
+#: ../src/gcdemu:1923
 msgid "Device added"
 msgstr "Enhet tillagd"
 
-#: ../src/gcdemu:1908
+#: ../src/gcdemu:1923
 #, c-format
 msgid "Device #%02d has been created."
 msgstr "Enhet #%02d har skapats."
 
-#: ../src/gcdemu:1912
+#: ../src/gcdemu:1927
 msgid "Device removed"
 msgstr "Enhet borttagen"
 
-#: ../src/gcdemu:1912
+#: ../src/gcdemu:1927
 #, c-format
 msgid "Device #%02d has been removed."
 msgstr "Enhet #%02d har tagits bort."
 
-#: ../src/gcdemu:2080
+#: ../src/gcdemu:2095
 msgid "Failed to load AppIndicator library!"
 msgstr "Kunde inte läsa in AppIndicator-biblioteket!"
 
-#: ../src/gcdemu:2081
+#: ../src/gcdemu:2096
 msgid "AppIndicator not available"
 msgstr "AppIndicator ej tillgänglig"
 
-#: ../src/gcdemu:2115
+#: ../src/gcdemu:2130
 msgid "gCDEmu tray mode"
 msgstr "brickläge för gCDEmu"

@@ -4,474 +4,711 @@
 # Paweł Różański <Pawel.Rozanski@gmail.com>, 2008.
 #
 #
+#: ../src/cdemu:105 ../src/cdemu:183 ../src/cdemu:333 ../src/cdemu:371
+#: ../src/cdemu:408 ../src/cdemu:439 ../src/cdemu:520 ../src/cdemu:599
+#: ../src/cdemu:679 ../src/cdemu:759 ../src/cdemu:839 ../src/cdemu:922
+#: ../src/cdemu:950 ../src/cdemu:975 ../src/cdemu:1003 ../src/cdemu:1027
+#: ../src/cdemu:1051 ../src/cdemu:1152 ../src/cdemu:1173
 msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-22 11:51+0200\n"
+"POT-Creation-Date: 2016-10-11 11:28+0200\n"
 "PO-Revision-Date: 2008-06-20 17:17+0200\n"
 "Last-Translator: Paweł Różański <Pawel.Rozanski@gmail.com>\n"
 "Language-Team: Polish\n"
-"Language: \n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/cdemu:77
+#: ../src/cdemu:84
 #, c-format
-msgid "Failed to load configuration from file '%s': %s"
-msgstr "Błąd podczas ładowania konfiguracji z pliku '%s': %s"
+msgid "ERROR: %s"
+msgstr "BŁĄD: %s"
 
 #: ../src/cdemu:89
-msgid "Unknown option"
-msgstr "Nieznana opcja"
-
-#: ../src/cdemu:117
 #, c-format
-msgid "Failed to connect to daemon (bus: '%s')!"
-msgstr "Nie udało się połączyć z daemonem (szyna: '%s')!"
+msgid "WARNING: %s"
+msgstr "OSTRZEŻENIE: %s"
 
-#: ../src/cdemu:128
-#, c-format
-msgid "Unknown command: %s"
-msgstr "Nieznana komenda: %s"
+#: ../src/cdemu:106
+#, fuzzy
+msgid "loads an image to the device"
+msgstr "ładuje urządzenie"
 
-#: ../src/cdemu:142
-msgid "The image you are trying to load is encrypted."
+#: ../src/cdemu:111 ../src/cdemu:189 ../src/cdemu:339 ../src/cdemu:445
+#: ../src/cdemu:526 ../src/cdemu:605 ../src/cdemu:685 ../src/cdemu:765
+#: ../src/cdemu:845
+#, fuzzy
+msgid "device"
+msgstr "<urządzenie>"
+
+#: ../src/cdemu:112
+msgid "image file(s)"
 msgstr ""
 
-#: ../src/cdemu:143
-msgid "Password: "
+#: ../src/cdemu:113
+msgid "password for encrypted images"
 msgstr ""
 
-#: ../src/cdemu:146
-#, c-format
-msgid "Failed to load image: %s"
-msgstr "Błąd ładowania obrazu: %s"
+#: ../src/cdemu:114
+msgid "encoding for text-based images"
+msgstr ""
 
-#: ../src/cdemu:168 ../src/cdemu:205 ../src/cdemu:234 ../src/cdemu:261
-#: ../src/cdemu:285 ../src/cdemu:318 ../src/cdemu:350 ../src/cdemu:383
-#: ../src/cdemu:415 ../src/cdemu:446 ../src/cdemu:478 ../src/cdemu:509
-#: ../src/cdemu:541 ../src/cdemu:579
+#: ../src/cdemu:115
+msgid "flag the DVD disc as CSS-encoded"
+msgstr ""
+
+#: ../src/cdemu:135 ../src/cdemu:218 ../src/cdemu:347 ../src/cdemu:382
+#: ../src/cdemu:419 ../src/cdemu:461 ../src/cdemu:489 ../src/cdemu:541
+#: ../src/cdemu:569 ../src/cdemu:620 ../src/cdemu:648 ../src/cdemu:700
+#: ../src/cdemu:728 ../src/cdemu:780 ../src/cdemu:808 ../src/cdemu:860
+#: ../src/cdemu:889
 #, c-format
 msgid "Failed to get number of devices: %s"
 msgstr "Błąd pobrania ilości urządzeń: %s"
 
-#: ../src/cdemu:176 ../src/cdemu:243
+#: ../src/cdemu:142 ../src/cdemu:225 ../src/cdemu:390
 #, c-format
 msgid "Failed to get status of device %i: %s"
 msgstr "Błąd pobrania statusu urządzenia %i: %s"
 
-#: ../src/cdemu:187
+#: ../src/cdemu:153 ../src/cdemu:236
 msgid "No empty device found"
 msgstr "Nie znaleziona pustego urządzenia"
 
-#: ../src/cdemu:213 ../src/cdemu:224
+#: ../src/cdemu:158 ../src/cdemu:241 ../src/cdemu:362 ../src/cdemu:455
+#: ../src/cdemu:474 ../src/cdemu:509 ../src/cdemu:535 ../src/cdemu:554
+#: ../src/cdemu:588 ../src/cdemu:614 ../src/cdemu:633 ../src/cdemu:668
+#: ../src/cdemu:694 ../src/cdemu:713 ../src/cdemu:748 ../src/cdemu:774
+#: ../src/cdemu:793 ../src/cdemu:828 ../src/cdemu:873 ../src/cdemu:911
+#, c-format
+msgid "String '%s' is not a number"
+msgstr ""
+
+#: ../src/cdemu:170
+msgid "The image you are trying to load is encrypted."
+msgstr ""
+
+#: ../src/cdemu:171
+msgid "Password: "
+msgstr ""
+
+#: ../src/cdemu:175
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Błąd ładowania obrazu: %s"
+
+#: ../src/cdemu:184
+msgid "load blank/recordable image to the device"
+msgstr ""
+
+#: ../src/cdemu:190
+msgid "image filename/basename"
+msgstr ""
+
+#: ../src/cdemu:191
+msgid "ID of image writer to use"
+msgstr ""
+
+#: ../src/cdemu:192
+msgid "medium type"
+msgstr ""
+
+#: ../src/cdemu:193
+msgid "additional writer parameter(s)"
+msgstr ""
+
+#: ../src/cdemu:251
+#, fuzzy, c-format
+msgid "Failed to load blank image: %s"
+msgstr "Błąd ładowania obrazu: %s"
+
+#: ../src/cdemu:269
+#, c-format
+msgid "Parameter token '%s' is not a key=value pair!"
+msgstr ""
+
+#: ../src/cdemu:282 ../src/cdemu:1064 ../src/cdemu:1100
+#, fuzzy, c-format
+msgid "Failed to get parameter sheet for writer: %s"
+msgstr "Błąd pobrania ilości urządzeń: %s"
+
+#: ../src/cdemu:294
+#, c-format
+msgid "Parameter '%s' not found in writer's parameter sheet!"
+msgstr ""
+
+#: ../src/cdemu:307
+#, fuzzy, c-format
+msgid "Invalid value '%s' given for parameter '%s'!"
+msgstr "Błędna liczba parametrów dla polecenia '%s'!"
+
+#: ../src/cdemu:319
+#, c-format
+msgid "String '%s' given as value for parameter '%s' is not a number!"
+msgstr ""
+
+#: ../src/cdemu:321
+#, c-format
+msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
+msgstr ""
+
+#: ../src/cdemu:334
+msgid "unloads the device"
+msgstr "opróżnia urządzenie"
+
+#: ../src/cdemu:353 ../src/cdemu:360
 #, c-format
 msgid "Failed to unload device %i: %s"
 msgstr "Błąd podczas opróżniania urządzenia %i: %s"
 
-#: ../src/cdemu:237
+#: ../src/cdemu:372
+msgid "displays the devices' status"
+msgstr "wyświetla status urządzeń"
+
+#: ../src/cdemu:384
 msgid "Devices' status:"
 msgstr "Status urządzenia:"
 
-#: ../src/cdemu:238 ../src/cdemu:265 ../src/cdemu:289 ../src/cdemu:354
-#: ../src/cdemu:419 ../src/cdemu:482 ../src/cdemu:545
+#: ../src/cdemu:385 ../src/cdemu:422 ../src/cdemu:492 ../src/cdemu:572
+#: ../src/cdemu:651 ../src/cdemu:731 ../src/cdemu:811 ../src/cdemu:892
 msgid "DEV"
 msgstr "URZ"
 
-#: ../src/cdemu:238
+#: ../src/cdemu:385
 msgid "LOADED"
 msgstr "ZAJĘTY"
 
-#: ../src/cdemu:238
+#: ../src/cdemu:385
 msgid "FILENAME"
 msgstr "NAZWA PLIKU"
 
-#: ../src/cdemu:264
+#: ../src/cdemu:409
+msgid "displays the device mapping information"
+msgstr "wyświetla przypisania wszystkich urządzeń"
+
+#: ../src/cdemu:421
 msgid "Device mapping:"
 msgstr "Przypisania urządzeń:"
 
-#: ../src/cdemu:265
+#: ../src/cdemu:422
 msgid "SCSI CD-ROM"
 msgstr "SCSI CD-ROM"
 
-#: ../src/cdemu:265
+#: ../src/cdemu:422
 msgid "SCSI generic"
 msgstr "SCSI ogólny"
 
-#: ../src/cdemu:270
+#: ../src/cdemu:427
 #, c-format
 msgid "Failed to get device mapping of device %i: %s"
 msgstr "Błąd pobrania przypisań urządzenia %i: %s"
 
-#: ../src/cdemu:288
-msgid "Devices' daemon debug masks:"
-msgstr "Maski debug daemona:"
+#: ../src/cdemu:440
+msgid "displays/sets daemon debug mask"
+msgstr "wyświetla/ustawia maski debug daemona"
 
-#: ../src/cdemu:289 ../src/cdemu:354
-msgid "DEBUG MASK"
-msgstr "MASKA DEBUG"
+#: ../src/cdemu:446 ../src/cdemu:527 ../src/cdemu:606 ../src/cdemu:686
+#: ../src/cdemu:766
+#, fuzzy
+msgid "new value"
+msgstr "<urządzenie> [nowa wartość]"
 
-#: ../src/cdemu:296 ../src/cdemu:306
-#, c-format
-msgid "Failed to get daemon debug mask of device %i: %s"
-msgstr "Błąd pobrania maski debug daemona dla urządzenia %i: %s"
-
-#: ../src/cdemu:309
-#, c-format
-msgid "Daemon debug mask of device %i: 0x%X"
-msgstr "Maska debug daemona dla urządzenia %i: 0x%X"
-
-#: ../src/cdemu:321
+#: ../src/cdemu:463
 #, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr "Ustawiam maskę debug dla wszystkich urządzeń na 0x%X."
 
-#: ../src/cdemu:326 ../src/cdemu:334
+#: ../src/cdemu:468 ../src/cdemu:480
 #, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr "Błąd ustawienia maski debug daemona dla urządzenia %i na 0x%X: %s"
 
-#: ../src/cdemu:330
+#: ../src/cdemu:476
 #, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
 msgstr "Ustawiam maskę debug daemona dla urządzenia %i na 0x%X."
 
-#: ../src/cdemu:353
-msgid "Devices' library debug masks:"
-msgstr "Maski debug biblioteki:"
+#: ../src/cdemu:491
+msgid "Devices' daemon debug masks:"
+msgstr "Maski debug daemona:"
 
-#: ../src/cdemu:361 ../src/cdemu:371
+#: ../src/cdemu:492 ../src/cdemu:572
+msgid "DEBUG MASK"
+msgstr "MASKA DEBUG"
+
+#: ../src/cdemu:498 ../src/cdemu:507
 #, c-format
-msgid "Failed to get library debug mask of device %i: %s"
-msgstr "Błąd pobrania maski debug biblioteki dla urządzenia  %i: %s"
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr "Błąd pobrania maski debug daemona dla urządzenia %i: %s"
 
-#: ../src/cdemu:374
+#: ../src/cdemu:511
 #, c-format
-msgid "Library debug mask of device %i: 0x%X"
-msgstr "Maska debug biblioteki dla urządzenia %i: 0x%X"
+msgid "Daemon debug mask of device %i: 0x%X"
+msgstr "Maska debug daemona dla urządzenia %i: 0x%X"
 
-#: ../src/cdemu:386
+#: ../src/cdemu:521
+msgid "displays/sets library debug mask"
+msgstr "wyświetla/ustawia maski debug biblioteki"
+
+#: ../src/cdemu:543
 #, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
 msgstr "Ustawiam maskę biblioteki dla wszystkich urządzeń na 0x%X."
 
-#: ../src/cdemu:391 ../src/cdemu:399
+#: ../src/cdemu:548 ../src/cdemu:560
 #, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr "Błąd ustawiania maski debug biblioteki dla urządzenia %i na 0x%X: %s"
 
-#: ../src/cdemu:395
+#: ../src/cdemu:556
 #, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
 msgstr "Ustawiam maskę debug biblioteki dla urządzenia %i na 0x%X."
 
-#: ../src/cdemu:418
-msgid "Devices' DPM emulation flag:"
-msgstr "Flaga emulacji DPM urządzeń:"
+#: ../src/cdemu:571
+msgid "Devices' library debug masks:"
+msgstr "Maski debug biblioteki:"
 
-#: ../src/cdemu:419 ../src/cdemu:482
-msgid "ENABLED"
-msgstr "AKTYWNA"
-
-#: ../src/cdemu:425 ../src/cdemu:434
+#: ../src/cdemu:578 ../src/cdemu:586
 #, c-format
-msgid "Failed to get DPM emulation flag of device %i: %s"
-msgstr "Błąd pobrania flagi emulacji DPM dla urządzenia %i: %s"
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr "Błąd pobrania maski debug biblioteki dla urządzenia  %i: %s"
 
-#: ../src/cdemu:437
+#: ../src/cdemu:590
 #, c-format
-msgid "DPM emulation flag of device %i: %i"
-msgstr "Flaga emulacji DPM dla urządzenia %i: %i"
+msgid "Library debug mask of device %i: 0x%X"
+msgstr "Maska debug biblioteki dla urządzenia %i: 0x%X"
 
-#: ../src/cdemu:449
+#: ../src/cdemu:600
+msgid "displays/sets DPM emulation flag"
+msgstr "wyświetla/ustawia flagę emulacji DPM"
+
+#: ../src/cdemu:622
 #, c-format
 msgid "Setting DPM emulation flag of all devices to %i."
 msgstr "Ustawiam flagę emulacji DPM dla wszystkich urządzeń na %i."
 
-#: ../src/cdemu:454 ../src/cdemu:462
+#: ../src/cdemu:627 ../src/cdemu:639
 #, c-format
 msgid "Failed to set DPM emulation flag of device %i to %i: %s"
 msgstr "Błąd ustawiania flagi emulacji DPM dla urządzenia %i na %i: %s"
 
-#: ../src/cdemu:458
+#: ../src/cdemu:635
 #, c-format
 msgid "Setting DPM emulation flag of device %i to %i."
 msgstr "Ustawiam flagę emulacji DPM dla urządzenia %i na %i."
 
-#: ../src/cdemu:481
-msgid "Devices' transfer rate emulation flag:"
-msgstr "Flaga emulacji szybkości transferu dla urządzeń:"
+#: ../src/cdemu:650
+msgid "Devices' DPM emulation flag:"
+msgstr "Flaga emulacji DPM urządzeń:"
 
-#: ../src/cdemu:488 ../src/cdemu:497
+#: ../src/cdemu:651 ../src/cdemu:731 ../src/cdemu:811
+msgid "ENABLED"
+msgstr "AKTYWNA"
+
+#: ../src/cdemu:657 ../src/cdemu:666
 #, c-format
-msgid "Failed to get transfer rate emulation flag of device %i: %s"
-msgstr "Błąd pobrania flagi emulacji szybkości urządzenia %i: %s"
+msgid "Failed to get DPM emulation flag of device %i: %s"
+msgstr "Błąd pobrania flagi emulacji DPM dla urządzenia %i: %s"
 
-#: ../src/cdemu:500
+#: ../src/cdemu:670
 #, c-format
-msgid "Transfer rate emulation flag of device %i: %i"
-msgstr "Flaga emulacji szybkości transmisji urządzenia %i: %i"
+msgid "DPM emulation flag of device %i: %i"
+msgstr "Flaga emulacji DPM dla urządzenia %i: %i"
 
-#: ../src/cdemu:512
+#: ../src/cdemu:680
+msgid "displays/sets transfer rate emulation flag"
+msgstr "wyświetla/ustawia flagę emulacji szybkości transmisji"
+
+#: ../src/cdemu:702
 #, c-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr "Ustawiam flagę emulacji szybkości wszystkich urządzeń na %i."
 
-#: ../src/cdemu:517 ../src/cdemu:525
+#: ../src/cdemu:707 ../src/cdemu:719
 #, c-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr "Błąd ustawiania flagi emulacji szybkości urządzenia %i na %i: %s"
 
-#: ../src/cdemu:521
+#: ../src/cdemu:715
 #, c-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr "Ustawiam flagę emulacji szybkości urządzenia %i na %i."
 
-#: ../src/cdemu:544
-msgid "Devices' IDs:"
-msgstr "ID urządzenia:"
+#: ../src/cdemu:730
+msgid "Devices' transfer rate emulation flag:"
+msgstr "Flaga emulacji szybkości transferu dla urządzeń:"
 
-#: ../src/cdemu:545
-msgid "DEVICE ID"
-msgstr "ID URZĄDZENIA"
-
-#: ../src/cdemu:554 ../src/cdemu:566
+#: ../src/cdemu:737 ../src/cdemu:746
 #, c-format
-msgid "Failed to get device ID of device %i: %s"
-msgstr "Błąd pobrania ID urządzenia %i: %s"
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr "Błąd pobrania flagi emulacji szybkości urządzenia %i: %s"
 
-#: ../src/cdemu:569
+#: ../src/cdemu:750
 #, c-format
-msgid "Device ID of device %i: %s"
-msgstr "ID urządzenia %i: %s"
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "Flaga emulacji szybkości transmisji urządzenia %i: %i"
 
-#: ../src/cdemu:582
+#: ../src/cdemu:760
+#, fuzzy
+msgid "displays/sets bad sector emulation flag"
+msgstr "wyświetla/ustawia flagę emulacji DPM"
+
+#: ../src/cdemu:782
+#, fuzzy, c-format
+msgid "Setting bad sector emulation flag of all devices to %i."
+msgstr "Ustawiam flagę emulacji DPM dla wszystkich urządzeń na %i."
+
+#: ../src/cdemu:787 ../src/cdemu:799
+#, fuzzy, c-format
+msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
+msgstr "Błąd ustawiania flagi emulacji DPM dla urządzenia %i na %i: %s"
+
+#: ../src/cdemu:795
+#, fuzzy, c-format
+msgid "Setting bad sector emulation flag of device %i to %i."
+msgstr "Ustawiam flagę emulacji DPM dla urządzenia %i na %i."
+
+#: ../src/cdemu:810
+#, fuzzy
+msgid "Devices' bad sector emulation flag:"
+msgstr "Flaga emulacji szybkości transferu dla urządzeń:"
+
+#: ../src/cdemu:817 ../src/cdemu:826
+#, fuzzy, c-format
+msgid "Failed to get bad sector emulation flag of device %i: %s"
+msgstr "Błąd pobrania flagi emulacji DPM dla urządzenia %i: %s"
+
+#: ../src/cdemu:830
+#, fuzzy, c-format
+msgid "Bad sector emulation flag of device %i: %i"
+msgstr "Flaga emulacji DPM dla urządzenia %i: %i"
+
+#: ../src/cdemu:840
+msgid "displays/sets device ID"
+msgstr "wyświetla/ustawia ID urządzenia"
+
+#: ../src/cdemu:846
+#, fuzzy
+msgid ""
+"new device ID: vendor ID, product ID, revision and vendor-specific string"
+msgstr ""
+"<urządzenie> [nowy vendor_id] [nowy product_id] [nowy revision] [nowy "
+"vendor_specific]"
+
+#: ../src/cdemu:854
+msgid "New device ID must consist of exactly four strings!"
+msgstr ""
+
+#: ../src/cdemu:862
 #, c-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Ustawiam ID wszystkich urządzeń na %s."
 
-#: ../src/cdemu:587 ../src/cdemu:595
+#: ../src/cdemu:867 ../src/cdemu:879
 #, c-format
 msgid "Failed to set device ID of device %i to %s: %s"
 msgstr "Błąd podczas ustawiania ID urządzenia %i na %s: %s"
 
-#: ../src/cdemu:591
+#: ../src/cdemu:875
 #, c-format
 msgid "Setting device ID of device %i to %s."
 msgstr "Ustawiam ID urządzenia %i na %s."
 
-#: ../src/cdemu:608
+#: ../src/cdemu:891
+msgid "Devices' IDs:"
+msgstr "ID urządzenia:"
+
+#: ../src/cdemu:892
+msgid "DEVICE ID"
+msgstr "ID URZĄDZENIA"
+
+#: ../src/cdemu:899 ../src/cdemu:909
+#, c-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr "Błąd pobrania ID urządzenia %i: %s"
+
+#: ../src/cdemu:913
+#, c-format
+msgid "Device ID of device %i: %s"
+msgstr "ID urządzenia %i: %s"
+
+#: ../src/cdemu:923
+msgid "enumerates supported parsers"
+msgstr "Wylicza wspierane parsery"
+
+#: ../src/cdemu:933
 #, c-format
 msgid "Failed to enumerate supported parsers: %s"
 msgstr "Błąd wyliczenia wspieranych parserów: %s"
 
-#: ../src/cdemu:613
+#: ../src/cdemu:937
 msgid "Supported parsers:"
 msgstr "Wspierane parsery:"
 
-#: ../src/cdemu:627
-#, c-format
-msgid "Failed to enumerate supported fragments: %s"
+#: ../src/cdemu:951
+#, fuzzy
+msgid "enumerates supported writers"
+msgstr "Wylicza wspierane parsery"
+
+#: ../src/cdemu:961
+#, fuzzy, c-format
+msgid "Failed to enumerate supported writers: %s"
+msgstr "Błąd wyliczenia wspieranych parserów: %s"
+
+#: ../src/cdemu:964
+#, fuzzy
+msgid "Supported writers:"
+msgstr "Wspierane parsery:"
+
+#: ../src/cdemu:976
+#, fuzzy
+msgid "enumerates supported filter streams"
+msgstr "Wylicza wspierane fragmenty"
+
+#: ../src/cdemu:986
+#, fuzzy, c-format
+msgid "Failed to enumerate supported filter streams: %s"
 msgstr "Błąd podczas wyliczania wspieranych fragmentów : %s"
 
-#: ../src/cdemu:632
-msgid "Supported fragments:"
+#: ../src/cdemu:989
+#, fuzzy
+msgid "Supported filter streams:"
 msgstr "Wspierane fragmenty:"
 
-#: ../src/cdemu:650
+#: ../src/cdemu:992
+#, fuzzy, c-format
+msgid "    write support: %d"
+msgstr " - Wsparcie wielu plików: %i"
+
+#: ../src/cdemu:1004
+msgid "enumerates valid daemon debug masks"
+msgstr "Wylicza maski debug daemona"
+
+#: ../src/cdemu:1014
 #, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr "Błąd podczas wyliczania wspieranych masek debug daemona: %s"
 
-#: ../src/cdemu:653
+#: ../src/cdemu:1016
 msgid "Supported daemon debug masks:"
 msgstr "Wspierane maski debug daemona:"
 
-#: ../src/cdemu:668
+#: ../src/cdemu:1028
+msgid "enumerates valid library debug masks"
+msgstr "Wylicza maski debug biblioteki"
+
+#: ../src/cdemu:1038
 #, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr "Błąd podczas wyliczania wspieranych masek debug biblioteki: %s"
 
-#: ../src/cdemu:671
+#: ../src/cdemu:1040
 msgid "Supported library debug masks:"
 msgstr "Wspierane maski debug biblioteki:"
 
-#: ../src/cdemu:684
+#: ../src/cdemu:1052
+msgid "prints the list of writer's parameters"
+msgstr ""
+
+#: ../src/cdemu:1057
+msgid "writer ID"
+msgstr ""
+
+#: ../src/cdemu:1067
+msgid "Writer's parameter sheet:"
+msgstr ""
+
+#: ../src/cdemu:1072
+#, fuzzy, c-format
+msgid "  Name: %s"
+msgstr " - Nazwa: %s"
+
+#: ../src/cdemu:1073
+#, fuzzy, c-format
+msgid "  Description: %s"
+msgstr " - Wersja: %s"
+
+#: ../src/cdemu:1074
+#, fuzzy, c-format
+msgid "  Type: %s"
+msgstr " - Nazwa: %s"
+
+#: ../src/cdemu:1075
+#, c-format
+msgid "  Default value: %s"
+msgstr ""
+
+#: ../src/cdemu:1078
+#, c-format
+msgid "  Possible value: %s"
+msgstr ""
+
+#: ../src/cdemu:1082
+msgid "enum"
+msgstr ""
+
+#: ../src/cdemu:1084
+msgid "string"
+msgstr ""
+
+#: ../src/cdemu:1086
+msgid "boolean"
+msgstr ""
+
+#: ../src/cdemu:1088
+msgid "integer"
+msgstr ""
+
+#: ../src/cdemu:1090
+msgid "unknown"
+msgstr ""
+
+#: ../src/cdemu:1107
+#, fuzzy, c-format
+msgid "Unsupported writer: %s"
+msgstr "Wspierane parsery:"
+
+#: ../src/cdemu:1113
+#, fuzzy, c-format
+msgid "Failed to parse parameter sheet: %s"
+msgstr "Błąd wyliczenia wspieranych parserów: %s"
+
+#: ../src/cdemu:1125
+msgid "displays version information"
+msgstr "Wyświetla informacje o wersji"
+
+#: ../src/cdemu:1135
 #, c-format
 msgid "Failed to get library version: %s"
 msgstr "Błąd podczas pobierania wersji biblioteki: %s"
 
-#: ../src/cdemu:689
+#: ../src/cdemu:1140
 #, c-format
 msgid "Failed to get daemon version: %s"
 msgstr "Błąd podczas pobierania wersji demona: %s"
 
-#: ../src/cdemu:692
+#: ../src/cdemu:1142
 #, c-format
 msgid "Library version: %s"
 msgstr "Wersja biblioteki: %s"
 
-#: ../src/cdemu:693
+#: ../src/cdemu:1143
 #, c-format
 msgid "Daemon version: %s"
 msgstr "Wersja daemona: %s"
 
-#: ../src/cdemu:704
+#: ../src/cdemu:1153
+msgid "creates another virtual device"
+msgstr ""
+
+#: ../src/cdemu:1162
+#, fuzzy, c-format
+msgid "Failed to add device: %s"
+msgstr "Błąd podczas opróżniania urządzenia %i: %s"
+
+#: ../src/cdemu:1164
+msgid "Device added successfully."
+msgstr ""
+
+#: ../src/cdemu:1174
+msgid "removes the last virtual device"
+msgstr ""
+
+#: ../src/cdemu:1183
+#, fuzzy, c-format
+msgid "Failed to remove device: %s"
+msgstr "Błąd pobrania ilości urządzeń: %s"
+
+#: ../src/cdemu:1185
+msgid "Device removed successfully."
+msgstr ""
+
+#: ../src/cdemu:1203
+msgid "Command-line CDEmu client."
+msgstr ""
+
+#: ../src/cdemu:1204
+msgid "sets D-BUS bus type to use"
+msgstr ""
+
+#: ../src/cdemu:1207
+#, fuzzy
+msgid "valid commands"
+msgstr "Polecenia:"
+
+#: ../src/cdemu:1207
+msgid "command help"
+msgstr ""
+
+#: ../src/cdemu:1249
 #, c-format
 msgid "Invalid bus parameter '%s', using default!"
 msgstr "Błędny parametr szyny '%s'; użyty domyślny!"
 
-#: ../src/cdemu:712
+#: ../src/cdemu:1254
 #, c-format
 msgid "Failed to connect to CDEmu daemon: %s"
 msgstr "Błąd połączenia z daemonem CDEmu: %s"
 
-#: ../src/cdemu:719
+#: ../src/cdemu:1260
 #, c-format
 msgid ""
 "Failed to acquire daemon interface version (this most likely means your "
 "daemon is out-of-date): %s"
 msgstr ""
 
-#: ../src/cdemu:724
+#: ../src/cdemu:1264
 #, fuzzy, c-format
-msgid "CDEmu daemon interface version %i detected, but version %i is required!"
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
 msgstr "Wykryta wersja daemona %s, a wymagana jest przynajmniej %s!"
 
-#: ../src/cdemu:734
+#: ../src/cdemu:1352
 #, c-format
-msgid "Usage: %s %s %s"
-msgstr "Użycie: %s %s %s"
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "Błąd podczas ładowania konfiguracji z pliku '%s': %s"
 
-#: ../src/cdemu:739
-#, c-format
-msgid "Usage: %s [options] <command> <command parameters>"
-msgstr "Użycie: %s [opcje] <polecenie> <parametry polecenia>"
-
-#: ../src/cdemu:741
-msgid "Commands:"
-msgstr "Polecenia:"
-
-#: ../src/cdemu:745
-msgid "Options:"
-msgstr "Opcje:"
-
-#: ../src/cdemu:746
-msgid "displays help message"
-msgstr "Wyświetla pomoc"
-
-#: ../src/cdemu:747
-msgid "displays program version"
-msgstr "wyświetla wersje programu"
-
-#: ../src/cdemu:748
-msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
-msgstr "ustawia szynę D-BUS; 'session' lub 'system'"
-
-#: ../src/cdemu:750
-msgid "Optional parser parameters (valid only for 'load' command):"
+#: ../data/cdemu-client.desktop.in.h:1
+msgid "CDEmu client"
 msgstr ""
 
-#: ../src/cdemu:751
-msgid "password for encrypted images"
+#: ../data/cdemu-client.desktop.in.h:2
+msgid "Client for handling optical media (CD/DVD) images"
 msgstr ""
 
-#: ../src/cdemu:752
-msgid "encoding for text-based images"
-msgstr ""
+#~ msgid "Unknown option"
+#~ msgstr "Nieznana opcja"
 
-#: ../src/cdemu:757
-#, c-format
-msgid "Invalid number of parameters for command '%s'!"
-msgstr "Błędna liczba parametrów dla polecenia '%s'!"
+#~ msgid "Failed to connect to daemon (bus: '%s')!"
+#~ msgstr "Nie udało się połączyć z daemonem (szyna: '%s')!"
 
-#: ../src/cdemu:766
-#, c-format
-msgid "ERROR: %s"
-msgstr "BŁĄD: %s"
+#~ msgid "Unknown command: %s"
+#~ msgstr "Nieznana komenda: %s"
 
-#: ../src/cdemu:770
-#, c-format
-msgid "WARNING: %s"
-msgstr "OSTRZEŻENIE: %s"
+#~ msgid "Usage: %s %s %s"
+#~ msgstr "Użycie: %s %s %s"
 
-#: ../src/cdemu:778
-msgid "<device> <image file> [...]"
-msgstr "<urządzenie> <plik obrazu> [...]"
+#~ msgid "Usage: %s [options] <command> <command parameters>"
+#~ msgstr "Użycie: %s [opcje] <polecenie> <parametry polecenia>"
 
-#: ../src/cdemu:779
-msgid "loads the device"
-msgstr "ładuje urządzenie"
+#~ msgid "Options:"
+#~ msgstr "Opcje:"
 
-#: ../src/cdemu:785
-msgid "<device>"
-msgstr "<urządzenie>"
+#~ msgid "displays help message"
+#~ msgstr "Wyświetla pomoc"
 
-#: ../src/cdemu:786
-msgid "unloads the device"
-msgstr "opróżnia urządzenie"
+#~ msgid "displays program version"
+#~ msgstr "wyświetla wersje programu"
 
-#: ../src/cdemu:793
-msgid "displays the devices' status"
-msgstr "wyświetla status urządzeń"
+#~ msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
+#~ msgstr "ustawia szynę D-BUS; 'session' lub 'system'"
 
-#: ../src/cdemu:800
-msgid "displays the device mapping information"
-msgstr "wyświetla przypisania wszystkich urządzeń"
-
-#: ../src/cdemu:806 ../src/cdemu:813 ../src/cdemu:820 ../src/cdemu:827
-msgid "<device> [new value]"
-msgstr "<urządzenie> [nowa wartość]"
-
-#: ../src/cdemu:807
-msgid "displays/sets daemon debug mask"
-msgstr "wyświetla/ustawia maski debug daemona"
-
-#: ../src/cdemu:814
-msgid "displays/sets library debug mask"
-msgstr "wyświetla/ustawia maski debug biblioteki"
-
-#: ../src/cdemu:821
-msgid "displays/sets DPM emulation flag"
-msgstr "wyświetla/ustawia flagę emulacji DPM"
-
-#: ../src/cdemu:828
-msgid "displays/sets transfer rate emulation flag"
-msgstr "wyświetla/ustawia flagę emulacji szybkości transmisji"
-
-#: ../src/cdemu:834
-msgid ""
-"<device> [new vendor_id] [new product_id] [new revision] [new "
-"vendor_specific]"
-msgstr ""
-"<urządzenie> [nowy vendor_id] [nowy product_id] [nowy revision] [nowy "
-"vendor_specific]"
-
-#: ../src/cdemu:835
-msgid "displays/sets device ID"
-msgstr "wyświetla/ustawia ID urządzenia"
-
-#: ../src/cdemu:842
-msgid "enumerates supported parsers"
-msgstr "Wylicza wspierane parsery"
-
-#: ../src/cdemu:849
-msgid "enumerates supported fragments"
-msgstr "Wylicza wspierane fragmenty"
-
-#: ../src/cdemu:856
-msgid "enumerates valid daemon debug masks"
-msgstr "Wylicza maski debug daemona"
-
-#: ../src/cdemu:863
-msgid "enumerates valid library debug masks"
-msgstr "Wylicza maski debug biblioteki"
-
-#: ../src/cdemu:870
-msgid "displays version information"
-msgstr "Wyświetla informacje o wersji"
+#~ msgid "<device> <image file> [...]"
+#~ msgstr "<urządzenie> <plik obrazu> [...]"
 
 #~ msgid "TYPE"
 #~ msgstr "TYP"
@@ -479,17 +716,8 @@ msgstr "Wyświetla informacje o wersji"
 #~ msgid "Parser information: '%s'"
 #~ msgstr "Informacje o parserze: '%s'"
 
-#~ msgid " - Name: %s"
-#~ msgstr " - Nazwa: %s"
-
-#~ msgid " - Version: %s"
-#~ msgstr " - Wersja: %s"
-
 #~ msgid " - Author: %s"
 #~ msgstr " - Autor: %s"
-
-#~ msgid " - Multiple files support: %i"
-#~ msgstr " - Wsparcie wielu plików: %i"
 
 #~ msgid " - Image files description: %s"
 #~ msgstr " - Opis plików obrazów: %s"
