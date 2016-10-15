@@ -1,0 +1,197 @@
+# Slovenian translation of cdemu-daemon.
+# Copyright (C) 2016 Rok Mandeljc
+# This file is distributed under the same license as the cdemu-daemon package.
+# Rok Mandeljc <rok.mandeljc@gmail.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cdemu-daemon 3.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-10-15 23:17+0200\n"
+"PO-Revision-Date: 2016-10-15 23:04+0200\n"
+"Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
+"Language-Team: Slovenian <>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#: ../src/device.c:206 ../src/device.c:290
+#, c-format
+msgid "Invalid option name '%s'!"
+msgstr "Neveljavna nastavitev '%s'!"
+
+#: ../src/device.c:226 ../src/device.c:234 ../src/device.c:242
+#: ../src/device.c:250 ../src/device.c:266 ../src/device.c:280
+#, c-format
+msgid "Invalid argument type for option '%s'!"
+msgstr "Neveljavna vrsta argumenta za nastavitev '%s'!"
+
+#: ../src/device-load.c:36 ../src/device-load.c:114
+#, c-format
+msgid "Device is already loaded!"
+msgstr "Naprava je že naložena!"
+
+#: ../src/device-load.c:152
+#, c-format
+msgid "Invalid medium type '%s'!"
+msgstr "Neveljavna vrsta medija '%s'!"
+
+#: ../src/device-load.c:163
+#, c-format
+msgid "no image writer ID provided in parameters!"
+msgstr "V nastavitvah ni bil podan ID zapisovalca slik!"
+
+#: ../src/device-load.c:255
+#, c-format
+msgid "Device is locked!"
+msgstr "Naprava je zaklenjena!"
+
+#: ../src/daemon.c:218
+#, c-format
+msgid "Invalid device number!"
+msgstr "Neveljavna številka naprave!"
+
+#: ../src/daemon-dbus.c:340
+#, c-format
+msgid "Failed to add device!"
+msgstr "Napaka pri dodajanju naprave!"
+
+#: ../src/daemon-dbus.c:346
+#, c-format
+msgid "Failed to remove device!"
+msgstr "Napaka pri odstranjevanju naprave!"
+
+#: ../src/daemon-dbus.c:361
+#, c-format
+msgid "Invalid method name '%s'!"
+msgstr "Neveljavno ime metode '%s'!"
+
+#: ../src/main.c:32
+msgid "Number of devices"
+msgstr "Število naprav"
+
+#: ../src/main.c:32
+msgid "N"
+msgstr "N"
+
+#: ../src/main.c:33
+msgid "Control device"
+msgstr "Kontrolna naprava"
+
+#: ../src/main.c:33
+msgid "path"
+msgstr "pot-do-naprave"
+
+#: ../src/main.c:34
+msgid "Audio driver"
+msgstr "Avdio gonilnik"
+
+#: ../src/main.c:34
+msgid "driver"
+msgstr "gonilnik"
+
+#: ../src/main.c:35
+msgid "Bus type to use"
+msgstr "Vrsta vodila"
+
+#: ../src/main.c:35
+msgid "bus_type"
+msgstr "vrsta-vodila"
+
+#: ../src/main.c:36
+msgid "Logfile"
+msgstr "Datoteka z dnevnikom"
+
+#: ../src/main.c:36
+msgid "logfile"
+msgstr "ime-datoteke"
+
+#: ../src/main.c:57
+#, c-format
+msgid "Received signal - %s\n"
+msgstr "Prejel signal - %s\n"
+
+#: ../src/main.c:81
+msgid "Failed to set sigaction for SIGTERM!"
+msgstr "Napaka pri nastavljanju sigaction za SIGTERM!"
+
+#: ../src/main.c:84
+msgid "Failed to set sigaction for SIGINT!"
+msgstr "Napaka pri nastavljanju sigaction za SIGINT!"
+
+#: ../src/main.c:87
+msgid "Failed to set sigaction for SIGQUIT!"
+msgstr "Napaka pri nastavljanju sigaction za SIGQUIT!"
+
+#: ../src/main.c:90
+msgid "Failed to set sigaction for SIGHUP!"
+msgstr "Napaka pri nastavljanju sigaction za SIGHUP!"
+
+#: ../src/main.c:130
+#, c-format
+msgid "Failed to parse options: %s\n"
+msgstr "Napaka pri branju argumentorv: %s\n"
+
+#: ../src/main.c:139
+#, c-format
+msgid "Failed to open log file %s for writing!\n"
+msgstr "Napaka pri odpiranju datoteke z dnevnikom %s za pisanje!\n"
+
+#: ../src/main.c:147
+#, c-format
+msgid "Failed to initialize libMirage: %s!\n"
+msgstr "Napaka pri inicializaciji knjižnice libMirage: %s!\n"
+
+#. Display status
+#: ../src/main.c:153
+msgid "Starting CDEmu daemon with following parameters:\n"
+msgstr "Zaganjam CDEmu demon z naslednjimi nastavitvami:\n"
+
+#: ../src/main.c:154
+#, c-format
+msgid " - num devices: %i\n"
+msgstr " - število naprav: %i\n"
+
+#: ../src/main.c:155
+#, c-format
+msgid " - control device: %s\n"
+msgstr " - kontrolna naprava: %s\n"
+
+#: ../src/main.c:156
+#, c-format
+msgid " - audio driver: %s\n"
+msgstr " - avdio gonilnik: %s\n"
+
+#: ../src/main.c:157
+#, c-format
+msgid " - bus type: %s\n"
+msgstr " - vrsta vodila: %s\n"
+
+#: ../src/main.c:167
+#, c-format
+msgid "Invalid bus argument '%s', using default bus!\n"
+msgstr "Neveljavna vrsta vodila '%s', uporabljeno bo privzeto vodilo!\n"
+
+#: ../src/main.c:173
+msgid ""
+"WARNING: using CDEmu on system bus is deprecated and might lead to security "
+"issues on multi-user systems! Consult the README file for more details.\n"
+"\n"
+msgstr ""
+"OPOZORILO: uporaba CDEmu na sistemskem vodilu je opuščena in lahko privede "
+"do težav z varnostjo na več-uporabniških sistemih! Za več informacij "
+"preberite README datoteko.\n"
+"\n"
+
+#. Printed when daemon stops
+#: ../src/main.c:185
+msgid "Stopping daemon.\n"
+msgstr "Zaustavljam demon.\n"
+
+#: ../src/main.c:187
+msgid "Daemon initialization and start failed!\n"
+msgstr "Napaka pri inicializaciji in zagonu demona!\n"

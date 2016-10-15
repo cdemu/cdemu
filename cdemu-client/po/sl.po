@@ -3,11 +3,6 @@
 # This file is distributed under the same license as the cdemu-client package.
 # Rok Mandeljc <rok.mandeljc@gmail.com>, 2006-2014.
 #
-#: ../src/cdemu:105 ../src/cdemu:183 ../src/cdemu:333 ../src/cdemu:371
-#: ../src/cdemu:408 ../src/cdemu:439 ../src/cdemu:520 ../src/cdemu:599
-#: ../src/cdemu:679 ../src/cdemu:759 ../src/cdemu:839 ../src/cdemu:922
-#: ../src/cdemu:950 ../src/cdemu:975 ../src/cdemu:1003 ../src/cdemu:1027
-#: ../src/cdemu:1051 ../src/cdemu:1152 ../src/cdemu:1173
 msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 3.0.0\n"
