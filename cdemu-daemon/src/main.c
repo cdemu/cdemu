@@ -97,6 +97,12 @@ static void setup_signal_trap ()
 \******************************************************************************/
 int main (int argc, char **argv)
 {
+    /* Localization support */
+    setlocale(LC_ALL, "");
+    bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
+    bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+    textdomain(GETTEXT_PACKAGE);
+
     /* Glib type system and threading system initialization; needed
        only in older glib versions */
 #if !GLIB_CHECK_VERSION(2, 36, 0)
@@ -115,7 +121,8 @@ int main (int argc, char **argv)
     gboolean succeeded;
 
     option_context = g_option_context_new("- CDEmu Daemon");
-    g_option_context_add_main_entries(option_context, option_entries, NULL);
+    g_option_context_set_translation_domain(option_context, GETTEXT_PACKAGE);
+    g_option_context_add_main_entries(option_context, option_entries, GETTEXT_PACKAGE);
     succeeded = g_option_context_parse(option_context, &argc, &argv, &error);
     g_option_context_free(option_context);
 

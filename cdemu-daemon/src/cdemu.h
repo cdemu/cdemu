@@ -37,6 +37,9 @@
 
 #include <ao/ao.h>
 
+#include <glib/gi18n.h>
+#include <locale.h>
+
 #include <glib-object.h>
 #include <gio/gio.h>
 
