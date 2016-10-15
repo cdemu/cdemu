@@ -29,11 +29,11 @@ static gchar *bus = "session";
 static gchar *log_filename = NULL;
 
 static GOptionEntry option_entries[] = {
-    { "num-devices", 'n', 0, G_OPTION_ARG_INT, &num_devices, "Number of devices", "N" },
-    { "ctl-device", 'c', 0, G_OPTION_ARG_STRING, &ctl_device, "Control device", "path" },
-    { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, "Audio driver", "driver" },
-    { "bus", 'b', 0, G_OPTION_ARG_STRING, &bus, "Bus type to use", "bus_type" },
-    { "logfile", 'l', 0, G_OPTION_ARG_STRING, &log_filename, "Logfile", "logfile" },
+    { "num-devices", 'n', 0, G_OPTION_ARG_INT, &num_devices, N_("Number of devices"), N_("N") },
+    { "ctl-device", 'c', 0, G_OPTION_ARG_STRING, &ctl_device, N_("Control device"), N_("path") },
+    { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, N_("Audio driver"), N_("driver") },
+    { "bus", 'b', 0, G_OPTION_ARG_STRING, &bus, N_("Bus type to use"), N_("bus_type") },
+    { "logfile", 'l', 0, G_OPTION_ARG_STRING, &log_filename, N_("Logfile"), N_("logfile") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
@@ -54,7 +54,7 @@ static void log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLeve
 /* Signal handler */
 static void __unix_signal_handler (int signal)
 {
-    g_message("Received signal - %s\n", g_strsignal(signal));
+    g_message(Q_("Received signal - %s\n"), g_strsignal(signal));
     switch (signal) {
         case SIGINT:
         case SIGQUIT:
@@ -78,16 +78,16 @@ static void setup_signal_trap ()
     action.sa_flags = 0;
 
     if (sigaction(SIGTERM, &action, 0) > 0) {
-        g_warning("Failed to setup unix signal sigaction for SIGTERM!");
+        g_warning(Q_("Failed to set sigaction for SIGTERM!"));
     }
     if (sigaction(SIGINT, &action, 0) > 0) {
-        g_warning("Failed to setup unix signal sigaction for SIGINT!");
+        g_warning(Q_("Failed to set sigaction for SIGINT!"));
     }
     if (sigaction(SIGQUIT, &action, 0) > 0) {
-        g_warning("Failed to setup unix signal sigaction for SIGQUIT!");
+        g_warning(Q_("Failed to set sigaction for SIGQUIT!"));
     }
     if (sigaction(SIGHUP, &action, 0) > 0) {
-        g_warning("Failed to setup unix signal sigaction for SIGHUP!");
+        g_warning(Q_("Failed to set sigaction for SIGHUP!"));
     }
 }
 
@@ -127,7 +127,7 @@ int main (int argc, char **argv)
     g_option_context_free(option_context);
 
     if (!succeeded) {
-        g_warning("Failed to parse options: %s\n", error->message);
+        g_warning(Q_("Failed to parse options: %s\n"), error->message);
         g_error_free(error);
         return -1;
     }
@@ -136,7 +136,7 @@ int main (int argc, char **argv)
     if (log_filename) {
         logfile = fopen(log_filename, "w"); /* Overwrite log file */
         if (!logfile) {
-            g_warning("Failed to open log file %s for writing!\n", log_filename);
+            g_warning(Q_("Failed to open log file %s for writing!\n"), log_filename);
             return -1;
         }
         g_log_set_default_handler(log_handler_logfile, NULL);
@@ -144,16 +144,18 @@ int main (int argc, char **argv)
 
     /* Initialize libMirage */
     if (!mirage_initialize(&error)) {
-        g_warning("Failed to initialize libMirage: %s!\n", error->message);
+        g_warning(Q_("Failed to initialize libMirage: %s!\n"), error->message);
         g_error_free(error);
         return -1;
     }
 
-    g_message("Starting CDEmu daemon with following parameters:\n");
-    g_message(" - num devices: %i\n", num_devices);
-    g_message(" - ctl device: %s\n", ctl_device);
-    g_message(" - audio driver: %s\n", audio_driver);
-    g_message(" - bus type: %s\n\n", bus);
+    /* Display status */
+    g_message(Q_("Starting CDEmu daemon with following parameters:\n"));
+    g_message(Q_(" - num devices: %i\n"), num_devices);
+    g_message(Q_(" - control device: %s\n"), ctl_device);
+    g_message(Q_(" - audio driver: %s\n"), audio_driver);
+    g_message(Q_(" - bus type: %s\n"), bus);
+    g_message("\n");
 
     /* Decipher bus type */
     gboolean use_system_bus = FALSE;
@@ -162,13 +164,13 @@ int main (int argc, char **argv)
     } else if (!mirage_helper_strcasecmp(bus, "session")) {
         use_system_bus = FALSE;
     } else {
-        g_warning("Invalid bus argument '%s', using default bus!\n", bus);
+        g_warning(Q_("Invalid bus argument '%s', using default bus!\n"), bus);
         use_system_bus = FALSE;
     }
 
     /* Discourage the use of system bus */
     if (use_system_bus) {
-        g_message("WARNING: using CDEmu on system bus is deprecated and might lead to security issues on multi-user systems! Consult the README file for more details.\n\n");
+        g_message(Q_("WARNING: using CDEmu on system bus is deprecated and might lead to security issues on multi-user systems! Consult the README file for more details.\n\n"));
     }
 
     /* Create daemon */
@@ -180,9 +182,9 @@ int main (int argc, char **argv)
     /* Initialize and start daemon */
     if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus)) {
         /* Printed when daemon stops */
-        g_message("Stopping daemon.\n");
+        g_message(Q_("Stopping daemon.\n"));
     } else {
-        g_warning("Daemon initialization and start failed!\n");
+        g_warning(Q_("Daemon initialization and start failed!\n"));
         succeeded = FALSE;
     }
 
