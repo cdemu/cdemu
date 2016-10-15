@@ -120,7 +120,7 @@ int main (int argc, char **argv)
     GOptionContext *option_context;
     gboolean succeeded;
 
-    option_context = g_option_context_new("- CDEmu Daemon");
+    option_context = g_option_context_new(NULL);
     g_option_context_set_translation_domain(option_context, GETTEXT_PACKAGE);
     g_option_context_add_main_entries(option_context, option_entries, GETTEXT_PACKAGE);
     succeeded = g_option_context_parse(option_context, &argc, &argv, &error);
