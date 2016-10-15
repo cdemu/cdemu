@@ -215,7 +215,7 @@ CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GEr
 {
     CdemuDevice *device = g_list_nth_data(self->priv->devices, device_number);
     if (!device) {
-        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid device number!");
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid device number!"));
         return NULL;
     }
     return g_object_ref(device);

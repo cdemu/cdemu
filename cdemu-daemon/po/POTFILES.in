@@ -1,4 +1,8 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+src/device.c
+src/device-load.c
+src/daemon.c
+src/daemon-dbus.c
 src/main.c
 

@@ -337,13 +337,13 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         /* *** AddDevice *** */
         succeeded = cdemu_daemon_add_device(self);
         if (!succeeded) {
-            g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "Failed to add device!");
+            g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, Q_("Failed to add device!"));
         }
     } else if (!g_strcmp0(method_name, "RemoveDevice")) {
         /* *** RemoveDevice *** */
         succeeded = cdemu_daemon_remove_device(self);
         if (!succeeded) {
-            g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "Failed to remove device!");
+            g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, Q_("Failed to remove device!"));
         }
     } else if (!g_strcmp0(method_name, "EnumWriterParameters")) {
         /* *** EnumWriterParameters *** */
@@ -358,7 +358,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             succeeded = TRUE;
         }
     } else {
-        g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
+        g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid method name '%s'!"), method_name);
     }
 
     if (succeeded) {

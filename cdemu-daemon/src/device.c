@@ -203,7 +203,7 @@ GVariant *cdemu_device_get_option (CdemuDevice *self, gchar *option_name, GError
     } else {
         /* Option not found */
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
-        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid option name '%s'!", option_name);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid option name '%s'!"), option_name);
     }
 
     /* Unlock */
@@ -223,7 +223,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     if (!g_strcmp0(option_name, "dpm-emulation")) {
         /* *** dpm-emulation *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("b"))) {
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
             g_variant_get(option_value, "b", &self->priv->dpm_emulation);
@@ -231,7 +231,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     } else if (!g_strcmp0(option_name, "tr-emulation")) {
         /* *** tr-emulation *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("b"))) {
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
             g_variant_get(option_value, "b", &self->priv->tr_emulation);
@@ -239,7 +239,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     } else if (!g_strcmp0(option_name, "bad-sector-emulation")) {
         /* *** bad-sector-emulation *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("b"))) {
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
             g_variant_get(option_value, "b", &self->priv->bad_sector_emulation);
@@ -247,7 +247,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("(ssss)"))) {
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
             gchar *vendor_id, *product_id, *revision, *vendor_specific;
@@ -263,7 +263,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
         /* *** daemon-debug-mask *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("i"))) {
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
             MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
@@ -277,7 +277,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
         /* *** library-debug-mask *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("i"))) {
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
             gint mask;
@@ -287,7 +287,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
     } else {
         /* Option not found */
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
-        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid option name '%s'!", option_name);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid option name '%s'!"), option_name);
         succeeded = FALSE;
     }
 
