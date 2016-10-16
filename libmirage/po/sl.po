@@ -1,0 +1,640 @@
+# Slovenian translation of libmirage
+# Copyright (C) 2016 Rok Mandeljc
+# This file is distributed under the same license as the libmirage package.
+# Rok Mandeljc <rok.mandeljc@gmail.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libmirage 3.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-10-16 20:00+0200\n"
+"PO-Revision-Date: 2016-10-20 23:07+0200\n"
+"Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
+"Language-Team: Slovenian <>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#: ../mirage/cdtext-coder.c:377
+#, c-format
+msgid "Invalid block number #%i!"
+msgstr "Neveljavna številka bloka #%i!"
+
+#: ../mirage/cdtext-coder.c:681
+#, c-format
+msgid "Block number %d exceeds number of blocks %d!"
+msgstr "Številka bloka %d presega število vseh blokov %d!"
+
+#. FIXME: error
+#: ../mirage/cdtext-coder.c:686
+#, c-format
+msgid "Requested block %d has no language code set!"
+msgstr "Zahtevani blok %d nima določene kode jezika!"
+
+#: ../mirage/context.c:318
+#, c-format
+msgid "Context does not have a password function!"
+msgstr "Kontekst nima nastavljene funkcije za poizvedovanje po geslu!"
+
+#: ../mirage/context.c:326
+#, c-format
+msgid "Password has not been provided!"
+msgstr "Geslo ni na voljo!"
+
+#: ../mirage/context.c:364
+#, c-format
+msgid "No image files given!"
+msgstr "Podana ni bila nobena datoteka z odtisom diska!"
+
+#. No parser found
+#: ../mirage/context.c:416
+#, c-format
+msgid "No parser can handle the image file!"
+msgstr "Noben parser ni sposoben prebrati podane datoteke z odtisom diska!"
+
+#: ../mirage/context.c:469
+#, c-format
+msgid "Failed to open read-only file stream on data file: %s!"
+msgstr "Napaka pri odpiranju vhodnega toka nad podatkovno datoteko: %s!"
+
+#: ../mirage/context.c:564
+#, c-format
+msgid "Failed to open read-write file stream on data file: %s!"
+msgstr ""
+"Napaka pri odpiranju vhodno/izhodnega toka nad podatkovno datoteko: %s!"
+
+#: ../mirage/context.c:578
+#, c-format
+msgid "Invalid filter type '%s' in filter chain!"
+msgstr "Neveljavna vrsta filtra '%s' v verigi filtrov!"
+
+#: ../mirage/context.c:588
+#, c-format
+msgid "Failed to create filter type '%s': %s!"
+msgstr "Napaka pri ustvarjanju filtra vrste '%s': %s!"
+
+#: ../mirage/contextual.c:295 ../mirage/contextual.c:330
+#: ../mirage/contextual.c:366
+#, c-format
+msgid "Context not set!"
+msgstr "Objekt nima nastavljenega konteksta!"
+
+#: ../mirage/disc.c:586
+#, c-format
+msgid "Session with number %d already exists!"
+msgstr "Seja s številko %d že obstaja!"
+
+#: ../mirage/disc.c:715
+#, c-format
+msgid "Session index %d out of range!"
+msgstr "Indeks seje %d je izven veljavnega območja vrednosti!"
+
+#: ../mirage/disc.c:725
+#, c-format
+msgid "Session with index %d not found!"
+msgstr "Seje z indeksom %d ni mogoče najti!"
+
+#: ../mirage/disc.c:762
+#, c-format
+msgid "Session with number %d not found!"
+msgstr "Seje s številko %d ni mogoče najti!"
+
+#: ../mirage/disc.c:788
+#, c-format
+msgid "Session address %d (0x%X) out of range!"
+msgstr "Naslov znotraj seje %d (0x%X) je izven veljavnega območja vrednosti!"
+
+#: ../mirage/disc.c:806
+#, c-format
+msgid "Session containing address %d not found!"
+msgstr "Seje, ki vsebuje naslov %d, ni mogoče najti!"
+
+#: ../mirage/disc.c:850
+#, c-format
+msgid "Session with track %d not found!"
+msgstr "Seje, ki vsebuje sled %d, ni mogoče najti!"
+
+#: ../mirage/disc.c:900 ../mirage/disc.c:932
+#, c-format
+msgid "Session %p is not in disc layout!"
+msgstr "Seja %p ne pripada razporedu na disku!"
+
+#: ../mirage/disc.c:909
+#, c-format
+msgid "Session before session %p not found!"
+msgstr "Seje, ki bi bila pred sejo %p, ni mogoče najti!"
+
+#: ../mirage/disc.c:942
+#, c-format
+msgid "Session after session %p not found!"
+msgstr "Seje, ki bi bila za sejo %p, ni mogoče najti!"
+
+#: ../mirage/disc.c:1032
+#, c-format
+msgid "Session not found!"
+msgstr "Seje ni mogoče najti!"
+
+#: ../mirage/disc.c:1135 ../mirage/disc.c:1185
+#, c-format
+msgid "Track has no parent!"
+msgstr "Sled nima nastavljenega starševskega objekta!"
+
+#: ../mirage/disc.c:1172 ../mirage/session.c:760
+#, c-format
+msgid "Invalid track number %d!"
+msgstr "Neveljavna številka sledi %d!"
+
+#: ../mirage/disc.c:1224 ../mirage/session.c:818
+#, c-format
+msgid "Track index %d out of range!"
+msgstr "Indeks sledi %d je izven veljavnega območja vrednosti!"
+
+#: ../mirage/disc.c:1245 ../mirage/session.c:830
+#, c-format
+msgid "Track with index %d not found!"
+msgstr "Sledi z indeksom %d ni mogoče najti!"
+
+#: ../mirage/disc.c:1382
+#, c-format
+msgid "Invalid medium type!"
+msgstr "Neveljaven tip medija!"
+
+#: ../mirage/disc.c:1387
+#, c-format
+msgid "Invalid layer %d!"
+msgstr "Neveljavna plast %d!"
+
+#: ../mirage/disc.c:1401
+#, c-format
+msgid "Disc structure data not provided and could not be fabricated!"
+msgstr "Manjkajočih podatkov za strukturo na disku ni mogoče izdelati!"
+
+#: ../mirage/disc.c:1576
+#, c-format
+msgid "DPM data not available!"
+msgstr "Podatki DPM niso na voljo!"
+
+#: ../mirage/disc.c:1586
+#, c-format
+msgid "Sector address %d out of range!"
+msgstr "Naslov sektorja %d je izven veljavnega območja vrednosti!"
+
+#: ../mirage/file-stream.c:116
+#, c-format
+msgid "File '%s' does not exist!"
+msgstr "Datoteka '%s' ne obstaja!"
+
+#: ../mirage/file-stream.c:131
+#, c-format
+msgid "Failed to open file %s stream on data file '%s': %s!"
+msgstr "Napaka pri odpiranju podatkovnega toka (%s) nad datoteko '%s': %s!"
+
+#: ../mirage/file-stream.c:131
+msgid "input/output"
+msgstr "vhod/izhod"
+
+#: ../mirage/file-stream.c:131
+msgid "input"
+msgstr "vhod"
+
+#: ../mirage/file-stream.c:165
+#, c-format
+msgid "No file input stream!"
+msgstr "Manjkajoč vhodni podatkovni tok!"
+
+#: ../mirage/file-stream.c:178
+#, c-format
+msgid "No file output stream!"
+msgstr "Manjkajoč izhodni podatkovni tok!"
+
+#: ../mirage/file-stream.c:191
+#, c-format
+msgid "No file stream!"
+msgstr "Manjkajoč podatkovni tok!"
+
+#: ../mirage/file-stream.c:218
+#, c-format
+msgid "Cannot move file for non-writable stream!"
+msgstr ""
+"Datoteke, ki ne pripada izhodnemu podatkovnemu toku, ni mogoče premakniti!"
+
+#: ../mirage/file-stream.c:248
+#, c-format
+msgid "Failed to move file: %s"
+msgstr "Napaka pri premikanju datoteke: %s"
+
+#: ../mirage/file-stream.c:263
+#, c-format
+msgid "Failed to re-open moved file: %s"
+msgstr "Napaka pri odpiranju datoteke po premiku: %s"
+
+#: ../mirage/filter-stream.c:324
+#, c-format
+msgid "No underlying stream!"
+msgstr "Manjkajoč temeljni podatkovni tok!"
+
+#: ../mirage/filter-stream.c:345
+#, c-format
+msgid "Simplified partial read function is not implemented!"
+msgstr "Funkcija poenostavljenega delnega branja ni implementirana!"
+
+#: ../mirage/filter-stream.c:363
+#, c-format
+msgid "Failed to do a partial read."
+msgstr "Napaka pri izvedbi delnega branja."
+
+#: ../mirage/filter-stream.c:391
+#, c-format
+msgid "Stream is not writable!"
+msgstr "Podatkovni tok ni zapisljiv!"
+
+#: ../mirage/filter-stream.c:398
+#, c-format
+msgid "Simplified partial write function is not implemented!"
+msgstr "Funkcija poenostavljenega delnega pisanja ni implementirana!"
+
+#: ../mirage/filter-stream.c:410
+#, c-format
+msgid "Failed to do a partial write."
+msgstr "Napaka pri izvedbi delnega zapisa."
+
+#: ../mirage/filter-stream.c:452
+#, c-format
+msgid "Invalid seek type."
+msgstr "Neveljavna vrsta premika."
+
+#: ../mirage/filter-stream.c:461
+#, c-format
+msgid "Seek before beginning of file not allowed!"
+msgstr "Premik pred začetek datoteke ni dovoljen!"
+
+#: ../mirage/fragment.c:196
+#, c-format
+msgid "Main channel data input stream not set!"
+msgstr "Manjkajoč vhodni podatkovni tok za podatke glavnega kanala!"
+
+#: ../mirage/fragment.c:203
+#, c-format
+msgid "Failed to seek to the end of main channel data input stream: %s"
+msgstr ""
+"Napaka pri premiku na konec vhodnega podatkovnega toka za podatke glavnega "
+"kanala: %s"
+
+#: ../mirage/fragment.c:491
+#, c-format
+msgid "Mismatch between given data (%d) and set main channel data size (%d)!"
+msgstr ""
+"Neskladje med dejansko količino podatkov (%d) in pričakovano količino "
+"podatkov za glavni kanal (%d!"
+
+#: ../mirage/fragment.c:527 ../mirage/fragment.c:861
+#, c-format
+msgid "Failed to seek to position 0x%zX"
+msgstr "Napaka pri premiku na položaj 0x%zX"
+
+#: ../mirage/fragment.c:534 ../mirage/fragment.c:867
+#, c-format
+msgid "Failed to write data: %s"
+msgstr "Napaka pri pisanju podatkov: %s"
+
+#: ../mirage/fragment.c:828
+#, c-format
+msgid "Mismatch between given data (%d) and accepted subchannel size (%d)!"
+msgstr ""
+"Neskladje med dejansko količino podatkov (%d) in pričakovano količino "
+"podatkov za pod-kanal (%d)!"
+
+#: ../mirage/language.c:146 ../mirage/language.c:184
+#, c-format
+msgid "Invalid pack type %d!"
+msgstr "Neveljaven tip paketa %d!"
+
+#: ../mirage/language.c:189
+#, c-format
+msgid "Data not set for pack type %d!"
+msgstr "Manjkajoči podatki za paket tipa %d!"
+
+#: ../mirage/mirage.c:151
+#, c-format
+msgid "Failed to open plugin directory '%s'!"
+msgstr "Napaka pri odpiranju direktorija z vstavki '%s'!"
+
+#: ../mirage/mirage.c:222 ../mirage/mirage.c:279 ../mirage/mirage.c:303
+#: ../mirage/mirage.c:329 ../mirage/mirage.c:359 ../mirage/mirage.c:383
+#: ../mirage/mirage.c:409 ../mirage/mirage.c:439 ../mirage/mirage.c:463
+#: ../mirage/mirage.c:489 ../mirage/mirage.c:522 ../mirage/mirage.c:548
+#, c-format
+msgid "Library not initialized!"
+msgstr "Knjižnica ni inicializirana!"
+
+#: ../mirage/mirage.c:336 ../mirage/mirage.c:416 ../mirage/mirage.c:496
+#, c-format
+msgid "Iteration has been cancelled!"
+msgstr "Iteracija je bila prekinjena!"
+
+#: ../mirage/mirage.c:558
+#, c-format
+msgid "Writer '%s' not found!"
+msgstr "Zapisovalnika '%s' ni mogoče najti!"
+
+#: ../mirage/parser.c:347
+#, c-format
+msgid "Failed to create data stream!"
+msgstr "Napaka pri ustvarjanju podatkovnega toka!"
+
+#: ../mirage/sector.c:77
+#, c-format
+msgid "Sync pattern not available for sector type %d!"
+msgstr ""
+"Podatki sinhronizacijskega vzorca niso razpoložljivi za sektor vrste %d!"
+
+#: ../mirage/sector.c:97
+#, c-format
+msgid "Header not available for sector type %d!"
+msgstr "Podatki glave niso razpoložljivi za sektor vrste %d!"
+
+#: ../mirage/sector.c:114
+#, c-format
+msgid "Subheader not available for sector type %d!"
+msgstr "Podatki pod-glave niso razpoložljivi za sektor vrste %d!"
+
+#: ../mirage/sector.c:155
+#, c-format
+msgid "Data not available for sector type %d!"
+msgstr "Podatki glavnega dela niso razpoložljivi za sektor vrste %d!"
+
+#: ../mirage/sector.c:181
+#, c-format
+msgid "EDC/ECC not available for sector type %d!"
+msgstr "Podatki EDC/ECC niso razpoložljivi za sektor vrste %d!"
+
+#: ../mirage/sector.c:218
+#, c-format
+msgid "Unhandled sector size %d for Audio sector!"
+msgstr "Nepodprta velikost sektorja %d za avdio sektor!"
+
+#: ../mirage/sector.c:264
+#, c-format
+msgid "Unhandled sector size %d for Mode 0 sector!"
+msgstr "Nepodprta velikost sektorja %d za sektor vrste Mode 0!"
+
+#: ../mirage/sector.c:344
+#, c-format
+msgid "Unhandled sector size %d for Mode 1 sector!"
+msgstr "Nepodprta velikost sektorja %d za sektor vrste Mode 1!"
+
+#: ../mirage/sector.c:391
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Formless sector!"
+msgstr "Nepodprta velikost sektorja %d za sektor vrste Mode 2 Formless!"
+
+#: ../mirage/sector.c:496
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Form 1 sector!"
+msgstr "Nepodprta velikost sektorja %d za sektor vrste Mode 2 Form1!"
+
+#: ../mirage/sector.c:605
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Form 2 sector!"
+msgstr "Nepodprta velikost sektorja %d za sektor vrste Mode 2 Form2!"
+
+#: ../mirage/sector.c:676
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Mixed sector!"
+msgstr "Nepodprta velikost sektorja %d za sektor vrste Mode 2 Mixed!"
+
+#: ../mirage/sector.c:893
+#, c-format
+msgid "Raw sectors require 2352 bytes of data!"
+msgstr "Surovi sektorji potrebujejo 2352 bajtov podatkov!"
+
+#: ../mirage/sector.c:1014
+#, c-format
+msgid ""
+"Requested subchannel size (%d) and actual subchannel size (%d) mismatch!"
+msgstr "Zahtevana velikost pod-kanala (%d) se razlikuje od dejanske (%d)!"
+
+#: ../mirage/sector.c:1113
+#, c-format
+msgid "Expected %d bytes for sync pattern!"
+msgstr "Pričakovanih %d bajtov podatkov za sinhronizacijski vzorec!"
+
+#: ../mirage/sector.c:1190
+#, c-format
+msgid "Expected %d bytes for header!"
+msgstr "Pričakovanih %d bajtov podatkov za glavo!"
+
+#: ../mirage/sector.c:1274
+#, c-format
+msgid "Expected %d bytes for subheader!"
+msgstr "Pričakovanih %d bajtov podatkov za pod-glavo!"
+
+#: ../mirage/sector.c:1345
+#, c-format
+msgid "Expected %d bytes for data!"
+msgstr "Pričakovanih %d bajtov podatkov za glavni del sektorja!"
+
+#: ../mirage/sector.c:1421
+#, c-format
+msgid "Expected %d bytes for EDC/ECC!"
+msgstr "Pričakovanih %d bajtov podatkov za EDC/ECC!"
+
+#: ../mirage/sector.c:1493 ../mirage/sector.c:1549
+#, c-format
+msgid "Subchannel format %d not supported yet!"
+msgstr "Format pod-kanala %d ni še podprt!"
+
+#: ../mirage/sector.c:1520
+#, c-format
+msgid "Expected 96 bytes for PW subchannel!"
+msgstr "Pričakovanih 96 bajtov podatkov za pod-kanal PW!"
+
+#: ../mirage/sector.c:1530
+#, c-format
+msgid "Expected 16 bytes for Q subchannel!"
+msgstr "Pričakovanih 16 bajtov podatkov za pod-kanal Q!"
+
+#: ../mirage/session.c:680
+#, c-format
+msgid "Track with number %d already exists!"
+msgstr "Sled s številko %d že obstaja!"
+
+#: ../mirage/session.c:867
+#, c-format
+msgid "Track with number %d not found!"
+msgstr "Sledi s številko %d ni mogoče najti!"
+
+#: ../mirage/session.c:893
+#, c-format
+msgid "Track address %d out of range!"
+msgstr "Naslov znotraj sledi %d je izven veljavnega dosega vrednosti!"
+
+#: ../mirage/session.c:911
+#, c-format
+msgid "Track containing address %d not found!"
+msgstr "Sledi, ki vsebuje naslov %d, ni mogoče najti!"
+
+#: ../mirage/session.c:961 ../mirage/session.c:995
+#, c-format
+msgid "Track %p is not in session layout!"
+msgstr "Sled %p ne pripada razporedu znotraj seje!"
+
+#: ../mirage/session.c:971
+#, c-format
+msgid "Track before track %p not found!"
+msgstr "Sledi, ki bi bila pred sledjo %p, ni mogoče najti!"
+
+#: ../mirage/session.c:1006
+#, c-format
+msgid "Track after track %p not found!"
+msgstr "Sledi, ki bi bila za sledjo %p, ni mogoče najti!"
+
+#: ../mirage/session.c:1047 ../mirage/track.c:1327
+#, c-format
+msgid "Language with language code %d already exists!"
+msgstr "Jezik s kodo %d že obstaja!"
+
+#: ../mirage/session.c:1158
+#, c-format
+msgid "Invalid language index %d!"
+msgstr "Neveljaven indeks jezika %d!"
+
+#: ../mirage/session.c:1168 ../mirage/track.c:1447
+#, c-format
+msgid "Language with index %d not found!"
+msgstr "Jezika z indeksom %d ni mogoče najti!"
+
+#: ../mirage/session.c:1205 ../mirage/track.c:1484
+#, c-format
+msgid "Language with language code %d not found!"
+msgstr "Jezika s kodo %d ni mogoče najti!"
+
+#: ../mirage/session.c:1308
+#, c-format
+msgid "Failed to decode CD-TEXT data!"
+msgstr "Napaka pri dekodiranju podatkov CD-TEXT!"
+
+#: ../mirage/session.c:1464 ../mirage/session.c:1493
+#, c-format
+msgid "Session is not in disc layout!"
+msgstr "Seja ne pripada razporedu znotraj diska!"
+
+#: ../mirage/track.c:498 ../mirage/track.c:586
+#, c-format
+msgid "Sector address out of range!"
+msgstr "Naslov sektorja je izven veljavnega območja vrednosti!"
+
+#: ../mirage/track.c:505
+#, c-format
+msgid "Failed to get fragment to feed sector: %s"
+msgstr "Napaka pri pridobivanju fragmenta za polnjenje sektorja: %s"
+
+#: ../mirage/track.c:517
+#, c-format
+msgid "Failed read main channel data: %s"
+msgstr "Napaka pri branju podatkov glavnega kanala: %s"
+
+#: ../mirage/track.c:525
+#, c-format
+msgid "Failed to read subchannel data: %s"
+msgstr "Napaka pri branju podatkov pod-kanala: %s"
+
+#: ../mirage/track.c:539
+#, c-format
+msgid "Failed to feed data: %s"
+msgstr "Napaka pri polnjenju sektorja s podatki: %s"
+
+#: ../mirage/track.c:596
+#, c-format
+msgid "Cannot append sector to track that is not last in the layout!"
+msgstr "Sektorja ni mogoče dodati v sled, ki ni zadnja v razporedu!"
+
+#: ../mirage/track.c:605
+#, c-format
+msgid "Failed to get last fragment to append sector: %s"
+msgstr "Napaka pri pridobivanju zadnjega fragmenta za dodajanje sektorja: %s"
+
+#: ../mirage/track.c:614
+#, c-format
+msgid "Failed to get fragment to write sector: %s"
+msgstr "Napaka pri pridobivanju fragmenta za zapis sektorja: %s"
+
+#: ../mirage/track.c:632
+#, c-format
+msgid "Failed to extract data from sector: %s"
+msgstr "Napaka pri pridobivanju podatkov iz sektorja: %s"
+
+#: ../mirage/track.c:640
+#, c-format
+msgid "Failed write main channel data: %s"
+msgstr "Napaka pri zapisu podatkov glavnega kanala: %s"
+
+#: ../mirage/track.c:649
+#, c-format
+msgid "Failed to write subchannel data: %s"
+msgstr "Napaka pri zapisu podatkov pod-kanala: %s"
+
+#: ../mirage/track.c:932
+#, c-format
+msgid "Fragment index %d out of range!"
+msgstr "Indeks fragmenta %d je izven veljavnega območja vrednosti!"
+
+#: ../mirage/track.c:942
+#, c-format
+msgid "Fragment with index %d not found!"
+msgstr "Fragmenta z indeksom %d ni mogoče najti!"
+
+#: ../mirage/track.c:981
+#, c-format
+msgid "Fragment with address %d not found!"
+msgstr "Fragmenta z naslovom %d ni mogoče najti!"
+
+#: ../mirage/track.c:1047
+#, c-format
+msgid "No fragment with subchannel found!"
+msgstr "Nisem uspel najti nobenega fragmenta s podatki pod-kanala!"
+
+#: ../mirage/track.c:1125
+#, c-format
+msgid "Invalid index start address (%d); before track start!"
+msgstr "Neveljaven začetni naslov indeksa (%d); pred začetkom sledi!"
+
+#: ../mirage/track.c:1209
+#, c-format
+msgid "Index number %d out of range!"
+msgstr "Številka indeksa %d je izven veljavnega območja vrednosti!"
+
+#: ../mirage/track.c:1219
+#, c-format
+msgid "Index with number %d not found!"
+msgstr "Indeksa s številko %d ni mogoče najti!"
+
+#: ../mirage/track.c:1258
+#, c-format
+msgid "Index with address %d not found!"
+msgstr "Indeksa z naslovom %d ni mogoče najti!"
+
+#: ../mirage/track.c:1437
+#, c-format
+msgid "Language index %d out of range!"
+msgstr "Indeks jezika %d je izven veljavnega območja vrednosti!"
+
+#: ../mirage/track.c:1535 ../mirage/track.c:1564
+#, c-format
+msgid "Track is not in session layout!"
+msgstr "Sled ne pripada razporedu znotraj seje!"
+
+#: ../mirage/writer.c:300
+#, c-format
+msgid "Parameter '%s' has invalid type (expected '%s', got '%s')!"
+msgstr ""
+"Parameter '%s' je neveljavnega tipa (pričakovano: '%s', dejansko: '%s')"
+
+#: ../mirage/writer.c:319
+#, c-format
+msgid "Parameter '%s' has invalid value!"
+msgstr "Parameter '%s' ima neveljavno vrednost!"
