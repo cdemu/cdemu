@@ -143,7 +143,7 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 
     if (!pack) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Invalid pack type %d!", pack_type);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Invalid pack type %d!"), pack_type);
         return FALSE;
     }
 
@@ -181,12 +181,12 @@ gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePack
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 
     if (!pack) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Invalid pack type %d!", pack_type);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Invalid pack type %d!"), pack_type);
         return FALSE;
     }
 
     if (!pack->set) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Data not set for pack type %d!", pack_type);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Data not set for pack type %d!"), pack_type);
         return FALSE;
     }
 

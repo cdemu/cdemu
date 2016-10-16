@@ -374,7 +374,7 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: invalid block (%i)!\n", __debug__, block);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Invalid block number #%i!", block);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Invalid block number #%i!"), block);
         return FALSE;
     }
 
@@ -678,12 +678,12 @@ gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint blo
 {
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Block number %d exceeds number of blocks %d!", block, self->priv->num_blocks);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Block number %d exceeds number of blocks %d!"), block, self->priv->num_blocks);
         return FALSE;
     }
     if (!self->priv->blocks[block].code) {
         /* FIXME: error */
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Requested block %d has no language code set!", block);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Requested block %d has no language code set!"), block);
         return FALSE;
     }
 

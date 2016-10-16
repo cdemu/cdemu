@@ -315,7 +315,7 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
 
     /* Make sure we have a password function */
     if (!self->priv->password_function) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context does not have a password function!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Context does not have a password function!"));
         return NULL;
     }
 
@@ -323,7 +323,7 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
     password = (*self->priv->password_function)(self->priv->password_data);
 
     if (!password) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Password has not been provided!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Password has not been provided!"));
     }
 
     return password;
@@ -361,7 +361,7 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
     gint num_filenames = g_strv_length(filenames);
 
     if (!num_filenames) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "No image files given!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("No image files given!"));
         return NULL;
     }
 
@@ -413,7 +413,7 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
     }
 
     /* No parser found */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "No parser can handle the image file!");
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("No parser can handle the image file!"));
 
 end:
     /* Close streams */
@@ -466,7 +466,7 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
     /* Open MirageFileStream on the file */
     file_stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
     if (!mirage_file_stream_open(file_stream, filename, FALSE, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-only file stream on data file: %s!", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to open read-only file stream on data file: %s!"), local_error->message);
         g_error_free(local_error);
         g_object_unref(file_stream);
         return NULL;
@@ -561,7 +561,7 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
     /* Open MirageFileStream on the file */
     file_stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
     if (!mirage_file_stream_open(file_stream, filename, TRUE, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-write file stream on data file: %s!", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to open read-write file stream on data file: %s!"), local_error->message);
         g_error_free(local_error);
         g_object_unref(file_stream);
         return NULL;
@@ -575,7 +575,7 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
             /* Look-up the filter type */
             GType filter_type = g_type_from_name(filter_chain[i]);
             if (!filter_type) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Invalid filter type '%s' in filter chain!", filter_chain[i]);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid filter type '%s' in filter chain!"), filter_chain[i]);
                 g_object_unref(stream);
                 return NULL;
             }
@@ -585,7 +585,7 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
             mirage_contextual_set_context(MIRAGE_CONTEXTUAL(filter_stream), self);
 
             if (!mirage_filter_stream_open(filter_stream, stream, TRUE, &local_error)) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to create filter type '%s': %s!", filter_chain[i], local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create filter type '%s': %s!"), filter_chain[i], local_error->message);
                 g_error_free(local_error);
                 g_object_unref(filter_stream);
                 g_object_unref(stream);

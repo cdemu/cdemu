@@ -193,14 +193,14 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
 
     if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: main channel data input stream not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Main channel data input stream not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Main channel data input stream not set!"));
         return FALSE;
     }
 
     /* Get file length */
     if (!mirage_stream_seek(self->priv->main_stream, 0, G_SEEK_END, &local_error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the end of main channel data input stream: %s\n", __debug__, local_error->message);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to the end of main channel data input stream: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to the end of main channel data input stream: %s"), local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -488,7 +488,7 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
        data size */
     if (length != self->priv->main_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: mismatch between given data (%d) and set main channel data size (%d)!\n", __debug__, length, self->priv->main_size);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Mismatch between given data (%d) and set main channel data size (%d)!\n", length, self->priv->main_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Mismatch between given data (%d) and set main channel data size (%d)!"), length, self->priv->main_size);
         return FALSE;
     }
 
@@ -524,14 +524,14 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
     if (mirage_stream_tell(self->priv->main_stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to position 0x%zX\n", position);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%zX"), position);
         g_free(swapped_buffer);
         return FALSE;
     }
 
     if (mirage_stream_write(self->priv->main_stream, swapped_buffer ? swapped_buffer : buffer, self->priv->main_size, &local_error) != self->priv->main_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to write data: %s\n", __debug__, local_error->message);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to write data: %s\n", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to write data: %s"), local_error->message);
         g_error_free(local_error);
         g_free(swapped_buffer);
         return FALSE;
@@ -825,7 +825,7 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
        we accept here */
     if (length != 96) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: mismatch between given data (%d) and accepted subchannel size (%d)!\n", __debug__, length, 96);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Mismatch between given data (%d) and accepted subchannel size (%d)!\n", length, 96);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Mismatch between given data (%d) and accepted subchannel size (%d)!"), length, 96);
         return FALSE;
     }
 
@@ -858,13 +858,13 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
     if (mirage_stream_tell(stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to position 0x%zX\n", position);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%zX"), position);
         return FALSE;
     }
 
     if (mirage_stream_write(stream, buffer, self->priv->subchannel_size, &local_error) != self->priv->subchannel_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to write data: %s\n", __debug__, local_error->message);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to write data: %s\n", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to write data: %s"), local_error->message);
         g_error_free(local_error);
         return FALSE;
     }

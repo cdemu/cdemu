@@ -583,7 +583,7 @@ gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, Mirag
     tmp_session = mirage_disc_get_session_by_number(self, number, NULL);
     if (tmp_session) {
         g_object_unref(tmp_session);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with number %d already exists!", number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session with number %d already exists!"), number);
         return FALSE;
     }
 
@@ -712,7 +712,7 @@ MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, G
     /* First session, last session... allow negative indexes to go from behind */
     num_sessions = mirage_disc_get_number_of_sessions(self);
     if (index < -num_sessions || index >= num_sessions) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session index %d out of range!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session index %d out of range!"), index);
         return NULL;
     } else if (index < 0) {
         index += num_sessions;
@@ -722,7 +722,7 @@ MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, G
     session = g_list_nth_data(self->priv->sessions_list, index);
 
     if (!session) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with index %d not found!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session with index %d not found!"), index);
         return NULL;
     }
 
@@ -759,7 +759,7 @@ MirageSession *mirage_disc_get_session_by_number (MirageDisc *self, gint session
 
     /* If we didn't find anything... */
     if (!session) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with number %d not found!", session_number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session with number %d not found!"), session_number);
         return FALSE;
     }
 
@@ -785,7 +785,7 @@ MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint addres
     MirageSession *session = NULL;
 
     if (!mirage_disc_layout_contains_address(self, address)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session address %d (0x%X) out of range!", address, address);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session address %d (0x%X) out of range!"), address, address);
         return FALSE;
     }
 
@@ -803,7 +803,7 @@ MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint addres
 
     /* If we didn't find anything... */
     if (!session) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session containing address %d not found!", address);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session containing address %d not found!"), address);
         return FALSE;
     }
 
@@ -847,7 +847,7 @@ MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track_nu
 
     /* If we didn't find anything... */
     if (!session) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with track %d not found!", track_number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session with track %d not found!"), track_number);
         return FALSE;
     }
 
@@ -897,7 +897,7 @@ MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *
     /* Get index of given session in the list */
     index = g_list_index(self->priv->sessions_list, session);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", session);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session %p is not in disc layout!"), session);
         return NULL;
     }
 
@@ -906,7 +906,7 @@ MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *
         return mirage_disc_get_session_by_index(self, index - 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session before session %p not found!", session);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session before session %p not found!"), session);
     return NULL;
 }
 
@@ -929,7 +929,7 @@ MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *s
     /* Get index of given session in the list */
     index = g_list_index(self->priv->sessions_list, session);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", session);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session %p is not in disc layout!"), session);
         return NULL;
     }
 
@@ -939,7 +939,7 @@ MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *s
         return mirage_disc_get_session_by_index(self, index + 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session after session %p not found!", session);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session after session %p not found!"), session);
     return NULL;
 }
 
@@ -1029,7 +1029,7 @@ gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTra
         count += num_tracks;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session not found!");
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session not found!"));
     return FALSE;
 }
 
@@ -1132,7 +1132,7 @@ gboolean mirage_disc_remove_track_by_index (MirageDisc *self, gint index, GError
     session = mirage_object_get_parent(MIRAGE_OBJECT(track));
     if (!session) {
         g_object_unref(track);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track has no parent!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track has no parent!"));
         return FALSE;
     }
     /* Remove track from parent */
@@ -1169,7 +1169,7 @@ gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GErr
 
     /* Protect against removing lead-in and lead-out */
     if (number == MIRAGE_TRACK_LEADIN || number == MIRAGE_TRACK_LEADOUT) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid track number %d!", number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Invalid track number %d!"), number);
         return FALSE;
     }
 
@@ -1182,7 +1182,7 @@ gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GErr
     session = mirage_object_get_parent(MIRAGE_OBJECT(track));
     if (!session) {
         g_object_unref(track);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track has no parent!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track has no parent!"));
         return FALSE;
     }
     /* Remove track from parent */
@@ -1221,7 +1221,7 @@ MirageTrack *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GErro
     /* First track, last track... allow negative indexes to go from behind */
     num_tracks = mirage_disc_get_number_of_tracks(self);
     if (index < -num_tracks || index >= num_tracks) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track index %d out of range!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track index %d out of range!"), index);
         return NULL;
     } else if (index < 0) {
         index += num_tracks;
@@ -1242,7 +1242,7 @@ MirageTrack *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GErro
         count += num_tracks;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track with index %d not found!", index);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track with index %d not found!"), index);
     return NULL;
 }
 
@@ -1379,12 +1379,12 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
     GByteArray *array;
 
     if (self->priv->medium_type != MIRAGE_MEDIUM_DVD && self->priv->medium_type != MIRAGE_MEDIUM_BD) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid medium type!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Invalid medium type!"));
         return FALSE;
     }
 
     if (layer < 0 || layer > 1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid layer %d!", layer);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Invalid layer %d!"), layer);
         return FALSE;
     }
 
@@ -1398,7 +1398,7 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
         array = g_hash_table_lookup(self->priv->disc_structures, GINT_TO_POINTER(key));
 
         if (!array) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Disc structure data not provided and could not be fabricated!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Disc structure data not provided and could not be fabricated!"));
             return FALSE;
         }
     }
@@ -1573,7 +1573,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
     gdouble tmp_angle, tmp_density;
 
     if (!self->priv->dpm_num_entries) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "DPM data not available!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("DPM data not available!"));
         return FALSE;
     }
 
@@ -1583,7 +1583,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
     /* Check if relative address is out of range (account for possibility of
        sectors lying behind last DPM entry) */
     if (rel_address < 0 || rel_address >= (self->priv->dpm_num_entries+1)*self->priv->dpm_resolution) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Sector addreess %d out of range!", address);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Sector address %d out of range!"), address);
         return FALSE;
     }
 

@@ -297,7 +297,7 @@ static gboolean mirage_writer_validate_parameters (MirageWriter *self, GHashTabl
 
         /* Validate the type */
         if (!g_variant_is_of_type(value, g_variant_get_type(sheet_entry->default_value))) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, "Parameter '%s' has invalid type (expected '%s', got '%s')!", (const gchar *)key, g_variant_get_type_string(value), g_variant_get_type_string(sheet_entry->default_value));
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, Q_("Parameter '%s' has invalid type (expected '%s', got '%s')!"), (const gchar *)key, g_variant_get_type_string(value), g_variant_get_type_string(sheet_entry->default_value));
             return FALSE;
         }
 
@@ -316,7 +316,7 @@ static gboolean mirage_writer_validate_parameters (MirageWriter *self, GHashTabl
             }
 
             if (!valid) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, "Parameter '%s' has invalid value!", (const gchar *)key);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, Q_("Parameter '%s' has invalid value!"), (const gchar *)key);
                 return FALSE;
             }
         }

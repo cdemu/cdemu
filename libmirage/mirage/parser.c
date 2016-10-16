@@ -344,7 +344,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
     data_stream = g_data_input_stream_new(input_stream);
     if (!data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to create data stream!"));
         g_object_unref(stream);
         return FALSE;
     }

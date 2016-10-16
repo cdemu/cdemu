@@ -321,7 +321,7 @@ static gboolean mirage_filter_stream_move_file (MirageStream *_self, const gchar
     /* We need an underlying stream, because only the file stream at
        the bottom of filter chain can perform a move */
     if (!self->priv->underlying_stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No underlying stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No underlying stream!"));
         return FALSE;
     }
 
@@ -342,7 +342,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
     /* Make sure simplified_partial_read is provided */
     if (!MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_read) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: simplified partial read function is not implemented!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Simplified partial read function is not implemented!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Simplified partial read function is not implemented!"));
         return -1;
     }
 
@@ -360,7 +360,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
         read_len = MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_read(self, ptr, count);
         if (read_len == -1) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to do a partial read!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to do a partial read.");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to do a partial read."));
             return -1;
         }
 
@@ -388,14 +388,14 @@ static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const v
     /* Make sure stream is writable */
     if (!mirage_stream_is_writable(MIRAGE_STREAM(self))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: stream is not writable!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Stream is not writable!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Stream is not writable!"));
         return -1;
     }
 
     /* Make sure simplified_partial_write is provided */
     if (!MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_write) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: simplified partial write function is not implemented!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Simplified partial write function is not implemented!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Simplified partial write function is not implemented!"));
         return -1;
     }
 
@@ -407,7 +407,7 @@ static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const v
         write_len = MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_write(self, ptr, count);
         if (write_len == -1) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to do a partial write!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to do a partial write.");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to do a partial write."));
             return -1;
         }
 
@@ -449,7 +449,7 @@ static gboolean mirage_filter_stream_seek_impl (MirageFilterStream *self, goffse
             break;
         }
         default: {
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Invalid seek type.");
+            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, Q_("Invalid seek type."));
             return FALSE;
         }
     }
@@ -458,7 +458,7 @@ static gboolean mirage_filter_stream_seek_impl (MirageFilterStream *self, goffse
 
     /* Validate new position */
     if (new_position < 0) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek before beginning of file not allowed!");
+        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, Q_("Seek before beginning of file not allowed!"));
         return FALSE;
     }
 

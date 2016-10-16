@@ -495,14 +495,14 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 
     /* Sector must lie within track boundaries... */
     if (relative_address < 0 || relative_address >= self->priv->length) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Sector address out of range!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Sector address out of range!"));
         return NULL;
     }
 
     /* Get data fragment to feed from */
     fragment = mirage_track_get_fragment_by_address(self, relative_address, &local_error);
     if (!fragment) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to get fragment to feed sector: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to get fragment to feed sector: %s"), local_error->message);
         g_error_free(local_error);
         return NULL;
     }
@@ -514,7 +514,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 
     /* Main channel data */
     if (!mirage_fragment_read_main_data(fragment, relative_address - fragment_start, &main_buffer, &main_length, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed read main channel data: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed read main channel data: %s"), local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         return NULL;
@@ -522,7 +522,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 
     /* Subchannel data */
     if (!mirage_fragment_read_subchannel_data(fragment, relative_address - fragment_start, &subchannel_buffer, &subchannel_length, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to read subchannel data: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to read subchannel data: %s"), local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         g_free(main_buffer);
@@ -536,7 +536,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
     /* Feed data to sector; fragment's reading code guarantees that
        subchannel format is PW96 */
     if (!mirage_sector_feed_data(sector, absolute_address, self->priv->sector_type, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, 0, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to feed data: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to feed data: %s"), local_error->message);
         g_error_free(local_error);
 
         g_object_unref(sector);
@@ -583,7 +583,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
        more than track's length, in which case we will append the sector
        to track */
     if (relative_address < 0 || relative_address > self->priv->length) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Sector address out of range!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Sector address out of range!"));
         return FALSE;
     }
 
@@ -593,7 +593,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
         MirageTrack *next_track = mirage_track_get_next(self, NULL);
         if (next_track) {
             g_object_unref(next_track);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Cannot append sector to track that is not last in the layout!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Cannot append sector to track that is not last in the layout!"));
             return FALSE;
         }
     }
@@ -602,7 +602,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     if (relative_address == self->priv->length) {
         fragment = mirage_track_get_fragment_by_index(self, -1, &local_error);
         if (!fragment) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to get last fragment to append sector: %s", local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to get last fragment to append sector: %s"), local_error->message);
             g_error_free(local_error);
             return FALSE;
         }
@@ -611,7 +611,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     } else {
         fragment = mirage_track_get_fragment_by_address(self, relative_address, &local_error);
         if (!fragment) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to get fragment to write sector: %s", local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to get fragment to write sector: %s"), local_error->message);
             g_error_free(local_error);
             return FALSE;
         }
@@ -629,7 +629,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
 
     /* Extract data from sector */
     if (!mirage_sector_extract_data(sector, &main_buffer, main_length, subchannel_length ? MIRAGE_SUBCHANNEL_PW : MIRAGE_SUBCHANNEL_NONE, &subchannel_buffer, subchannel_length ? 96 : 0, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to extract data from sector: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to extract data from sector: %s"), local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         return FALSE;
@@ -637,7 +637,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
 
     /* Write main channel data */
     if (!mirage_fragment_write_main_data(fragment, relative_address - fragment_start, main_buffer, main_length, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed write main channel data: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed write main channel data: %s"), local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         return FALSE;
@@ -646,7 +646,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     /* Write subchannel data */
     if (subchannel_length) {
         if (!mirage_fragment_write_subchannel_data(fragment, relative_address - fragment_start, subchannel_buffer, subchannel_length, &local_error)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to write subchannel data: %s", local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Failed to write subchannel data: %s"), local_error->message);
             g_error_free(local_error);
             g_object_unref(fragment);
             return FALSE;
@@ -929,7 +929,7 @@ MirageFragment *mirage_track_get_fragment_by_index (MirageTrack *self, gint inde
     /* First fragment, last fragment... allow negative indexes to go from behind */
     num_fragments = mirage_track_get_number_of_fragments(self);
     if (index < -num_fragments || index >= num_fragments) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment index %d out of range!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Fragment index %d out of range!"), index);
         return FALSE;
     } else if (index < 0) {
         index += num_fragments;
@@ -939,7 +939,7 @@ MirageFragment *mirage_track_get_fragment_by_index (MirageTrack *self, gint inde
     fragment = g_list_nth_data(self->priv->fragments_list, index);
 
     if (!fragment) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with index %d not found!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Fragment with index %d not found!"), index);
         return FALSE;
     }
 
@@ -978,7 +978,7 @@ MirageFragment *mirage_track_get_fragment_by_address (MirageTrack *self, gint ad
 
     /* If we didn't find anything... */
     if (!fragment) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with address %d not found!", address);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Fragment with address %d not found!"), address);
         return FALSE;
     }
 
@@ -1044,7 +1044,7 @@ MirageFragment *mirage_track_find_fragment_with_subchannel (MirageTrack *self, G
 
     /* If we didn't find anything... */
     if (!fragment) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "No fragment with subchannel found!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("No fragment with subchannel found!"));
         return FALSE;
     }
 
@@ -1122,7 +1122,7 @@ gboolean mirage_track_add_index (MirageTrack *self, gint address, GError **error
 
     /* Make sure we're not trying to put index before track start (which has index 1) */
     if (address < self->priv->track_start) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Invalid index start address (%d); before track start!", address);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Invalid index start address (%d); before track start!"), address);
         return FALSE;
     }
 
@@ -1206,7 +1206,7 @@ MirageIndex *mirage_track_get_index_by_number (MirageTrack *self, gint number, G
     /* First index, last index... allow negative numbers to go from behind */
     num_indices = mirage_track_get_number_of_indices(self);
     if (number < -num_indices || number >= num_indices) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index number %d out of range!", number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Index number %d out of range!"), number);
         return NULL;
     } else if (number < 0) {
         number += num_indices;
@@ -1216,7 +1216,7 @@ MirageIndex *mirage_track_get_index_by_number (MirageTrack *self, gint number, G
     index = g_list_nth_data(self->priv->indices_list, number);
 
     if (!index) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with number %d not found!", number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Index with number %d not found!"), number);
         return NULL;
     }
 
@@ -1255,7 +1255,7 @@ MirageIndex *mirage_track_get_index_by_address (MirageTrack *self, gint address,
 
     /* If we didn't find anything... */
     if (!index) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with address %d not found!", address);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Index with address %d not found!"), address);
         return FALSE;
     }
 
@@ -1324,7 +1324,7 @@ gboolean mirage_track_add_language (MirageTrack *self, gint code, MirageLanguage
     tmp_language = mirage_track_get_language_by_code(self, code, NULL);
     if (tmp_language) {
         g_object_unref(tmp_language);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with language code %d already exists!", code);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Language with language code %d already exists!"), code);
         return FALSE;
     }
 
@@ -1434,7 +1434,7 @@ MirageLanguage *mirage_track_get_language_by_index (MirageTrack *self, gint inde
     /* First language, last language... allow negative indexes to go from behind */
     num_languages = mirage_track_get_number_of_languages(self);
     if (index < -num_languages || index >= num_languages) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language index %d out of range!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Language index %d out of range!"), index);
         return NULL;
     } else if (index < 0) {
         index += num_languages;
@@ -1444,7 +1444,7 @@ MirageLanguage *mirage_track_get_language_by_index (MirageTrack *self, gint inde
     language = g_list_nth_data(self->priv->languages_list, index);
 
     if (!language) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with index %d not found!", index);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Language with index %d not found!"), index);
         return NULL;
     }
 
@@ -1481,7 +1481,7 @@ MirageLanguage *mirage_track_get_language_by_code (MirageTrack *self, gint code,
 
     /* If we didn't find anything... */
     if (!language) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with language code %d not found!", code);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Language with language code %d not found!"), code);
         return NULL;
     }
 
@@ -1532,7 +1532,7 @@ MirageTrack *mirage_track_get_prev (MirageTrack *self, GError **error)
     /* Get parent session */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!session) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Track is not in session layout!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Track is not in session layout!"));
         return NULL;
     }
 
@@ -1561,7 +1561,7 @@ MirageTrack *mirage_track_get_next (MirageTrack *self, GError **error)
     /* Get parent session */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!session) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Track is not in session layout!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, Q_("Track is not in session layout!"));
         return NULL;
     }
 

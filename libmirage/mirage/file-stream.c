@@ -113,7 +113,7 @@ gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename,
         file_type = g_file_query_file_type(file, G_FILE_QUERY_INFO_NONE, NULL);
         if (!(file_type == G_FILE_TYPE_REGULAR || file_type == G_FILE_TYPE_SYMBOLIC_LINK || file_type == G_FILE_TYPE_SHORTCUT)) {
             g_object_unref(file);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "File '%s' does not exist!", filename);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File '%s' does not exist!"), filename);
             return FALSE;
         }
 
@@ -128,7 +128,7 @@ gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename,
     g_object_unref(file);
 
     if (!self->priv->stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to open file %s stream on data file '%s': %s!", writable ? "input/output" : "input", filename, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to open file %s stream on data file '%s': %s!"), writable ? Q_("input/output") : Q_("input"), filename, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -162,7 +162,7 @@ static gssize mirage_file_stream_read (MirageStream *_self, void *buffer, gsize 
 
     if (!self->priv->input_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file input stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No file input stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No file input stream!"));
         return -1;
     }
 
@@ -175,7 +175,7 @@ static gssize mirage_file_stream_write (MirageStream *_self, const void *buffer,
 
     if (!self->priv->output_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file output stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No file output stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No file output stream!"));
         return -1;
     }
 
@@ -188,7 +188,7 @@ static gboolean mirage_file_stream_seek (MirageStream *_self, goffset offset, GS
 
     if (!self->priv->stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No file stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No file stream!"));
         return FALSE;
     }
 
@@ -215,7 +215,7 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
 
     /* Rename is possible only on a writable stream */
     if (!mirage_stream_is_writable(_self)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Cannot move file for non-writable stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Cannot move file for non-writable stream!"));
         return FALSE;
     }
 
@@ -245,7 +245,7 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
     if (!g_file_move(original_file, new_file, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &local_error)) {
         g_object_unref(original_file);
         g_object_unref(new_file);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to move file: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to move file: %s"), local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -260,7 +260,7 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
         self->priv->input_stream = g_io_stream_get_input_stream(G_IO_STREAM(self->priv->stream));
         self->priv->output_stream = g_io_stream_get_output_stream(G_IO_STREAM(self->priv->stream));
     } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to re-open moved file: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to re-open moved file: %s"), local_error->message);
         g_error_free(local_error);
         return FALSE;
     }

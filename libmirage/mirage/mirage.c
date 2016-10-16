@@ -148,7 +148,7 @@ gboolean mirage_initialize (GError **error)
 
     if (!plugins_dir) {
         g_error("Failed to open plugin directory '%s'!\n", MIRAGE_PLUGIN_DIR);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Failed to open plugin directory '%s'!\n", MIRAGE_PLUGIN_DIR);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Failed to open plugin directory '%s'!"), MIRAGE_PLUGIN_DIR);
         return FALSE;
     }
 
@@ -219,7 +219,7 @@ gboolean mirage_shutdown (GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -276,7 +276,7 @@ gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -300,7 +300,7 @@ gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parse
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -326,14 +326,14 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
     /* Go over all parsers */
     for (gint i = 0; i < libmirage.num_parsers; i++) {
         if (!(*func)(&libmirage.parsers_info[i], user_data)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Iteration has been cancelled!"));
             return FALSE;
         }
     }
@@ -356,7 +356,7 @@ gboolean mirage_get_writers_type (const GType **types, gint *num_writers, GError
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -380,7 +380,7 @@ gboolean mirage_get_writers_info (const MirageWriterInfo **info, gint *num_write
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -406,14 +406,14 @@ gboolean mirage_enumerate_writers (MirageEnumWriterInfoCallback func, gpointer u
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
     /* Go over all writers */
     for (gint i = 0; i < libmirage.num_writers; i++) {
         if (!(*func)(&libmirage.writers_info[i], user_data)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Iteration has been cancelled!"));
             return FALSE;
         }
     }
@@ -436,7 +436,7 @@ gboolean mirage_get_filter_streams_type (const GType **types, gint *num_filter_s
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -460,7 +460,7 @@ gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gi
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -486,14 +486,14 @@ gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback fun
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
     /* Go over all filter streams */
     for (gint i = 0; i < libmirage.num_filter_streams; i++) {
         if (!(*func)(&libmirage.filter_streams_info[i], user_data)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Iteration has been cancelled!"));
             return FALSE;
         }
     }
@@ -519,7 +519,7 @@ gboolean mirage_get_supported_debug_masks (const MirageDebugMaskInfo **masks, gi
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return FALSE;
     }
 
@@ -545,7 +545,7 @@ MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Library not initialized!"));
         return NULL;
     }
 
@@ -555,7 +555,7 @@ MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error)
         }
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Writer '%s' not found!", writer_id);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Writer '%s' not found!"), writer_id);
     return NULL;
 }
 

@@ -292,7 +292,7 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
     gchar *password = NULL;
 
     if (!context) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Context not set!"));
     } else {
         password = mirage_context_obtain_password(context, error);
         g_object_unref(context);
@@ -327,7 +327,7 @@ MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, con
     MirageStream *stream = NULL;
 
     if (!context) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Context not set!"));
     } else {
         stream = mirage_context_create_input_stream(context, filename, error);
         g_object_unref(context);
@@ -363,7 +363,7 @@ MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, co
     MirageStream *stream = NULL;
 
     if (!context) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Context not set!"));
     } else {
         stream = mirage_context_create_output_stream(context, filename, filter_chain, error);
         g_object_unref(context);
