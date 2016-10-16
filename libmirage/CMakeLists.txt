@@ -38,6 +38,8 @@ set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_
 
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
+find_package (IntlTool 0.21 REQUIRED)
+find_package (Gettext 0.15 REQUIRED)
 
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.28 gobject-2.0>=2.28 gmodule-2.0>=2.28 gio-2.0>=2.28)
 
@@ -98,6 +100,10 @@ if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     add_definitions (-Wno-sign-compare)
 endif ()
+
+# Definitions needed for localization
+add_definitions (-DGETTEXT_PACKAGE="${PROJECT_NAME}")
+add_definitions (-DLOCALEDIR="${CMAKE_INSTALL_FULL_DATADIR}/locale")
 
 # Global include directories
 include_directories (${PROJECT_SOURCE_DIR})
@@ -173,6 +179,12 @@ set_target_properties (mirage PROPERTIES
 
 install (TARGETS mirage DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install (FILES ${libmirage_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage-${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}/mirage)
+
+# Translations; we use the version provided by our FindIntlTool.cmake
+# instead of the gettext version... Note: first two arguments are mandatory,
+# the rest is an optional list of languages to process. If no languages
+# are given, all POs are processed.
+intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)

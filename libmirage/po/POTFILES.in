@@ -1,0 +1,24 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+mirage/cdtext-coder.c
+mirage/compat-input-stream.c
+mirage/context.c
+mirage/contextual.c
+mirage/disc.c
+mirage/error.c
+mirage/file-stream.c
+mirage/filter-stream.c
+mirage/fragment.c
+mirage/index.c
+mirage/language.c
+mirage/mirage.c
+mirage/object.c
+mirage/parser.c
+mirage/plugin.c
+mirage/sector.c
+mirage/session.c
+mirage/stream.c
+mirage/track.c
+mirage/utils.c
+mirage/version.c
+mirage/writer.c

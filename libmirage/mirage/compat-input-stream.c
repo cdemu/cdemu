@@ -24,6 +24,8 @@
 #include "compat-input-stream.h"
 #include "stream.h"
 
+#include <glib/gi18n-lib.h>
+
 
 /**********************************************************************\
  *                          Private structure                         *

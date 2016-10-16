@@ -38,6 +38,9 @@
 
 #include "mirage.h"
 
+#include <glib/gi18n-lib.h>
+
+
 /**
  * mirage_version_major:
  *

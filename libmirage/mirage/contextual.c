@@ -47,6 +47,8 @@
 
 #include "mirage.h"
 
+#include <glib/gi18n-lib.h>
+
 
 /**********************************************************************\
  *                   Context setting and retrieval                    *

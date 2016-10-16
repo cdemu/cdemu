@@ -41,6 +41,8 @@
 #include "mirage.h"
 #include "compat-input-stream.h"
 
+#include <glib/gi18n-lib.h>
+
 
 /**********************************************************************\
  *                        Stream information                          *

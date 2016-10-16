@@ -36,6 +36,8 @@
 
 #include "mirage.h"
 
+#include <glib/gi18n-lib.h>
+
 #define __debug__ "Session"
 
 

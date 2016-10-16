@@ -42,6 +42,8 @@
 
 #include "mirage.h"
 
+#include <glib/gi18n-lib.h>
+
 
 static struct
 {
