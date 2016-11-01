@@ -8,7 +8,7 @@
         <glob pattern="*.b5t"/>
         <glob pattern="*.b6t"/>
 
-        <magic priority="50">
+        <magic priority="80">
             <match value="BWT5 STREAM SIGN" type="string" offset="0"/>
         </magic>
     </mime-type>

@@ -7,7 +7,7 @@
 
         <glob pattern="*.ccd"/>
 
-        <magic priority="50">
+        <magic priority="80">
             <match value="[CloneCD]" type="string" offset="0:10"/>
         </magic>
     </mime-type>

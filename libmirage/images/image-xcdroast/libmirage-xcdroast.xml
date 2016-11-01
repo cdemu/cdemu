@@ -7,7 +7,7 @@
 
         <glob pattern="*.toc"/>
 
-        <magic priority="50">
+        <magic priority="80">
             <match value="#\n# X-CD-Roast" type="string" offset="0:13"/>
         </magic>
     </mime-type>

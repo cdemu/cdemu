@@ -7,7 +7,7 @@
 
         <glob pattern="*.c2d"/>
 
-        <magic priority="50">
+        <magic priority="80">
              <match value="Adaptec CeQuadrat VirtualCD File" type="string" offset="0"/>
              <match value="Roxio Image File Format 3.0" type="string" offset="0"/>
         </magic>
