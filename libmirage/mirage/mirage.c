@@ -142,6 +142,10 @@ gboolean mirage_initialize (GError **error)
         return TRUE;
     }
 
+    /* *** I18n support *** */
+    bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
+    bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+
     /* *** Load plugins *** */
     /* Open plugins dir */
     plugins_dir = g_dir_open(MIRAGE_PLUGIN_DIR, 0, NULL);
