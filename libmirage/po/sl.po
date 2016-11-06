@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libmirage 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-06 19:26+0100\n"
-"PO-Revision-Date: 2016-11-06 19:40+0100\n"
+"POT-Creation-Date: 2016-11-06 22:13+0100\n"
+"PO-Revision-Date: 2016-11-06 22:15+0100\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -104,11 +104,11 @@ msgstr ""
 "Končnica avdio datotek za shranjevanje zvočnih sledi. Veljavno samo v "
 "primeru, ko je zapisovanje v surovem načinu izklopljeno."
 
-#: ../images/image-iso/writer.c:335
+#: ../images/image-iso/writer.c:335 ../images/image-toc/writer.c:617
 msgid "Write raw"
 msgstr "Zapisovanje v surovem načinu"
 
-#: ../images/image-iso/writer.c:336
+#: ../images/image-iso/writer.c:336 ../images/image-toc/writer.c:618
 msgid ""
 "A flag indicating whether to write full 2352-byte sector data or only user "
 "data part of it (e.g., 2048 bytes for Mode 1)"
@@ -117,11 +117,11 @@ msgstr ""
 "sektorji, oziroma naj se zapišejo samo uporabniški podatki iz sektorja (npr. "
 "2048 bajtov za sledi vrste Mode 1)"
 
-#: ../images/image-iso/writer.c:341
+#: ../images/image-iso/writer.c:341 ../images/image-toc/writer.c:623
 msgid "Write subchannel"
 msgstr "Zapisovanje pod-kanala"
 
-#: ../images/image-iso/writer.c:342
+#: ../images/image-iso/writer.c:342 ../images/image-toc/writer.c:624
 msgid ""
 "A flag indicating whether to write subchannel data or not. If set, it "
 "implies raw writing."
@@ -129,16 +129,45 @@ msgstr ""
 "Ali naj se v odtis zapišejo podatki pod-kanala ali ne. Če je zapisovanje pod-"
 "kanala vključeno, se bo zapisovanje glavnega kanala izvedlo v surovem načinu."
 
-#: ../images/image-iso/writer.c:347
+#: ../images/image-iso/writer.c:347 ../images/image-toc/writer.c:629
 msgid "Swap raw audio data"
 msgstr "Zamenjaj vrstni red avdio podatkov"
 
-#: ../images/image-iso/writer.c:348
+#: ../images/image-iso/writer.c:348 ../images/image-toc/writer.c:630
 msgid ""
 "A flag indicating whether to swap audio data. Applicable only to raw writing."
 msgstr ""
 "Zamenjava vrstnega reda avdio podatkov. Veljavno samo v primeru zapisovanja "
 "v surovem načinu."
+
+#: ../images/image-toc/parser.c:180
+#, c-format
+msgid "Failed to find data file!"
+msgstr "Nisem uspel najti podatkovne datoteke!"
+
+#: ../images/image-toc/parser.c:1019
+#, c-format
+msgid "Failed to read line #%d: %s!"
+msgstr "Napaka pri branju vrstice #%d: %s!"
+
+#: ../images/image-toc/parser.c:1227
+#, c-format
+msgid "Parser cannot handle given image: invalid TOC file!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: neveljavna "
+"datoteka TOC!"
+
+#: ../images/image-toc/parser.c:1336
+msgid "TOC Image Parser"
+msgstr "Parser odtisov diskov TOC"
+
+#: ../images/image-toc/parser.c:1338
+msgid "cdrdao images (*.toc)"
+msgstr "cdrdao odtisi diskov (*.toc)"
+
+#: ../images/image-toc/writer.c:608
+msgid "TOC Image Writer"
+msgstr "Zapisovalnik odtisov diskov TOC"
 
 #: ../mirage/cdtext-coder.c:377
 #, c-format
