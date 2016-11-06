@@ -605,7 +605,7 @@ static void mirage_writer_toc_init (MirageWriterToc *self)
 
     mirage_writer_generate_info(MIRAGE_WRITER(self),
         "WRITER-TOC",
-        "TOC Image Writer"
+        Q_("TOC Image Writer")
     );
 
     self->priv->image_file_basename = NULL;
@@ -614,20 +614,20 @@ static void mirage_writer_toc_init (MirageWriterToc *self)
     /* Create parameter sheet */
     mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
         PARAM_WRITE_RAW,
-        "Write raw",
-        "A flag indicating whether to write full 2352-byte sector data or only user data part of it (e.g., 2048 bytes for Mode 1)",
+        Q_("Write raw"),
+        Q_("A flag indicating whether to write full 2352-byte sector data or only user data part of it (e.g., 2048 bytes for Mode 1)"),
         FALSE);
 
     mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
         PARAM_WRITE_SUBCHANNEL,
-        "Write subchannel",
-        "A flag indicating whether to write subchannel data or not. If set, it implies raw writing.",
+        Q_("Write subchannel"),
+        Q_("A flag indicating whether to write subchannel data or not. If set, it implies raw writing."),
         FALSE);
 
     mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
         PARAM_SWAP_RAW_AUDIO_DATA,
-        "Swap raw audio data",
-        "A flag indicating whether to swap audio data. Applicable only to raw writing.",
+        Q_("Swap raw audio data"),
+        Q_("A flag indicating whether to swap audio data. Applicable only to raw writing."),
         TRUE);
 }
 

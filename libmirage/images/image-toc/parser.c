@@ -177,7 +177,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
         gchar *filename = mirage_helper_find_data_file(filename_string, self->priv->toc_filename);
         if (!filename) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to find data file!"));
             return FALSE;
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
@@ -1016,7 +1016,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
                 break;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read line #%d: %s!"), line_number, local_error->message);
                 g_error_free(local_error);
                 succeeded = FALSE;
                 break;
@@ -1224,7 +1224,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying suffix of file #%d...\n", __debug__, i);
         if (!mirage_parser_toc_check_toc_file(self, streams[i])) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file #%d has invalid suffix (not a *.toc file)!\n", __debug__, i);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid TOC file!"));
             g_strfreev(filenames);
             return FALSE;
         }
@@ -1333,9 +1333,9 @@ static void mirage_parser_toc_init (MirageParserToc *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-TOC",
-        "TOC Image Parser",
+        Q_("TOC Image Parser"),
         1,
-        "cdrdao images (*.toc)", "application/x-cdrdao-toc"
+        Q_("cdrdao images (*.toc)"), "application/x-cdrdao-toc"
     );
 
     mirage_parser_toc_init_regex_parser(self);
