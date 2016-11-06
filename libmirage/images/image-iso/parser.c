@@ -71,7 +71,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
        be at least four seconds long */
     if (file_length < 4*75*2048) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file is too small!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file is too small!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: file is too small!"));
         return FALSE;
     }
 
@@ -95,13 +95,13 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %lXh to read 8-byte pattern!\n", __debug__, offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to %lXh to read 8-byte pattern!", offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to %lXh to read 8-byte pattern!"), offset);
                 return FALSE;
             }
 
             if (mirage_stream_read(stream, buf, 8, NULL) != 8) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read 8-byte pattern!"));
                 return FALSE;
             }
 
@@ -132,7 +132,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
     /* No supported combination */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file size does not correspond to any supported combination of sector and subchannel size!\n", __debug__);
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file size does not correspond to any supported combination of sector and subchannel size!");
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: file size does not correspond to any supported combination of sector and subchannel size!"));
     return FALSE;
 }
 
@@ -161,13 +161,13 @@ static gboolean mirage_parser_iso_determine_track_type (MirageParserIso *self, s
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %lXh to read 16-byte pattern!\n", __debug__, offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to offset %lXh to read 16-byte pattern!", offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %lXh to read 16-byte pattern!"), offset);
                 return FALSE;
             }
 
             if (mirage_stream_read(stream, buf, 16, NULL) != 16) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 16-byte pattern!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read 16-byte pattern!"));
                 return FALSE;
             }
 
@@ -176,7 +176,7 @@ static gboolean mirage_parser_iso_determine_track_type (MirageParserIso *self, s
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhalded main sector data size %d!\n", __debug__, file_info->main_data_size);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Unhalded main sector data size %d!", file_info->main_data_size);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Unhalded main sector data size %d!"), file_info->main_data_size);
             return FALSE;
         }
     }
@@ -208,13 +208,13 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %lXh to read subchannel data!\n", __debug__, offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to offset %lXh to read subchannel data!", offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %lXh to read subchannel data!"), offset);
                 return FALSE;
             }
 
             if (mirage_stream_read(stream, buf, sizeof(buf), NULL) != sizeof(buf)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read subchannel data!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read subchannel data!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read subchannel data!"));
                 return FALSE;
             }
 
@@ -235,7 +235,7 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhalded subchannel data size %d!\n", __debug__, file_info->subchannel_data_size);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Unhalded subchannel data size %d!", file_info->subchannel_data_size);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Unhalded subchannel data size %d!"), file_info->subchannel_data_size);
             return FALSE;
         }
     }
@@ -419,10 +419,10 @@ static void mirage_parser_iso_init (MirageParserIso *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
-        "ISO Image Parser",
+        Q_("ISO Image Parser"),
         2,
-        "ISO images (*.iso, *.bin, *.img)", "application/x-cd-image",
-        "WAV audio files (*.wav)", "audio/x-wav"
+        Q_("ISO images (*.iso, *.bin, *.img)"), "application/x-cd-image",
+        Q_("WAV audio files (*.wav)"), "audio/x-wav"
     );
 }
 

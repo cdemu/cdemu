@@ -1,5 +1,7 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+images/image-iso/parser.c
+images/image-iso/writer.c
 mirage/cdtext-coder.c
 mirage/compat-input-stream.c
 mirage/context.c

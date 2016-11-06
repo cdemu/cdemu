@@ -316,7 +316,7 @@ static void mirage_writer_iso_init (MirageWriterIso *self)
 
     mirage_writer_generate_info(MIRAGE_WRITER(self),
         "WRITER-ISO",
-        "ISO Image Writer"
+        Q_("ISO Image Writer")
     );
 
     self->priv->image_file_basename = NULL;
@@ -325,27 +325,27 @@ static void mirage_writer_iso_init (MirageWriterIso *self)
     /* Create parameter sheet */
     mirage_writer_add_parameter_enum(MIRAGE_WRITER(self),
         PARAM_AUDIO_FILE_SUFFIX,
-        "Audio file suffix",
-        "Suffix to use for image files of audio tracks. Applicable only when in raw write is disabled.",
+        Q_("Audio file suffix"),
+        Q_("Suffix to use for image files of audio tracks. Applicable only when in raw write is disabled."),
         "wav",
         "wav", "aiff", "ogg", "flac", "cdr", NULL);
 
     mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
         PARAM_WRITE_RAW,
-        "Write raw",
-        "A flag indicating whether to write full 2352-byte sector data or only user data part of it (e.g., 2048 bytes for Mode 1)",
+        Q_("Write raw"),
+        Q_("A flag indicating whether to write full 2352-byte sector data or only user data part of it (e.g., 2048 bytes for Mode 1)"),
         FALSE);
 
     mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
         PARAM_WRITE_SUBCHANNEL,
-        "Write subchannel",
-        "A flag indicating whether to write subchannel data or not. If set, it implies raw writing.",
+        Q_("Write subchannel"),
+        Q_("A flag indicating whether to write subchannel data or not. If set, it implies raw writing."),
         FALSE);
 
     mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
         PARAM_SWAP_RAW_AUDIO_DATA,
-        "Swap raw audio data",
-        "A flag indicating whether to swap audio data. Applicable only to raw writing.",
+        Q_("Swap raw audio data"),
+        Q_("A flag indicating whether to swap audio data. Applicable only to raw writing."),
         FALSE);
 }
 
