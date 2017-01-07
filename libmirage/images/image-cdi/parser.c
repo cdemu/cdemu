@@ -125,7 +125,7 @@ static gboolean mirage_parser_cdi_decode_track_mode (MirageParserCdi *self, gint
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid track mode: %d!\n", __debug__, raw_mode);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid track mode: %d!", raw_mode);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid track mode: %d!"), raw_mode);
             return FALSE;
         }
     }
@@ -168,7 +168,7 @@ static gboolean mirage_parser_cdi_decode_read_mode (MirageParserCdi *self, gint 
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid read mode: %d!\n", __debug__, read_mode);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid read mode: %d!", read_mode);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid read mode: %d!"), read_mode);
             return FALSE;
         }
     }
@@ -935,7 +935,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(cdi_filename, ".cdi")) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid suffix (not a *.cdi file!)!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid suffix!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -959,7 +959,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     mirage_stream_seek(self->priv->cdi_stream, offset, G_SEEK_END, NULL);
     if (mirage_stream_read(self->priv->cdi_stream, &descriptor_length, sizeof(descriptor_length), NULL) != sizeof(descriptor_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor length!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor length!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor length!"));
         succeeded = FALSE;
         goto end;
     }
@@ -972,7 +972,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     mirage_stream_seek(self->priv->cdi_stream, offset, G_SEEK_END, NULL);
     if (mirage_stream_read(self->priv->cdi_stream, self->priv->cdi_data, descriptor_length, NULL) != descriptor_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor!"));
         succeeded = FALSE;
         goto end;
     }
@@ -1022,9 +1022,9 @@ static void mirage_parser_cdi_init (MirageParserCdi *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CDI",
-        "CDI Image Parser",
+        Q_("CDI Image Parser"),
         1,
-        "DiscJuggler images (*.cdi)", "application/x-cdi"
+        Q_("DiscJuggler images (*.cdi)"), "application/x-cdi"
     );
 }
 

@@ -216,7 +216,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
         if (read_length != bwa_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole BWA file!\n", __debug__);
             g_free(bwa_data);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read whole BWA file!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to read whole BWA file!"));
             return FALSE;
         } else {
             guint8 *cur_ptr = bwa_data;
@@ -399,7 +399,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             filename = mirage_helper_find_data_file(data_block->filename, self->priv->b6t_filename);
             if (!filename) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file '%s'\n", __debug__, data_block->filename);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to find data file '%s'!", data_block->filename);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to find data file '%s'!"), data_block->filename);
                 return FALSE;
             }
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
@@ -513,7 +513,7 @@ static gboolean mirage_parser_b6t_parse_header (MirageParserB6t *self, GError **
     /* Make sure it's correct one */
     if (memcmp(header, "BWT5 STREAM SIGN", 16)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid header!"));
         return FALSE;
     }
 
@@ -658,7 +658,7 @@ static gboolean mirage_parser_b6t_decode_disc_type (MirageParserB6t *self, GErro
             break;
         default:
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown or unhandled disc type: 0x%X!\n", __debug__, disc_type);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown or unhandled disc type 0x%X!", disc_type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown or unhandled disc type 0x%X!"), disc_type);
             return FALSE;
     }
 
@@ -1026,7 +1026,7 @@ static gboolean mirage_parser_b6t_parse_track_entry (MirageParserB6t *self, GErr
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type: 0x%X!\n", __debug__, track_entry->type);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown track type 0x%X!", track_entry->type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown track type 0x%X!"), track_entry->type);
             g_object_unref(track);
             return FALSE;
         }
@@ -1145,7 +1145,7 @@ static gboolean mirage_parser_b6t_parse_footer (MirageParserB6t *self, GError **
     /* Make sure it's correct one */
     if (memcmp(footer, b6t_footer, 16)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: invalid footer!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid footer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid footer!"));
         return FALSE;
     }
 
@@ -1249,14 +1249,14 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, MirageStre
     if (mirage_stream_read(stream, header, 16, NULL) != 16) {
         g_object_unref(stream);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read 16 bytes from beginning image file stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 16 bytes from image file stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read 16 bytes from image file stream!"));
         return FALSE;
     }
 
     if (memcmp(header, b6t_signature, sizeof(b6t_signature))) {
         g_object_unref(stream);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid signature!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -1288,7 +1288,7 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, MirageStre
 
     if (read_length != self->priv->b6t_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file (%lld out of %lld bytes read)!\n", __debug__, read_length, self->priv->b6t_length);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whoe B6T file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read whole B6T file!"));
         succeeded = FALSE;
         goto end;
     }
@@ -1329,9 +1329,9 @@ static void mirage_parser_b6t_init (MirageParserB6t *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-B6T",
-        "B6T Image Parser",
+        Q_("B6T Image Parser"),
         1,
-        "BlindWrite 5/6 images (*.b5t, *.b6t)", "application/x-b6t"
+        Q_("BlindWrite 5/6 images (*.b5t, *.b6t)"), "application/x-b6t"
     );
 
     self->priv->b6t_data = NULL;

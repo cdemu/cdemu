@@ -70,7 +70,7 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GErr
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current track is not set!"));
         return FALSE;
     }
 
@@ -84,7 +84,7 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GErr
 
         if (mirage_fragment_get_length(fragment) < 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: finishing last track resulted in negative fragment length!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Finishing last track resulted in negative fragment length!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Finishing last track resulted in negative fragment length!"));
             succeeded = FALSE;
         }
 
@@ -112,7 +112,7 @@ static gboolean mirage_parser_cue_set_new_file (MirageParserCue *self, const gch
     self->priv->cur_data_filename = mirage_helper_find_data_file(filename_string, self->priv->cue_filename);
     if (!self->priv->cur_data_filename) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to find data file!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual data file: %s\n", __debug__, self->priv->cur_data_filename);
@@ -176,7 +176,7 @@ static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number,
 
     if (i == G_N_ELEMENTS(track_modes)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid track mode string: %s!\n", __debug__, mode_string);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid track mode string '%s'!", mode_string);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid track mode string '%s'!"), mode_string);
         return FALSE;
     }
 
@@ -191,7 +191,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current track is not set!"));
         return FALSE;
     }
 
@@ -334,7 +334,7 @@ static gboolean mirage_parser_cue_set_flags (MirageParserCue *self, gint flags, 
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current track is not set!"));
         return FALSE;
     }
 
@@ -348,7 +348,7 @@ static gboolean mirage_parser_cue_set_isrc (MirageParserCue *self, const gchar *
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current track is not set!"));
         return FALSE;
     }
 
@@ -369,7 +369,7 @@ static gboolean mirage_parser_cue_add_empty_part (MirageParserCue *self, gint le
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current track is not set!"));
         return FALSE;
     }
 
@@ -393,7 +393,7 @@ static gboolean mirage_parser_cue_add_pregap (MirageParserCue *self, gint length
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current track is not set!"));
         return FALSE;
     }
 
@@ -848,7 +848,7 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, MirageS
                 break;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read line #%d: %s!"), line_number, local_error->message);
                 g_error_free(local_error);
                 succeeded = FALSE;
                 break;
@@ -917,7 +917,7 @@ static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(self->priv->cue_filename, ".cue")) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid suffix (not a *.cue file!)!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid suffix!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -992,9 +992,9 @@ static void mirage_parser_cue_init (MirageParserCue *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CUE",
-        "CUE Image Parser",
+        Q_("CUE Image Parser"),
         1,
-        "CUE images (*.cue)", "application/x-cue"
+        Q_("CUE images (*.cue)"), "application/x-cue"
     );
 
     mirage_parser_cue_init_regex_parser(self);

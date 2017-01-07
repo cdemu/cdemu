@@ -53,7 +53,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, M
 
         if (mirage_stream_read(stream, buf, sizeof(buf), NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read 8-byte pattern!"));
             return FALSE;
         }
 
@@ -76,7 +76,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, M
 
         if (mirage_stream_read(stream, buf, sizeof(buf), NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read sync pattern!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sync pattern!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read sync pattern!"));
             return FALSE;
         }
 
@@ -107,7 +107,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, M
     }
 
     /* Nope, can't load the file */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image!"));
     return FALSE;
 }
 
@@ -169,7 +169,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         if (mirage_stream_read(data_stream, &header, sizeof(header), NULL) != sizeof(header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read MDX header!\n", __debug__);
             g_object_unref(data_stream);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read header!"));
             return NULL;
         }
 
@@ -210,7 +210,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         length = mirage_stream_tell(data_stream);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename suffix; only 'mdx' and 'mds' are supported!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid filename suffix; only 'mdx' and 'mds' are supported!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid filename suffix; only 'mdx' and 'mds' are supported!"));
         return NULL;
     }
 
@@ -330,14 +330,14 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     mirage_stream_seek(self->priv->stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(self->priv->stream, signature, sizeof(signature), NULL) != sizeof(signature)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read signature and version!"));
         return FALSE;
     }
 
     /* This parsers handles v.2.X images (new DT format) */
     if (memcmp(signature, mdx_signature, sizeof(mdx_signature))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature and/or version!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid signature and/or version!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -387,9 +387,9 @@ static void mirage_parser_mdx_init (MirageParserMdx *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDX",
-        "MDX Image Parser",
+        Q_("MDX Image Parser"),
         1,
-        "DaemonTools images (*.mdx, *.mds)", "application/x-mdx"
+        Q_("DaemonTools images (*.mdx, *.mds)"), "application/x-mdx"
     );
 
     self->priv->stream = NULL;

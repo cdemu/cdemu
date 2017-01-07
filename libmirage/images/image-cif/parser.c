@@ -117,7 +117,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
     /* Read entry length */
     if (mirage_stream_read(self->priv->cif_stream, &subblock_length, sizeof(subblock_length), NULL) != sizeof(subblock_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block length!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sub-block length!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read sub-block length!"));
         return FALSE;
     }
     subblock_length = GUINT16_FROM_LE(subblock_length);
@@ -128,7 +128,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
     /* Sanity check */
     if (mirage_stream_tell(self->priv->cif_stream) + subblock_length > self->priv->disc_offset + self->priv->disc_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Sanity check failed!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
 
@@ -137,7 +137,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
     if (mirage_stream_read(self->priv->cif_stream, subblock_data, subblock_length, NULL) != subblock_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block data (%d bytes)!\n", __debug__, subblock_length);
         g_free(subblock_data);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sub-block data (%d bytes)!", subblock_length);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read sub-block data (%d bytes)!"), subblock_length);
         return FALSE;
     }
 
@@ -237,7 +237,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type (%d)!\n", __debug__, descriptor->type);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown track type (%d)!", descriptor->type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown track type (%d)!"), descriptor->type);
             return NULL;
         }
     }
@@ -249,7 +249,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     /* Sanity check */
     if (track_length * sector_size > offset_entry->length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Sanity check failed!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
 
@@ -336,7 +336,7 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown session type (%d)!\n", __debug__, descriptor->session_type);
             g_object_unref(session);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown session type (%d)!", descriptor->session_type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown session type (%d)!"), descriptor->session_type);
             return NULL;
         }
     }
@@ -524,7 +524,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
     /* Read number of entries */
     if (mirage_stream_read(self->priv->cif_stream, &num_entries, sizeof(num_entries), NULL) != sizeof(num_entries)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read number of entries!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read number of entries");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read number of entries"));
         return FALSE;
     }
     num_entries = GUINT16_FROM_LE(num_entries);
@@ -540,14 +540,14 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
         /* Read whole entry */
         if (mirage_stream_read(self->priv->cif_stream, &entry, sizeof(entry), NULL) != sizeof(entry)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read off entry!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read off entry!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read off entry!"));
             return FALSE;
         }
 
         /* Match "RIFF" */
         if (memcmp(entry.riff, riff_signature, sizeof(riff_signature))) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'\n", __debug__, entry.riff);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid FOURCC; expected 'RIFF', got '%.4s'", entry.riff);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid FOURCC; expected 'RIFF', got '%.4s'"), entry.riff);
             return FALSE;
         }
 
@@ -585,14 +585,14 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
         /* Read whole header */
         if (mirage_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL) != sizeof(header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read header!"));
             return FALSE;
         }
 
         /* Match "RIFF" */
         if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'\n", __debug__, header.riff);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid FOURCC; expected 'RIFF', got '%.4s'", header.riff);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid FOURCC; expected 'RIFF', got '%.4s'"), header.riff);
             return FALSE;
         }
 
@@ -622,13 +622,13 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
     /* Make sure we got "disc" and "ofs " blocks */
     if (!self->priv->disc_offset || !self->priv->disc_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 'disc' block not found!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Descriptor does not contain 'disc' block!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Descriptor does not contain 'disc' block!"));
         return FALSE;
     }
 
     if (!self->priv->ofs_offset || !self->priv->ofs_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 'ofs ' block not found!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Descriptor does not contain 'ofs ' block!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Descriptor does not contain 'ofs ' block!"));
         return FALSE;
     }
 
@@ -688,7 +688,7 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing image header...\n", __debug__);
     if (mirage_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL) != sizeof(header)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read header!"));
         return FALSE;
     }
 
@@ -698,13 +698,13 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image begins with 'RIFF'...\n", __debug__);
     if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: image does not begin with 'RIFF'!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: image does not begin with 'RIFF'!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: image does not begin with 'RIFF'!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if first RIFF tag is 'imag'...\n", __debug__);
     if (memcmp(header.type, imag_signature, sizeof(imag_signature))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: first RIFF tag is not 'imag'!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid header!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -752,9 +752,9 @@ static void mirage_parser_cif_init (MirageParserCif *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CIF",
-        "CIF Image Parser",
+        Q_("CIF Image Parser"),
         1,
-        "Adaptec Easy CD/DVD Creator images (*.cif)", "application/x-cif"
+        Q_("Adaptec Easy CD/DVD Creator images (*.cif)"), "application/x-cif"
     );
 
     self->priv->offset_entries = NULL;

@@ -153,7 +153,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self,
 
     if (mirage_stream_read(self->priv->c2d_stream, &header, sizeof(C2D_Z_Info_Header), NULL) != sizeof(C2D_Z_Info_Header)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Z info header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Z info header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read Z info header!"));
         return FALSE;
     }
     c2d_z_info_header_fix_endian(&header);
@@ -162,7 +162,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self,
     do {
         if (mirage_stream_read(self->priv->c2d_stream, &zinfo, sizeof(C2D_Z_Info), NULL) != sizeof(C2D_Z_Info)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Z info!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Z info!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read Z info!"));
             return FALSE;
         }
         c2d_z_info_fix_endian(&zinfo);
@@ -172,7 +172,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self,
 
     /* Not supported yet */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compressed images not supported yet!\n", __debug__);
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Compressed images are not supported yet!");
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Compressed images are not supported yet!"));
 
     return FALSE;
 }
@@ -521,14 +521,14 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, MirageStre
     mirage_stream_seek(self->priv->c2d_stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(self->priv->c2d_stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read signature!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read signature!"));
         return FALSE;
     }
 
     if (memcmp(sig, c2d_signature1, sizeof(c2d_signature1))
         && memcmp(sig, c2d_signature2, sizeof(c2d_signature2))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid signature!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -551,14 +551,14 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, MirageStre
     self->priv->c2d_data = g_try_malloc(sizeof(C2D_HeaderBlock));
     if (!self->priv->c2d_data) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for header (%d)!\n", __debug__, sizeof(C2D_HeaderBlock));
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for header (%ld bytes)!", sizeof(C2D_HeaderBlock));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate memory for header (%ld bytes)!"), sizeof(C2D_HeaderBlock));
         succeeded = FALSE;
         goto end;
     }
 
     if (mirage_stream_read(self->priv->c2d_stream, self->priv->c2d_data, sizeof(C2D_HeaderBlock), NULL) != sizeof(C2D_HeaderBlock)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read header!"));
         succeeded = FALSE;
         goto end;
     }
@@ -572,7 +572,7 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, MirageStre
     self->priv->c2d_data = g_try_realloc(self->priv->c2d_data, self->priv->c2d_data_length);
     if (!self->priv->c2d_data) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for descriptor (%d)!\n", __debug__, self->priv->c2d_data_length);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for descriptor (%d)!", self->priv->c2d_data_length);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate memory for descriptor (%d)!"), self->priv->c2d_data_length);
         succeeded = FALSE;
         goto end;
     }
@@ -580,7 +580,7 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, MirageStre
     mirage_stream_seek(self->priv->c2d_stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(self->priv->c2d_stream, self->priv->c2d_data, self->priv->c2d_data_length, NULL) != self->priv->c2d_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor!"));
         succeeded = FALSE;
         goto end;
     }
@@ -617,9 +617,9 @@ static void mirage_parser_c2d_init (MirageParserC2d *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-C2D",
-        "C2D Image Parser",
+        Q_("C2D Image Parser"),
         1,
-        "WinOnCD images (*.c2d)", "application/x-c2d"
+        Q_("WinOnCD images (*.c2d)"), "application/x-c2d"
     );
 
     self->priv->c2d_stream = NULL;

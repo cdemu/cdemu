@@ -27,6 +27,7 @@
 #endif
 
 #include <mirage/mirage.h>
+#include <glib/gi18n-lib.h>
 
 #include "parser.h"
 

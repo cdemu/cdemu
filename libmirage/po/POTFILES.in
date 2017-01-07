@@ -1,9 +1,21 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+images/image-b6t/parser.c
+images/image-c2d/parser.c
+images/image-ccd/parser.c
+images/image-cdi/parser.c
+images/image-cif/parser.c
+images/image-cue/parser.c
+images/image-harddisk/parser.c
 images/image-iso/parser.c
 images/image-iso/writer.c
+images/image-mds/parser.c
+images/image-mdx/parser.c
+images/image-nrg/parser.c
+images/image-readcd/parser.c
 images/image-toc/parser.c
 images/image-toc/writer.c
+images/image-xcdroast/parser.c
 mirage/cdtext-coder.c
 mirage/compat-input-stream.c
 mirage/context.c

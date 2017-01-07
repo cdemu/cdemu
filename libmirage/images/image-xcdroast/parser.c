@@ -596,7 +596,7 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
                 break;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read line #%d: %s!"), line_number, local_error->message);
                 g_error_free(local_error);
                 succeeded = FALSE;
                 break;
@@ -679,7 +679,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
                 break;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read line #%d: %s!"), line_number, local_error->message);
                 g_error_free(local_error);
                 succeeded = FALSE;
                 break;
@@ -821,7 +821,7 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, Mirag
 
     if (!mirage_parser_xcdroast_check_toc_file(self, streams[0])) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid TOC file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid TOC file!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -891,9 +891,9 @@ static void mirage_parser_xcdroast_init (MirageParserXcdroast *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-XCDROAST",
-        "X-CD-Roast Image Parser",
+        Q_("X-CD-Roast Image Parser"),
         1,
-        "X-CD-Roast images (*.toc)", "application/x-xcdroast"
+        Q_("X-CD-Roast images (*.toc)"), "application/x-xcdroast"
     );
 
     mirage_parser_xcdroast_init_regex_parser(self);

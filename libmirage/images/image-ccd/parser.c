@@ -265,7 +265,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             /* Shouldn't really happen... */
             if (!ccd_next_entry) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: ccd_next_entry == NULL; should not happen!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "ccd_next_entry == NULL; should not happen!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("ccd_next_entry == NULL; should not happen!"));
                 return FALSE;
             }
 
@@ -782,7 +782,7 @@ static gboolean mirage_parser_ccd_callback_track (MirageParserCcd *self, GMatchI
     entry = g_list_find_custom(self->priv->entries_list, GINT_TO_POINTER(number), (GCompareFunc)find_entry_by_point);
     if (!entry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get entry with point #%d!\n", __debug__, number);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to get entry with point #%d!", number);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to get entry with point #%d!"), number);
         return FALSE;
     }
     self->priv->cur_data = entry->data;
@@ -871,7 +871,7 @@ static gboolean mirage_parser_ccd_callback_cdtext_entries (MirageParserCcd *self
        removed, so it contains 16 bytes */
     if (self->priv->disc_data->CDTextLength != self->priv->cdtext_entries * 18) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: declared CD-TEXT size (%d) does not match declared number of entries (%d)!\n", __debug__, self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Ddeclared CD-TEXT size (%d) does not match declared number of entries (%d)!\n", self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Declared CD-TEXT size (%d) does not match declared number of entries (%d)!\n"), self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
         return FALSE;
     }
 
@@ -898,7 +898,7 @@ static gboolean mirage_parser_ccd_callback_cdtext_entry (MirageParserCcd *self, 
     number = g_strtod(number_str, NULL);
     if (number >= self->priv->cdtext_entries) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid CD-TEXT entry #%d (expecting only %d entries)!\n", __debug__, number, self->priv->cdtext_entries);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid CD-TEXT entry #%d (expecting only %d entries)!\n", number, self->priv->cdtext_entries);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid CD-TEXT entry #%d (expecting only %d entries)!\n"), number, self->priv->cdtext_entries);
         return FALSE;
     }
 
@@ -1042,7 +1042,7 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, MirageS
                 break;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read line #%d: %s!"), line_number, local_error->message);
                 g_error_free(local_error);
                 succeeded = FALSE;
                 break;
@@ -1136,7 +1136,7 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(ccd_filename, ".ccd")) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid suffix (not a *.ccd file!)!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid suffix!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -1174,11 +1174,11 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     if (!self->priv->img_filename) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Could not find main data file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Could not find main data file!"));
         return FALSE;
     }
     if (!self->priv->sub_filename) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Could not find subchannel data file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Could not find subchannel data file!"));
         return FALSE;
     }
 
@@ -1239,9 +1239,9 @@ static void mirage_parser_ccd_init (MirageParserCcd *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CCD",
-        "CCD Image Parser",
+        Q_("CCD Image Parser"),
         1,
-        "CloneCD images (*.ccd)", "application/x-ccd"
+        Q_("CloneCD images (*.ccd)"), "application/x-ccd"
     );
 
     /* Init regex parser engine */

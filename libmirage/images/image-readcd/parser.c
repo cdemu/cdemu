@@ -53,7 +53,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(mirage_stream_get_filename(stream), ".toc")) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: invalid suffix (not a *.toc file!)!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid suffix!"));
         return FALSE;
     }
 
@@ -62,7 +62,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: reading 4-byte header...\n", __debug__);
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, &toc_len, sizeof(toc_len), NULL) != sizeof(toc_len)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 2-byte TOC length!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read 2-byte TOC length!"));
         return FALSE;
     }
     toc_len = GUINT16_FROM_BE(toc_len);
@@ -85,7 +85,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
 
     /* Nope, can't load the file */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid data file size!\n", __debug__);
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image!"));
     return FALSE;
 }
 
@@ -297,14 +297,14 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, Mirage
     /* Open data stream */
     if (!self->priv->data_filename) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data file not found!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Data file not found!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Data file not found!"));
         return FALSE;
     }
 
     self->priv->data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), self->priv->data_filename, error);
     if (!self->priv->data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open data file '%s'!\n", __debug__, self->priv->data_filename);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to create stream on data file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to create stream on data file!"));
         return FALSE;
     }
 
@@ -320,7 +320,7 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, Mirage
 
     if (read_size != file_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole TOC file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whole TOC file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read whole TOC file!"));
         g_free(data);
         return FALSE;
     }
@@ -482,9 +482,9 @@ static void mirage_parser_readcd_init (MirageParserReadcd *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-READCD",
-        "READCD Image Parser",
+        Q_("READCD Image Parser"),
         1,
-        "readcd images (*.toc)", "application/x-cd-image"
+        Q_("readcd images (*.toc)"), "application/x-cd-image"
     );
 
     self->priv->data_filename = NULL;

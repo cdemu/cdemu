@@ -368,7 +368,7 @@ static gchar *mirage_parser_mds_get_track_filename (MirageParserMds *self, MDS_F
        from filename_offset to end of the file */
     if (!footer_block) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Track block does not have a footer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track block does not have a footer!"));
         return NULL;
     }
 
@@ -390,7 +390,7 @@ static gchar *mirage_parser_mds_get_track_filename (MirageParserMds *self, MDS_F
 
     if (!mdf_filename) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to find data file!"));
         return NULL;
     }
 
@@ -765,7 +765,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
     if (mirage_stream_read(stream, signature, sizeof(signature), NULL) != sizeof(signature)) {
         g_object_unref(stream);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read signature and version!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read signature and version!"));
         return FALSE;
     }
 
@@ -773,7 +773,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
     if (memcmp(signature, mds_signature, sizeof(mds_signature))) {
         g_object_unref(stream);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature and/or version!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid signature and/or version!"));
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
@@ -805,7 +805,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
 
     if (read_length != self->priv->mds_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file (%lld out of %lld bytes read)!\n", __debug__, read_length, self->priv->mds_length);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whole MDS file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read whole MDS file!"));
         succeeded = FALSE;
         goto end;
     }
@@ -851,7 +851,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium of type 0x%X not supported yet!\n", __debug__, self->priv->header->medium_type);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Medium of type 0x%X not supported yet!", self->priv->header->medium_type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Medium of type 0x%X not supported yet!"), self->priv->header->medium_type);
             succeeded = FALSE;
             break;
         }
@@ -890,10 +890,10 @@ static void mirage_parser_mds_init (MirageParserMds *self)
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDS",
-        "MDS Image Parser",
+        Q_("MDS Image Parser"),
         2,
-        "Alchohol 120% images (*.mds)", "application/x-mds",
-        "GameJack images (*.xmd)", "application/x-xmd"
+        Q_("Alchohol 120% images (*.mds)"), "application/x-mds",
+        Q_("GameJack images (*.xmd)"), "application/x-xmd"
     );
 
     self->priv->mds_data = NULL;
