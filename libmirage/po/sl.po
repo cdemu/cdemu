@@ -1,14 +1,14 @@
 # Slovenian translation of libmirage
 # Copyright (C) 2016 Rok Mandeljc
 # This file is distributed under the same license as the libmirage package.
-# Rok Mandeljc <rok.mandeljc@gmail.com>, 2016.
+# Rok Mandeljc <rok.mandeljc@gmail.com>, 2016, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: libmirage 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-06 22:13+0100\n"
-"PO-Revision-Date: 2016-11-06 22:15+0100\n"
+"POT-Creation-Date: 2017-01-07 23:27+0100\n"
+"PO-Revision-Date: 2017-01-07 23:26+0100\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -18,6 +18,408 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Gtranslator 2.91.7\n"
+
+#: ../images/image-b6t/parser.c:219
+#, c-format
+msgid "Failed to read whole BWA file!"
+msgstr "Napaka pri branju BWA datoteke!"
+
+#: ../images/image-b6t/parser.c:402
+#, c-format
+msgid "Failed to find data file '%s'!"
+msgstr "Nisem uspel najti podatkovne datoteke '%s'!"
+
+#: ../images/image-b6t/parser.c:516
+#, c-format
+msgid "Invalid header!"
+msgstr "Neveljavna glava!"
+
+#: ../images/image-b6t/parser.c:661
+#, c-format
+msgid "Unknown or unhandled disc type 0x%X!"
+msgstr "Neznana ali nepodprta vrsta diska 0x%X!"
+
+#: ../images/image-b6t/parser.c:1029
+#, c-format
+msgid "Unknown track type 0x%X!"
+msgstr "Neznana vrsta sledi 0x%X!"
+
+#: ../images/image-b6t/parser.c:1148
+#, c-format
+msgid "Invalid footer!"
+msgstr "Neveljavna noga!"
+
+#: ../images/image-b6t/parser.c:1252
+#, c-format
+msgid ""
+"Parser cannot handle given image: failed to read 16 bytes from image file "
+"stream!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: napak pri "
+"branju 16 bajtov iz podatkovnega toka!"
+
+#: ../images/image-b6t/parser.c:1259 ../images/image-c2d/parser.c:531
+#: ../images/image-nrg/parser.c:972
+#, c-format
+msgid "Parser cannot handle given image: invalid signature!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: neveljaven "
+"podpis!"
+
+#: ../images/image-b6t/parser.c:1291
+#, c-format
+msgid "Failed to read whole B6T file!"
+msgstr "Napaka pri branju B6T datoteke!"
+
+#: ../images/image-b6t/parser.c:1332
+msgid "B6T Image Parser"
+msgstr "Parser odtisov diskov B6T"
+
+#: ../images/image-b6t/parser.c:1334
+msgid "BlindWrite 5/6 images (*.b5t, *.b6t)"
+msgstr "BlindWrite 5/6 odtisi diskov (*.b5t, *.b6t)"
+
+#: ../images/image-c2d/parser.c:156
+#, c-format
+msgid "Failed to read Z info header!"
+msgstr "Napaka pri branju glave podatkov o Z kompresiji!"
+
+#: ../images/image-c2d/parser.c:165
+#, c-format
+msgid "Failed to read Z info!"
+msgstr "Napaka pri branju podatkov o Z kompresiji!"
+
+#: ../images/image-c2d/parser.c:175
+#, c-format
+msgid "Compressed images are not supported yet!"
+msgstr "Stisnjeni odtisi diskov še niso podprti!"
+
+#: ../images/image-c2d/parser.c:524 ../images/image-nrg/parser.c:927
+#: ../images/image-nrg/parser.c:951
+#, c-format
+msgid "Parser cannot handle given image: failed to read signature!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: napaka pri "
+"branju podpisa!"
+
+#: ../images/image-c2d/parser.c:554
+#, c-format
+msgid "Failed to allocate memory for header (%ld bytes)!"
+msgstr "Napaka pri dodelitvi pomnilnika za glavo (%ld bajtov)!"
+
+#: ../images/image-c2d/parser.c:561 ../images/image-cif/parser.c:588
+#: ../images/image-mdx/parser.c:172
+#, c-format
+msgid "Failed to read header!"
+msgstr "Napaka pri branju glave!"
+
+#: ../images/image-c2d/parser.c:575
+#, c-format
+msgid "Failed to allocate memory for descriptor (%d)!"
+msgstr "Napaka pri dodelitvi pomnilnika za deskriptor (%d)!"
+
+#: ../images/image-c2d/parser.c:583 ../images/image-cdi/parser.c:975
+#: ../images/image-nrg/parser.c:998
+#, c-format
+msgid "Failed to read descriptor!"
+msgstr "Napaka pri branju deskriptorja!"
+
+#: ../images/image-c2d/parser.c:620
+msgid "C2D Image Parser"
+msgstr "Parser odtisov diskov C2D"
+
+#: ../images/image-c2d/parser.c:622
+msgid "WinOnCD images (*.c2d)"
+msgstr "WinOnCD odtisi diskov (*.c2d)"
+
+#: ../images/image-ccd/parser.c:268
+#, c-format
+msgid "ccd_next_entry == NULL; should not happen!"
+msgstr "ccd_next_entry == NULL; do te situacije ne bi smelo priti!"
+
+#: ../images/image-ccd/parser.c:785
+#, c-format
+msgid "Failed to get entry with point #%d!"
+msgstr "Napaka pri pridobivanju vnosa za točko #%d!"
+
+#: ../images/image-ccd/parser.c:874
+#, c-format
+msgid ""
+"Declared CD-TEXT size (%d) does not match declared number of entries (%d)!"
+msgstr ""
+"Deklarirana velikost CD-TEXT podatkov (%d) se ne ujema z deklariranim "
+"številom vnosov (%d) "
+
+#: ../images/image-ccd/parser.c:901
+#, c-format
+msgid "Invalid CD-TEXT entry #%d (expecting only %d entries)!"
+msgstr "Neveljaven CD-TEXT vnos #%d (pričakujemo samo %d vnosov)!"
+
+#: ../images/image-ccd/parser.c:1045 ../images/image-cue/parser.c:851
+#: ../images/image-toc/parser.c:1019 ../images/image-xcdroast/parser.c:599
+#: ../images/image-xcdroast/parser.c:682
+#, c-format
+msgid "Failed to read line #%d: %s!"
+msgstr "Napaka pri branju vrstice #%d: %s!"
+
+#: ../images/image-ccd/parser.c:1139 ../images/image-cdi/parser.c:938
+#: ../images/image-cue/parser.c:920 ../images/image-readcd/parser.c:56
+#, c-format
+msgid "Parser cannot handle given image: invalid suffix!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: neveljavna "
+"končnica!"
+
+#: ../images/image-ccd/parser.c:1177
+#, c-format
+msgid "Could not find main data file!"
+msgstr "Nisem uspel najti glavne podatkovne datoteke!"
+
+#: ../images/image-ccd/parser.c:1181
+#, c-format
+msgid "Could not find subchannel data file!"
+msgstr "Nisem uspel najti datoteke s podatki pod-kanala!"
+
+#: ../images/image-ccd/parser.c:1242
+msgid "CCD Image Parser"
+msgstr "Parser odtisov diskov CCD"
+
+#: ../images/image-ccd/parser.c:1244
+msgid "CloneCD images (*.ccd)"
+msgstr "CloneCD odtisi diskov (*.ccd)"
+
+#: ../images/image-cdi/parser.c:128
+#, c-format
+msgid "Invalid track mode: %d!"
+msgstr "Neveljavna vrsta sledi: %d!"
+
+#: ../images/image-cdi/parser.c:171
+#, c-format
+msgid "Invalid read mode: %d!"
+msgstr "Neveljaven način zapisa podatkov: %d!"
+
+#: ../images/image-cdi/parser.c:962
+#, c-format
+msgid "Failed to read descriptor length!"
+msgstr "Napaka pri branju dolžine deskriptorja!"
+
+#: ../images/image-cdi/parser.c:1025
+msgid "CDI Image Parser"
+msgstr "Parser odtisov diskov CDI"
+
+#: ../images/image-cdi/parser.c:1027
+msgid "DiscJuggler images (*.cdi)"
+msgstr "DiscJuggler odtisi diskov (*.cdi)"
+
+#: ../images/image-cif/parser.c:120
+#, c-format
+msgid "Failed to read sub-block length!"
+msgstr "Napaka pri branju dolžine pod-bloka!"
+
+#: ../images/image-cif/parser.c:131 ../images/image-cif/parser.c:252
+#, c-format
+msgid "Sanity check failed!"
+msgstr "Preizkus smiselnosti ni uspel!"
+
+#: ../images/image-cif/parser.c:140
+#, c-format
+msgid "Failed to read sub-block data (%d bytes)!"
+msgstr "Napaka pri branju podatkov pod-bloka (%d bajtov)!"
+
+#: ../images/image-cif/parser.c:240
+#, c-format
+msgid "Unknown track type (%d)!"
+msgstr "Neznana vrsta sledi (%d)!"
+
+#: ../images/image-cif/parser.c:339
+#, c-format
+msgid "Unknown session type (%d)!"
+msgstr "Neznana vrsta seje (%d)!"
+
+#: ../images/image-cif/parser.c:527
+#, c-format
+msgid "Failed to read number of entries!"
+msgstr "Napaka pri branju števila vnosov!"
+
+#: ../images/image-cif/parser.c:543
+#, c-format
+msgid "Failed to read \"ofs\" entry!"
+msgstr "Napaka pri branju \"ofs\" vnosa!"
+
+#: ../images/image-cif/parser.c:550 ../images/image-cif/parser.c:595
+#, c-format
+msgid "Invalid FOURCC; expected 'RIFF', got '%.4s'"
+msgstr "Neveljaven FOURCC; pričakovan 'RIFF', dobil '%.4s'"
+
+#: ../images/image-cif/parser.c:625
+#, c-format
+msgid "Descriptor does not contain 'disc' block!"
+msgstr "Deskriptor ne vsebuje 'disc' bloka!"
+
+#: ../images/image-cif/parser.c:631
+#, c-format
+msgid "Descriptor does not contain 'ofs ' block!"
+msgstr "Deskriptor ne vsebuje 'ofs' bloka!"
+
+#: ../images/image-cif/parser.c:691
+#, c-format
+msgid "Parser cannot handle given image: failed to read header!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: napaka pri "
+"branju glave!"
+
+#: ../images/image-cif/parser.c:701
+#, c-format
+msgid "Parser cannot handle given image: image does not begin with 'RIFF'!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: datoteka se ne "
+"začne s podpisom 'RIFF'!"
+
+#: ../images/image-cif/parser.c:707
+#, c-format
+msgid "Parser cannot handle given image: invalid header!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: neveljavna "
+"glava!"
+
+#: ../images/image-cif/parser.c:755
+msgid "CIF Image Parser"
+msgstr "Parser odtisov diskov CIF"
+
+#: ../images/image-cif/parser.c:757
+msgid "Adaptec Easy CD/DVD Creator images (*.cif)"
+msgstr "Adaptec Easy CD/DVD Creator odtisi diskov (*.cif)"
+
+#: ../images/image-cue/parser.c:73 ../images/image-cue/parser.c:194
+#: ../images/image-cue/parser.c:337 ../images/image-cue/parser.c:351
+#: ../images/image-cue/parser.c:372 ../images/image-cue/parser.c:396
+#, c-format
+msgid "Current track is not set!"
+msgstr "Trenutna sled ni nastavljena!"
+
+#: ../images/image-cue/parser.c:87
+#, c-format
+msgid "Finishing last track resulted in negative fragment length!"
+msgstr "Zaključek zadnje sledi je povzročil negativno dolžino fragmenta!"
+
+#: ../images/image-cue/parser.c:115 ../images/image-mds/parser.c:393
+#: ../images/image-toc/parser.c:180
+#, c-format
+msgid "Failed to find data file!"
+msgstr "Nisem uspel najti podatkovne datoteke!"
+
+#: ../images/image-cue/parser.c:179
+#, c-format
+msgid "Invalid track mode string '%s'!"
+msgstr "Neveljaven niz za opis vrste sledi '%s'!"
+
+#: ../images/image-cue/parser.c:995
+msgid "CUE Image Parser"
+msgstr "Parser odtisov diskov CUE"
+
+#: ../images/image-cue/parser.c:997
+msgid "CUE images (*.cue)"
+msgstr "CUE odtisi diskov (*.cue)"
+
+#: ../images/image-harddisk/parser.c:56
+#, c-format
+msgid "Parser cannot handle given image: file too small!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: datoteka je "
+"premajhna!"
+
+#: ../images/image-harddisk/parser.c:66
+#, c-format
+msgid "Failed to seek to ISO signature!"
+msgstr "Napaka pri premiku na položaj za branje ISO podpisa!"
+
+#: ../images/image-harddisk/parser.c:72
+#, c-format
+msgid "Failed to read ISO signature!"
+msgstr "Napaka pri branju ISO podpisa!"
+
+#: ../images/image-harddisk/parser.c:79
+#, c-format
+msgid "Image is an ISO image - deferring!"
+msgstr "Odtis diska je ISO odtis diska - prepustitev drugemu parserju!"
+
+#: ../images/image-harddisk/parser.c:91
+#, c-format
+msgid "Failed to seek to beginning of file!"
+msgstr "Napaka pri premiku na začetek datoteke!"
+
+#: ../images/image-harddisk/parser.c:97
+#, c-format
+msgid "Failed to read driver descriptor map!"
+msgstr "Napaka pri branju zemljevida deskriptorjev gonilnikov!"
+
+#: ../images/image-harddisk/parser.c:114
+#, c-format
+msgid "Failed to seek to beginning of APM entries!"
+msgstr "Napaka pri premiku na začetek APM vnosov!"
+
+#: ../images/image-harddisk/parser.c:120
+#, c-format
+msgid "Failed to read APM entry!"
+msgstr "Napaka pri branju APM vnosa!"
+
+#: ../images/image-harddisk/parser.c:141
+#, c-format
+msgid "Parser cannot map this sector size!"
+msgstr "Parser ni sposoben mapirati podane velikosti sektorja!"
+
+#: ../images/image-harddisk/parser.c:157
+#, c-format
+msgid "Failed to seek to GPT header!"
+msgstr "Napaka pri premiku na položaj za branje GPT glave!"
+
+#: ../images/image-harddisk/parser.c:163
+#, c-format
+msgid "Failed to read GPT header!"
+msgstr "Napaka pri branju GPT glave!"
+
+#: ../images/image-harddisk/parser.c:180
+#, c-format
+msgid "Failed to seek to beginning of GPT entries!"
+msgstr "Napaka pri premiku na začetek GPT vnosov!"
+
+#: ../images/image-harddisk/parser.c:186
+#, c-format
+msgid "Failed to read GPT entry!"
+msgstr "Napaka pri branju GPT vnosa!"
+
+#: ../images/image-harddisk/parser.c:217
+#, c-format
+msgid "Failed to seek to Master Directory Block (MDB)!"
+msgstr "Napaka pri premiku na položaj ta branje MDB!"
+
+#: ../images/image-harddisk/parser.c:223
+#, c-format
+msgid "Failed to read Master Directory Block (MDB)!"
+msgstr "Napaka pri branju MDB!"
+
+#. Nope, can't load the file
+#: ../images/image-harddisk/parser.c:241 ../images/image-mdx/parser.c:110
+#: ../images/image-readcd/parser.c:88
+#, c-format
+msgid "Parser cannot handle given image!"
+msgstr "Parser ni sposoben prebrati podane datoteke z odtisom diska!"
+
+#: ../images/image-harddisk/parser.c:387
+msgid "Hard-disk Image Parser"
+msgstr "Parser odtisov trdih diskov"
+
+#: ../images/image-harddisk/parser.c:389
+msgid "Apple Disk image (*.cdr)"
+msgstr "Apple Disk odtis trdega diska (*.cdr)"
+
+#: ../images/image-harddisk/parser.c:390
+msgid "Apple Disk image (*.smi)"
+msgstr "Apple Disk odtis trdega diska (*.smi)"
+
+#: ../images/image-harddisk/parser.c:391
+msgid "Apple Disk image (*.img)"
+msgstr "Apple Disk odtis trdega diska (*.img)"
 
 #: ../images/image-iso/parser.c:74
 #, c-format
@@ -31,7 +433,7 @@ msgstr ""
 msgid "Failed to seek to %lXh to read 8-byte pattern!"
 msgstr "Napaka pri premiku na položaj %lXh za branje 8-bajtnega vzorca!"
 
-#: ../images/image-iso/parser.c:104
+#: ../images/image-iso/parser.c:104 ../images/image-mdx/parser.c:56
 #, c-format
 msgid "Failed to read 8-byte pattern!"
 msgstr "Napaka pri branju 8-bajtnega vzorca!"
@@ -140,17 +542,165 @@ msgstr ""
 "Zamenjava vrstnega reda avdio podatkov. Veljavno samo v primeru zapisovanja "
 "v surovem načinu."
 
-#: ../images/image-toc/parser.c:180
+#: ../images/image-mds/parser.c:371
 #, c-format
-msgid "Failed to find data file!"
+msgid "Track block does not have a footer!"
+msgstr "Blok z opisom sledi nima noge!"
+
+#: ../images/image-mds/parser.c:768 ../images/image-mdx/parser.c:333
+#, c-format
+msgid "Parser cannot handle given image: failed to read signature and version!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: napaka pri "
+"branju podpisa in različice!"
+
+#: ../images/image-mds/parser.c:776 ../images/image-mdx/parser.c:340
+#, c-format
+msgid "Parser cannot handle given image: invalid signature and/or version!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: neveljaven "
+"podpis in/ali različica!"
+
+#: ../images/image-mds/parser.c:808
+#, c-format
+msgid "Failed to read whole MDS file!"
+msgstr "Napaka pri branju MDS datoteke!"
+
+#: ../images/image-mds/parser.c:854
+#, c-format
+msgid "Medium of type 0x%X not supported yet!"
+msgstr "Vrsta medija 0x%X še ni podprta!"
+
+#: ../images/image-mds/parser.c:893
+msgid "MDS Image Parser"
+msgstr "Parser odtisov diskov MDS"
+
+#: ../images/image-mds/parser.c:895
+#, c-format
+msgid "Alchohol 120% images (*.mds)"
+msgstr "Alchohol 120% odtisi diskov (*.mds)"
+
+#: ../images/image-mds/parser.c:896
+msgid "GameJack images (*.xmd)"
+msgstr "GameJack odtisi diskov (*.xmd)"
+
+#: ../images/image-mdx/parser.c:79
+#, c-format
+msgid "Failed to read sync pattern!"
+msgstr "Napaka pri branju sinhronizacijskega vzorca!"
+
+#: ../images/image-mdx/parser.c:213
+#, c-format
+msgid "Invalid filename suffix; only 'mdx' and 'mds' are supported!"
+msgstr "Neveljavna končnica; podprti sta samo 'mdx' in 'mds'!"
+
+#: ../images/image-mdx/parser.c:390
+msgid "MDX Image Parser"
+msgstr "Parser odtisov diskov MDX"
+
+#: ../images/image-mdx/parser.c:392
+msgid "DaemonTools images (*.mdx, *.mds)"
+msgstr "DaemonTools odtisi diskov (*.mdx, *.mds)"
+
+#: ../images/image-nrg/parser.c:101
+#, c-format
+msgid "Failed to allocate memory for block index!"
+msgstr "Napaka pri dodelitvi pomnilnika za indeks blokov!"
+
+#: ../images/image-nrg/parser.c:204
+#, c-format
+msgid "Failed to look up 'MTYP' block!"
+msgstr "Nisem uspel najti 'MTYP' bloka!"
+
+#: ../images/image-nrg/parser.c:232
+#, c-format
+msgid "Unhandled medium type: %d!"
+msgstr "Nepodprt tip medija: %d!"
+
+#: ../images/image-nrg/parser.c:341
+#, c-format
+msgid "Failed to look up 'ETN2' or 'ETNF' block!"
+msgstr "Nisem uspel najti 'ETN2' oziroma 'ETNF' bloka!"
+
+#: ../images/image-nrg/parser.c:354
+#, c-format
+msgid "Failed to allocate space for ETN blocks!"
+msgstr "Napaka pri dodelitvi pomnilnika za ETN bloke!"
+
+#: ../images/image-nrg/parser.c:400
+#, c-format
+msgid "Failed to look up 'CUEX' or 'CUES' block!"
+msgstr "Nisem uspel najti 'CUEX' oziroma 'CUES' bloka!"
+
+#: ../images/image-nrg/parser.c:413
+#, c-format
+msgid "Failed to allocate memory for CUE blocks!"
+msgstr "Napaka pri dodelitvi pomnilnika za CUE bloke!"
+
+#: ../images/image-nrg/parser.c:461
+#, c-format
+msgid "Failed to look up 'DAOX' or 'DAOI' block!"
+msgstr "Nisem uspel najti 'DAOX' oziroma 'DAOI' bloka!"
+
+#: ../images/image-nrg/parser.c:473
+#, c-format
+msgid "Failed to allocate space for DAO header!"
+msgstr "Napaka pri dodelitvi pomnilnika za DAO glavo!"
+
+#: ../images/image-nrg/parser.c:877
+#, c-format
+msgid "Failed to look up 'CDTX' block!"
+msgstr "Nisem uspel najti 'CDTX' bloka!"
+
+#: ../images/image-nrg/parser.c:940
+#, c-format
+msgid "Failed to read trailer offset!"
+msgstr "Napaka pri branju položaja zaključnih podatkov!"
+
+#: ../images/image-nrg/parser.c:963
+#, c-format
+msgid "Failed to seek to trailer offset (32-bit)!"
+msgstr "Napaka pri premiku na položaj zaključnih podatkov (32-biten položaj)!"
+
+#: ../images/image-nrg/parser.c:1094
+msgid "NRG Image Parser"
+msgstr "Parser odtisov diskov NRG"
+
+#: ../images/image-nrg/parser.c:1096
+msgid "Nero Burning Rom images (*.nrg)"
+msgstr "Nero Burning Rom odtisi diskov (*.nrg)"
+
+#: ../images/image-readcd/parser.c:65
+#, c-format
+msgid "Parser cannot handle given image: failed to read 2-byte TOC length!"
+msgstr ""
+"Parser ni sposoben prebrati podane datoteke z odtisom diska: napaka pri "
+"branju 2-bajtne dolžine TOC!"
+
+#: ../images/image-readcd/parser.c:300
+#, c-format
+msgid "Data file not found!"
 msgstr "Nisem uspel najti podatkovne datoteke!"
 
-#: ../images/image-toc/parser.c:1019
+#: ../images/image-readcd/parser.c:307
 #, c-format
-msgid "Failed to read line #%d: %s!"
-msgstr "Napaka pri branju vrstice #%d: %s!"
+msgid "Failed to create stream on data file!"
+msgstr "Napaka pri odpiranju vhodno/izhodnega toka nad podatkovno datoteko!"
 
-#: ../images/image-toc/parser.c:1227
+#: ../images/image-readcd/parser.c:323
+#, c-format
+msgid "Failed to read whole TOC file!"
+msgstr "Napaka pri branju TOC datoteke!"
+
+#: ../images/image-readcd/parser.c:485
+msgid "READCD Image Parser"
+msgstr "Parser odtisov diskov READCD"
+
+#: ../images/image-readcd/parser.c:487
+msgid "readcd images (*.toc)"
+msgstr "readcd odtisi diskov (*.toc)"
+
+#: ../images/image-toc/parser.c:1227 ../images/image-xcdroast/parser.c:824
 #, c-format
 msgid "Parser cannot handle given image: invalid TOC file!"
 msgstr ""
@@ -168,6 +718,14 @@ msgstr "cdrdao odtisi diskov (*.toc)"
 #: ../images/image-toc/writer.c:608
 msgid "TOC Image Writer"
 msgstr "Zapisovalnik odtisov diskov TOC"
+
+#: ../images/image-xcdroast/parser.c:894
+msgid "X-CD-Roast Image Parser"
+msgstr "Parser odtisov diskov X-CD-Roast"
+
+#: ../images/image-xcdroast/parser.c:896
+msgid "X-CD-Roast images (*.toc)"
+msgstr "X-CD-Roast odtisi diskov (*.toc)"
 
 #: ../mirage/cdtext-coder.c:377
 #, c-format
