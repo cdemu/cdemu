@@ -524,7 +524,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
     /* Read number of entries */
     if (mirage_stream_read(self->priv->cif_stream, &num_entries, sizeof(num_entries), NULL) != sizeof(num_entries)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read number of entries!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read number of entries"));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read number of entries!"));
         return FALSE;
     }
     num_entries = GUINT16_FROM_LE(num_entries);
@@ -539,8 +539,8 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
 
         /* Read whole entry */
         if (mirage_stream_read(self->priv->cif_stream, &entry, sizeof(entry), NULL) != sizeof(entry)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read off entry!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read off entry!"));
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read \"ofs\" entry!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read \"ofs\" entry!"));
             return FALSE;
         }
 
