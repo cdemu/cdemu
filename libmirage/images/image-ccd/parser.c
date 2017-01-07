@@ -871,7 +871,7 @@ static gboolean mirage_parser_ccd_callback_cdtext_entries (MirageParserCcd *self
        removed, so it contains 16 bytes */
     if (self->priv->disc_data->CDTextLength != self->priv->cdtext_entries * 18) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: declared CD-TEXT size (%d) does not match declared number of entries (%d)!\n", __debug__, self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Declared CD-TEXT size (%d) does not match declared number of entries (%d)!\n"), self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Declared CD-TEXT size (%d) does not match declared number of entries (%d)!"), self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
         return FALSE;
     }
 
@@ -898,7 +898,7 @@ static gboolean mirage_parser_ccd_callback_cdtext_entry (MirageParserCcd *self, 
     number = g_strtod(number_str, NULL);
     if (number >= self->priv->cdtext_entries) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid CD-TEXT entry #%d (expecting only %d entries)!\n", __debug__, number, self->priv->cdtext_entries);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid CD-TEXT entry #%d (expecting only %d entries)!\n"), number, self->priv->cdtext_entries);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid CD-TEXT entry #%d (expecting only %d entries)!"), number, self->priv->cdtext_entries);
         return FALSE;
     }
 
