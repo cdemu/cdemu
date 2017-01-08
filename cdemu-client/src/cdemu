@@ -116,7 +116,7 @@ class cmd_load (object):
 
     def __call__ (self, proxy, arguments):
         # We need to pass absolute filenames to daemon
-        filenames = map(os.path.abspath, arguments.image_file)
+        filenames = [os.path.abspath(f) for f in arguments.image_file]
 
         # Gather parser parameters into a dictionary
         parser_params = {}
