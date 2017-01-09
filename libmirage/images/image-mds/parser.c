@@ -892,6 +892,7 @@ static void mirage_parser_mds_init (MirageParserMds *self)
         "PARSER-MDS",
         Q_("MDS Image Parser"),
         2,
+        /* xgettext:no-c-format */
         Q_("Alchohol 120% images (*.mds)"), "application/x-mds",
         Q_("GameJack images (*.xmd)"), "application/x-xmd"
     );
