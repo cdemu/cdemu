@@ -389,7 +389,7 @@ static gboolean mirage_filter_stream_daa_initialize_zlib (MirageFilterStreamDaa 
     ret = inflateInit2(zlib_stream, -15);
     if (ret != Z_OK) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib decoder!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
 
@@ -484,7 +484,7 @@ static gboolean mirage_filter_stream_daa_read_main_header (MirageFilterStreamDaa
     /* Read main header */
     if (mirage_stream_read(stream, header, sizeof(DAA_MainHeader), NULL) != sizeof(DAA_MainHeader)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read main file's header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read main file's header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read main file's header!"));
         return FALSE;
     }
 
@@ -516,7 +516,7 @@ static gboolean mirage_filter_stream_daa_read_main_header (MirageFilterStreamDaa
 
     if (crc != header->crc) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CRC32 checksum mismatch!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "CRC32 checksum mismatch!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("CRC32 checksum mismatch!"));
         return FALSE;
     }
 
@@ -533,7 +533,7 @@ static gboolean mirage_filter_stream_daa_read_part_header (MirageFilterStreamDaa
     /* Read main header */
     if (mirage_stream_read(stream, header, sizeof(DAA_PartHeader), NULL) != sizeof(DAA_PartHeader)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part file's header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read part file's header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read part file's header!"));
         return FALSE;
     }
 
@@ -558,7 +558,7 @@ static gboolean mirage_filter_stream_daa_read_part_header (MirageFilterStreamDaa
 
     if (crc != header->crc) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CRC32 checksum mismatch!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "CRC32 checksum mismatch!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("CRC32 checksum mismatch!"));
         return FALSE;
     }
 
@@ -586,7 +586,7 @@ static gboolean mirage_filter_stream_daa_read_from_stream (MirageFilterStreamDaa
         }
         if (!part) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find part for offset 0x%llX!\n", __debug__, offset);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to find part for offset 0x%lX!", offset);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to find part for offset 0x%lX!", offset));
             return FALSE;
         }
 
@@ -604,13 +604,13 @@ static gboolean mirage_filter_stream_daa_read_from_stream (MirageFilterStreamDaa
 
         if (!mirage_stream_seek(part->stream, file_offset, G_SEEK_SET, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 0x%X\n", __debug__, file_offset);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to 0x%lX!", file_offset);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to 0x%lX!"), file_offset);
             return FALSE;
         }
 
         if (mirage_stream_read(part->stream, buffer, read_length, NULL) != read_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 0x%X bytes!\n", __debug__, read_length);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read 0x%X bytes!", read_length);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to read 0x%X bytes!"), read_length);
             return FALSE;
         }
 
@@ -634,7 +634,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_split (MirageFilterStr
     /* First field is number of parts (files) */
     if (mirage_stream_read(stream, &descriptor, sizeof(descriptor), NULL) != sizeof(descriptor)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor data!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor data!"));
         return FALSE;
     }
     daa_descriptor_split_fix_endian(&descriptor);
@@ -667,7 +667,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_split (MirageFilterStr
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename format type!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid filename format type!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid filename format type!"));
             return FALSE;
         }
     }
@@ -685,14 +685,14 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_encryption (MirageFilt
     /* Validate descriptor size */
     if (descriptor_size != sizeof(descriptor)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid size for encryption descriptor (%d vs %d)!\n", __debug__, descriptor_size, sizeof(descriptor));
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid size for encryption descriptor!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid size for encryption descriptor!"));
         return FALSE;
     }
 
     /* Read descriptor data */
     if (mirage_stream_read(stream, &descriptor, sizeof(descriptor), NULL) != sizeof(descriptor)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor data!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor data!"));
         return FALSE;
     }
     daa_descriptor_encryption_fix_endian(&descriptor);
@@ -716,7 +716,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_encryption (MirageFilt
         if (!prompt_password) {
             /* Password not provided (or password function is not set) */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, "Image is encrypted!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Image is encrypted!"));
             return FALSE;
         }
 
@@ -728,7 +728,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_encryption (MirageFilt
     /* Check if password is correct */
     if (descriptor.password_crc != crc32(0, computed_key, 128)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  incorrect password!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Incorrect password!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Incorrect password!"));
         return FALSE;
     }
 
@@ -757,7 +757,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptors (MirageFilterStreamDa
         /* Read descriptor header */
         if (mirage_stream_read(stream, &descriptor_header, sizeof(descriptor_header), NULL) != sizeof(descriptor_header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor header!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor type!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor type!"));
             return FALSE;
         }
 
@@ -890,7 +890,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     tmp_chunks_data = g_try_new(guint8, tmp_chunks_len);
     if (!tmp_chunks_data) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate chunk table buffer (%d bytes)!\n", __debug__, tmp_chunks_len);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate chunk table buffer (%d bytes)!", tmp_chunks_len);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate chunk table buffer (%d bytes)!"), tmp_chunks_len);
         return FALSE;
     }
 
@@ -898,7 +898,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     mirage_stream_seek(stream, self->priv->chunk_table_offset, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, tmp_chunks_data, tmp_chunks_len, NULL) != tmp_chunks_len) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read chunk table data!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read chunk table data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read chunk table data!"));
         return FALSE;
     }
 
@@ -932,7 +932,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     self->priv->chunk_table = g_try_new(DAA_Chunk, self->priv->num_chunks);
     if (!self->priv->chunk_table) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate chunk table (%ld bytes)!\n", __debug__, self->priv->num_chunks*sizeof(DAA_Chunk));
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate chunk table (%ld bytes)!", self->priv->num_chunks*sizeof(DAA_Chunk));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate chunk table (%ld bytes)!"), self->priv->num_chunks*sizeof(DAA_Chunk));
         return FALSE;
     }
 
@@ -1010,7 +1010,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
     if (!self->priv->io_buffer) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: faled to allocate I/O buffer (%d bytes)!\n", __debug__, self->priv->io_buffer_size);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate I/O buffer size (%d bytes)!", self->priv->io_buffer_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate I/O buffer size (%d bytes)!"), self->priv->io_buffer_size);
         return FALSE;
     }
 
@@ -1036,7 +1036,7 @@ static gboolean mirage_filter_stream_daa_build_part_table (MirageFilterStreamDaa
     self->priv->part_table = g_try_new0(DAA_Part, self->priv->num_parts);
     if (!self->priv->part_table) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: faled to allocate part table (%d bytes)!\n", __debug__, self->priv->num_parts*sizeof(DAA_Part));
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate part table!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate part table!"));
         return FALSE;
     }
 
@@ -1088,7 +1088,7 @@ static gboolean mirage_filter_stream_daa_build_part_table (MirageFilterStreamDaa
         /* Read signature */
         if (mirage_stream_read(part->stream, part_signature, sizeof(part_signature), NULL) != sizeof(part_signature)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's signature!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's signature!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to read part's signature!"));
             return FALSE;
         }
 
@@ -1102,7 +1102,7 @@ static gboolean mirage_filter_stream_daa_build_part_table (MirageFilterStreamDaa
             part->offset = part_header.chunk_data_offset & 0x00FFFFFF;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part's signature!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Part's signature is invalid!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Part's signature is invalid!"));
             return FALSE;
         }
 
@@ -1193,14 +1193,14 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
                to have a test image first... */
             if (self->priv->compressed_chunk_table) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: compressed chunk table not supported yet!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Compressed chunk table not supported yet!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Compressed chunk table not supported yet!"));
                 return FALSE;
             }
 
             /* We do not handle swapped bytes, either */
             if (self->priv->bit_swap_type != 0) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: bit swap type %d not supported yet!\n", __debug__, self->priv->bit_swap_type);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Bit swap type %d not supported yet!", self->priv->bit_swap_type);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Bit swap type %d not supported yet!"), self->priv->bit_swap_type);
                 return FALSE;
             }
 
@@ -1226,7 +1226,7 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported format: 0x%X!\n", __debug__, self->priv->header.format_version);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported format: 0x%X!", self->priv->header.format_version);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported format: 0x%X!"), self->priv->header.format_version);
             return FALSE;
         }
     }
@@ -1242,7 +1242,7 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
     if (!self->priv->inflate_buffer) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate inflate buffer (%d bytes)!\n", __debug__, self->priv->inflate_buffer_size);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate inflate buffer (%d bytes)!", self->priv->inflate_buffer_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate inflate buffer (%d bytes)!"), self->priv->inflate_buffer_size);
         return FALSE;
     }
 
@@ -1278,7 +1278,7 @@ static gboolean mirage_filter_stream_daa_open (MirageFilterStream *_self, Mirage
     /* Look for signature at the beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, signature, sizeof(signature), NULL) != sizeof(signature)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read 16-byte signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read 16-byte signature!"));
         return FALSE;
     }
 
@@ -1290,7 +1290,7 @@ static gboolean mirage_filter_stream_daa_open (MirageFilterStream *_self, Mirage
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GBI (gBurner) format\n", __debug__);
         self->priv->image_type = IMAGE_GBI;
     } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid signature!"));
         return FALSE;
     }
 
@@ -1420,11 +1420,11 @@ static void mirage_filter_stream_daa_init (MirageFilterStreamDaa *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-DAA",
-        "DAA File Filter",
+        Q_("DAA File Filter"),
         FALSE,
         2,
-        "PowerISO images (*.daa)", "application/x-daa",
-        "gBurner images (*.gbi)", "application/x-gbi"
+        Q_("PowerISO images (*.daa)"), "application/x-daa",
+        Q_("gBurner images (*.gbi)"), "application/x-gbi"
     );
 
     self->priv->chunk_table = NULL;

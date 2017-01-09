@@ -1,5 +1,14 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+filters/filter-cso/filter-stream.c
+filters/filter-daa/filter-stream.c
+filters/filter-dmg/filter-stream.c
+filters/filter-ecm/filter-stream.c
+filters/filter-gzip/filter-stream.c
+filters/filter-isz/filter-stream.c
+filters/filter-macbinary/filter-stream.c
+filters/filter-sndfile/filter-stream.c
+filters/filter-xz/filter-stream.c
 images/image-b6t/parser.c
 images/image-c2d/parser.c
 images/image-ccd/parser.c

@@ -136,7 +136,7 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
 
     /* Position at the beginning of the segment table */
     if (!mirage_stream_seek(stream, header->seg_offs, G_SEEK_SET, NULL)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of segment table!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of segment table!"));
         return FALSE;
     }
 
@@ -148,7 +148,7 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
         /* Read segment */
         ret = mirage_stream_read(stream, &cur_segment, sizeof(ISZ_Segment), NULL);
         if (ret != sizeof(ISZ_Segment)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read segment!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read segment!"));
             return FALSE;
         }
 
@@ -168,13 +168,13 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
                 /* Allocate segments */
                 self->priv->segments = g_try_new(ISZ_Segment, self->priv->num_segments);
                 if (!self->priv->segments) {
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for segment table!");
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for segment table!"));
                     return FALSE;
                 }
 
                 /* Position at the beginning of the segment table */
                 if (!mirage_stream_seek(stream, header->seg_offs, G_SEEK_SET, NULL)) {
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of segment table!");
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of segment table!"));
                     return FALSE;
                 }
 
@@ -215,7 +215,7 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
         }
         self->priv->segments = g_try_new(ISZ_Segment, self->priv->num_segments);
         if (!self->priv->segments) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for segment table!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for segment table!"));
             return FALSE;
         }
 
@@ -260,7 +260,7 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
         self->priv->num_segments = 1;
         self->priv->segments = cur_segment = g_try_new(ISZ_Segment, self->priv->num_segments);
         if (!self->priv->segments) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for segment table!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for segment table!"));
             return FALSE;
         }
 
@@ -290,7 +290,7 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
     /* Allocate space for streams */
     self->priv->streams = streams = g_try_new(MirageStream *, self->priv->num_segments);
     if (!streams) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for streams!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
     }
 
@@ -306,7 +306,7 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, filename);
         streams[s] = mirage_contextual_create_input_stream (MIRAGE_CONTEXTUAL(self), filename, error);
         if (!streams[s]) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to create stream!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
             return FALSE;
         }
         g_free(filename);
@@ -362,14 +362,14 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     /* At least one part must be present */
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in ISZ file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in ISZ file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No parts in ISZ file!"));
         return FALSE;
     }
 
     /* Allocate part index */
     self->priv->parts = g_try_new(ISZ_Chunk, self->priv->num_parts);
     if (!self->priv->parts) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for chunk table!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for chunk table!"));
         return FALSE;
     }
 
@@ -381,7 +381,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
         /* Chunk pointer length > 4 not implemented */
         if (header->ptr_len > 4) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Pointer length %u not supported yet!\n", __debug__, header->ptr_len);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Unsupported pointer length!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Unsupported pointer length!"));
             return FALSE;
         }
 
@@ -389,13 +389,13 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
         chunk_buf_size = header->num_blocks * header->ptr_len;
         chunk_buffer = g_try_malloc(chunk_buf_size);
         if (!chunk_buffer) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for chunk buffer!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for chunk buffer!"));
             return FALSE;
         }
 
         /* Position at the beginning of the chunk table */
         if (!mirage_stream_seek(stream, header->chunk_offs, G_SEEK_SET, NULL)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of chunk table!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of chunk table!"));
             g_free (chunk_buffer);
             return FALSE;
         }
@@ -403,7 +403,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
         /* Read chunk table */
         ret = mirage_stream_read(stream, chunk_buffer, chunk_buf_size, NULL);
         if (ret != chunk_buf_size) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read index!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read index!"));
             g_free (chunk_buffer);
             return FALSE;
         }
@@ -480,7 +480,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     ret = inflateInit2(zlib_stream, 15);
 
     if (ret != Z_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
 
@@ -494,7 +494,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
 
     if (ret != BZ_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize libbz2's decompress (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize libbz2's decompress (error: %d)!"), ret);
         return FALSE;
     }
 
@@ -502,7 +502,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     self->priv->inflate_buffer_size = header->block_size;
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
     if (!self->priv->inflate_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for inflate buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for inflate buffer!"));
         return FALSE;
     }
 
@@ -510,7 +510,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     self->priv->io_buffer_size = header->block_size;
     self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
     if (!self->priv->io_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for I/O buffer!"));
         return FALSE;
     }
 
@@ -532,7 +532,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
     /* Read ISZ header */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, header, sizeof(ISZ_Header), NULL) != sizeof(ISZ_Header)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read ISZ header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read ISZ header!"));
         return FALSE;
     }
 
@@ -541,7 +541,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
 
     /* Validate ISZ header */
     if (memcmp(&header->signature, isz_signature, sizeof(isz_signature)) || header->version > 1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid ISZ header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid ISZ header!"));
         return FALSE;
     }
 
@@ -550,7 +550,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
     /* Only perform parsing on the first file in a set */
     const gchar *original_filename = mirage_stream_get_filename(stream);
     if (!mirage_helper_has_suffix(original_filename, ".isz")) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "File is not the first file of a set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
         return FALSE;
     }
 
@@ -823,10 +823,10 @@ static void mirage_filter_stream_isz_init (MirageFilterStreamIsz *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-ISZ",
-        "ISZ File Filter",
+        Q_("ISZ File Filter"),
         FALSE,
         1,
-        "Compressed ISO images (*.isz)", "application/x-isz"
+        Q_("Compressed ISO images (*.isz)"), "application/x-isz"
     );
 
     self->priv->num_segments = 0;

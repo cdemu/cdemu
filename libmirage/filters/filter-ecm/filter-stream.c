@@ -67,7 +67,7 @@ static gboolean mirage_filter_stream_ecm_append_part (MirageFilterStreamEcm *sel
         self->priv->parts = g_try_renew(ECM_Part, self->priv->parts, self->priv->allocated_parts);
 
         if (!self->priv->parts) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate %d ECM parts!", self->priv->allocated_parts);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate %d ECM parts!"), self->priv->allocated_parts);
             return FALSE;
         }
     }
@@ -82,7 +82,7 @@ static gboolean mirage_filter_stream_ecm_append_part (MirageFilterStreamEcm *sel
         self->priv->parts = g_try_renew(ECM_Part, self->priv->parts, self->priv->allocated_parts);
 
         if (!self->priv->parts) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate %d ECM parts!", self->priv->allocated_parts);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate %d ECM parts!"), self->priv->allocated_parts);
             return FALSE;
         }
     }
@@ -116,7 +116,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
 
     /* Position behind the signature */
     if (!mirage_stream_seek(stream, 4, G_SEEK_SET, NULL)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek behind signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek behind signature!"));
         return FALSE;
     }
 
@@ -126,7 +126,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
 
         /* Read type and number of sectors */
         if (mirage_stream_read(stream, &c, sizeof(c), NULL) != sizeof(c)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read a byte!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read a byte!"));
             return FALSE;
         }
 
@@ -135,13 +135,13 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
 
         while (c & 0x80) {
             if (mirage_stream_read(stream, &c, sizeof(c), NULL) != sizeof(c)) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read a byte!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read a byte!"));
                 return FALSE;
             }
 
             if ( (bits > 31) || ((guint32)(c & 0x7F)) >= (((guint32)0x80000000LU) >> (bits-1)) ) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: corrupted ECM file; invalid sector count!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Corrupted ECM file; invalid sector count!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Corrupted ECM file; invalid sector count!"));
                 return FALSE;
             }
             num |= ((guint32)(c & 0x7F)) << bits;
@@ -179,7 +179,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
             }
             default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled ECM part type %d!\n", __debug__, type);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Unhandled ECM part type %d!", type);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Unhandled ECM part type %d!"), type);
                 return FALSE;
             }
         }
@@ -187,7 +187,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
         /* Get raw offset, then skip raw data */
         raw_offset = mirage_stream_tell(stream);
         if (!mirage_stream_seek(stream, raw_size, G_SEEK_CUR, NULL)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek over ECM part data!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek over ECM part data!"));
             return FALSE;
         }
 
@@ -205,7 +205,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
     /* At least one part must be present */
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in ECM file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in ECM file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No parts in ECM file!"));
         return FALSE;
     }
 
@@ -234,13 +234,13 @@ static gboolean mirage_filter_stream_ecm_open (MirageFilterStream *_self, Mirage
     /* Look for "ECM " signature at the beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read 4 signature bytes!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read 4 signature bytes!"));
         return FALSE;
     }
 
     /* Check signature */
     if (memcmp(sig, ecm_signature, sizeof(ecm_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid signature!"));
         return FALSE;
     }
 
@@ -516,10 +516,10 @@ static void mirage_filter_stream_ecm_init (MirageFilterStreamEcm *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-ECM",
-        "ECM File Filter",
+        Q_("ECM File Filter"),
         FALSE,
         1,
-        "ECM'ified images (*.ecm)", "application/x-ecm"
+        Q_("ECM'ified images (*.ecm)"), "application/x-ecm"
     );
 
     self->priv->allocated_parts = 0;

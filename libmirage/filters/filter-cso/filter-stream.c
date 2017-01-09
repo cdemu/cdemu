@@ -82,20 +82,20 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     /* At least one part must be present */
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in CSO file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in CSO file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No parts in CSO file!"));
         return FALSE;
     }
 
     /* Allocate part index */
     self->priv->parts = g_try_new(CSO_Part, self->priv->num_indices);
     if (!self->priv->parts) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for index!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for index!"));
         return FALSE;
     }
 
     /* Position at the beginning of the index */
     if (!mirage_stream_seek(stream, sizeof(ciso_header_t), G_SEEK_SET, NULL)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of index!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of index!"));
         return FALSE;
     }
 
@@ -108,7 +108,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
         /* Read index entry */
         ret = mirage_stream_read(stream, &buf, sizeof(buf), NULL);
         if (ret != sizeof(guint32)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read from index!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read from index!"));
             return FALSE;
         }
 
@@ -138,7 +138,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     ret = inflateInit2(zlib_stream, 15);
 
     if (ret != Z_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
 
@@ -146,7 +146,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     self->priv->inflate_buffer_size = header->block_size;
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
     if (!self->priv->inflate_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for inflate buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for inflate buffer!"));
         return FALSE;
     }
 
@@ -154,7 +154,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     self->priv->io_buffer_size = header->block_size;
     self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
     if (!self->priv->io_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for I/O buffer!"));
         return FALSE;
     }
 
@@ -188,7 +188,7 @@ static gboolean mirage_filter_stream_cso_open (MirageFilterStream *_self, Mirage
     /* Read CISO header */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, header, sizeof(ciso_header_t), NULL) != sizeof(ciso_header_t)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read CISO header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read CISO header!"));
         return FALSE;
     }
 
@@ -198,7 +198,7 @@ static gboolean mirage_filter_stream_cso_open (MirageFilterStream *_self, Mirage
     /* Validate CISO header */
     if (memcmp(&header->magic, ciso_signature, sizeof(ciso_signature)) || header->version > 1 ||
         header->total_bytes == 0 || header->block_size == 0) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid header!"));
         return FALSE;
     }
 
@@ -333,10 +333,10 @@ static void mirage_filter_stream_cso_init (MirageFilterStreamCso *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-CSO",
-        "CSO File Filter",
+        Q_("CSO File Filter"),
         FALSE,
         1,
-        "Compressed ISO images (*.ciso, *.cso)", "application/x-cso"
+        Q_("Compressed ISO images (*.ciso, *.cso)"), "application/x-cso"
     );
 
     self->priv->num_parts = 0;

@@ -56,7 +56,7 @@ static gboolean mirage_filter_stream_xz_reallocate_read_buffer (MirageFilterStre
     self->priv->io_buffer = g_try_realloc(self->priv->io_buffer, size);
     if (!self->priv->io_buffer) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to (re)allocate read buffer (%d bytes)!\n", __debug__, size);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to (re)allocate read buffer (%d bytes)!", size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to (re)allocate read buffer (%d bytes)!"), size);
         return FALSE;
     }
     self->priv->io_buffer_size = size;
@@ -83,20 +83,20 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
     /* Read and decode header */
     if (!mirage_stream_seek(stream, 0, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the beginning of header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of header!"));
         return FALSE;
     }
 
     if (mirage_stream_read(stream, self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL) != LZMA_STREAM_HEADER_SIZE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read stream's header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read stream's header!"));
         return FALSE;
     }
 
     ret = lzma_stream_header_decode(&self->priv->header, self->priv->io_buffer);
     if (ret != LZMA_OK) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode stream's header!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to decode stream's header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to decode stream's header!"));
         return FALSE;
     }
 
@@ -104,20 +104,20 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
     /* Read and decode footer */
     if (!mirage_stream_seek(stream, -LZMA_STREAM_HEADER_SIZE, G_SEEK_END, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the beginning of footer!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of footer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of footer!"));
         return FALSE;
     }
 
     if (mirage_stream_read(stream, self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL) != LZMA_STREAM_HEADER_SIZE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's footer!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read stream's footer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read stream's footer!"));
         return FALSE;
     }
 
     ret = lzma_stream_footer_decode(&self->priv->footer, self->priv->io_buffer);
     if (ret != LZMA_OK) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode stream's footer!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to decode stream's footer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to decode stream's footer!"));
         return FALSE;
     }
 
@@ -126,7 +126,7 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
     ret = lzma_stream_flags_compare(&self->priv->header, &self->priv->footer);
     if (ret != LZMA_OK) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: stream's header and footer do not match!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Stream's header and footer do not match!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Stream's header and footer do not match!"));
         return FALSE;
     }
 
@@ -150,25 +150,25 @@ static gboolean mirage_filter_stream_xz_read_index (MirageFilterStreamXz *self, 
 
     /* Read and decode index */
     if (!mirage_stream_seek(stream, -(LZMA_STREAM_HEADER_SIZE + self->priv->footer.backward_size), G_SEEK_END, NULL)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of index!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of index!"));
         return FALSE;
     }
 
     if (mirage_stream_read(stream, self->priv->io_buffer, self->priv->footer.backward_size, NULL) != self->priv->footer.backward_size) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read stream's index!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read stream's index!"));
         return FALSE;
     }
 
     ret = lzma_index_buffer_decode(&self->priv->index, &memory_limit, NULL, self->priv->io_buffer, &in_pos, self->priv->footer.backward_size);
     if (ret != LZMA_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to decode stream's index!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to decode stream's index!"));
         return FALSE;
     }
 
 
     /* Validate */
     if (lzma_index_size(self->priv->index) != self->priv->footer.backward_size) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Declared and actual index size mismatch!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Declared and actual index size mismatch!"));
         return FALSE;
     }
 
@@ -224,7 +224,7 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
     /* For performance reasons, we limit the allowed size of blocks */
     if (max_block_size > MAX_BLOCK_SIZE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%ld bytes) exceeds the limit of %d bytes')!\n", __debug__, max_block_size, MAX_BLOCK_SIZE);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_DEBUG_PARSER, "The largest block (%ld bytes) exceeds the limit of %d bytes')!", max_block_size, MAX_BLOCK_SIZE);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_DEBUG_PARSER, Q_("The largest block (%ld bytes) exceeds the limit of %d bytes')!"), max_block_size, MAX_BLOCK_SIZE);
         return FALSE;
     }
 
@@ -233,7 +233,7 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
     self->priv->block_buffer_size = max_block_size;
     self->priv->block_buffer = g_try_malloc(self->priv->block_buffer_size);
     if (!self->priv->block_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate block buffer (%d bytes)!", self->priv->block_buffer_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate block buffer (%d bytes)!"), self->priv->block_buffer_size);
         return FALSE;
     }
 
@@ -258,13 +258,13 @@ static gboolean mirage_filter_stream_xz_open (MirageFilterStream *_self, MirageS
     /* Look for signature at the beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read 6 signature bytes!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read 6 signature bytes!"));
         return FALSE;
     }
 
     /* Check signature */
     if (memcmp(sig, xz_signature, sizeof(xz_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid signature!"));
         return FALSE;
     }
 
@@ -411,10 +411,10 @@ static void mirage_filter_stream_xz_init (MirageFilterStreamXz *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-XZ",
-        "XZ File Filter",
+        Q_("XZ File Filter"),
         FALSE,
         1,
-        "xz-compressed images (*.xz)", "application/x-xz"
+        Q_("xz-compressed images (*.xz)"), "application/x-xz"
     );
 
     self->priv->cached_block_number = -1;

@@ -101,7 +101,7 @@ static gboolean mirage_filter_stream_gzip_compute_part_sizes (MirageFilterStream
     self->priv->part_buffer_size = max_size;
     self->priv->part_buffer = g_try_malloc(self->priv->part_buffer_size);
     if (!self->priv->part_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate part buffer (%d bytes)!", self->priv->part_buffer_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate part buffer (%d bytes)!"), self->priv->part_buffer_size);
         return FALSE;
     }
 
@@ -116,7 +116,7 @@ static gboolean mirage_filter_stream_gzip_append_part (MirageFilterStreamGzip *s
         self->priv->parts = g_try_renew(GZIP_Part, self->priv->parts, self->priv->allocated_parts);
 
         if (!self->priv->parts) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate %d GZIP parts!", self->priv->allocated_parts);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate %d GZIP parts!"), self->priv->allocated_parts);
             return FALSE;
         }
     }
@@ -131,7 +131,7 @@ static gboolean mirage_filter_stream_gzip_append_part (MirageFilterStreamGzip *s
         self->priv->parts = g_try_renew(GZIP_Part, self->priv->parts, self->priv->allocated_parts);
 
         if (!self->priv->parts) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate %d GZIP parts!", self->priv->allocated_parts);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate %d GZIP parts!"), self->priv->allocated_parts);
             return FALSE;
         }
     }
@@ -168,7 +168,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     self->priv->window_buffer = g_try_malloc(self->priv->window_buffer_size);
 
     if (!self->priv->io_buffer || !self->priv->window_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate buffers!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate buffers!"));
         return FALSE;
     }
 
@@ -184,13 +184,13 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     ret = inflateInit2(zlib_stream, 47); /* 47 = automatic zlib/gzip decoding */
 
     if (ret != Z_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
 
     /* Position at the beginning of the stream */
     if (!mirage_stream_seek(stream, 0, G_SEEK_SET, NULL)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of stream!"));
         return FALSE;
     }
 
@@ -201,10 +201,10 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
         /* Read some compressed data */
         ret = mirage_stream_read(stream, self->priv->io_buffer, self->priv->io_buffer_size, NULL);
         if (ret == -1) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read %d bytes from underlying stream!", CHUNKSIZE);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read %d bytes from underlying stream!"), CHUNKSIZE);
             return FALSE;
         } else if (ret == 0) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Unexpectedly reached EOF!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Unexpectedly reached EOF!"));
             return FALSE;
         }
 
@@ -229,7 +229,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
             totalOut -= zlib_stream->avail_out;
 
             if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to inflate!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to inflate!"));
                 return FALSE;
             }
             if (ret == Z_STREAM_END) {
@@ -253,7 +253,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in GZIP file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in GZIP file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No parts in GZIP file!"));
         return FALSE;
     }
 
@@ -287,13 +287,13 @@ static gboolean mirage_filter_stream_gzip_open (MirageFilterStream *_self, Mirag
     /* Look for gzip signature at the beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read 4 signature bytes!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read 4 signature bytes!"));
         return FALSE;
     }
 
     /* Check signature */
     if (memcmp(sig, gzip_signature, sizeof(gzip_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid signature!"));
         return FALSE;
     }
 
@@ -487,10 +487,10 @@ static void mirage_filter_stream_gzip_init (MirageFilterStreamGzip *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-GZIP",
-        "GZIP File Filter",
+        Q_("GZIP File Filter"),
         FALSE,
         1,
-        "gzip-compressed images (*.gz)", "application/x-gzip"
+        Q_("gzip-compressed images (*.gz)"), "application/x-gzip"
     );
 
     self->priv->cached_part = -1;

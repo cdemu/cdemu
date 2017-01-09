@@ -168,7 +168,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     /* Try opening sndfile on top of stream */
     self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, open_mode, &self->priv->format, stream);
     if (!self->priv->sndfile) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to open sndfile: %s", sf_strerror(self->priv->sndfile));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to open sndfile: %s"), sf_strerror(self->priv->sndfile));
         return FALSE;
     }
 
@@ -189,11 +189,11 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
     /* Check some additional requirements (two channels, seekable and samplerate) */
     if (!self->priv->format.seekable) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Audio file is not seekable!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Audio file is not seekable!"));
         return FALSE;
     }
     if (self->priv->format.channels != 2) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid number of channels in audio file (%d)! Only two-channel audio files are supported!", self->priv->format.channels);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Invalid number of channels in audio file (%d)! Only two-channel audio files are supported!"), self->priv->format.channels);
         return FALSE;
     }
 
@@ -211,7 +211,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     }
     self->priv->buffer = g_try_malloc(self->priv->buflen);
     if (!self->priv->buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate read buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate read buffer!"));
         return FALSE;
     }
 
@@ -225,7 +225,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio stream needs to be resampled to 44.1 kHZ, initializing resampler...\n", __debug__);
         self->priv->resampler = src_new(SRC_LINEAR, self->priv->format.channels, &resampler_error);
         if (!self->priv->resampler) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize resampler; error code %d!", resampler_error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to initialize resampler; error code %d!"), resampler_error);
             return FALSE;
         }
 
@@ -234,7 +234,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's output buffer: %d bytes\n", __debug__, buffer_size);
         self->priv->resample_buffer_out = g_try_malloc(buffer_size);
         if (!self->priv->resample_buffer_out) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate resampler output buffer!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate resampler output buffer!"));
             return FALSE;
         }
 
@@ -243,7 +243,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's input buffer: %d bytes\n", __debug__, buffer_size);
         self->priv->resample_buffer_in = g_try_malloc(buffer_size);
         if (!self->priv->resample_buffer_in) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate resampler input buffer!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate resampler input buffer!"));
             return FALSE;
         }
 
@@ -385,13 +385,13 @@ static void mirage_filter_stream_sndfile_init (MirageFilterStreamSndfile *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-SNDFILE",
-        "SNDFILE File Filter",
+        Q_("SNDFILE File Filter"),
         TRUE,
         4,
-        "WAV audio files (*.wav)", "audio/wav",
-        "AIFF audio files (*.aiff)", "audio/x-aiff",
-        "FLAC audio files (*.flac)", "audio/x-flac",
-        "OGG audio files (*.ogg)", "audio/x-ogg"
+        Q_("WAV audio files (*.wav)"), "audio/wav",
+        Q_("AIFF audio files (*.aiff)"), "audio/x-aiff",
+        Q_("FLAC audio files (*.flac)"), "audio/x-flac",
+        Q_("OGG audio files (*.ogg)"), "audio/x-ogg"
     );
 
     self->priv->cached_block = -1;

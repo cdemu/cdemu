@@ -331,13 +331,13 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
     if (koly_block->xml_offset && koly_block->xml_length) {
         rsrc_fork_data = g_try_malloc(koly_block->xml_length);
         if (!rsrc_fork_data) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, koly_block->xml_offset, G_SEEK_SET, NULL);
         if (mirage_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL) != koly_block->xml_length) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read XML resource-fork!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read XML resource-fork!"));
             return FALSE;
         }
 
@@ -345,25 +345,25 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
     } else if (koly_block->rsrc_fork_offset && koly_block->rsrc_fork_length) {
         rsrc_fork_data = g_try_malloc(koly_block->rsrc_fork_length);
         if (!rsrc_fork_data) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, koly_block->rsrc_fork_offset, G_SEEK_SET, NULL);
         if (mirage_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL) != koly_block->rsrc_fork_length) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read binary resource-fork!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read binary resource-fork!"));
             return FALSE;
         }
 
         rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data, koly_block->rsrc_fork_length);
     } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Image lacks either an XML or a binary descriptor!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Image lacks either an XML or a binary descriptor!"));
         return FALSE;
     }
 
     /* Did all go well? */
     if (!rsrc_fork) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to parse resource-fork!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to parse resource-fork!"));
         return FALSE;
     }
 
@@ -427,7 +427,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
                         /* Do nothing */
                     } else {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown block type: %d\n", __debug__, block_type);
-                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Encountered unknown block type: %d!", block_type);
+                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Encountered unknown block type: %d!"), block_type);
                         return FALSE;
                     }
                 }
@@ -461,7 +461,7 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     /* Allocate part index */
     self->priv->parts = g_try_new(DMG_Part, self->priv->num_parts);
     if (!self->priv->parts) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for index!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for index!"));
         return FALSE;
     }
 
@@ -470,7 +470,7 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     /* Loop through resource refs of type 'blkx' */
     rsrc_type = rsrc_find_type(rsrc_fork, "blkx");
     if (!rsrc_type) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to find required 'blkx' type!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to find required 'blkx' type!"));
         return FALSE;
     }
 
@@ -542,7 +542,7 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     ret = inflateInit2(zlib_stream, 15);
 
     if (ret != Z_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
 
@@ -556,21 +556,21 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
 
     if (ret != BZ_OK) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize libbz2's decompress (error: %d)!", ret);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize libbz2's decompress (error: %d)!"), ret);
         return FALSE;
     }
 
     /* Allocate inflate buffer */
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
     if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for inflate buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for inflate buffer!"));
         return FALSE;
     }
 
     /* Allocate I/O buffer */
     self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
     if (!self->priv->io_buffer && self->priv->io_buffer_size) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for I/O buffer!"));
         return FALSE;
     }
 
@@ -592,7 +592,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
     /* Allocate space for streams */
     self->priv->streams = streams = g_try_new(MirageStream *, self->priv->koly_block->segment_count);
     if (!streams) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for streams!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
     }
 
@@ -609,7 +609,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, filename);
         streams[s] = mirage_contextual_create_input_stream (MIRAGE_CONTEXTUAL(self), filename, error);
         if (!streams[s]) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to create stream!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
             return FALSE;
         }
         g_free(filename);
@@ -620,7 +620,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
     self->priv->num_koly_blocks = self->priv->koly_block->segment_count;
     self->priv->koly_block = g_try_renew(koly_block_t, self->priv->koly_block, self->priv->num_koly_blocks);
     if (!self->priv->koly_block) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to reallocate memory for koly blocks!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to reallocate memory for koly blocks!"));
         return FALSE;
     }
 
@@ -636,14 +636,14 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
 
             /* Read koly block */
             if (mirage_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to read koly block!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to read koly block!"));
                 return FALSE;
             }
 
             /* Validate koly block */
             if (memcmp(self->priv->koly_block[s].signature, koly_signature, sizeof(koly_signature))) {
                 if (try == 1) {
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Invalid koly block!");
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Invalid koly block!"));
                     return FALSE;
                 }
             } else {
@@ -674,7 +674,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     self->priv->num_koly_blocks = 1;
     self->priv->koly_block = koly_block = g_try_new(koly_block_t, self->priv->num_koly_blocks);
     if (!koly_block) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for koly block!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for koly block!"));
         return FALSE;
     }
 
@@ -688,14 +688,14 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
         /* Read koly block */
         if (mirage_stream_read(stream, koly_block, sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter stream cannot handle given image: failed to read koly block!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter stream cannot handle given image: failed to read koly block!"));
             return FALSE;
         }
 
         /* Validate koly block */
         if (memcmp(koly_block->signature, koly_signature, sizeof(koly_signature))) {
             if (try == 1) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter stream cannot handle given image: invalid koly block!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter stream cannot handle given image: invalid koly block!"));
                 return FALSE;
             }
         } else {
@@ -708,7 +708,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
     /* Only perform parsing on the first file in a set */
     if (koly_block->segment_number != 1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "File is not the first file of a set!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
         return FALSE;
     }
 
@@ -718,7 +718,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     /* Open streams */
     ret = mirage_filter_stream_dmg_open_streams(self, error);
     if (!ret) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to open streams!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to open streams!"));
         return FALSE;
     }
     /* This have been re-allocated, so update local pointer */
@@ -985,10 +985,10 @@ static void mirage_filter_stream_dmg_init (MirageFilterStreamDmg *self)
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-DMG",
-        "DMG File Filter",
+        Q_("DMG File Filter"),
         FALSE,
         1,
-        "Apple Disk Image (*.dmg)", "application/x-apple-diskimage"
+        Q_("Apple Disk Image (*.dmg)"), "application/x-apple-diskimage"
     );
 
     self->priv->koly_block = NULL;
