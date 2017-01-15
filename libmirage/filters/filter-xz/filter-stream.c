@@ -223,8 +223,8 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
 
     /* For performance reasons, we limit the allowed size of blocks */
     if (max_block_size > MAX_BLOCK_SIZE) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%ld bytes) exceeds the limit of %d bytes')!\n", __debug__, max_block_size, MAX_BLOCK_SIZE);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_DEBUG_PARSER, Q_("The largest block (%ld bytes) exceeds the limit of %d bytes')!"), max_block_size, MAX_BLOCK_SIZE);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%ld bytes) exceeds the limit of %d bytes!\n", __debug__, max_block_size, MAX_BLOCK_SIZE);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_DEBUG_PARSER, Q_("The largest block (%ld bytes) exceeds the limit of %d bytes!"), max_block_size, MAX_BLOCK_SIZE);
         return FALSE;
     }
 
