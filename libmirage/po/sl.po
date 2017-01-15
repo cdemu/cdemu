@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libmirage 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-07 23:27+0100\n"
-"PO-Revision-Date: 2017-01-07 23:26+0100\n"
+"POT-Creation-Date: 2017-01-15 22:01+0100\n"
+"PO-Revision-Date: 2017-01-15 22:02+0100\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -18,6 +18,683 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Gtranslator 2.91.7\n"
+
+#: ../filters/filter-cso/filter-stream.c:85
+#, c-format
+msgid "No parts in CSO file!"
+msgstr "CSO datoteka ne vsebuje nobenega dela!"
+
+#: ../filters/filter-cso/filter-stream.c:92
+#: ../filters/filter-dmg/filter-stream.c:464
+#, c-format
+msgid "Failed to allocate memory for index!"
+msgstr "Napaka pri dodelitvi pomnilnika za indeks!"
+
+#: ../filters/filter-cso/filter-stream.c:98
+#: ../filters/filter-xz/filter-stream.c:153
+#, c-format
+msgid "Failed to seek to the beginning of index!"
+msgstr "Napaka pri premiku na začetek indeksa!"
+
+#: ../filters/filter-cso/filter-stream.c:111
+#, c-format
+msgid "Failed to read from index!"
+msgstr "Napaka pri branju indeksa"
+
+#: ../filters/filter-cso/filter-stream.c:141
+#: ../filters/filter-daa/filter-stream.c:392
+#: ../filters/filter-dmg/filter-stream.c:545
+#: ../filters/filter-gzip/filter-stream.c:187
+#: ../filters/filter-isz/filter-stream.c:483
+#, c-format
+msgid "Failed to initialize zlib's inflate (error: %d)!"
+msgstr "Napaka pri inicializaciji zlib inflate (napaka: %d)!"
+
+#: ../filters/filter-cso/filter-stream.c:149
+#: ../filters/filter-dmg/filter-stream.c:566
+#: ../filters/filter-isz/filter-stream.c:505
+#, c-format
+msgid "Failed to allocate memory for inflate buffer!"
+msgstr "Napaka pri dodelitvi medpomnilnika za dekompresijo!"
+
+#: ../filters/filter-cso/filter-stream.c:157
+#: ../filters/filter-dmg/filter-stream.c:573
+#: ../filters/filter-isz/filter-stream.c:513
+#, c-format
+msgid "Failed to allocate memory for I/O buffer!"
+msgstr "Napaka pri dodelitvi medpomnilnika za prenos podatkov!"
+
+#: ../filters/filter-cso/filter-stream.c:191
+#, c-format
+msgid "Filter cannot handle given data: failed to read CISO header!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri branju CISO glave!"
+
+#: ../filters/filter-cso/filter-stream.c:201
+#: ../filters/filter-macbinary/filter-stream.c:240
+#, c-format
+msgid "Filter cannot handle given data: invalid header!"
+msgstr "Filter ni sposoben prebrati podanih podatkov: neveljavna glava!"
+
+#: ../filters/filter-cso/filter-stream.c:336
+msgid "CSO File Filter"
+msgstr "Datotečni filter CSO"
+
+#: ../filters/filter-cso/filter-stream.c:339
+msgid "Compressed ISO images (*.ciso, *.cso)"
+msgstr "Stisnjeni odtisi diskov ISO (*.ciso, *.cso)"
+
+#: ../filters/filter-daa/filter-stream.c:487
+#, c-format
+msgid "Failed to read main file's header!"
+msgstr "Napaka pri branju glave iz glavne datoteke!"
+
+#: ../filters/filter-daa/filter-stream.c:519
+#: ../filters/filter-daa/filter-stream.c:561
+#, c-format
+msgid "CRC32 checksum mismatch!"
+msgstr "Neveljavna nadzorna vsota CRC32!"
+
+#: ../filters/filter-daa/filter-stream.c:536
+#, c-format
+msgid "Failed to read part file's header!"
+msgstr "Napaka pri branju glave iz delne datoteke!"
+
+#: ../filters/filter-daa/filter-stream.c:589
+#, c-format
+msgid "Failed to find part for offset 0x%lX!"
+msgstr "Nisem uspel najti dela za položaj 0x%lX!"
+
+#: ../filters/filter-daa/filter-stream.c:607
+#, c-format
+msgid "Failed to seek to 0x%lX!"
+msgstr "Napaka pri premiku na položaj 0x%lX!"
+
+#: ../filters/filter-daa/filter-stream.c:613
+#, c-format
+msgid "Failed to read 0x%X bytes!"
+msgstr "Napaka pri branju 0x%X bajtov podatkov!"
+
+#: ../filters/filter-daa/filter-stream.c:637
+#: ../filters/filter-daa/filter-stream.c:695
+#, c-format
+msgid "Failed to read descriptor data!"
+msgstr "Napaka pri branju deskriptorja!"
+
+#: ../filters/filter-daa/filter-stream.c:670
+#, c-format
+msgid "Invalid filename format type!"
+msgstr "Neveljaven format imena datotek!"
+
+#: ../filters/filter-daa/filter-stream.c:688
+#, c-format
+msgid "Invalid size for encryption descriptor!"
+msgstr "Neveljavna velikost za deskriptor šifriranja!"
+
+#: ../filters/filter-daa/filter-stream.c:719
+#, c-format
+msgid "Image is encrypted!"
+msgstr "Odtis diska je zaščiten z geslom!"
+
+#: ../filters/filter-daa/filter-stream.c:731
+#, c-format
+msgid "Incorrect password!"
+msgstr "Neveljavno geslo!"
+
+#: ../filters/filter-daa/filter-stream.c:760
+#, c-format
+msgid "Failed to read descriptor type!"
+msgstr "Napaka pri branju vrste deskriptorja!"
+
+#: ../filters/filter-daa/filter-stream.c:893
+#, c-format
+msgid "Failed to allocate chunk table buffer (%d bytes)!"
+msgstr "Napaka pri dodelitvi pomnilnika za tabelo kosov (%d bajtov)!"
+
+#: ../filters/filter-daa/filter-stream.c:901
+#, c-format
+msgid "Failed to read chunk table data!"
+msgstr "Napaka pri branju podatkov za tabelo kosov!"
+
+#: ../filters/filter-daa/filter-stream.c:935
+#, c-format
+msgid "Failed to allocate chunk table (%ld bytes)!"
+msgstr "Napaka pri dodelitvi tabele kosov (%ld bajtov)!"
+
+#: ../filters/filter-daa/filter-stream.c:1013
+#, c-format
+msgid "Failed to allocate I/O buffer size (%d bytes)!"
+msgstr "Napaka pri dodelitvi medpomnilnika za prenos podatkov (%d bajtov)!"
+
+#: ../filters/filter-daa/filter-stream.c:1039
+#, c-format
+msgid "Failed to allocate part table!"
+msgstr "Napaka pri dodelitvi pomnilnika za tabelo delov!"
+
+#: ../filters/filter-daa/filter-stream.c:1091
+#, c-format
+msgid "Failed to read part's signature!"
+msgstr "Napaka pri branju podpisa dela!"
+
+#: ../filters/filter-daa/filter-stream.c:1105
+#, c-format
+msgid "Part's signature is invalid!"
+msgstr "Podpis dela je neveljaven!"
+
+#: ../filters/filter-daa/filter-stream.c:1196
+#, c-format
+msgid "Compressed chunk table not supported yet!"
+msgstr "Stisnjena tabela kosov še ni podprta!"
+
+#: ../filters/filter-daa/filter-stream.c:1203
+#, c-format
+msgid "Bit swap type %d not supported yet!"
+msgstr "Vrsta zamenjave bitov %d še ni podprta!"
+
+#: ../filters/filter-daa/filter-stream.c:1229
+#, c-format
+msgid "Unsupported format: 0x%X!"
+msgstr "Nepodprt format: 0x%X!"
+
+#: ../filters/filter-daa/filter-stream.c:1245
+#, c-format
+msgid "Failed to allocate inflate buffer (%d bytes)!"
+msgstr "Napaka pri dodelitvi medpomnilnika za dekompresijo (%d bajtov)!"
+
+#: ../filters/filter-daa/filter-stream.c:1281
+#, c-format
+msgid "Filter cannot handle given data: failed to read 16-byte signature!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri branju 16-bajtnega "
+"podpisa!"
+
+#: ../filters/filter-daa/filter-stream.c:1293
+#: ../filters/filter-ecm/filter-stream.c:243
+#: ../filters/filter-gzip/filter-stream.c:296
+#: ../filters/filter-xz/filter-stream.c:267
+#, c-format
+msgid "Filter cannot handle given data: invalid signature!"
+msgstr "Filter ni sposoben prebrati podanih podatkov: neveljaven podpis!"
+
+#: ../filters/filter-daa/filter-stream.c:1423
+msgid "DAA File Filter"
+msgstr "Datotečni filter DAA"
+
+#: ../filters/filter-daa/filter-stream.c:1426
+msgid "PowerISO images (*.daa)"
+msgstr "PowerISO odtisi diskov (*.daa)"
+
+#: ../filters/filter-daa/filter-stream.c:1427
+msgid "gBurner images (*.gbi)"
+msgstr "gBurner odtisi diskov (*.gbi)"
+
+#: ../filters/filter-dmg/filter-stream.c:334
+#: ../filters/filter-dmg/filter-stream.c:348
+#: ../filters/filter-macbinary/filter-stream.c:272
+#: ../filters/filter-macbinary/filter-stream.c:316
+#, c-format
+msgid "Failed to allocate memory!"
+msgstr "Napaka pri dodelitvi pomnilnika!"
+
+#: ../filters/filter-dmg/filter-stream.c:340
+#, c-format
+msgid "Failed to read XML resource-fork!"
+msgstr "Napaka pri branju XML deskriptorja!"
+
+#: ../filters/filter-dmg/filter-stream.c:354
+#, c-format
+msgid "Failed to read binary resource-fork!"
+msgstr "Napaka pri branju binarnega deskriptorja!"
+
+#: ../filters/filter-dmg/filter-stream.c:360
+#, c-format
+msgid "Image lacks either an XML or a binary descriptor!"
+msgstr "Odtis diska ne vsebuje niti XML niti binarnega deskriptorja!"
+
+#: ../filters/filter-dmg/filter-stream.c:366
+#: ../filters/filter-macbinary/filter-stream.c:286
+#, c-format
+msgid "Failed to parse resource-fork!"
+msgstr "Napaka pri razčlenjevanju deskriptorja!"
+
+#: ../filters/filter-dmg/filter-stream.c:430
+#, c-format
+msgid "Encountered unknown block type: %d!"
+msgstr "Neznana vrsta bloka: %d!"
+
+#: ../filters/filter-dmg/filter-stream.c:473
+#, c-format
+msgid "Failed to find required 'blkx' type!"
+msgstr "Nisem uspel najti zahtevanega bloka 'blkx'!"
+
+#: ../filters/filter-dmg/filter-stream.c:559
+#: ../filters/filter-isz/filter-stream.c:497
+#, c-format
+msgid "Failed to initialize libbz2's decompress (error: %d)!"
+msgstr "Napaka pri inicializaciji libbz2 decompress (error: %d)!"
+
+#: ../filters/filter-dmg/filter-stream.c:595
+#: ../filters/filter-isz/filter-stream.c:293
+#, c-format
+msgid "Failed to allocate memory for streams!"
+msgstr "Napaka pri dodelitvi pomnilnika za podatkovne tokove!"
+
+#: ../filters/filter-dmg/filter-stream.c:612
+#: ../filters/filter-isz/filter-stream.c:309
+#, c-format
+msgid "Failed to create stream!"
+msgstr "Napaka pri ustvarjanju podatkovnega toka!"
+
+#: ../filters/filter-dmg/filter-stream.c:623
+#, c-format
+msgid "Failed to reallocate memory for koly blocks!"
+msgstr "Napaka pri (ponovni) dodelitvi pomnilnika za koly bloke!"
+
+#: ../filters/filter-dmg/filter-stream.c:639
+#, c-format
+msgid "Failed to read koly block!"
+msgstr "Napaka pri branju koly bloka!"
+
+#: ../filters/filter-dmg/filter-stream.c:646
+#, c-format
+msgid "Invalid koly block!"
+msgstr "Neveljaven koly blok!"
+
+#: ../filters/filter-dmg/filter-stream.c:677
+#, c-format
+msgid "Failed to allocate memory for koly block!"
+msgstr "Napaka pri dodelitvi pomnilnika za koly blok!"
+
+#: ../filters/filter-dmg/filter-stream.c:691
+#, c-format
+msgid "Filter stream cannot handle given image: failed to read koly block!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri branju koly bloka!"
+
+#: ../filters/filter-dmg/filter-stream.c:698
+#, c-format
+msgid "Filter stream cannot handle given image: invalid koly block!"
+msgstr "Filter ni sposoben prebrati podanih podatkov: neveljaven koly blok!"
+
+#: ../filters/filter-dmg/filter-stream.c:711
+#: ../filters/filter-isz/filter-stream.c:553
+#, c-format
+msgid "File is not the first file of a set!"
+msgstr "Datoteka ni prva datoteka v naboru več datotek!"
+
+#: ../filters/filter-dmg/filter-stream.c:721
+#, c-format
+msgid "Failed to open streams!"
+msgstr "Napaka pri odpiranju podatkovnih tokov!"
+
+#: ../filters/filter-dmg/filter-stream.c:988
+msgid "DMG File Filter"
+msgstr "Datotečni filter DMG"
+
+#: ../filters/filter-dmg/filter-stream.c:991
+msgid "Apple Disk Image (*.dmg)"
+msgstr "Apple Disk odtis trdega diska (*.dmg)"
+
+#: ../filters/filter-ecm/filter-stream.c:70
+#: ../filters/filter-ecm/filter-stream.c:85
+#, c-format
+msgid "Failed to allocate %d ECM parts!"
+msgstr "Napaka pri dodelitvi pomnilnika za %d ECM delov!"
+
+#: ../filters/filter-ecm/filter-stream.c:119
+#, c-format
+msgid "Failed to seek behind signature!"
+msgstr "Napaka pri premiku na položaj za podpisom!"
+
+#: ../filters/filter-ecm/filter-stream.c:129
+#: ../filters/filter-ecm/filter-stream.c:138
+#, c-format
+msgid "Failed to read a byte!"
+msgstr "Napaka pri branju enega bajta podatkov!"
+
+#: ../filters/filter-ecm/filter-stream.c:144
+#, c-format
+msgid "Corrupted ECM file; invalid sector count!"
+msgstr "Poškodovana datoteka ECM; neveljavno število sektorjev!"
+
+#: ../filters/filter-ecm/filter-stream.c:182
+#, c-format
+msgid "Unhandled ECM part type %d!"
+msgstr "Nepodprt tip ECM del: %d!"
+
+#: ../filters/filter-ecm/filter-stream.c:190
+#, c-format
+msgid "Failed to seek over ECM part data!"
+msgstr "Napaka pri premiku čez podatke ECM dela!"
+
+#: ../filters/filter-ecm/filter-stream.c:208
+#, c-format
+msgid "No parts in ECM file!"
+msgstr "Datoteka ECM ne vsebuje nobenih delov!"
+
+#: ../filters/filter-ecm/filter-stream.c:237
+#: ../filters/filter-gzip/filter-stream.c:290
+#, c-format
+msgid "Filter cannot handle given data: failed to read 4 signature bytes!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri branju 4 bajtov "
+"podpisa!"
+
+#: ../filters/filter-ecm/filter-stream.c:519
+msgid "ECM File Filter"
+msgstr "Datotečni filter ECM"
+
+#: ../filters/filter-ecm/filter-stream.c:522
+msgid "ECM'ified images (*.ecm)"
+msgstr "Odtisi diskov, stisnjeni z ECM (*.ecm)"
+
+#: ../filters/filter-gzip/filter-stream.c:104
+#, c-format
+msgid "Failed to allocate part buffer (%d bytes)!"
+msgstr "Napaka pri dodelitvi pomnilnika za dele (%d bajtov)!"
+
+#: ../filters/filter-gzip/filter-stream.c:119
+#: ../filters/filter-gzip/filter-stream.c:134
+#, c-format
+msgid "Failed to allocate %d GZIP parts!"
+msgstr "Napaka pri dodelitvi pomnilnika za %d GZIP delov!"
+
+#: ../filters/filter-gzip/filter-stream.c:171
+#, c-format
+msgid "Failed to allocate buffers!"
+msgstr "Napaka pri dodelitvi medpomnilnika!"
+
+#: ../filters/filter-gzip/filter-stream.c:193
+#, c-format
+msgid "Failed to seek to the beginning of stream!"
+msgstr "Napaka pri premiku na začetek podatkovnega toka!"
+
+#: ../filters/filter-gzip/filter-stream.c:204
+#, c-format
+msgid "Failed to read %d bytes from underlying stream!"
+msgstr "Napaka pri branju %d bajtov iz spodnjega podatkovnega toka!"
+
+#: ../filters/filter-gzip/filter-stream.c:207
+#, c-format
+msgid "Unexpectedly reached EOF!"
+msgstr "Nepričakovan konec podatkovnega toka!"
+
+#: ../filters/filter-gzip/filter-stream.c:232
+#, c-format
+msgid "Failed to inflate!"
+msgstr "Napaka pri dekompresiji!"
+
+#: ../filters/filter-gzip/filter-stream.c:256
+#, c-format
+msgid "No parts in GZIP file!"
+msgstr "Datoteka GZIP ne vsebuje nobenega dela!"
+
+#: ../filters/filter-gzip/filter-stream.c:490
+msgid "GZIP File Filter"
+msgstr "Datotečni filter GZIP"
+
+#: ../filters/filter-gzip/filter-stream.c:493
+msgid "gzip-compressed images (*.gz)"
+msgstr "Odtisi diskov, stisnjeni z gzip (*.gz)"
+
+#: ../filters/filter-isz/filter-stream.c:139
+#: ../filters/filter-isz/filter-stream.c:177
+#, c-format
+msgid "Failed to seek to the beginning of segment table!"
+msgstr "Napaka pri premiku na začetek tabele segmentov!"
+
+#: ../filters/filter-isz/filter-stream.c:151
+#, c-format
+msgid "Failed to read segment!"
+msgstr "Napaka pri branju segmenta!"
+
+#: ../filters/filter-isz/filter-stream.c:171
+#: ../filters/filter-isz/filter-stream.c:218
+#: ../filters/filter-isz/filter-stream.c:263
+#, c-format
+msgid "Failed to allocate memory for segment table!"
+msgstr "Napaka pri dodelitvi pomnilnika za tabelo segmentov!"
+
+#: ../filters/filter-isz/filter-stream.c:365
+#, c-format
+msgid "No parts in ISZ file!"
+msgstr "Datoteka ISZ ne vsebuje nobenih delov!"
+
+#: ../filters/filter-isz/filter-stream.c:372
+#, c-format
+msgid "Failed to allocate memory for chunk table!"
+msgstr "Napaka pri dodelitvi pomnilnika za tabelo kosov!"
+
+#: ../filters/filter-isz/filter-stream.c:384
+#, c-format
+msgid "Unsupported pointer length!"
+msgstr "Nepodprta dolžina kazalca!"
+
+#: ../filters/filter-isz/filter-stream.c:392
+#, c-format
+msgid "Failed to allocate memory for chunk buffer!"
+msgstr "Napaka pri dodelitvi medpomnilnika za kose!"
+
+#: ../filters/filter-isz/filter-stream.c:398
+#, c-format
+msgid "Failed to seek to the beginning of chunk table!"
+msgstr "Napaka pri premiku na začetek tabele kosov!"
+
+#: ../filters/filter-isz/filter-stream.c:406
+#, c-format
+msgid "Failed to read index!"
+msgstr "Napaka pri branju indeksa!"
+
+#: ../filters/filter-isz/filter-stream.c:535
+#, c-format
+msgid "Filter cannot handle given data: failed to read ISZ header!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov:: napaka pri branju ISZ glave!"
+
+#: ../filters/filter-isz/filter-stream.c:544
+#, c-format
+msgid "Filter cannot handle given data: invalid ISZ header!"
+msgstr "Filter ni sposoben prebrati podanih podatkov: neveljavna ISZ glava!"
+
+#: ../filters/filter-isz/filter-stream.c:826
+msgid "ISZ File Filter"
+msgstr "Datotečni filter ISZ"
+
+#: ../filters/filter-isz/filter-stream.c:829
+msgid "Compressed ISO images (*.isz)"
+msgstr "Stisnjeni odtisi diskov ISO (*.isz)"
+
+#: ../filters/filter-macbinary/filter-stream.c:226
+#, c-format
+msgid "Filter cannot handle given data: failed to read MacBinary header!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri branju MacBinary "
+"glave!"
+
+#: ../filters/filter-macbinary/filter-stream.c:249
+#, c-format
+msgid ""
+"File validates as MacBinary v1.0, however the check is unreliable and "
+"therefore disabled!"
+msgstr ""
+"Datoteka bi lahko bila MacBinary v1.0, vendar je identifikacija zaradi "
+"nezanesljivosti izključena!"
+
+#: ../filters/filter-macbinary/filter-stream.c:279
+#, c-format
+msgid "Failed to read resource-fork!"
+msgstr "Napaka pri branju deskriptorja!"
+
+#: ../filters/filter-macbinary/filter-stream.c:363
+#, c-format
+msgid "KenCode decompression is not supported!"
+msgstr "Dekompresija KenCode ni podprta!"
+
+#: ../filters/filter-macbinary/filter-stream.c:367
+#, c-format
+msgid "Encountered unknown part type: %d!"
+msgstr "Neznana vrsta dela: %d!"
+
+#: ../filters/filter-macbinary/filter-stream.c:378
+#: ../filters/filter-macbinary/filter-stream.c:385
+#, c-format
+msgid "Error allocating memory for buffers!"
+msgstr "Napaka pri dodelitvi medpomnilnika!"
+
+#: ../filters/filter-macbinary/filter-stream.c:414
+#, c-format
+msgid "NDIF data structures not found!"
+msgstr "Nisem uspel najti podatkovnih struktur NDIF!"
+
+#: ../filters/filter-macbinary/filter-stream.c:570
+msgid "MACBINARY File Filter"
+msgstr "Datotečni filter MACBINARY"
+
+#: ../filters/filter-macbinary/filter-stream.c:573
+msgid "MacBinary images (*.bin, *.macbin)"
+msgstr "MacBinary odtisi trdih diskov (*.bin, *.macbin)"
+
+#: ../filters/filter-sndfile/filter-stream.c:171
+#, c-format
+msgid "Filter cannot handle given data: failed to open sndfile: %s"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri odpiranju s "
+"sndfile: %s"
+
+#: ../filters/filter-sndfile/filter-stream.c:192
+#, c-format
+msgid "Audio file is not seekable!"
+msgstr "Podana datoteka z zvočnim zapisom ne podpira naključnega dostopa!"
+
+#: ../filters/filter-sndfile/filter-stream.c:196
+#, c-format
+msgid ""
+"Invalid number of channels in audio file (%d)! Only two-channel audio files "
+"are supported!"
+msgstr ""
+"Neveljavno število kanalov v zvočnem zapisu (%d)! Podprt je samo dvo-kanalni "
+"zvočni zapis!"
+
+#: ../filters/filter-sndfile/filter-stream.c:214
+#, c-format
+msgid "Failed to allocate read buffer!"
+msgstr "Napaka pri dodelitvi medpomnilnika za branje!"
+
+#: ../filters/filter-sndfile/filter-stream.c:228
+#, c-format
+msgid "Failed to initialize resampler; error code %d!"
+msgstr "Napaka pri inicializaciji prevzorčevalnika; koda napake %d!"
+
+#: ../filters/filter-sndfile/filter-stream.c:237
+#, c-format
+msgid "Failed to allocate resampler output buffer!"
+msgstr "Napaka pri dodelitvi pomnilnika za izhod prevzorčevalnika!"
+
+#: ../filters/filter-sndfile/filter-stream.c:246
+#, c-format
+msgid "Failed to allocate resampler input buffer!"
+msgstr "Napaka pri dodelitvi pomnilnika za vhod v prevzorčevalnik!"
+
+#: ../filters/filter-sndfile/filter-stream.c:388
+msgid "SNDFILE File Filter"
+msgstr "Datotečni filter SNDFILE"
+
+#: ../filters/filter-sndfile/filter-stream.c:391
+#: ../images/image-iso/parser.c:425
+msgid "WAV audio files (*.wav)"
+msgstr "Zvočne datoteke WAV (*.wav)"
+
+#: ../filters/filter-sndfile/filter-stream.c:392
+msgid "AIFF audio files (*.aiff)"
+msgstr "Zvočne datoteke AIFF (*.aiff)"
+
+#: ../filters/filter-sndfile/filter-stream.c:393
+msgid "FLAC audio files (*.flac)"
+msgstr "Zvočne datoteke FLAC (*.flac)"
+
+#: ../filters/filter-sndfile/filter-stream.c:394
+msgid "OGG audio files (*.ogg)"
+msgstr "Zvočne datoteke OGG (*.ogg)"
+
+#: ../filters/filter-xz/filter-stream.c:59
+#, c-format
+msgid "Failed to (re)allocate read buffer (%d bytes)!"
+msgstr "Napaka pri (ponovni) dodelitvi pomnilnika za branje (%d bajtov)!"
+
+#: ../filters/filter-xz/filter-stream.c:86
+#, c-format
+msgid "Failed to seek to the beginning of header!"
+msgstr "Napaka pri premiku na začetek glave!"
+
+#: ../filters/filter-xz/filter-stream.c:92
+#, c-format
+msgid "Failed to read stream's header!"
+msgstr "Napaka pri branju glave!"
+
+#: ../filters/filter-xz/filter-stream.c:99
+#, c-format
+msgid "Failed to decode stream's header!"
+msgstr "Napaka pri razčlenitvi glave!"
+
+#: ../filters/filter-xz/filter-stream.c:107
+#, c-format
+msgid "Failed to seek to the beginning of footer!"
+msgstr "Napaka pri premiku na začetek noge!"
+
+#: ../filters/filter-xz/filter-stream.c:113
+#, c-format
+msgid "Failed to read stream's footer!"
+msgstr "Napaka pri branju noge!"
+
+#: ../filters/filter-xz/filter-stream.c:120
+#, c-format
+msgid "Failed to decode stream's footer!"
+msgstr "Napaka pri razčlenitvi noge!"
+
+#: ../filters/filter-xz/filter-stream.c:129
+#, c-format
+msgid "Stream's header and footer do not match!"
+msgstr "Glava in noga podatkovnega toka se ne ujemata!"
+
+#: ../filters/filter-xz/filter-stream.c:158
+#, c-format
+msgid "Failed to read stream's index!"
+msgstr "Napaka pri branju indeksa!"
+
+#: ../filters/filter-xz/filter-stream.c:164
+#, c-format
+msgid "Failed to decode stream's index!"
+msgstr "Napaka pri razčlenitvi indeksa!"
+
+#: ../filters/filter-xz/filter-stream.c:171
+#, c-format
+msgid "Declared and actual index size mismatch!"
+msgstr "Deklarirana in dejanska velikost indeksa se ne ujemata!"
+
+#: ../filters/filter-xz/filter-stream.c:227
+#, c-format
+msgid "The largest block (%ld bytes) exceeds the limit of %d bytes!"
+msgstr "Največji blok (%ld bajtov) presega omejitev %d bajtov!"
+
+#: ../filters/filter-xz/filter-stream.c:236
+#, c-format
+msgid "Failed to allocate block buffer (%d bytes)!"
+msgstr "Napaka pri dodelitvi pomnilnika za blok (%d bajtov)!"
+
+#: ../filters/filter-xz/filter-stream.c:261
+#, c-format
+msgid "Filter cannot handle given data: failed to read 6 signature bytes!"
+msgstr ""
+"Filter ni sposoben prebrati podanih podatkov: napaka pri branju 6 bajtov "
+"podpisa!"
+
+#: ../filters/filter-xz/filter-stream.c:414
+msgid "XZ File Filter"
+msgstr "Datotečni filter XZ"
+
+#: ../filters/filter-xz/filter-stream.c:417
+msgid "xz-compressed images (*.xz)"
+msgstr "Odtisi diskov, stisnjeni z xz (*.xz)"
 
 #: ../images/image-b6t/parser.c:219
 #, c-format
@@ -486,10 +1163,6 @@ msgstr "Parser odtisov diskov ISO"
 msgid "ISO images (*.iso, *.bin, *.img)"
 msgstr "Odtisi diskov ISO (*.iso, *.bin, *.img)"
 
-#: ../images/image-iso/parser.c:425
-msgid "WAV audio files (*.wav)"
-msgstr "Avdio datoteke WAV (*.wav)"
-
 #: ../images/image-iso/writer.c:319
 msgid "ISO Image Writer"
 msgstr "Zapisovalnik odtisov diskov ISO"
@@ -575,12 +1248,12 @@ msgstr "Vrsta medija 0x%X še ni podprta!"
 msgid "MDS Image Parser"
 msgstr "Parser odtisov diskov MDS"
 
-#: ../images/image-mds/parser.c:895
-#, c-format
+#: ../images/image-mds/parser.c:896
+#, no-c-format
 msgid "Alchohol 120% images (*.mds)"
 msgstr "Alchohol 120% odtisi diskov (*.mds)"
 
-#: ../images/image-mds/parser.c:896
+#: ../images/image-mds/parser.c:897
 msgid "GameJack images (*.xmd)"
 msgstr "GameJack odtisi diskov (*.xmd)"
 
