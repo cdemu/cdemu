@@ -586,7 +586,7 @@ static gboolean mirage_filter_stream_daa_read_from_stream (MirageFilterStreamDaa
         }
         if (!part) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find part for offset 0x%llX!\n", __debug__, offset);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to find part for offset 0x%lX!", offset));
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to find part for offset 0x%lX!"), offset);
             return FALSE;
         }
 
