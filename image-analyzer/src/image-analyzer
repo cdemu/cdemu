@@ -274,37 +274,42 @@ class ReadSectorWindow (Gtk.Window):
         if dpm_available:
             # Sector angle
             text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector angle: "), "tag_section")
-            text_buffer.insert(text_buffer.get_end_iter(), _("%f rotations\n") % (sector_angle))
+            text_buffer.insert(text_buffer.get_end_iter(), _("%f rotations") % (sector_angle))
+            text_buffer.insert(text_buffer.get_end_iter(), "\n")
 
             # Sector density
             text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector density: "), "tag_section")
-            text_buffer.insert(text_buffer.get_end_iter(), _("%f degrees per sector\n") % (sector_density))
-            text_buffer.insert(text_buffer.get_end_iter(), "\n")
+            text_buffer.insert(text_buffer.get_end_iter(), _("%f degrees per sector") % (sector_density))
+            text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
 
         # Q subchannel
         (status, subchannel_data) = sector.get_subchannel(Mirage.SectorSubchannelFormat.Q)
 
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Q subchannel:\n"), "tag_section")
-        text_buffer.insert(text_buffer.get_end_iter(), "%s\n" % (print_raw_buffer(subchannel_data)))
+        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Q subchannel:"), "tag_section")
+        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+        text_buffer.insert(text_buffer.get_end_iter(), "%s" % (print_raw_buffer(subchannel_data)))
+        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+
 
         # Subchannel CRC verification
         text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Subchannel CRC verification: "), "tag_section")
         if sector.verify_subchannel_crc():
-            text_buffer.insert(text_buffer.get_end_iter(), _("passed\n"))
+            text_buffer.insert(text_buffer.get_end_iter(), _("passed"))
         else:
-            text_buffer.insert(text_buffer.get_end_iter(), _("bad CRC\n"))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+            text_buffer.insert(text_buffer.get_end_iter(), _("bad CRC"))
+        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
 
         # L-EC verification
         text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector data L-EC verification: "), "tag_section")
         if sector.verify_lec():
-            text_buffer.insert(text_buffer.get_end_iter(), _("passed\n"))
+            text_buffer.insert(text_buffer.get_end_iter(), _("passed"))
         else:
-            text_buffer.insert(text_buffer.get_end_iter(), _("bad sector\n"))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+            text_buffer.insert(text_buffer.get_end_iter(), _("bad sector"))
+        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
 
         # Sector data dump
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector data dump:\n"), "tag_section")
+        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector data dump:"), "tag_section")
+        text_buffer.insert(text_buffer.get_end_iter(), "\n")
 
         # Sync
         try:
@@ -448,7 +453,8 @@ class SectorAnalysisWindow (Gtk.Window):
         length = disc.layout_get_length()
 
         # Display message
-        text_buffer.insert(text_buffer.get_end_iter(), _("Performing sector analysis...\n\n"))
+        text_buffer.insert(text_buffer.get_end_iter(), _("Performing sector analysis..."))
+        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
 
         # Go over sessions
         num_sessions = disc.get_number_of_sessions()
@@ -461,7 +467,8 @@ class SectorAnalysisWindow (Gtk.Window):
             num_tracks = session.get_number_of_tracks()
 
             text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Session #%d: ") % (session_number), "tag_section")
-            text_buffer.insert(text_buffer.get_end_iter(), _("start: %d, length %d, %d tracks\n\n") % (session_start, session_length, num_tracks))
+            text_buffer.insert(text_buffer.get_end_iter(), _("start: %d, length %d, %d tracks") % (session_start, session_length, num_tracks))
+            text_buffer.insert(text_buffer.get_end_iter(), "n\n")
 
             # Go over tracks
             for j in range(0, num_tracks):
@@ -472,7 +479,8 @@ class SectorAnalysisWindow (Gtk.Window):
                 track_length = track.layout_get_length()
 
                 text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Track #%d: ") % (track_number), "tag_section")
-                text_buffer.insert(text_buffer.get_end_iter(), _("start: %d, length %d\n") % (track_start, track_length))
+                text_buffer.insert(text_buffer.get_end_iter(), _("start: %d, length %d") % (track_start, track_length))
+                text_buffer.insert(text_buffer.get_end_iter(), "\n")
 
 
                 for address in range(track_start, track_start + track_length):
@@ -486,14 +494,17 @@ class SectorAnalysisWindow (Gtk.Window):
                         # Verify L-EC
                         if not sector.verify_lec():
                             text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF), "tag_section")
-                            text_buffer.insert(text_buffer.get_end_iter(), "L-EC error\n")
+                            text_buffer.insert(text_buffer.get_end_iter(), "L-EC error")
+                            text_buffer.insert(text_buffer.get_end_iter(), "\n")
                         # Verify subchannel CRC
                         if not sector.verify_subchannel_crc():
                             text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF), "tag_section")
-                            text_buffer.insert(text_buffer.get_end_iter(), "Subchannel CRC error\n")
+                            text_buffer.insert(text_buffer.get_end_iter(), "Subchannel CRC error")
+                            text_buffer.insert(text_buffer.get_end_iter(), "\n")
                     else:
                         text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF), "tag_section")
-                        text_buffer.insert(text_buffer.get_end_iter(), _("Failed to get sector!\n"))
+                        text_buffer.insert(text_buffer.get_end_iter(), _("Failed to get sector!"))
+                        text_buffer.insert(text_buffer.get_end_iter(), "\n")
 
                     # Update progress bar
                     self.progress_bar.set_fraction(float(address - start_sector)/(length - start_sector))
@@ -520,9 +531,10 @@ class SectorAnalysisWindow (Gtk.Window):
         # Finish: display message, hide progress bar and cancel button,
         # and show analyze button
         if self.cancel_analysis.is_cancelled():
-            text_buffer.insert(text_buffer.get_end_iter(), _("Sector analysis cancelled!\n"))
+            text_buffer.insert(text_buffer.get_end_iter(), _("Sector analysis cancelled!"))
         else:
-            text_buffer.insert(text_buffer.get_end_iter(), _("Sector analysis complete!\n"))
+            text_buffer.insert(text_buffer.get_end_iter(), _("Sector analysis complete!"))
+        text_buffer.insert(text_buffer.get_end_iter(), "\n")
 
         self.progress_bar.hide()
         self.button_cancel.hide()
@@ -581,7 +593,8 @@ class DiscTopologyWindow (Gtk.Window):
 
         # No DPM data available
         if len(entries) == 0:
-            figure.suptitle(_("%s\nNo DPM data provided!") % (title))
+            title += "\n" + _("No DPM data provided!")
+            figure.suptitle(title)
             self.set_sensitive(False)
             return
 
@@ -703,17 +716,20 @@ class DiscStructuresWindow (Gtk.Window):
         structure_type = self.spin_button_type.get_value()
 
         # Clear buffer
-        text_buffer.set_text(_("Layer %d, structure %d (0x%X):\n") % (layer, structure_type, structure_type))
+        text_buffer.set_text(_("Layer %d, structure %d (0x%X):") % (layer, structure_type, structure_type))
+        text_buffer.set_text("\n")
 
         # Get structure from disc
         try:
             (status, data) = self.disc.get_disc_structure(layer, structure_type)
         except GLib.Error as e:
-            text_buffer.insert(text_buffer.get_end_iter(), _("Failed to get structure: %s\n") % (e.message))
+            text_buffer.insert(text_buffer.get_end_iter(), _("Failed to get structure: %s") % (e.message))
+            text_buffer.insert(text_buffer.get_end_iter(), "\n")
             return
 
         # Dump structure
-        text_buffer.insert(text_buffer.get_end_iter(), _("%d bytes\n\n") % (len(data)))
+        text_buffer.insert(text_buffer.get_end_iter(), _("%d bytes") % (len(data)))
+        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
         text_buffer.insert(text_buffer.get_end_iter(), "%s" % (print_raw_buffer(data)))
 
 
