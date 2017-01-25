@@ -23,7 +23,7 @@
 
 
 static const guint8 koly_signature[4] = { 'k', 'o', 'l', 'y' };
-static const guint8 mish_signature[4] = { 'm', 'i', 's', 'h' };
+/*static const guint8 mish_signature[4] = { 'm', 'i', 's', 'h' };*/
 
 typedef struct {
     DMG_block_type type;
