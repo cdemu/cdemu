@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libmirage 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-15 22:01+0100\n"
-"PO-Revision-Date: 2017-01-15 22:02+0100\n"
+"POT-Creation-Date: 2017-01-25 23:36+0100\n"
+"PO-Revision-Date: 2017-01-25 23:15+0100\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -83,6 +83,11 @@ msgstr "Datotečni filter CSO"
 #: ../filters/filter-cso/filter-stream.c:339
 msgid "Compressed ISO images (*.ciso, *.cso)"
 msgstr "Stisnjeni odtisi diskov ISO (*.ciso, *.cso)"
+
+#: ../filters/filter-cso/libmirage-cso.xml.in.h:1
+#: ../filters/filter-isz/libmirage-isz.xml.in.h:1
+msgid "Compressed ISO image file"
+msgstr "Stisnjen odtis diska ISO"
 
 #: ../filters/filter-daa/filter-stream.c:487
 #, c-format
@@ -227,6 +232,14 @@ msgstr "PowerISO odtisi diskov (*.daa)"
 #: ../filters/filter-daa/filter-stream.c:1427
 msgid "gBurner images (*.gbi)"
 msgstr "gBurner odtisi diskov (*.gbi)"
+
+#: ../filters/filter-daa/libmirage-daa.xml.in.h:1
+msgid "PowerISO image file"
+msgstr "PowerISO odtis diska"
+
+#: ../filters/filter-daa/libmirage-gbi.xml.in.h:1
+msgid "gBurner image file"
+msgstr "gBurner odtis diska"
 
 #: ../filters/filter-dmg/filter-stream.c:334
 #: ../filters/filter-dmg/filter-stream.c:348
@@ -387,6 +400,10 @@ msgstr "Datotečni filter ECM"
 #: ../filters/filter-ecm/filter-stream.c:522
 msgid "ECM'ified images (*.ecm)"
 msgstr "Odtisi diskov, stisnjeni z ECM (*.ecm)"
+
+#: ../filters/filter-ecm/libmirage-ecm.xml.in.h:1
+msgid "ECM'ified image file"
+msgstr "Odtis diska, stisnjen z ECM"
 
 #: ../filters/filter-gzip/filter-stream.c:104
 #, c-format
@@ -696,6 +713,10 @@ msgstr "Datotečni filter XZ"
 msgid "xz-compressed images (*.xz)"
 msgstr "Odtisi diskov, stisnjeni z xz (*.xz)"
 
+#: ../images/image-b6t/libmirage-b6t.xml.in.h:1
+msgid "BlindWrite 5/6 image file"
+msgstr "BlindWrite 5/6 odtis diska"
+
 #: ../images/image-b6t/parser.c:219
 #, c-format
 msgid "Failed to read whole BWA file!"
@@ -756,6 +777,10 @@ msgstr "Parser odtisov diskov B6T"
 msgid "BlindWrite 5/6 images (*.b5t, *.b6t)"
 msgstr "BlindWrite 5/6 odtisi diskov (*.b5t, *.b6t)"
 
+#: ../images/image-c2d/libmirage-c2d.xml.in.h:1
+msgid "WinOnCD image file"
+msgstr "WinOnCD odtis diska"
+
 #: ../images/image-c2d/parser.c:156
 #, c-format
 msgid "Failed to read Z info header!"
@@ -808,6 +833,10 @@ msgstr "Parser odtisov diskov C2D"
 #: ../images/image-c2d/parser.c:622
 msgid "WinOnCD images (*.c2d)"
 msgstr "WinOnCD odtisi diskov (*.c2d)"
+
+#: ../images/image-ccd/libmirage-ccd.xml.in.h:1
+msgid "CloneCD image file"
+msgstr "CloneCD odtis diska"
 
 #: ../images/image-ccd/parser.c:268
 #, c-format
@@ -865,6 +894,10 @@ msgstr "Parser odtisov diskov CCD"
 msgid "CloneCD images (*.ccd)"
 msgstr "CloneCD odtisi diskov (*.ccd)"
 
+#: ../images/image-cdi/libmirage-cdi.xml.in.h:1
+msgid "DiscJuggler image file"
+msgstr "DiscJuggler odtis diska"
+
 #: ../images/image-cdi/parser.c:128
 #, c-format
 msgid "Invalid track mode: %d!"
@@ -887,6 +920,10 @@ msgstr "Parser odtisov diskov CDI"
 #: ../images/image-cdi/parser.c:1027
 msgid "DiscJuggler images (*.cdi)"
 msgstr "DiscJuggler odtisi diskov (*.cdi)"
+
+#: ../images/image-cif/libmirage-cif.xml.in.h:1
+msgid "Adaptec Easy CD/DVD Creator image file"
+msgstr "Adaptec Easy CD/DVD Creator odtis diska"
 
 #: ../images/image-cif/parser.c:120
 #, c-format
@@ -997,6 +1034,10 @@ msgstr "Parser odtisov diskov CUE"
 #: ../images/image-cue/parser.c:997
 msgid "CUE images (*.cue)"
 msgstr "CUE odtisi diskov (*.cue)"
+
+#: ../images/image-harddisk/libmirage-apple.xml.in.h:1
+msgid "Apple Disk image"
+msgstr "Apple Disk odtis trdega diska"
 
 #: ../images/image-harddisk/parser.c:56
 #, c-format
@@ -1215,6 +1256,15 @@ msgstr ""
 "Zamenjava vrstnega reda avdio podatkov. Veljavno samo v primeru zapisovanja "
 "v surovem načinu."
 
+#: ../images/image-mds/libmirage-mds.xml.in.h:2
+#, no-c-format
+msgid "Alcohol 120% image file (*.mds)"
+msgstr "Alchohol 120% odtis diska"
+
+#: ../images/image-mds/libmirage-xmd.xml.in.h:1
+msgid "GameJack image file (*.xmd)"
+msgstr "GameJack odtis diska"
+
 #: ../images/image-mds/parser.c:371
 #, c-format
 msgid "Track block does not have a footer!"
@@ -1256,6 +1306,10 @@ msgstr "Alchohol 120% odtisi diskov (*.mds)"
 #: ../images/image-mds/parser.c:897
 msgid "GameJack images (*.xmd)"
 msgstr "GameJack odtisi diskov (*.xmd)"
+
+#: ../images/image-mdx/libmirage-mdx.xml.in.h:1
+msgid "DaemonTools image file"
+msgstr "DaemonTools odtis diska"
 
 #: ../images/image-mdx/parser.c:79
 #, c-format
@@ -1343,6 +1397,10 @@ msgstr "Parser odtisov diskov NRG"
 msgid "Nero Burning Rom images (*.nrg)"
 msgstr "Nero Burning Rom odtisi diskov (*.nrg)"
 
+#: ../images/image-nrg/libmirage-nrg.xml.in.h:1
+msgid "Nero Burning ROM image file"
+msgstr "Nero Burning Rom odtis diska"
+
 #: ../images/image-readcd/parser.c:65
 #, c-format
 msgid "Parser cannot handle given image: failed to read 2-byte TOC length!"
@@ -1399,6 +1457,10 @@ msgstr "Parser odtisov diskov X-CD-Roast"
 #: ../images/image-xcdroast/parser.c:896
 msgid "X-CD-Roast images (*.toc)"
 msgstr "X-CD-Roast odtisi diskov (*.toc)"
+
+#: ../images/image-xcdroast/libmirage-xcdroast.xml.in.h:1
+msgid "X-CD Roast image file"
+msgstr "X-CD-Roast odtis diska"
 
 #: ../mirage/cdtext-coder.c:377
 #, c-format
