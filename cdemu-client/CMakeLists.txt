@@ -46,7 +46,7 @@ install (
     DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
 )
 
-intltool_merge ("-d" po data/cdemu-client.desktop.in cdemu-client.desktop)
+intltool_merge ("-d" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/cdemu-client.desktop.in cdemu-client.desktop)
 install (
     FILES ${PROJECT_BINARY_DIR}/cdemu-client.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications

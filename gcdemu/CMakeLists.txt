@@ -30,7 +30,7 @@ install (
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-intltool_merge("-x --no-translations" po data/net.sf.cdemu.gcdemu.gschema.xml.in net.sf.cdemu.gcdemu.gschema.xml)
+intltool_merge("-x --no-translations" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/net.sf.cdemu.gcdemu.gschema.xml.in net.sf.cdemu.gcdemu.gschema.xml)
 install (
     FILES ${PROJECT_BINARY_DIR}/net.sf.cdemu.gcdemu.gschema.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas
@@ -41,7 +41,7 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
-intltool_merge ("-d" po data/gcdemu.desktop.in gcdemu.desktop)
+intltool_merge ("-d" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/gcdemu.desktop.in gcdemu.desktop)
 install (
     FILES ${PROJECT_BINARY_DIR}/gcdemu.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications

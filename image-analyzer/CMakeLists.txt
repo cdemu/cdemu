@@ -26,7 +26,7 @@ install (
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-intltool_merge ("-d" po data/image-analyzer.desktop.in image-analyzer.desktop)
+intltool_merge ("-d" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop.in image-analyzer.desktop)
 install (
     FILES ${PROJECT_BINARY_DIR}/image-analyzer.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications

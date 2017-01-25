@@ -73,8 +73,8 @@ function (intltool_merge options po_dir in_filename out_filename)
     if (${no_translations} EQUAL -1)
         add_custom_command (
             OUTPUT ${out_filename}
-            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u ${PROJECT_SOURCE_DIR}/${po_dir}
-                ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename}
+            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u ${po_dir}
+                ${in_filename} ${out_filename}
             DEPENDS ${in_filename}
         )
     else ()
@@ -82,12 +82,12 @@ function (intltool_merge options po_dir in_filename out_filename)
         add_custom_command (
             OUTPUT ${out_filename}
             COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u
-                ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename}
+                ${in_filename} ${out_filename}
             DEPENDS ${in_filename}
         )
     endif ()
 
-    set (intltool-merge-target "intltool-merge-${out_filename}")
-    add_custom_target (${intltool-merge-target} ALL DEPENDS ${out_filename})
+    get_filename_component (out_name ${out_filename} NAME)
+    add_custom_target (intltool-merge-${out_name} ALL DEPENDS ${out_filename})
 endfunction ()
 
