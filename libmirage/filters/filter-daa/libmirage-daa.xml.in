@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/x-isz">
+    <mime-type type="application/x-daa">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>Compressed ISO image file</comment>
+        <_comment>PowerISO image file</_comment>
 
-        <glob pattern="*.isz"/>
+        <glob pattern="*.daa"/>
 
         <magic priority="50">
-            <match value="IsZ!" type="string" offset="0"/>
+            <match value="DAA" type="string" offset="0"/>
         </magic>
     </mime-type>
 </mime-info>

@@ -3,7 +3,7 @@
     <mime-type type="application/x-xmd">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>GameJack image file (*.xmd)</comment>
+        <_comment>GameJack image file (*.xmd)</_comment>
 
         <glob pattern="*.xmd"/>
 

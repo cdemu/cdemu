@@ -3,7 +3,7 @@
     <mime-type type="application/x-c2d">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>WinOnCD image file</comment>
+        <_comment>WinOnCD image file</_comment>
 
         <glob pattern="*.c2d"/>
 

@@ -3,7 +3,7 @@
     <mime-type type="application/x-apple-diskimage">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>Apple Disk image</comment>
+        <_comment>Apple Disk image</_comment>
 
         <glob pattern="*.cdr"/>
         <glob pattern="*.smi"/>

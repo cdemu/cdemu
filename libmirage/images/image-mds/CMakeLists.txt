@@ -18,8 +18,11 @@ if (TRUE)
     install(TARGETS ${image_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
 
     # Install MIME type
-    install(FILES "libmirage-${image_short}.xml" DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
-    install(FILES "libmirage-xmd.xml" DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
+    intltool_merge("-x" ${CMAKE_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/libmirage-${image_short}.xml.in libmirage-${image_short}.xml)
+    intltool_merge("-x" ${CMAKE_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/libmirage-xmd.xml.in libmirage-xmd.xml)
+
+    install(FILES ${PROJECT_BINARY_DIR}/libmirage-${image_short}.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
+    install(FILES ${PROJECT_BINARY_DIR}/libmirage-xmd.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
     if (POST_INSTALL_HOOKS)
         install(CODE "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)")
     endif ()

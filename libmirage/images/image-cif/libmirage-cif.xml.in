@@ -3,7 +3,7 @@
     <mime-type type="application/x-cif">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>Adaptec Easy CD/DVD Creator image file</comment>
+        <_comment>Adaptec Easy CD/DVD Creator image file</_comment>
 
         <glob pattern="*.cif"/>
         <magic priority="60">

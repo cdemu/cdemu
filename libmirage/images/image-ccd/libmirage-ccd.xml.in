@@ -3,7 +3,7 @@
     <mime-type type="application/x-ccd">
         <sub-class-of type="text/plain"/>
 
-        <comment>CloneCD image file</comment>
+        <_comment>CloneCD image file</_comment>
 
         <glob pattern="*.ccd"/>
 

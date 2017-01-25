@@ -3,7 +3,7 @@
     <mime-type type="application/x-ecm">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>ECM'ified image file</comment>
+        <_comment>ECM'ified image file</_comment>
 
         <glob pattern="*.ecm"/>
 

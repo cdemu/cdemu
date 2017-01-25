@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/x-daa">
+    <mime-type type="application/x-cso">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>PowerISO image file</comment>
+        <_comment>Compressed ISO image file</_comment>
 
-        <glob pattern="*.daa"/>
+        <glob pattern="*.cso"/>
+        <glob pattern="*.ciso"/>
 
         <magic priority="50">
-            <match value="DAA" type="string" offset="0"/>
+            <match value="CISO" type="string" offset="0"/>
         </magic>
     </mime-type>
 </mime-info>

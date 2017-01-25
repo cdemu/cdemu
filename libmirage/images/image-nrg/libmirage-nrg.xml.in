@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/x-cdi">
+    <mime-type type="application/x-nrg">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>DiscJuggler image file</comment>
+        <_comment>Nero Burning ROM image file</_comment>
 
-        <glob pattern="*.cdi"/>
+        <glob pattern="*.nrg"/>
     </mime-type>
 </mime-info>
+
