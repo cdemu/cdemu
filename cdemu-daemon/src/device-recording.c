@@ -212,6 +212,12 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
     return TRUE;
 }
 
+static gboolean cdemu_device_recording_reserve_track  (CdemuDevice *self G_GNUC_UNUSED, guint length G_GNUC_UNUSED)
+{
+    /* The default implementation is a no-op */
+    return TRUE;
+}
+
 
 /**********************************************************************\
  *                    Track-at-once (TAO) recording                   *
@@ -422,7 +428,7 @@ static const CdemuRecording recording_commands_tao = {
     .close_track = cdemu_device_recording_close_track, /* Use generic function */
     .close_session = cdemu_device_recording_close_session, /* Use generic function */
     .write_sectors = cdemu_device_tao_recording_write_sectors,
-    .reserve_track = NULL, /* No support for RESERVE TRACK */
+    .reserve_track = cdemu_device_recording_reserve_track, /* Use generic no-op function */
 };
 
 
@@ -633,7 +639,7 @@ static const CdemuRecording recording_commands_raw = {
     .close_track = cdemu_device_recording_close_track, /* Use generic function */
     .close_session = cdemu_device_recording_close_session, /* Use generic function */
     .write_sectors = cdemu_device_raw_recording_write_sectors,
-    .reserve_track = NULL, /* No support for RESERVE TRACK */
+    .reserve_track = cdemu_device_recording_reserve_track, /* Use generic no-op function */
 };
 
 
@@ -1205,7 +1211,7 @@ static const CdemuRecording recording_commands_sao = {
     .close_track = cdemu_device_recording_close_track, /* Use generic function */
     .close_session = cdemu_device_recording_close_session, /* Use generic function */
     .write_sectors = cdemu_device_sao_recording_write_sectors,
-    .reserve_track = NULL, /* No support for RESERVE TRACK */
+    .reserve_track = cdemu_device_recording_reserve_track, /* Use generic no-op function */
 };
 
 
