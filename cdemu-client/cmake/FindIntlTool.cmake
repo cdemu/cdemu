@@ -73,7 +73,7 @@ function (intltool_merge options po_dir in_filename out_filename)
     if (${no_translations} EQUAL -1)
         add_custom_command (
             OUTPUT ${out_filename}
-            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u ${po_dir}
+            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -q -u ${po_dir}
                 ${in_filename} ${out_filename}
             DEPENDS ${in_filename}
         )
@@ -81,7 +81,7 @@ function (intltool_merge options po_dir in_filename out_filename)
         # The --no-translations version should not be given the po dir
         add_custom_command (
             OUTPUT ${out_filename}
-            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u
+            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -q -u
                 ${in_filename} ${out_filename}
             DEPENDS ${in_filename}
         )
