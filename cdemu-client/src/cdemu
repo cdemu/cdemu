@@ -36,8 +36,8 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from gettext import gettext as _
-from gettext import bindtextdomain, textdomain
+import gettext
+
 
 # *** Globals ***
 app_name = "cdemu"
@@ -45,8 +45,11 @@ app_version = "3.0.4"
 supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
-bindtextdomain(app_name)
-textdomain(app_name)
+if sys.version_info[0] < 3:
+    # Prior to python3, we need to explicitly enable unicode strings
+    gettext.install(app_name, unicode=True)
+else:
+    gettext.install(app_name)
 
 
 # Set process name
