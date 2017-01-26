@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: image-analyzer 3.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-21 18:35+0100\n"
-"PO-Revision-Date: 2017-01-21 18:52+0100\n"
+"POT-Creation-Date: 2017-01-26 01:58+0100\n"
+"PO-Revision-Date: 2017-01-26 02:02+0100\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -27,751 +27,835 @@ msgstr "Preučevalnik odtisov diskov"
 msgid "Utility for CD/DVD image analysis and manipulation"
 msgstr "Orodje za preučevanje in obdelavo odtisov optičnih diskov CD/DVD"
 
-#: ../src/image-analyzer:84
+#: ../src/image-analyzer:83
 msgid "CD-ROM"
 msgstr "CD-ROM"
 
-#: ../src/image-analyzer:85
+#: ../src/image-analyzer:84
 msgid "DVD-ROM"
 msgstr "DVD-ROM"
 
-#: ../src/image-analyzer:86
+#: ../src/image-analyzer:85
 msgid "BlueRay Disc"
 msgstr "BlueRay disk"
 
-#: ../src/image-analyzer:87
+#: ../src/image-analyzer:86
 msgid "HD-DVD Disc"
 msgstr "HD-DVD disk"
 
-#: ../src/image-analyzer:88
+#: ../src/image-analyzer:87
 msgid "Hard-disk"
 msgstr "Trdi disk"
 
-#: ../src/image-analyzer:94 ../src/image-analyzer:95
+#: ../src/image-analyzer:93 ../src/image-analyzer:94
 msgid "CD-DA/CD-ROM"
 msgstr "CD-DA/CD-ROM"
 
-#: ../src/image-analyzer:96
+#: ../src/image-analyzer:95
 msgid "CD-I"
 msgstr "CD-I"
 
-#: ../src/image-analyzer:97
+#: ../src/image-analyzer:96
 msgid "CD-ROM XA"
 msgstr "CD-ROM XA"
 
-#: ../src/image-analyzer:103
+#: ../src/image-analyzer:102
 msgid "four channel audio"
 msgstr "štiri-kanalni zvok"
 
-#: ../src/image-analyzer:104
+#: ../src/image-analyzer:103
 msgid "copy permitted"
 msgstr "dovoljeno kopiranje"
 
-#: ../src/image-analyzer:105
+#: ../src/image-analyzer:104
 msgid "pre-emphasis"
 msgstr "pred-ojačitev"
 
-#: ../src/image-analyzer:115
+#: ../src/image-analyzer:114
 msgid "Mode 0"
 msgstr "Mode 0"
 
-#: ../src/image-analyzer:116
+#: ../src/image-analyzer:115
 msgid "Audio"
 msgstr "Avdio"
 
-#: ../src/image-analyzer:117
+#: ../src/image-analyzer:116
 msgid "Mode 1"
 msgstr "Mode 1"
 
-#: ../src/image-analyzer:118
+#: ../src/image-analyzer:117
 msgid "Mode 2 Formless"
 msgstr "Mode 2 Formless"
 
-#: ../src/image-analyzer:119
+#: ../src/image-analyzer:118
 msgid "Mode 2 Form 1"
 msgstr "Mode 2 Form 1"
 
-#: ../src/image-analyzer:120
+#: ../src/image-analyzer:119
 msgid "Mode 2 Form 2"
 msgstr "Mode 2 Form 2"
 
-#: ../src/image-analyzer:121
+#: ../src/image-analyzer:120
 msgid "Mode 2 Mixed"
 msgstr "Mode 2 Mixed"
 
-#: ../src/image-analyzer:127
+#: ../src/image-analyzer:126
 msgid "Binary data"
 msgstr "Binarni podatki"
 
-#: ../src/image-analyzer:128
+#: ../src/image-analyzer:127
 msgid "Audio data"
 msgstr "Avdio podatki"
 
-#: ../src/image-analyzer:129
+#: ../src/image-analyzer:128
 msgid "Audio data (swapped)"
 msgstr "Avdio podatki (obrnjeni)"
 
-#: ../src/image-analyzer:139
+#: ../src/image-analyzer:138
 msgid "internal"
 msgstr "notranji"
 
-#: ../src/image-analyzer:140
+#: ../src/image-analyzer:139
 msgid "external"
 msgstr "zunanji"
 
-#: ../src/image-analyzer:141
+#: ../src/image-analyzer:140
 msgid "PW96 interleaved"
 msgstr "PW96 prepleten"
 
-#: ../src/image-analyzer:142
+#: ../src/image-analyzer:141
 msgid "PW96 linear"
 msgstr "PW96 linearen"
 
-#: ../src/image-analyzer:143
+#: ../src/image-analyzer:142
 msgid "RW96"
 msgstr "RW96"
 
-#: ../src/image-analyzer:144
+#: ../src/image-analyzer:143
 msgid "Q16"
 msgstr "Q16"
 
-#: ../src/image-analyzer:163
+#: ../src/image-analyzer:162
 #, c-format
 msgid "Read sector (#%02d)"
 msgstr "Branje sektorja (#%02d)"
 
-#: ../src/image-analyzer:209
+#: ../src/image-analyzer:208
 msgid "Read"
 msgstr "Beri"
 
-#: ../src/image-analyzer:228 ../src/image-analyzer:427
-#: ../src/image-analyzer:702
+#: ../src/image-analyzer:227 ../src/image-analyzer:426
+#: ../src/image-analyzer:701
 msgid "Ready!"
 msgstr "Pripravljen!"
 
-#: ../src/image-analyzer:233 ../src/image-analyzer:430
-#: ../src/image-analyzer:580 ../src/image-analyzer:708
+#: ../src/image-analyzer:232 ../src/image-analyzer:429
+#: ../src/image-analyzer:579 ../src/image-analyzer:707
 msgid "No disc loaded!"
 msgstr "Disk ni naložen!"
 
-#: ../src/image-analyzer:249
+#: ../src/image-analyzer:248
 #, c-format
 msgid "Failed to get sector: %s"
 msgstr "Napaka pri branju sektorja: %s"
 
-#: ../src/image-analyzer:254
+#: ../src/image-analyzer:253
 msgid "Sector address: "
 msgstr "Naslov sektorja: "
 
-#: ../src/image-analyzer:259
+#: ../src/image-analyzer:258
 msgid "Sector address MSF: "
 msgstr "Naslov sektorja MSF: "
 
-#: ../src/image-analyzer:264
+#: ../src/image-analyzer:263
 msgid "Sector type: "
 msgstr "Vrsta sektorja: "
 
-#: ../src/image-analyzer:276
+#: ../src/image-analyzer:275
 msgid "Sector angle: "
 msgstr "Kot sektorja: "
 
-#: ../src/image-analyzer:277
+#: ../src/image-analyzer:276
 #, c-format
 msgid "%f rotations"
 msgstr "%f obratov"
 
-#: ../src/image-analyzer:281
+#: ../src/image-analyzer:280
 msgid "Sector density: "
 msgstr "Gostota sektorjev: "
 
-#: ../src/image-analyzer:282
+#: ../src/image-analyzer:281
 #, c-format
 msgid "%f degrees per sector"
 msgstr "%f stopinj na sektor"
 
-#: ../src/image-analyzer:288
+#: ../src/image-analyzer:287
 msgid "Q subchannel:"
 msgstr "Q pod-kanal:"
 
-#: ../src/image-analyzer:295
+#: ../src/image-analyzer:294
 msgid "Subchannel CRC verification: "
 msgstr "Preverjanje nadzorne vsote pod-kanala: "
 
-#: ../src/image-analyzer:297 ../src/image-analyzer:305
+#: ../src/image-analyzer:296 ../src/image-analyzer:304
 msgid "passed"
 msgstr "v redu"
 
-#: ../src/image-analyzer:299
+#: ../src/image-analyzer:298
 msgid "bad CRC"
 msgstr "napačna nadzorna vsota"
 
-#: ../src/image-analyzer:303
+#: ../src/image-analyzer:302
 msgid "Sector data L-EC verification: "
 msgstr "Preverjanje nadzorne vsote podatkov v sektorju: "
 
-#: ../src/image-analyzer:307
+#: ../src/image-analyzer:306
 msgid "bad sector"
 msgstr "slab sektor"
 
-#: ../src/image-analyzer:311
+#: ../src/image-analyzer:310
 msgid "Sector data dump:"
 msgstr "Izpis podatkov v sektorju: "
 
-#: ../src/image-analyzer:364
+#: ../src/image-analyzer:363
 #, c-format
 msgid "Sector analysis (#%02d)"
 msgstr "Analiza sektorjev (#%02d)"
 
-#: ../src/image-analyzer:396
+#: ../src/image-analyzer:395
 msgid "Analyze"
 msgstr "Analiziraj"
 
-#: ../src/image-analyzer:411 ../src/image-analyzer:819
-#: ../src/image-analyzer:861 ../src/image-analyzer:906
-#: ../src/image-analyzer:927 ../src/image-analyzer:950
-#: ../src/image-analyzer:1006 ../src/image-analyzer:2318
-#: ../src/image-analyzer:2365
+#: ../src/image-analyzer:410 ../src/image-analyzer:818
+#: ../src/image-analyzer:860 ../src/image-analyzer:905
+#: ../src/image-analyzer:926 ../src/image-analyzer:949
+#: ../src/image-analyzer:1005 ../src/image-analyzer:2317
+#: ../src/image-analyzer:2364
 msgid "Cancel"
 msgstr "Prekliči"
 
-#: ../src/image-analyzer:447
+#: ../src/image-analyzer:446
 msgid "Analyzing sectors..."
 msgstr "Analiza sektorjev..."
 
-#: ../src/image-analyzer:456
+#: ../src/image-analyzer:455
 msgid "Performing sector analysis..."
 msgstr "Izvajam analizo sektorjev..."
 
-#: ../src/image-analyzer:469
+#: ../src/image-analyzer:468
 #, c-format
 msgid "Session #%d: "
 msgstr "Seja #%d: "
 
-#: ../src/image-analyzer:470
+#: ../src/image-analyzer:469
 #, c-format
 msgid "start: %d, length %d, %d tracks"
 msgstr "začetek: %d, dolžina %d, %d sledi"
 
-#: ../src/image-analyzer:481
+#: ../src/image-analyzer:480
 #, c-format
 msgid "Track #%d: "
 msgstr "Sled #%d: "
 
-#: ../src/image-analyzer:482
+#: ../src/image-analyzer:481
 #, c-format
 msgid "start: %d, length %d"
 msgstr "začetek: %d, dolžina %d"
 
-#: ../src/image-analyzer:496 ../src/image-analyzer:501
-#: ../src/image-analyzer:505
+#: ../src/image-analyzer:495 ../src/image-analyzer:500
+#: ../src/image-analyzer:504
 #, c-format
 msgid "Sector %d (0x%X): "
 msgstr "Sektor %d (0x%X): "
 
-#: ../src/image-analyzer:506
+#: ../src/image-analyzer:505
 msgid "Failed to get sector!"
 msgstr "Napaka pri branju sektorja!"
 
-#: ../src/image-analyzer:534
+#: ../src/image-analyzer:533
 msgid "Sector analysis cancelled!"
 msgstr "Analiza sektorjev je bila preklicana!"
 
-#: ../src/image-analyzer:536
+#: ../src/image-analyzer:535
 msgid "Sector analysis complete!"
 msgstr "Analiza sektorjev končana!"
 
-#: ../src/image-analyzer:551
+#: ../src/image-analyzer:550
 #, c-format
 msgid "Disc topology (#%02d)"
 msgstr "Topologija diska (#%02d)"
 
-#: ../src/image-analyzer:596
+#: ../src/image-analyzer:595
 msgid "No DPM data provided!"
 msgstr "Podatki DPM niso na voljo!"
 
-#: ../src/image-analyzer:621
+#: ../src/image-analyzer:620
 msgid "Sector address"
 msgstr "Naslov sektorja"
 
-#: ../src/image-analyzer:622
+#: ../src/image-analyzer:621
 msgid "Sector density [degrees/sector]"
 msgstr "Gostota sektorjev [stopinje/sektor]"
 
-#: ../src/image-analyzer:636
+#: ../src/image-analyzer:635
 #, c-format
 msgid "Disc structures (#%02d)"
 msgstr "Strukture na disku (#%02d)"
 
-#: ../src/image-analyzer:665
+#: ../src/image-analyzer:664
 msgid "Layer: "
 msgstr "Sloj: "
 
-#: ../src/image-analyzer:676
+#: ../src/image-analyzer:675
 msgid "Type: "
 msgstr "Vrsta: "
 
-#: ../src/image-analyzer:687
+#: ../src/image-analyzer:686
 msgid "Get structure"
 msgstr "Preberi strukturo"
 
-#: ../src/image-analyzer:705
+#: ../src/image-analyzer:704
 msgid "Unsupported medium type!"
 msgstr "Nepodprta vrsta medija!"
 
-#: ../src/image-analyzer:719
+#: ../src/image-analyzer:718
 #, c-format
 msgid "Layer %d, structure %d (0x%X):"
 msgstr "Sloj %d, struktura %d (0x%X):"
 
-#: ../src/image-analyzer:726
+#: ../src/image-analyzer:725
 #, c-format
 msgid "Failed to get structure: %s"
 msgstr "Napaka pri branju strukture: %s"
 
-#: ../src/image-analyzer:731
+#: ../src/image-analyzer:730
 #, c-format
 msgid "%d bytes"
 msgstr "%d bajtov"
 
-#: ../src/image-analyzer:743
+#: ../src/image-analyzer:742
 #, c-format
 msgid "Log (#%02d)"
 msgstr "Dnevnik (#%02d)"
 
-#: ../src/image-analyzer:766
+#: ../src/image-analyzer:765
 msgid "Mirror to stdout"
 msgstr "Preslikaj na standarni izpis"
 
-#: ../src/image-analyzer:771
+#: ../src/image-analyzer:770
 msgid "Clear"
 msgstr "Počisti"
 
-#: ../src/image-analyzer:776 ../src/image-analyzer:816
+#: ../src/image-analyzer:775 ../src/image-analyzer:815
 msgid "Debug mask"
 msgstr "Razhroščevalna maska"
 
-#: ../src/image-analyzer:819 ../src/image-analyzer:950
-#: ../src/image-analyzer:2365
+#: ../src/image-analyzer:818 ../src/image-analyzer:949
+#: ../src/image-analyzer:2364
 msgid "OK"
 msgstr "V redu"
 
-#: ../src/image-analyzer:859
+#: ../src/image-analyzer:858 ../src/image-analyzer:2458
 msgid "Open image"
-msgstr "Odpri odtis diska"
+msgstr "Odpri odtis"
 
-#: ../src/image-analyzer:861 ../src/image-analyzer:906
+#: ../src/image-analyzer:860 ../src/image-analyzer:905
 msgid "Open"
 msgstr "Odpri"
 
-#: ../src/image-analyzer:868 ../src/image-analyzer:918
-#: ../src/image-analyzer:940
+#: ../src/image-analyzer:867 ../src/image-analyzer:917
+#: ../src/image-analyzer:939
 msgid "All files"
 msgstr "Vse datoteke"
 
-#: ../src/image-analyzer:874
+#: ../src/image-analyzer:873
 msgid "All images"
 msgstr "Vsi odtisi diskov"
 
-#: ../src/image-analyzer:904
+#: ../src/image-analyzer:903
 msgid "Open image dump"
 msgstr "Odpri izpis"
 
-#: ../src/image-analyzer:912 ../src/image-analyzer:934
+#: ../src/image-analyzer:911 ../src/image-analyzer:933
 msgid "XML files"
 msgstr "Datoteke XML"
 
-#: ../src/image-analyzer:925
+#: ../src/image-analyzer:924
 msgid "Save image dump"
 msgstr "Shrani izpis"
 
-#: ../src/image-analyzer:927 ../src/image-analyzer:1007
+#: ../src/image-analyzer:926 ../src/image-analyzer:1006
 msgid "Save"
 msgstr "Shrani"
 
-#: ../src/image-analyzer:953
+#: ../src/image-analyzer:952
 msgid "Output image"
 msgstr "Izhodni odtis diska"
 
-#: ../src/image-analyzer:963
+#: ../src/image-analyzer:962
 msgid "Filename: "
 msgstr "Ime datoteke: "
 
-#: ../src/image-analyzer:971
+#: ../src/image-analyzer:970
 msgid "Choose"
 msgstr "Izberi"
 
-#: ../src/image-analyzer:976
+#: ../src/image-analyzer:975
 msgid "Writer: "
 msgstr "Zapisovalec: "
 
-#: ../src/image-analyzer:990
+#: ../src/image-analyzer:989
 msgid "Writer options"
 msgstr "Možnosti zapisovalca"
 
-#: ../src/image-analyzer:1003
+#: ../src/image-analyzer:1002
 msgid "Select output image file"
 msgstr "Izberi izhodno datoteko"
 
-#: ../src/image-analyzer:1271
+#: ../src/image-analyzer:1270
 #, c-format
 msgid "Invalid XML dump file (root tag is '%s', expected '%s'!"
 msgstr ""
 "Neveljavna vrsta XML izpisa (korenska značka je '%s', pričakovana pa '%s'!)"
 
-#: ../src/image-analyzer:1621
+#: ../src/image-analyzer:1620
 #, c-format
 msgid "Medium type: 0x%X (%s)"
 msgstr "Vrsta medija: 0x%X (%s)"
 
-#: ../src/image-analyzer:1625
+#: ../src/image-analyzer:1624
 msgid "Filename(s)"
 msgstr "Imena datotek"
 
-#: ../src/image-analyzer:1630 ../src/image-analyzer:1690
+#: ../src/image-analyzer:1629 ../src/image-analyzer:1689
 msgid "Layout"
 msgstr "Razporeditev"
 
-#: ../src/image-analyzer:1634
+#: ../src/image-analyzer:1633
 #, c-format
 msgid "First sesssion: %d"
 msgstr "Začetna seja: %d"
 
-#: ../src/image-analyzer:1638 ../src/image-analyzer:1694
+#: ../src/image-analyzer:1637 ../src/image-analyzer:1693
 #, c-format
 msgid "First track: %d"
 msgstr "Začetna sled: %d"
 
-#: ../src/image-analyzer:1642 ../src/image-analyzer:1698
-#: ../src/image-analyzer:1779 ../src/image-analyzer:1928
+#: ../src/image-analyzer:1641 ../src/image-analyzer:1697
+#: ../src/image-analyzer:1778 ../src/image-analyzer:1927
 #, c-format
 msgid "Start sector: %d (0x%X)"
 msgstr "Začetni sektor: %d (0x%X)"
 
-#: ../src/image-analyzer:1646 ../src/image-analyzer:1702
-#: ../src/image-analyzer:1784 ../src/image-analyzer:1834
+#: ../src/image-analyzer:1645 ../src/image-analyzer:1701
+#: ../src/image-analyzer:1783 ../src/image-analyzer:1833
 #, c-format
 msgid "Length: %d (0x%X)"
 msgstr "Dolžina: %d (0x%X)"
 
-#: ../src/image-analyzer:1651
+#: ../src/image-analyzer:1650
 #, c-format
 msgid "Number of sessions: %d"
 msgstr "Število sej: %d"
 
-#: ../src/image-analyzer:1655
+#: ../src/image-analyzer:1654
 #, c-format
 msgid "Number of tracks: %d"
 msgstr "Število sledi: %d"
 
-#: ../src/image-analyzer:1659
+#: ../src/image-analyzer:1658
 #, c-format
 msgid "Sessions (%d)"
 msgstr "Seje (%d)"
 
-#: ../src/image-analyzer:1673
+#: ../src/image-analyzer:1672
 #, c-format
 msgid "Session %02d"
 msgstr "Seja %02d"
 
-#: ../src/image-analyzer:1678
+#: ../src/image-analyzer:1677
 #, c-format
 msgid "Session type: 0x%X (%s)"
 msgstr "Vrsta seje: 0x%X (%s)"
 
-#: ../src/image-analyzer:1684
+#: ../src/image-analyzer:1683
 #, c-format
 msgid "MCN: %s"
 msgstr "MCN: %s"
 
-#: ../src/image-analyzer:1687 ../src/image-analyzer:1771
+#: ../src/image-analyzer:1686 ../src/image-analyzer:1770
 #, c-format
 msgid "Session number: %d"
 msgstr "Številka seje: %d"
 
-#: ../src/image-analyzer:1707
+#: ../src/image-analyzer:1706
 #, c-format
 msgid "Lead-out length: %d (0x%X)"
 msgstr "Dolžina zaključne sledi: %d (0x%X)"
 
-#: ../src/image-analyzer:1714
+#: ../src/image-analyzer:1713
 #, c-format
 msgid "Tracks (%d)"
 msgstr "Sledi (%d)"
 
-#: ../src/image-analyzer:1723 ../src/image-analyzer:1818
+#: ../src/image-analyzer:1722 ../src/image-analyzer:1817
 #, c-format
 msgid "Languages (%d)"
 msgstr "Jeziki (%d)"
 
-#: ../src/image-analyzer:1734
+#: ../src/image-analyzer:1733
 msgid "Lead-in"
 msgstr "Uvodna sled"
 
-#: ../src/image-analyzer:1736
+#: ../src/image-analyzer:1735
 msgid "Lead-out"
 msgstr "Zaključna sled"
 
-#: ../src/image-analyzer:1738
+#: ../src/image-analyzer:1737
 #, c-format
 msgid "Track %02d"
 msgstr "Sled %02d"
 
-#: ../src/image-analyzer:1745
+#: ../src/image-analyzer:1744
 #, c-format
 msgid "Flags: 0x%X (%s)"
 msgstr "Zastavice: 0x%X (%s)"
 
-#: ../src/image-analyzer:1750
+#: ../src/image-analyzer:1749
 #, c-format
 msgid "Sector type: 0x%X (%s)"
 msgstr "Vrsta sektorja: 0x%X (%s)"
 
-#: ../src/image-analyzer:1755
+#: ../src/image-analyzer:1754
 #, c-format
 msgid "ADR: %d"
 msgstr "ADR: %d"
 
-#: ../src/image-analyzer:1760
+#: ../src/image-analyzer:1759
 #, c-format
 msgid "CTL: %d"
 msgstr "CTL: %d"
 
-#: ../src/image-analyzer:1766
+#: ../src/image-analyzer:1765
 #, c-format
 msgid "ISRC: %s"
 msgstr "ISRC: %s"
 
-#: ../src/image-analyzer:1774
+#: ../src/image-analyzer:1773
 #, c-format
 msgid "Track number: %d"
 msgstr "Številka sledi: %d"
 
-#: ../src/image-analyzer:1791
+#: ../src/image-analyzer:1790
 #, c-format
 msgid "Fragments (%d)"
 msgstr "Fragmenti (%d)"
 
-#: ../src/image-analyzer:1801
+#: ../src/image-analyzer:1800
 #, c-format
 msgid "Track start: %d (0x%X)"
 msgstr "Začetek sledi: %d (0x%X)"
 
-#: ../src/image-analyzer:1808
+#: ../src/image-analyzer:1807
 #, c-format
 msgid "Indices (%d)"
 msgstr "Indeksi (%d)"
 
-#: ../src/image-analyzer:1824
+#: ../src/image-analyzer:1823
 #, c-format
 msgid "Fragment #%d"
 msgstr "Fragment #%d"
 
-#: ../src/image-analyzer:1829
+#: ../src/image-analyzer:1828
 #, c-format
 msgid "Address: %d (0x%X)"
 msgstr "Naslov: %d (0x%X)"
 
-#: ../src/image-analyzer:1837
+#: ../src/image-analyzer:1836
 msgid "Main data"
 msgstr "Podatki glavnega kanala"
 
-#: ../src/image-analyzer:1841 ../src/image-analyzer:1860
+#: ../src/image-analyzer:1840 ../src/image-analyzer:1859
 #, c-format
 msgid "Filename: %s"
 msgstr "Ime datoteke: %s"
 
-#: ../src/image-analyzer:1845 ../src/image-analyzer:1864
+#: ../src/image-analyzer:1844 ../src/image-analyzer:1863
 #, c-format
 msgid "Offset: %d (0x%X)"
 msgstr "Odmik: %d (0x%X)"
 
-#: ../src/image-analyzer:1849 ../src/image-analyzer:1868
+#: ../src/image-analyzer:1848 ../src/image-analyzer:1867
 #, c-format
 msgid "Size: %d (0x%X)"
 msgstr "Velikost: %d (0x%X)"
 
-#: ../src/image-analyzer:1853 ../src/image-analyzer:1872
+#: ../src/image-analyzer:1852 ../src/image-analyzer:1871
 #, c-format
 msgid "Format: 0x%X (%s)"
 msgstr "Format: 0x%X (%s)"
 
-#: ../src/image-analyzer:1856
+#: ../src/image-analyzer:1855
 msgid "Subchannel data"
 msgstr "Podatki pod-kanala"
 
-#: ../src/image-analyzer:1879
+#: ../src/image-analyzer:1878
 #, c-format
 msgid "Language %d"
 msgstr "Jezik %d"
 
-#: ../src/image-analyzer:1882
+#: ../src/image-analyzer:1881
 #, c-format
 msgid "Language code: %d"
 msgstr "Koda jezika: %d"
 
-#: ../src/image-analyzer:1886
+#: ../src/image-analyzer:1885
 msgid "Title"
 msgstr "Naslov"
 
-#: ../src/image-analyzer:1887
+#: ../src/image-analyzer:1886
 msgid "Performer"
 msgstr "Izvajalec"
 
-#: ../src/image-analyzer:1888
+#: ../src/image-analyzer:1887
 msgid "Songwriter"
 msgstr "Pisec pesmi"
 
-#: ../src/image-analyzer:1889
+#: ../src/image-analyzer:1888
 msgid "Composer"
 msgstr "Skladatelj"
 
-#: ../src/image-analyzer:1890
+#: ../src/image-analyzer:1889
 msgid "Arranger"
 msgstr "Aranžer"
 
-#: ../src/image-analyzer:1891
+#: ../src/image-analyzer:1890
 msgid "Message"
 msgstr "Sporočilo"
 
-#: ../src/image-analyzer:1892
+#: ../src/image-analyzer:1891
 msgid "Disc ID"
 msgstr "ID diska"
 
-#: ../src/image-analyzer:1893
+#: ../src/image-analyzer:1892
 msgid "Genre"
 msgstr "Žanr"
 
-#: ../src/image-analyzer:1894
+#: ../src/image-analyzer:1893
 msgid "TOC"
 msgstr "TOC"
 
-#: ../src/image-analyzer:1895
+#: ../src/image-analyzer:1894
 msgid "TOC2"
 msgstr "TOC2"
 
-#: ../src/image-analyzer:1896
+#: ../src/image-analyzer:1895
 msgid "Reserved 8A"
 msgstr "Rezervirano 8A"
 
-#: ../src/image-analyzer:1897
+#: ../src/image-analyzer:1896
 msgid "Reserved 8B"
 msgstr "Rezervirano 8B"
 
-#: ../src/image-analyzer:1898
+#: ../src/image-analyzer:1897
 msgid "Reserved 8C"
 msgstr "Rezervirano 8C"
 
-#: ../src/image-analyzer:1899
+#: ../src/image-analyzer:1898
 msgid "Closed info"
 msgstr "Zaporti podatki"
 
-#: ../src/image-analyzer:1900
+#: ../src/image-analyzer:1899
 msgid "UPC/ISRC"
 msgstr "UPC/ISRC"
 
-#: ../src/image-analyzer:1901
+#: ../src/image-analyzer:1900
 msgid "Size"
 msgstr "Velikost"
 
-#: ../src/image-analyzer:1923
+#: ../src/image-analyzer:1922
 msgid "DPM"
 msgstr "DPM"
 
-#: ../src/image-analyzer:1933
+#: ../src/image-analyzer:1932
 #, c-format
 msgid "Resolution: %d (0x%X)"
 msgstr "Resolucija: %d (0x%X)"
 
-#: ../src/image-analyzer:1939
+#: ../src/image-analyzer:1938
 #, c-format
 msgid "Entries (%d)"
 msgstr "Vnosi (%d)"
 
-#: ../src/image-analyzer:2084
+#: ../src/image-analyzer:2083
 msgid "ERROR"
 msgstr "NAPAKA"
 
-#: ../src/image-analyzer:2086
+#: ../src/image-analyzer:2085
 msgid "CRITICAL"
 msgstr "KRITIČNO"
 
-#: ../src/image-analyzer:2088
+#: ../src/image-analyzer:2087
 msgid "WARNING"
 msgstr "OPOZORILO"
 
-#: ../src/image-analyzer:2094
+#: ../src/image-analyzer:2093
 #, c-format
 msgid "Image analyzer #%02d"
 msgstr "Preučevalnik odtisov diskov #%02d"
 
-#: ../src/image-analyzer:2137
+#: ../src/image-analyzer:2136
 msgid "Image filename/basename not set!"
 msgstr "Ime datoteke ni nastavljeno!"
 
-#: ../src/image-analyzer:2150
+#: ../src/image-analyzer:2149
 msgid "No image writer chosen!"
 msgstr "Noben zapisovalec ni izbran!"
 
-#: ../src/image-analyzer:2229
+#: ../src/image-analyzer:2228
 #, c-format
 msgid "Failed to load image: %s"
 msgstr "Napaka pri nalaganju odtisa diska: %s"
 
-#: ../src/image-analyzer:2264
+#: ../src/image-analyzer:2263
 #, c-format
 msgid "Failed to load XML dump: %s"
 msgstr "Napaka pri nalaganju XML izpisa: %s"
 
-#: ../src/image-analyzer:2290
+#: ../src/image-analyzer:2289
 #, c-format
 msgid "Failed to save XML dump: %s"
 msgstr "Napaka pri shranjevanju XML izpisa: %s"
 
-#: ../src/image-analyzer:2312
+#: ../src/image-analyzer:2311
 msgid "Converting..."
 msgstr "Pretvarjam..."
 
-#: ../src/image-analyzer:2315
+#: ../src/image-analyzer:2314
 msgid "Image conversion progress"
 msgstr "Napredek pretvorbe odtisa"
 
-#: ../src/image-analyzer:2343
+#: ../src/image-analyzer:2342
 msgid "Image conversion succeeded."
 msgstr "Pretvorba odtisa diska je uspela."
 
-#: ../src/image-analyzer:2351
+#: ../src/image-analyzer:2350
 #, c-format
 msgid "Image conversion failed: %s"
 msgstr "Napaka pri pretvorbi odtisa diska: %s"
 
-#: ../src/image-analyzer:2362
+#: ../src/image-analyzer:2361
 msgid "Enter password"
 msgstr "Vnesite geslo"
 
-#: ../src/image-analyzer:2375
+#: ../src/image-analyzer:2374
 msgid "The image you are trying to load is encrypted."
 msgstr "Odtis diska je zaščiten z geslom."
 
-#: ../src/image-analyzer:2381
+#: ../src/image-analyzer:2380
 msgid "Password: "
 msgstr "Geslo: "
 
-#: ../src/image-analyzer:2512
+#: ../src/image-analyzer:2410
 msgid "Print libMirage debug to stdout"
 msgstr "Izpiši sporočila libMirage na standardni izpis"
 
-#: ../src/image-analyzer:2513
+#: ../src/image-analyzer:2411
 msgid "libMirage debug mask"
 msgstr "Razhroščevalna maska libMirage"
 
-#: ../src/image-analyzer:2582
+#: ../src/image-analyzer:2441
+msgid "New window"
+msgstr "Novo okno"
+
+#: ../src/image-analyzer:2445 ../src/image-analyzer:2487
+msgid "About"
+msgstr "O programu"
+
+#: ../src/image-analyzer:2446
+msgid "Quit"
+msgstr "Izhod"
+
+#: ../src/image-analyzer:2462
+msgid "Convert image"
+msgstr "Pretvori odtis"
+
+#: ../src/image-analyzer:2466
+msgid "Open dump"
+msgstr "Odpri izpis"
+
+#: ../src/image-analyzer:2467
+msgid "Save dump"
+msgstr "Shrani izpis"
+
+#: ../src/image-analyzer:2471
+msgid "Close"
+msgstr "Zapri"
+
+#: ../src/image-analyzer:2474
+msgid "File"
+msgstr "Datoteka"
+
+#: ../src/image-analyzer:2478
+msgid "Log"
+msgstr "Dnevnik"
+
+#: ../src/image-analyzer:2479
+msgid "Read sector"
+msgstr "Branje sektorja"
+
+#: ../src/image-analyzer:2480
+msgid "Sector analysis"
+msgstr "Analiza sektorjev"
+
+#: ../src/image-analyzer:2481
+msgid "Disc topology"
+msgstr "Topologija diska"
+
+#: ../src/image-analyzer:2482
+msgid "Disc structures"
+msgstr "Strukture na disku"
+
+#: ../src/image-analyzer:2483
+msgid "Tools"
+msgstr "Orodja"
+
+#: ../src/image-analyzer:2488
+msgid "Help"
+msgstr "Pomoč"
+
+#: ../src/image-analyzer:2493
+msgid "<Primary>o"
+msgstr "<Primary>o"
+
+#: ../src/image-analyzer:2494
+msgid "<Primary>x"
+msgstr "<Primary>x"
+
+#: ../src/image-analyzer:2495
+msgid "<Primary>s"
+msgstr "<Primary>s"
+
+#: ../src/image-analyzer:2496
+msgid "<Primary>w"
+msgstr "<Primary>w"
+
+#: ../src/image-analyzer:2497
+msgid "<Primary>l"
+msgstr "<Primary>l"
+
+#: ../src/image-analyzer:2498
+msgid "<Primary>r"
+msgstr "<Primary>r"
+
+#: ../src/image-analyzer:2538
 msgid "Utility for CD/DVD image analysis and manipulation."
 msgstr "Orodje za preučevanje in obdelavo odtisov optičnih diskov CD/DVD"
 
-#: ../src/image-analyzer:2584
+#: ../src/image-analyzer:2540
 msgid "The CDEmu project website"
 msgstr "Domača stran projekta CDEmu"
 
-#: ../src/image-analyzer:2586
+#: ../src/image-analyzer:2542
 msgid "translator-credits"
 msgstr "Rok Mandeljc <rok.mandeljc@gmail.com>"
