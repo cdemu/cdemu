@@ -2402,107 +2402,6 @@ class MainWindow (Gtk.ApplicationWindow):
 ########################################################################
 #                             Application                              #
 ########################################################################
-MENU_XML = """
-    <?xml version="1.0" encoding="UTF-8"?>
-    <interface>
-        <menu id="menubar">
-            <submenu>
-                <attribute name="label" translatable="yes">Image</attribute>
-                <section>
-                    <item>
-                        <attribute name="label" translatable="yes">Open image</attribute>
-                        <attribute name="action">win.open-image</attribute>
-                        <attribute name="accel">&lt;Primary&gt;o</attribute>
-                    </item>
-                </section>
-                <section>
-                    <item>
-                        <attribute name="label" translatable="yes">Convert image</attribute>
-                        <attribute name="action">win.convert-image</attribute>
-                        <attribute name="accel">&lt;Primary&gt;x</attribute>
-                    </item>
-                </section>
-                <section>
-                    <item>
-                        <attribute name="label" translatable="yes">Open dump</attribute>
-                        <attribute name="action">win.open-dump</attribute>
-                        <attribute name="accel">&lt;Primary&gt;d</attribute>
-                    </item>
-                    <item>
-                        <attribute name="label" translatable="yes">Save dump</attribute>
-                        <attribute name="action">win.save-dump</attribute>
-                        <attribute name="accel">&lt;Primary&gt;s</attribute>
-                    </item>
-                </section>
-                <section>
-                    <item>
-                        <attribute name="label" translatable="yes">Close</attribute>
-                        <attribute name="action">win.close</attribute>
-                        <attribute name="accel">&lt;Primary&gt;w</attribute>
-                    </item>
-                </section>
-              </submenu>
-              <submenu>
-                  <attribute name="label" translatable="yes">Tools</attribute>
-                  <section>
-                      <item>
-                          <attribute name="label" translatable="yes">Log</attribute>
-                          <attribute name="action">win.log-window</attribute>
-                          <attribute name="accel">&lt;Primary&gt;l</attribute>
-                      </item>
-                      <item>
-                          <attribute name="label" translatable="yes">Read sector</attribute>
-                          <attribute name="action">win.read-sector-window</attribute>
-                          <attribute name="accel">&lt;Primary&gt;r</attribute>
-                      </item>
-                      <item>
-                          <attribute name="label" translatable="yes">Sector analysis</attribute>
-                          <attribute name="action">win.sector-analysis-window</attribute>
-                      </item>
-                      <item>
-                          <attribute name="label" translatable="yes">Disc topology</attribute>
-                          <attribute name="action">win.disc-topology-window</attribute>
-                      </item>
-                      <item>
-                          <attribute name="label" translatable="yes">Disc structures</attribute>
-                          <attribute name="action">win.disc-structures-window</attribute>
-                      </item>
-                  </section>
-              </submenu>
-              <submenu>
-                  <attribute name="label" translatable="yes">_Help</attribute>
-                  <section>
-                      <item>
-                          <attribute name="label" translatable="yes">About</attribute>
-                          <attribute name="action">app.about</attribute>
-                      </item>
-                  </section>
-              </submenu>
-          </menu>
-          <menu id="appmenu">
-              <section>
-                  <item>
-                      <attribute name="label" translatable="yes">New window</attribute>
-                      <attribute name="action">app.new-window</attribute>
-                </item>
-              </section>
-              <section>
-                  <item>
-                      <attribute name="label" translatable="yes">About</attribute>
-                      <attribute name="action">app.about</attribute>
-                  </item>
-              </section>
-              <section>
-                  <item>
-                      <attribute name="label" translatable="yes">Quit</attribute>
-                      <attribute name="action">app.quit</attribute>
-                  </item>
-              </section>
-        </menu>
-    </interface>
-"""
-
-
 class ImageAnalyzer (Gtk.Application):
     def __init__(self):
         Gtk.Application.__init__(self, application_id="net.sf.cdemu.ImageAnalyzer", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
@@ -2535,10 +2434,68 @@ class ImageAnalyzer (Gtk.Application):
         action.connect("activate", self.on_quit)
         self.add_action(action)
 
-        # Create menu bar and application menu
-        builder = Gtk.Builder.new_from_string(MENU_XML, -1)
-        self.set_app_menu(builder.get_object("appmenu"))
-        self.set_menubar(builder.get_object("menubar"))
+        # *** Create application menu ***
+        app_menu = Gio.Menu()
+
+        app_section = Gio.Menu()
+        app_section.append(_("New window"), "app.new-window")
+        app_menu.append_section(None, app_section)
+
+        app_section = Gio.Menu()
+        app_section.append(_("About"), "app.about")
+        app_section.append(_("Quit"), "app.quit")
+        app_menu.append_section(None, app_section)
+
+        self.set_app_menu(app_menu)
+
+        # *** Create menu-bar ***
+        menu_bar = Gio.Menu()
+
+        # File menu
+        menu = Gio.Menu()
+
+        menu_section = Gio.Menu()
+        menu_section.append(_("Open image"), "win.open-image")
+        menu.append_section(None, menu_section)
+
+        menu_section = Gio.Menu()
+        menu_section.append(_("Convert image"), "win.convert-image")
+        menu.append_section(None, menu_section)
+
+        menu_section = Gio.Menu()
+        menu_section.append(_("Open dump"), "win.open-dump")
+        menu_section.append(_("Save dump"), "win.save-dump")
+        menu.append_section(None, menu_section)
+
+        menu_section = Gio.Menu()
+        menu_section.append(_("Close"), "win.close")
+        menu.append_section(None, menu_section)
+
+        menu_bar.append_submenu(_("File"), menu)
+
+        # Tools menu
+        menu = Gio.Menu()
+        menu.append(_("Log"), "win.log-window")
+        menu.append(_("Read sector"), "win.read-sector-window")
+        menu.append(_("Sector analysis"), "win.sector-analysis-window")
+        menu.append(_("Disc topology"), "win.disc-topology-window")
+        menu.append(_("Disc structures"), "win.disc-structures-window")
+        menu_bar.append_submenu(_("Tools"), menu)
+
+        # Help menu
+        menu = Gio.Menu()
+        menu.append(_("About"), "app.about")
+        menu_bar.append_submenu(_("Help"), menu)
+
+        self.set_menubar(menu_bar)
+
+        # Accelerators
+        self.set_accels_for_action("win.open-image", [ _("<Primary>o") ])
+        self.set_accels_for_action("win.convert-image", [ _("<Primary>x") ])
+        self.set_accels_for_action("win.save-dump", [ _("<Primary>s") ])
+        self.set_accels_for_action("win.close", [ _("<Primary>w") ])
+        self.set_accels_for_action("win.log-window", [ _("<Primary>l") ])
+        self.set_accels_for_action("win.read-sector-window", [ _("<Primary>r") ])
 
     def do_shutdown (self):
         # Clean-up libMirage
