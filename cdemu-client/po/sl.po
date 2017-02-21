@@ -242,7 +242,7 @@ msgstr "Napaka pri pridobivanju demonove maske za napravo %i: %s"
 #: ../src/cdemu:511
 #, c-format
 msgid "Daemon debug mask of device %i: 0x%X"
-msgstr "Demonova maska  naprave %i: 0x%X"
+msgstr "Demonova maska naprave %i: 0x%X"
 
 #: ../src/cdemu:521
 msgid "displays/sets library debug mask"

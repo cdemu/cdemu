@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the gCDEmu package.
 # Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>, 2006-2015.
 #
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 3.0.0\n"
@@ -224,7 +223,7 @@ msgid ""
 "Failed to set daemon debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Не удалось установить отладочную маску демона  для накопителя #%02d в "
+"Не удалось установить отладочную маску демона для накопителя #%02d в "
 "значение 0x%X:\n"
 "%s"
 
@@ -577,7 +576,7 @@ msgstr "Показывать уведомления"
 
 #: ../src/gcdemu:1814
 msgid "About"
-msgstr "О программе..."
+msgstr "О программе"
 
 #: ../src/gcdemu:1822
 msgid "Quit"
