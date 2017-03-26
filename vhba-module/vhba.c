@@ -18,16 +18,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <linux/version.h>
+
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/highmem.h>
 #include <linux/fs.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
+#include <linux/sched/signal.h>
+#else
 #include <linux/sched.h>
+#endif
 #include <linux/platform_device.h>
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
 #include <linux/slab.h>
-#include <linux/version.h>
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
 #endif
