@@ -146,16 +146,23 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 
 static void cdemu_audio_start_playing (CdemuAudio *self)
 {
+    GError *local_error = NULL;
+
     /* Set the status */
     self->priv->status = AUDIO_STATUS_PLAYING;
 
     /* Start the playback thread; thread must be joinable, so we can wait for it
        to end */
 #if !GLIB_CHECK_VERSION(2, 32, 0)
-    self->priv->playback_thread = g_thread_create((GThreadFunc)cdemu_audio_playback_thread, self, TRUE, NULL);
+    self->priv->playback_thread = g_thread_create((GThreadFunc)cdemu_audio_playback_thread, self, TRUE, &local_error);
 #else
-    self->priv->playback_thread = g_thread_new("CDEmu Device Audio Play thread", (GThreadFunc)cdemu_audio_playback_thread, self);
+    self->priv->playback_thread = g_thread_try_new("CDEmu Device Audio Play thread", (GThreadFunc)cdemu_audio_playback_thread, self, &local_error);
 #endif
+
+    if (!self->priv->playback_thread) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create audio playback thread: %s\n", __debug__, local_error->message);
+        g_error_free(local_error);
+    }
 }
 
 static void cdemu_audio_stop_playing (CdemuAudio *self, gint status)
