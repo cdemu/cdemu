@@ -52,10 +52,10 @@ static void log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLeve
 
 
 /* Signal handler */
-static void __unix_signal_handler (int signal)
+static void __unix_signal_handler (int signal_number)
 {
-    g_message(Q_("Received signal - %s\n"), g_strsignal(signal));
-    switch (signal) {
+    g_message(Q_("Received signal - %s\n"), g_strsignal(signal_number));
+    switch (signal_number) {
         case SIGINT:
         case SIGQUIT:
         case SIGTERM:
