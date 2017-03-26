@@ -424,7 +424,7 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
     struct ModePageGeneral *page_new = (struct ModePageGeneral *)(new_data);
 
     /* Get page's entry */
-    GList *raw_entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER(page_new->code), (GCompareFunc)find_mode_page);
+    GList *raw_entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER((gint)page_new->code), (GCompareFunc)find_mode_page);
     if (!raw_entry) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X\n", __debug__, page_new->code);
         return FALSE;
