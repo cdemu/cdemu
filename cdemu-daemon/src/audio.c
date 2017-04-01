@@ -242,7 +242,7 @@ gboolean cdemu_audio_resume (CdemuAudio *self)
 
     /* Resume is valid only if we're paused */
     if (self->priv->status == AUDIO_STATUS_PAUSED) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resuming playback (0x%X->0x%X)...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resuming playback (0x%X->0x%X)...\n", __debug__, self->priv->cur_sector, self->priv->end_sector);
         cdemu_audio_start_playing(self);
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resume called when not paused!\n", __debug__);

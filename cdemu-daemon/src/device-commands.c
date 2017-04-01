@@ -1469,7 +1469,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                         /* Copy ISRC */
                         mirage_helper_subchannel_q_decode_isrc(&tmp_buf[1], (gchar *)ret_data->isrc);
                         ret_data->tcval = 1;
-                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: found ISRC in subchannel of sector 0x%X: <%.12s>\n", __debug__, sector, ret_data->isrc);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: found ISRC in subchannel of sector 0x%X: <%.12s>\n", __debug__, address, ret_data->isrc);
                         break;
                     }
                 }

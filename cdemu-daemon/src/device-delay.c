@@ -149,7 +149,7 @@ void cdemu_device_delay_finalize (CdemuDevice *self)
     delay_diff.tv_usec = delay_now.tv_usec - self->priv->delay_begin.tv_usec;
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: calculated delay: %i microseconds\n", __debug__, self->priv->delay_amount);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %i seconds, %i microseconds\n", __debug__, delay_diff.tv_sec, delay_diff.tv_usec);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %li seconds, %li microseconds\n", __debug__, delay_diff.tv_sec, delay_diff.tv_usec);
 
     /* Compensate for the processing time */
     delay = self->priv->delay_amount - (delay_diff.tv_sec * G_USEC_PER_SEC + delay_diff.tv_usec);

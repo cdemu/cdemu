@@ -135,7 +135,7 @@ void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint
     sense.cmd_info[2] = (command_info & 0x0000FF00) >>  8;
     sense.cmd_info[3] = (command_info & 0x000000FF) >>  0;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%" G_GSIZE_MODIFIER "d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
 
     /* Write sense directly into command's output buffer */
     memcpy(self->priv->cmd->out, &sense, sizeof(struct REQUEST_SENSE_SenseFixed));
@@ -167,7 +167,7 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
     ret = read(fd, vreq, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_request)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_request));
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%" G_GSIZE_MODIFIER "d bytes; at least %" G_GSIZE_MODIFIER "d required)!\n", __debug__, ret, sizeof(struct vhba_request));
         /* Signal the kernel I/O error, so daemon can restart the device */
         g_signal_emit_by_name(self, "kernel-io-error", NULL);
         return TRUE;
@@ -205,7 +205,7 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
     ret = write(fd, vres, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_response)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_response));
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%" G_GSIZE_MODIFIER "d bytes; at least %" G_GSIZE_MODIFIER "d required)!\n", __debug__, ret, sizeof(struct vhba_response));
         /* Signal the kernel I/O error, so daemon can restart the device */
         g_signal_emit_by_name(self, "kernel-io-error", NULL);
         return TRUE;

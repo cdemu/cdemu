@@ -827,7 +827,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
         /* In RAW SAO mode, the host sends us lead-in */
         if (address < -150 && self->priv->sao_leadin_format & 0xC0) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO\n", __debug__, address);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO\n", __debug__);
 
             main_format_ptr = sao_main_formats_find(self->priv->sao_leadin_format);
             subchannel_format_ptr = sao_subchannel_formats_find(self->priv->sao_leadin_format);
@@ -1159,7 +1159,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
         } else if (adr == 2 || adr == 3) {
             /* MCN or ISRC; this means next entry must be valid, and must have same adr! */
             if (i + 1 >= num_entries) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: missing next CUE entry for MCN/ISRC; skipping!\n", __debug__, i);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: missing next CUE entry for MCN/ISRC; skipping!\n", __debug__);
                 continue;
             }
 
