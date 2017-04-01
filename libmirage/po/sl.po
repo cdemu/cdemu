@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libmirage 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-25 23:36+0100\n"
-"PO-Revision-Date: 2017-01-25 23:15+0100\n"
+"POT-Creation-Date: 2017-04-01 19:40+0200\n"
+"PO-Revision-Date: 2017-04-01 19:38+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -105,131 +105,131 @@ msgstr "Neveljavna nadzorna vsota CRC32!"
 msgid "Failed to read part file's header!"
 msgstr "Napaka pri branju glave iz delne datoteke!"
 
-#: ../filters/filter-daa/filter-stream.c:589
+#: ../filters/filter-daa/filter-stream.c:592
 #, c-format
-msgid "Failed to find part for offset 0x%lX!"
-msgstr "Nisem uspel najti dela za položaj 0x%lX!"
+msgid "Failed to find part for offset %s!"
+msgstr "Nisem uspel najti dela za položaj 0x%s!"
 
-#: ../filters/filter-daa/filter-stream.c:607
+#: ../filters/filter-daa/filter-stream.c:614
 #, c-format
-msgid "Failed to seek to 0x%lX!"
-msgstr "Napaka pri premiku na položaj 0x%lX!"
+msgid "Failed to seek to %s!"
+msgstr "Napaka pri premiku na položaj 0x%s!"
 
-#: ../filters/filter-daa/filter-stream.c:613
+#: ../filters/filter-daa/filter-stream.c:621
 #, c-format
 msgid "Failed to read 0x%X bytes!"
 msgstr "Napaka pri branju 0x%X bajtov podatkov!"
 
-#: ../filters/filter-daa/filter-stream.c:637
-#: ../filters/filter-daa/filter-stream.c:695
+#: ../filters/filter-daa/filter-stream.c:645
+#: ../filters/filter-daa/filter-stream.c:703
 #, c-format
 msgid "Failed to read descriptor data!"
 msgstr "Napaka pri branju deskriptorja!"
 
-#: ../filters/filter-daa/filter-stream.c:670
+#: ../filters/filter-daa/filter-stream.c:678
 #, c-format
 msgid "Invalid filename format type!"
 msgstr "Neveljaven format imena datotek!"
 
-#: ../filters/filter-daa/filter-stream.c:688
+#: ../filters/filter-daa/filter-stream.c:696
 #, c-format
 msgid "Invalid size for encryption descriptor!"
 msgstr "Neveljavna velikost za deskriptor šifriranja!"
 
-#: ../filters/filter-daa/filter-stream.c:719
+#: ../filters/filter-daa/filter-stream.c:727
 #, c-format
 msgid "Image is encrypted!"
 msgstr "Odtis diska je zaščiten z geslom!"
 
-#: ../filters/filter-daa/filter-stream.c:731
+#: ../filters/filter-daa/filter-stream.c:739
 #, c-format
 msgid "Incorrect password!"
 msgstr "Neveljavno geslo!"
 
-#: ../filters/filter-daa/filter-stream.c:760
+#: ../filters/filter-daa/filter-stream.c:768
 #, c-format
 msgid "Failed to read descriptor type!"
 msgstr "Napaka pri branju vrste deskriptorja!"
 
-#: ../filters/filter-daa/filter-stream.c:893
+#: ../filters/filter-daa/filter-stream.c:901
 #, c-format
 msgid "Failed to allocate chunk table buffer (%d bytes)!"
 msgstr "Napaka pri dodelitvi pomnilnika za tabelo kosov (%d bajtov)!"
 
-#: ../filters/filter-daa/filter-stream.c:901
+#: ../filters/filter-daa/filter-stream.c:909
 #, c-format
 msgid "Failed to read chunk table data!"
 msgstr "Napaka pri branju podatkov za tabelo kosov!"
 
-#: ../filters/filter-daa/filter-stream.c:935
+#: ../filters/filter-daa/filter-stream.c:946
 #, c-format
-msgid "Failed to allocate chunk table (%ld bytes)!"
-msgstr "Napaka pri dodelitvi tabele kosov (%ld bajtov)!"
+msgid "Failed to allocate chunk table (%s bytes)!"
+msgstr "Napaka pri dodelitvi pomnilnika za tabelo kosov (%s bajtov)!"
 
-#: ../filters/filter-daa/filter-stream.c:1013
+#: ../filters/filter-daa/filter-stream.c:1025
 #, c-format
 msgid "Failed to allocate I/O buffer size (%d bytes)!"
 msgstr "Napaka pri dodelitvi medpomnilnika za prenos podatkov (%d bajtov)!"
 
-#: ../filters/filter-daa/filter-stream.c:1039
+#: ../filters/filter-daa/filter-stream.c:1051
 #, c-format
 msgid "Failed to allocate part table!"
 msgstr "Napaka pri dodelitvi pomnilnika za tabelo delov!"
 
-#: ../filters/filter-daa/filter-stream.c:1091
+#: ../filters/filter-daa/filter-stream.c:1103
 #, c-format
 msgid "Failed to read part's signature!"
 msgstr "Napaka pri branju podpisa dela!"
 
-#: ../filters/filter-daa/filter-stream.c:1105
+#: ../filters/filter-daa/filter-stream.c:1117
 #, c-format
 msgid "Part's signature is invalid!"
 msgstr "Podpis dela je neveljaven!"
 
-#: ../filters/filter-daa/filter-stream.c:1196
+#: ../filters/filter-daa/filter-stream.c:1208
 #, c-format
 msgid "Compressed chunk table not supported yet!"
 msgstr "Stisnjena tabela kosov še ni podprta!"
 
-#: ../filters/filter-daa/filter-stream.c:1203
+#: ../filters/filter-daa/filter-stream.c:1215
 #, c-format
 msgid "Bit swap type %d not supported yet!"
 msgstr "Vrsta zamenjave bitov %d še ni podprta!"
 
-#: ../filters/filter-daa/filter-stream.c:1229
+#: ../filters/filter-daa/filter-stream.c:1241
 #, c-format
 msgid "Unsupported format: 0x%X!"
 msgstr "Nepodprt format: 0x%X!"
 
-#: ../filters/filter-daa/filter-stream.c:1245
+#: ../filters/filter-daa/filter-stream.c:1257
 #, c-format
 msgid "Failed to allocate inflate buffer (%d bytes)!"
 msgstr "Napaka pri dodelitvi medpomnilnika za dekompresijo (%d bajtov)!"
 
-#: ../filters/filter-daa/filter-stream.c:1281
+#: ../filters/filter-daa/filter-stream.c:1293
 #, c-format
 msgid "Filter cannot handle given data: failed to read 16-byte signature!"
 msgstr ""
 "Filter ni sposoben prebrati podanih podatkov: napaka pri branju 16-bajtnega "
 "podpisa!"
 
-#: ../filters/filter-daa/filter-stream.c:1293
+#: ../filters/filter-daa/filter-stream.c:1305
 #: ../filters/filter-ecm/filter-stream.c:243
 #: ../filters/filter-gzip/filter-stream.c:296
-#: ../filters/filter-xz/filter-stream.c:267
+#: ../filters/filter-xz/filter-stream.c:271
 #, c-format
 msgid "Filter cannot handle given data: invalid signature!"
 msgstr "Filter ni sposoben prebrati podanih podatkov: neveljaven podpis!"
 
-#: ../filters/filter-daa/filter-stream.c:1423
+#: ../filters/filter-daa/filter-stream.c:1435
 msgid "DAA File Filter"
 msgstr "Datotečni filter DAA"
 
-#: ../filters/filter-daa/filter-stream.c:1426
+#: ../filters/filter-daa/filter-stream.c:1438
 msgid "PowerISO images (*.daa)"
 msgstr "PowerISO odtisi diskov (*.daa)"
 
-#: ../filters/filter-daa/filter-stream.c:1427
+#: ../filters/filter-daa/filter-stream.c:1439
 msgid "gBurner images (*.gbi)"
 msgstr "gBurner odtisi diskov (*.gbi)"
 
@@ -617,7 +617,7 @@ msgid "SNDFILE File Filter"
 msgstr "Datotečni filter SNDFILE"
 
 #: ../filters/filter-sndfile/filter-stream.c:391
-#: ../images/image-iso/parser.c:425
+#: ../images/image-iso/parser.c:437
 msgid "WAV audio files (*.wav)"
 msgstr "Zvočne datoteke WAV (*.wav)"
 
@@ -688,28 +688,28 @@ msgstr "Napaka pri razčlenitvi indeksa!"
 msgid "Declared and actual index size mismatch!"
 msgstr "Deklarirana in dejanska velikost indeksa se ne ujemata!"
 
-#: ../filters/filter-xz/filter-stream.c:227
+#: ../filters/filter-xz/filter-stream.c:230
 #, c-format
-msgid "The largest block (%ld bytes) exceeds the limit of %d bytes!"
-msgstr "Največji blok (%ld bajtov) presega omejitev %d bajtov!"
+msgid "The largest block (%s bytes) exceeds the limit of %d bytes!"
+msgstr "Največji blok (%s bajtov) presega omejitev %d bajtov!"
 
-#: ../filters/filter-xz/filter-stream.c:236
+#: ../filters/filter-xz/filter-stream.c:240
 #, c-format
 msgid "Failed to allocate block buffer (%d bytes)!"
 msgstr "Napaka pri dodelitvi pomnilnika za blok (%d bajtov)!"
 
-#: ../filters/filter-xz/filter-stream.c:261
+#: ../filters/filter-xz/filter-stream.c:265
 #, c-format
 msgid "Filter cannot handle given data: failed to read 6 signature bytes!"
 msgstr ""
 "Filter ni sposoben prebrati podanih podatkov: napaka pri branju 6 bajtov "
 "podpisa!"
 
-#: ../filters/filter-xz/filter-stream.c:414
+#: ../filters/filter-xz/filter-stream.c:418
 msgid "XZ File Filter"
 msgstr "Datotečni filter XZ"
 
-#: ../filters/filter-xz/filter-stream.c:417
+#: ../filters/filter-xz/filter-stream.c:421
 msgid "xz-compressed images (*.xz)"
 msgstr "Odtisi diskov, stisnjeni z xz (*.xz)"
 
@@ -806,8 +806,8 @@ msgstr ""
 
 #: ../images/image-c2d/parser.c:554
 #, c-format
-msgid "Failed to allocate memory for header (%ld bytes)!"
-msgstr "Napaka pri dodelitvi pomnilnika za glavo (%ld bajtov)!"
+msgid "Failed to allocate memory for header (%zu bytes)!"
+msgstr "Napaka pri dodelitvi pomnilnika za glavo (%zu bajtov)!"
 
 #: ../images/image-c2d/parser.c:561 ../images/image-cif/parser.c:588
 #: ../images/image-mdx/parser.c:172
@@ -1146,17 +1146,17 @@ msgstr ""
 "Parser ni sposoben prebrati podane datoteke z odtisom diska: datoteka je "
 "premajhna!"
 
-#: ../images/image-iso/parser.c:98
+#: ../images/image-iso/parser.c:101
 #, c-format
-msgid "Failed to seek to %lXh to read 8-byte pattern!"
-msgstr "Napaka pri premiku na položaj %lXh za branje 8-bajtnega vzorca!"
+msgid "Failed to seek to %s to read 8-byte pattern!"
+msgstr "Napaka pri premiku na položaj %s za branje 8-bajtnega vzorca!"
 
-#: ../images/image-iso/parser.c:104 ../images/image-mdx/parser.c:56
+#: ../images/image-iso/parser.c:108 ../images/image-mdx/parser.c:56
 #, c-format
 msgid "Failed to read 8-byte pattern!"
 msgstr "Napaka pri branju 8-bajtnega vzorca!"
 
-#: ../images/image-iso/parser.c:135
+#: ../images/image-iso/parser.c:139
 #, c-format
 msgid ""
 "Parser cannot handle given image: file size does not correspond to any "
@@ -1166,41 +1166,41 @@ msgstr ""
 "datoteke ne ustreza nobeni znani kombinaciji velikosti podatkov sektorja in "
 "pod-kanala!"
 
-#: ../images/image-iso/parser.c:164
+#: ../images/image-iso/parser.c:171
 #, c-format
-msgid "Failed to seek to offset %lXh to read 16-byte pattern!"
-msgstr "Napaka pri premiku na položaj %lXh za branje 16-bajtnega vzorca!"
+msgid "Failed to seek to offset %s to read 16-byte pattern!"
+msgstr "Napaka pri premiku na položaj %s za branje 16-bajtnega vzorca!"
 
-#: ../images/image-iso/parser.c:170
+#: ../images/image-iso/parser.c:178
 #, c-format
 msgid "Failed to read 16-byte pattern!"
 msgstr "Napaka pri branju 16-bajtnega vzorca!"
 
-#: ../images/image-iso/parser.c:179
+#: ../images/image-iso/parser.c:187
 #, c-format
 msgid "Unhalded main sector data size %d!"
 msgstr "Nepodprta velikost podatkov sektorja %d!"
 
-#: ../images/image-iso/parser.c:211
+#: ../images/image-iso/parser.c:222
 #, c-format
-msgid "Failed to seek to offset %lXh to read subchannel data!"
-msgstr "Napaka pri premiku na položaj %lXh za branje podatkov pod-kanala!"
+msgid "Failed to seek to offset %s to read subchannel data!"
+msgstr "Napaka pri premiku na položaj %s za branje podatkov pod-kanala!"
 
-#: ../images/image-iso/parser.c:217
+#: ../images/image-iso/parser.c:229
 #, c-format
 msgid "Failed to read subchannel data!"
 msgstr "Napaka pri branju podatkov pod-kanala!"
 
-#: ../images/image-iso/parser.c:238
+#: ../images/image-iso/parser.c:250
 #, c-format
 msgid "Unhalded subchannel data size %d!"
 msgstr "Nepodprta velikost podatkov pod-kanala %d!"
 
-#: ../images/image-iso/parser.c:422
+#: ../images/image-iso/parser.c:434
 msgid "ISO Image Parser"
 msgstr "Parser odtisov diskov ISO"
 
-#: ../images/image-iso/parser.c:424
+#: ../images/image-iso/parser.c:436
 msgid "ISO images (*.iso, *.bin, *.img)"
 msgstr "Odtisi diskov ISO (*.iso, *.bin, *.img)"
 
@@ -1734,22 +1734,27 @@ msgstr ""
 "Neskladje med dejansko količino podatkov (%d) in pričakovano količino "
 "podatkov za glavni kanal (%d!"
 
-#: ../mirage/fragment.c:527 ../mirage/fragment.c:861
+#: ../mirage/fragment.c:530
 #, c-format
-msgid "Failed to seek to position 0x%zX"
-msgstr "Napaka pri premiku na položaj 0x%zX"
+msgid "Failed to seek to position %s"
+msgstr "Napaka pri premiku na položaj %s"
 
-#: ../mirage/fragment.c:534 ../mirage/fragment.c:867
+#: ../mirage/fragment.c:538 ../mirage/fragment.c:875
 #, c-format
 msgid "Failed to write data: %s"
 msgstr "Napaka pri pisanju podatkov: %s"
 
-#: ../mirage/fragment.c:828
+#: ../mirage/fragment.c:832
 #, c-format
 msgid "Mismatch between given data (%d) and accepted subchannel size (%d)!"
 msgstr ""
 "Neskladje med dejansko količino podatkov (%d) in pričakovano količino "
 "podatkov za pod-kanal (%d)!"
+
+#: ../mirage/fragment.c:868
+#, c-format
+msgid "Failed to seek to position %s!"
+msgstr "Napaka pri premiku na položaj %s!"
 
 #: ../mirage/language.c:146 ../mirage/language.c:184
 #, c-format
