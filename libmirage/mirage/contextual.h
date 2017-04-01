@@ -66,8 +66,8 @@ GType mirage_contextual_get_type (void);
 void mirage_contextual_set_context (MirageContextual *self, MirageContext *context);
 MirageContext *mirage_contextual_get_context (MirageContextual *self);
 
-void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...);
-void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args);
+void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...) G_GNUC_PRINTF (3, 4);
+void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args) G_GNUC_PRINTF (3, 0);
 gboolean mirage_contextual_debug_is_active (MirageContextual *self, gint level);
 void mirage_contextual_debug_print_buffer (MirageContextual *self, gint level, const gchar *prefix, gint width, const guint8 *buffer, gint buffer_length);
 
