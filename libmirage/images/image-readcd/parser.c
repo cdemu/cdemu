@@ -74,7 +74,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file length:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  expected size (based on header): %d or %d\n", __debug__, 2 + toc_len + 2, 2 + toc_len + 3);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  actual data file size: %d\n", __debug__, file_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  actual data file size: %" G_GINT64_MODIFIER "d\n", __debug__, file_size);
 
     /* readcd from cdrdtools appears to pad odd TOC lengths to make them
        even, whereas readcd from cdrkit does not. So we account for both

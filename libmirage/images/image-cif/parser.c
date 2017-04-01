@@ -607,7 +607,7 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
             mirage_stream_seek(self->priv->cif_stream, 1, G_SEEK_CUR, NULL); /* Pad byte */
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: RIFF chunk of type '%.4s': offset %lld (0x%llX), length %ld (0x%lX)\n", __debug__, header.type, offset, offset, header.length, header.length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: RIFF chunk of type '%.4s': offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X), length %d (0x%X)\n", __debug__, header.type, offset, offset, header.length, header.length);
 
         /* We need to store "disc" and "ofs " offsets */
         if (!memcmp(header.type, disc_signature, sizeof(disc_signature))) {

@@ -179,9 +179,9 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
         /* Print header */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX header:\n", __debug__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy: %d (0x%X)\n", __debug__, header.__dummy__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - footer offset: %lld (0x%llX)\n", __debug__, header.footer_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - blocksize size: %lld (0x%llX)\n", __debug__, header.blockinfo_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy: %d (0x%X)\n", __debug__, header.__dummy__, header.__dummy__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - footer offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, header.footer_offset, header.footer_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - blocksize size: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, header.blockinfo_size, header.blockinfo_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
         /* Offset: end of header */
@@ -214,8 +214,8 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         return NULL;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data offset: %lld (0x%llX)\n", __debug__, offset, offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data length: %lld (0x%llX)\n", __debug__, length, length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, offset, offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data length: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, length, length);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
 

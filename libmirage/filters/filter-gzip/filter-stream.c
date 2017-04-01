@@ -83,7 +83,7 @@ static gboolean mirage_filter_stream_gzip_compute_part_sizes (MirageFilterStream
         part = &self->priv->parts[i];
 
         part->size = (part+1)->offset - part->offset;
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %lld, size: %lld\n", __debug__, i, part->offset, part->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %" G_GOFFSET_MODIFIER "d, size: %d\n", __debug__, i, part->offset, part->size);
 
         max_size = MAX(max_size, part->size);
     }
@@ -91,11 +91,11 @@ static gboolean mirage_filter_stream_gzip_compute_part_sizes (MirageFilterStream
     /* Last part size */
     part = &self->priv->parts[self->priv->num_parts-1];
     part->size = file_size - part->offset;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %lld, size: %lld\n", __debug__, self->priv->num_parts-1, part->offset, part->size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %" G_GOFFSET_MODIFIER "d, size: %d\n", __debug__, self->priv->num_parts-1, part->offset, part->size);
 
     max_size = MAX(max_size, part->size);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: largest part size: %lld\n", __debug__, max_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: largest part size: %d\n", __debug__, max_size);
 
     /* Allocate part buffer */
     self->priv->part_buffer_size = max_size;
@@ -266,7 +266,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     }
 
     /* Store file size (= totalOut) */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, totalOut, totalOut);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, totalOut, totalOut);
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), totalOut);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
@@ -462,7 +462,7 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
     goffset part_offset = position - part->offset;
     count = MIN(count, part->size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
 
     memcpy(buffer, self->priv->part_buffer + part_offset, count);
 

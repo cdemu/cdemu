@@ -438,7 +438,7 @@ static gssize mirage_filter_stream_macbinary_read_raw_chunk (MirageFilterStreamM
     /* Read raw chunk data */
     ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
@@ -538,7 +538,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     guint64 part_offset = position - (part->first_sector * 512);
     count = MIN(count, part_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GINT64_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
 
     if (part->type == BCEM_ZERO) {
         memset(buffer, 0, count);

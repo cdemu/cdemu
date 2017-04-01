@@ -232,7 +232,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -308,7 +308,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
     goffset part_offset = position % self->priv->header.block_size;
     count = MIN(count, self->priv->header.block_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
 
     memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
 

@@ -186,7 +186,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
         CCD_Entry *ccd_cur_entry = entry->data;
         CCD_Entry *ccd_next_entry = entry->next ? entry->next->data : NULL;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: \n", __debug__);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing entry; point %02X, session %d\n", __debug__, ccd_cur_entry->Point, ccd_cur_entry->Session);
 
         if (ccd_cur_entry->Point == 0xA0) {

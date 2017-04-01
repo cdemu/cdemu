@@ -880,7 +880,7 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
         /* FIXME: CD-TEXT data is for the first session only, I think... */
         MirageSession *first_session = mirage_disc_get_session_by_index(self->priv->disc, 0, NULL);
         if (!mirage_session_set_cdtext_data(first_session, cdtext_data, cdtext_length, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CD-TEXT!\n");
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CD-TEXT!\n", __debug__);
         }
         g_object_unref(first_session);
 
@@ -983,7 +983,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     /* Dirty test: check if size of parsed descriptor equals to declared size
        (minus 4 bytes which make up declared size...) */
     if (self->priv->cur_ptr - self->priv->cdi_data != descriptor_length - 4) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch, Dave. Expect trouble... (%d != %d)\n", __debug__, self->priv->cur_ptr - self->priv->cdi_data, descriptor_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch! Expect trouble... (%" G_GINTPTR_MODIFIER "d != %d)\n", __debug__, (gintptr)self->priv->cur_ptr - (gintptr)self->priv->cdi_data, descriptor_length);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc seems to have been loaded successfully\n", __debug__);
     }

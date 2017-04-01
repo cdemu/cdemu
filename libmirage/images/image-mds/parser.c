@@ -446,7 +446,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, block->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy4: 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n", __debug__, block->__dummy4__[0], block->__dummy4__[1], block->__dummy4__[2], block->__dummy4__[3], block->__dummy4__[4], block->__dummy4__[5], block->__dummy4__[6], block->__dummy4__[7], block->__dummy4__[8], block->__dummy4__[9], block->__dummy4__[10], block->__dummy4__[11], block->__dummy4__[12], block->__dummy4__[13], block->__dummy4__[14], block->__dummy4__[15], block->__dummy4__[16], block->__dummy4__[17]);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __debug__, block->start_sector);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, block->start_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of files: 0x%X\n", __debug__, block->number_of_files);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n\n", __debug__, block->footer_offset);
 
@@ -592,7 +592,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     /* For CDs, track lengths are stored in extra block... and we assume
                        this is the same as fragment's length */
                     fragment_len = extra_block->length;
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
                 } else {
                     /* For DVDs, -track- length seems to be stored in extra_offset;
                        however, since DVD images can have split MDF files, we need
@@ -601,7 +601,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     fragment_len = mirage_stream_tell(data_stream);
 
                     fragment_len = (fragment_len - main_offset)/(main_size + subchannel_size); /* We could've just divided by 2048, too :) */
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
                 }
 
                 /* Create data fragment */
@@ -792,7 +792,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
     /* Get file size */
     mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
     self->priv->mds_length = mirage_stream_tell(stream);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS length: %lld bytes\n", __debug__, self->priv->mds_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS length: %" G_GINT64_MODIFIER "d bytes\n", __debug__, self->priv->mds_length);
 
     /* Allocate buffer */
     self->priv->mds_data = g_malloc(self->priv->mds_length);
@@ -804,7 +804,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
     g_object_unref(stream);
 
     if (read_length != self->priv->mds_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file (%lld out of %lld bytes read)!\n", __debug__, read_length, self->priv->mds_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file (%" G_GINT64_MODIFIER "d out of %" G_GINT64_MODIFIER "d bytes read)!\n", __debug__, read_length, self->priv->mds_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read whole MDS file!"));
         succeeded = FALSE;
         goto end;

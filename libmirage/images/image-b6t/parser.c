@@ -429,7 +429,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size: %i (0x%X)\n", __debug__, main_size, main_size);
             /* Use sector size to calculate offset */
             main_offset = data_block->offset + (start_sector - data_block->start_sector)*main_size;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file offset: 0x%llX\n", __debug__, main_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, main_offset);
             /* Adjust sector size to account for subchannel */
             if (main_size > 2352) {
                 /* If it's more than full sector, we have subchannel */
@@ -1204,7 +1204,7 @@ static gboolean mirage_parser_b6t_load_disc (MirageParserB6t *self, GError **err
     /* Read footer */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing footer...\n", __debug__);
     if (!mirage_parser_b6t_parse_footer(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse footer!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse footer!\n", __debug__);
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing footer\n\n", __debug__);
@@ -1216,7 +1216,7 @@ static gboolean mirage_parser_b6t_load_disc (MirageParserB6t *self, GError **err
        DPM data and a BWA available, we'll use the latter... */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing external DPM data...\n", __debug__);
     if (!mirage_parser_b6t_load_bwa_file(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n", __debug__);
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing external DPM data\n\n", __debug__);
@@ -1275,7 +1275,7 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, MirageStre
     /* Get file size */
     mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
     self->priv->b6t_length = mirage_stream_tell(stream);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T length: %lld bytes\n", __debug__, self->priv->b6t_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T length: %" G_GINT64_MODIFIER "d bytes\n", __debug__, self->priv->b6t_length);
 
     /* Allocate buffer */
     self->priv->b6t_data = g_malloc(self->priv->b6t_length);
@@ -1287,7 +1287,7 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, MirageStre
     g_object_unref(stream);
 
     if (read_length != self->priv->b6t_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file (%lld out of %lld bytes read)!\n", __debug__, read_length, self->priv->b6t_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file (%" G_GINT64_MODIFIER "d out of %" G_GINT64_MODIFIER "d bytes read)!\n", __debug__, read_length, self->priv->b6t_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read whole B6T file!"));
         succeeded = FALSE;
         goto end;

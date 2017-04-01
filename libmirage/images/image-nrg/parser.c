@@ -106,7 +106,7 @@ static gboolean mirage_parser_nrg_build_block_index (MirageParserNrg *self, GErr
         cur_ptr += 4;
         blockentry->length = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
         cur_ptr += sizeof(guint32);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block %2i, ID: %.4s, offset: %Li (0x%LX), length: %i (0x%X).\n", \
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block %2i, ID: %.4s, offset: %" G_GINT64_MODIFIER "i (0x%" G_GINT64_MODIFIER "X), length: %i (0x%X).\n", \
         __debug__, index, blockentry->block_id, blockentry->offset, blockentry->offset, blockentry->length, blockentry->length);
 
         /* Got sub-blocks? */
@@ -245,7 +245,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
     switch (code) {
         case 0x00: {
             /* Mode 1, user data only */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, user data only\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, user data only\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE1;
             *main_sectsize = 2048;
             *sub_sectsize = 0;
@@ -253,7 +253,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x02: {
             /* Mode 2 Form 1, user data only */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1, user data only\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1, user data only\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE2_FORM1;
             *main_sectsize = 2048;
             *sub_sectsize = 0;
@@ -261,7 +261,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x03: {
             /* Mode 2 Form 2, user data only */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 2, user data only\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 2, user data only\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE2_FORM2;
             *main_sectsize = 2336;
             *sub_sectsize = 0;
@@ -269,7 +269,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x05: {
             /* Mode 1, full sector */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, full sector\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, full sector\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE1;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
@@ -277,7 +277,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x06: {
             /* Mode 2 Form 1 or Mode 2 Form 2, full sector */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1/2, full sector\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1/2, full sector\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE2_MIXED;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
@@ -285,7 +285,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x07: {
             /* Audio, full sector */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio, full sector\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio, full sector\n", __debug__);
             *mode = MIRAGE_SECTOR_AUDIO;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
@@ -293,7 +293,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x0F: {
              /* Mode 1, full sector with subchannel */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, full sector with subchannel\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, full sector with subchannel\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE1;
             *main_sectsize = 2352;
             *sub_sectsize = 96;
@@ -301,7 +301,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x10: {
             /* Audio, full sector with subchannel */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio, full sector with subchannel\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio, full sector with subchannel\n", __debug__);
             *mode = MIRAGE_SECTOR_AUDIO;
             *main_sectsize = 2352;
             *sub_sectsize = 96;
@@ -309,7 +309,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         }
         case 0x11: {
             /* Mode 2 Form 1 or Mode 2 Form 2, full sector with subchannel */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1/2, full sector with subchannel\n", __debug__, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1/2, full sector with subchannel\n", __debug__);
             *mode = MIRAGE_SECTOR_MODE2_MIXED;
             *main_sectsize = 2352;
             *sub_sectsize = 96;
@@ -375,8 +375,8 @@ static gboolean mirage_parser_nrg_load_etn_data (MirageParserNrg *self, gint ses
         }
         cur_ptr += blockentry->subblocks_length;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: %u\n", __debug__, block->offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size: %u\n", __debug__, block->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: %" G_GINT64_MODIFIER "u\n", __debug__, block->offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size: %" G_GINT64_MODIFIER "u\n", __debug__, block->size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, block->mode);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector: %u\n\n", __debug__, block->sector);
     }
@@ -510,9 +510,9 @@ static gboolean mirage_parser_nrg_load_dao_data (MirageParserNrg *self, gint ses
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ISRC: %.12s\n", __debug__, block->isrc);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode code: 0x%X\n", __debug__, block->mode_code);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, block->sector_size);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap offset: 0x%llX\n", __debug__, block->pregap_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end offset: 0x%llX\n\n", __debug__, block->end_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, block->pregap_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, block->start_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end offset: 0x%" G_GINT64_MODIFIER "X\n\n", __debug__, block->end_offset);
     }
 
     return TRUE;

@@ -166,7 +166,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self,
             return FALSE;
         }
         c2d_z_info_fix_endian(&zinfo);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%03X] size: 0x%X offset: 0x%X\n", __debug__, num, zinfo.compressed_size, zinfo.image_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%03X] size: 0x%X offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, num, zinfo.compressed_size, zinfo.image_offset);
         num++;
     } while (zinfo.image_offset);
 
@@ -202,7 +202,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   block size: %i\n", __debug__, track_entry->block_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first sector: %i\n", __debug__, track_entry->first_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   last sector: %i\n", __debug__, track_entry->last_sector);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: 0x%X\n", __debug__, track_entry->image_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, track_entry->image_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __debug__, track_entry->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __debug__, track_entry->isrc);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   flags: 0x%X\n", __debug__, track_entry->flags);
@@ -402,7 +402,7 @@ static gboolean mirage_parser_c2d_load_cdtext (MirageParserC2d *self, GError **e
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loaded a total of %i CD-TEXT blocks.\n", __debug__, cdtext_length / sizeof(C2D_CDTextBlock));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loaded a total of %i CD-TEXT blocks.\n", __debug__, cdtext_length / (gint)sizeof(C2D_CDTextBlock));
     g_assert(cdtext_length % sizeof(C2D_CDTextBlock) == 0);
 
     g_object_unref(session);
@@ -550,8 +550,8 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, MirageStre
     /* Load image header */
     self->priv->c2d_data = g_try_malloc(sizeof(C2D_HeaderBlock));
     if (!self->priv->c2d_data) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for header (%d)!\n", __debug__, sizeof(C2D_HeaderBlock));
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate memory for header (%ld bytes)!"), sizeof(C2D_HeaderBlock));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for header (%zu)!\n", __debug__, sizeof(C2D_HeaderBlock));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate memory for header (%zu bytes)!"), sizeof(C2D_HeaderBlock));
         succeeded = FALSE;
         goto end;
     }

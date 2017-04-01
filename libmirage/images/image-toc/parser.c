@@ -244,9 +244,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                 }
             }
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using base offset: 0x%lX\n", __debug__, base_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using base offset: 0x%X\n", __debug__, base_offset);
             main_offset = base_offset + start * (self->priv->cur_main_size + self->priv->cur_subchannel_size);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: calculated track file offset: 0x%llX\n", __debug__, main_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: calculated track file offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, main_offset);
 
             /* Subchannel */
             subchannel_size = self->priv->cur_subchannel_size;

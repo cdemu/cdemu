@@ -174,7 +174,7 @@ static gboolean mirage_filter_stream_xz_read_index (MirageFilterStreamXz *self, 
 
     /* Store file size */
     guint64 file_size = lzma_index_uncompressed_size(self->priv->index);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, file_size, file_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, file_size, file_size);
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), file_size);
 
     return TRUE;
@@ -199,7 +199,7 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
 
     /* Warn about multiple streams */
     if (lzma_index_stream_count(self->priv->index) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ file contains multiple (%d) streams! Their content will be treated as a single compressed file!\n", __debug__, lzma_index_stream_count(self->priv->index));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ file contains multiple (%ld) streams! Their content will be treated as a single compressed file!\n", __debug__, lzma_index_stream_count(self->priv->index));
     }
 
 
@@ -214,8 +214,8 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: listing blocks...\n", __debug__);
     lzma_index_iter_init(&index_iter, self->priv->index);
     while (lzma_index_iter_next(&index_iter, LZMA_INDEX_ITER_BLOCK) == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%d\n", __debug__, index_iter.block.number_in_file);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%ld\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%ld\n", __debug__, index_iter.block.number_in_file);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%ld (max: %ld)\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
         max_block_size = MAX(max_block_size, index_iter.block.uncompressed_size);
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -295,7 +295,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%ld (cached: #%d)\n", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
 
     /* If we do not have block in cache, uncompress it */
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
@@ -369,7 +369,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
             if (ret == LZMA_STREAM_END) {
                 break;
             } else if (ret != LZMA_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: error while decoding block: %d (consumed %d bytes, uncompressed %d bytes)!\n", __debug__, ret, lzma.total_in, lzma.total_out);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: error while decoding block: %d (consumed %" G_GINT64_MODIFIER "d bytes, uncompressed %" G_GINT64_MODIFIER "d bytes)!\n", __debug__, ret, lzma.total_in, lzma.total_out);
                 return -1;
             }
         }
@@ -386,7 +386,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
     goffset block_offset = position - index_iter.block.uncompressed_stream_offset;
     count = MIN(count, index_iter.block.uncompressed_size - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);
 
     memcpy(buffer, self->priv->block_buffer + block_offset, count);
 

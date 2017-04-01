@@ -379,7 +379,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
             rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource Type: %.4s ID: %i Name: %s\n", __debug__,
-                         rsrc_type->type, rsrc_ref->id, rsrc_ref->name->str);
+                         rsrc_type->type.as_array, rsrc_ref->id, rsrc_ref->name->str);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Data length: %i\n", __debug__,
                          rsrc_ref->attrs, rsrc_ref->data_length);
 
@@ -761,7 +761,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
 
@@ -770,7 +770,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
     /* Read raw chunk data */
     ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
@@ -789,14 +789,14 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
             return -1;
         }
 
         /* Read raw chunk data */
         ret = mirage_stream_read(stream, &buffer[have_read], to_read, NULL);
         if (ret < 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
             return -1;
         } else if (ret == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
@@ -833,7 +833,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -956,7 +956,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
     guint64 part_offset = position - (part->first_sector * DMG_SECTOR_SIZE);
     count = MIN(count, part_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GINT64_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
 
     if (part->type == ZERO || part->type == IGNORE) {
         memset(buffer, 0, count);

@@ -357,7 +357,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), original_size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld\n", __debug__, original_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %d\n", __debug__, original_size);
 
     /* At least one part must be present */
     if (!self->priv->num_parts) {
@@ -562,7 +562,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sect_size: %u\n", __debug__, header->sect_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  total_sectors: %u\n", __debug__, header->total_sectors);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  encryption_type: %u\n", __debug__, header->encryption_type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_size: %u\n", __debug__, header->segment_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_size: %" G_GINT64_MODIFIER "u\n", __debug__, header->segment_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  num_blocks: %u\n", __debug__, header->num_blocks);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_size: %u\n", __debug__, header->block_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ptr_len: %u\n", __debug__, header->ptr_len);
@@ -634,7 +634,7 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
     /* Read raw chunk data */
     ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
@@ -654,14 +654,14 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
             return -1;
         }
 
         /* Read raw chunk data */
         ret = mirage_stream_read(stream, &buffer[have_read], to_read, NULL);
         if (ret < 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
             return -1;
         } else if (ret == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
@@ -798,7 +798,7 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
     goffset part_offset = position % self->priv->header.block_size;
     count = MIN(count, self->priv->header.block_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
 
     memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
 

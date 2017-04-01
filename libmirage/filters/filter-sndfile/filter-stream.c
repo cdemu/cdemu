@@ -179,7 +179,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
        mode (because then we already know) */
     if (!writable) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %d\n", __debug__, self->priv->format.frames);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %ld\n", __debug__, self->priv->format.frames);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d\n", __debug__, self->priv->format.channels);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d\n", __debug__, self->priv->format.format);
@@ -334,7 +334,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     goffset block_offset = position % self->priv->buflen;
     count = MIN(count, self->priv->buflen - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);
 
     memcpy(buffer, self->priv->buffer + block_offset, count);
 
