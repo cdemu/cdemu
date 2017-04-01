@@ -940,7 +940,11 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     self->priv->chunk_table = g_try_new(DAA_Chunk, self->priv->num_chunks);
     if (!self->priv->chunk_table) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate chunk table (%" G_GSIZE_MODIFIER "d bytes)!\n", __debug__, self->priv->num_chunks*sizeof(DAA_Chunk));
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate chunk table (%" G_GSIZE_MODIFIER "d bytes)!"), self->priv->num_chunks*sizeof(DAA_Chunk));
+
+        gchar tmp[100] = ""; /* Work-around for lack of direct G_GSIZE_MODIFIER support in xgettext() */
+        g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GSIZE_MODIFIER "d", self->priv->num_chunks*sizeof(DAA_Chunk));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate chunk table (%s bytes)!"), tmp);
+
         return FALSE;
     }
 
