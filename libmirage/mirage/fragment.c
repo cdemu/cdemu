@@ -524,7 +524,11 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
     if (mirage_stream_tell(self->priv->main_stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%" G_GINT64_MODIFIER "X"), position);
+
+        gchar tmp[100] = ""; /* Work-around for lack of direct G_GINT64_MODIFIER support in xgettext() */
+        g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "0x%" G_GINT64_MODIFIER "X", position);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position %s"), tmp);
+
         g_free(swapped_buffer);
         return FALSE;
     }
@@ -858,7 +862,11 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
     if (mirage_stream_tell(stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%" G_GINT64_MODIFIER "X"), position);
+
+        gchar tmp[100] = ""; /* Work-around for lack of direct G_GINT64_MODIFIER support in xgettext() */
+        g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "0x%" G_GINT64_MODIFIER "X", position);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position %s!"), tmp);
+
         return FALSE;
     }
 
