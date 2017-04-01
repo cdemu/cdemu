@@ -4,7 +4,7 @@ set(filter_name "filter-${filter_short}")
 project(${filter_name} C)
 
 # Dependencies
-pkg_check_modules(ZLIB zlib>=1.2.0)
+pkg_check_modules(ZLIB zlib>=1.2.4)
 
 # Build
 if (ZLIB_FOUND)
