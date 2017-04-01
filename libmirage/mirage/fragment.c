@@ -433,7 +433,7 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
     if (buffer) {
         guint8 *data_buffer = g_malloc0(self->priv->main_size);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
 
         /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
         mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
@@ -519,12 +519,12 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     position = mirage_fragment_main_data_get_position(self, address);
 
     /* Write */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%llX\n", __debug__, self->priv->main_size, position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%" G_GINT64_MODIFIER "X\n", __debug__, self->priv->main_size, position);
 
     mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
     if (mirage_stream_tell(self->priv->main_stream) != position) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%zX"), position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%" G_GINT64_MODIFIER "X"), position);
         g_free(swapped_buffer);
         return FALSE;
     }
@@ -755,7 +755,7 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
         guint8 *data_buffer = g_malloc0(96);
         guint8 *raw_buffer = g_malloc0(self->priv->subchannel_size);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
         /* We read into temporary buffer, because we might need to perform some
            magic on the data */
         mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
@@ -853,12 +853,12 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     position = mirage_fragment_subchannel_data_get_position(self, address);
 
     /* Write */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%llX\n", __debug__, self->priv->subchannel_size, position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%" G_GINT64_MODIFIER "X\n", __debug__, self->priv->subchannel_size, position);
 
     mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
     if (mirage_stream_tell(stream) != position) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%zX"), position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to seek to position 0x%" G_GINT64_MODIFIER "X"), position);
         return FALSE;
     }
 
