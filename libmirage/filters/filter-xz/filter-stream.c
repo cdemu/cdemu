@@ -199,7 +199,7 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
 
     /* Warn about multiple streams */
     if (lzma_index_stream_count(self->priv->index) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ file contains multiple (%ld) streams! Their content will be treated as a single compressed file!\n", __debug__, lzma_index_stream_count(self->priv->index));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ file contains multiple (%" G_GINT64_MODIFIER "d) streams! Their content will be treated as a single compressed file!\n", __debug__, lzma_index_stream_count(self->priv->index));
     }
 
 
@@ -214,8 +214,8 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: listing blocks...\n", __debug__);
     lzma_index_iter_init(&index_iter, self->priv->index);
     while (lzma_index_iter_next(&index_iter, LZMA_INDEX_ITER_BLOCK) == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%ld\n", __debug__, index_iter.block.number_in_file);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%ld (max: %ld)\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%" G_GINT64_MODIFIER "d\n", __debug__, index_iter.block.number_in_file);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%" G_GINT64_MODIFIER "d (max: %" G_GINT64_MODIFIER "d)\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
         max_block_size = MAX(max_block_size, index_iter.block.uncompressed_size);
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -223,8 +223,12 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
 
     /* For performance reasons, we limit the allowed size of blocks */
     if (max_block_size > MAX_BLOCK_SIZE) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%ld bytes) exceeds the limit of %d bytes!\n", __debug__, max_block_size, MAX_BLOCK_SIZE);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_DEBUG_PARSER, Q_("The largest block (%ld bytes) exceeds the limit of %d bytes!"), max_block_size, MAX_BLOCK_SIZE);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%" G_GINT64_MODIFIER "d bytes) exceeds the limit of %d bytes!\n", __debug__, max_block_size, MAX_BLOCK_SIZE);
+
+        gchar tmp[100] = ""; /* Work-around for lack of direct G_GINT64_MODIFIER support in xgettext() */
+        g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "d", max_block_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_DEBUG_PARSER, Q_("The largest block (%s bytes) exceeds the limit of %d bytes!"), tmp, MAX_BLOCK_SIZE);
+
         return FALSE;
     }
 
@@ -291,11 +295,11 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
     /* Find block that corresponds to current position */
     lzma_index_iter_init(&index_iter, self->priv->index);
     if (lzma_index_iter_locate(&index_iter, position)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%ld (cached: #%d)\n", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%" G_GINT64_MODIFIER "d (cached: #%d)\n", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
 
     /* If we do not have block in cache, uncompress it */
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
@@ -310,7 +314,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, index_iter.block.compressed_file_offset, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, index_iter.block.compressed_file_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GINT64_MODIFIER "d in underlying stream!\n", __debug__, index_iter.block.compressed_file_offset);
             return -1;
         }
 

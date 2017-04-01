@@ -188,7 +188,7 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
         } else {
             self->priv->segments[s] = cur_segment;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %2d: %lu %u %u %u %u\n", __debug__, s,
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %2d: %" G_GINT64_MODIFIER "u %u %u %u %u\n", __debug__, s,
                          cur_segment.size, cur_segment.num_chunks, cur_segment.first_chunk_num,
                          cur_segment.chunk_offs, cur_segment.left_size);
         }
@@ -249,7 +249,7 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
 
             sector_count += cur_segment->num_chunks;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %2d: %lu %u %u %u %u\n", __debug__, s,
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %2d: %" G_GINT64_MODIFIER "u %u %u %u %u\n", __debug__, s,
                          cur_segment->size, cur_segment->num_chunks, cur_segment->first_chunk_num,
                          cur_segment->chunk_offs, cur_segment->left_size);
         }
@@ -271,7 +271,7 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
         cur_segment->chunk_offs = header->data_offs;
         cur_segment->left_size = 0;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   0: %lu %u %u %u %u\n", __debug__,
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   0: %" G_GINT64_MODIFIER "u %u %u %u %u\n", __debug__,
                      cur_segment->size, cur_segment->num_chunks, cur_segment->first_chunk_num,
                      cur_segment->chunk_offs, cur_segment->left_size);
     }
@@ -627,7 +627,7 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
 
@@ -687,11 +687,11 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
     part_idx = position / self->priv->header.block_size;
 
     if (part_idx >= self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {

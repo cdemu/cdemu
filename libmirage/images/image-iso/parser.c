@@ -91,11 +91,15 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
             /* Check for CD001 or BEA01 at sector 16 */
             guint8 buf[8];
-            gsize offset = 16*full_sector_size + data_offset[j];
+            goffset offset = 16*full_sector_size + data_offset[j];
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %lXh to read 8-byte pattern!\n", __debug__, offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to %lXh to read 8-byte pattern!"), offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "Xh to read 8-byte pattern!\n", __debug__, offset);
+
+                gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
+                g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to %s to read 8-byte pattern!"), tmp);
+
                 return FALSE;
             }
 
@@ -155,13 +159,17 @@ static gboolean mirage_parser_iso_determine_track_type (MirageParserIso *self, s
         }
         case 2352: {
             guint8 buf[16];
-            gsize offset = 16 * (file_info->main_data_size + file_info->subchannel_data_size);
+            goffset offset = 16 * (file_info->main_data_size + file_info->subchannel_data_size);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte main sector data; determining track type at address 16 (offset %lXh)...\n", __debug__, offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte main sector data; determining track type at address 16 (offset %" G_GOFFSET_MODIFIER "Xh)...\n", __debug__, offset);
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %lXh to read 16-byte pattern!\n", __debug__, offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %lXh to read 16-byte pattern!"), offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "Xh to read 16-byte pattern!\n", __debug__, offset);
+
+                gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
+                g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %s to read 16-byte pattern!"), tmp);
+
                 return FALSE;
             }
 
@@ -201,14 +209,18 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
         }
         case 96: {
             guint8 buf[96];
-            gsize offset = 16 * (file_info->main_data_size + file_info->subchannel_data_size) + file_info->main_data_size;
+            goffset offset = 16 * (file_info->main_data_size + file_info->subchannel_data_size) + file_info->main_data_size;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 96-byte internal PW subchannel data found!\n", __debug__);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining whether it is linear or interleaved from subchannel data of sector 16 (offset %lXh)...\n", __debug__, offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining whether it is linear or interleaved from subchannel data of sector 16 (offset %" G_GOFFSET_MODIFIER "Xh)...\n", __debug__, offset);
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %lXh to read subchannel data!\n", __debug__, offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %lXh to read subchannel data!"), offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "Xh to read subchannel data!\n", __debug__, offset);
+
+                gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
+                g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %s to read subchannel data!"), tmp);
+
                 return FALSE;
             }
 

@@ -77,7 +77,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     g_assert(header->total_bytes % header->block_size == 0);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld\n", __debug__, header->total_bytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %" G_GINT64_MODIFIER "d\n", __debug__, header->total_bytes);
 
     /* At least one part must be present */
     if (!self->priv->num_parts) {
@@ -228,7 +228,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
     part_idx = position / self->priv->header.block_size;
 
     if (part_idx >= self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
 
@@ -244,7 +244,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, part->offset, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part->offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part->offset);
             return -1;
         }
 

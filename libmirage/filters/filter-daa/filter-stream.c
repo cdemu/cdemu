@@ -401,7 +401,7 @@ static gint mirage_filter_stream_daa_inflate_zlib (MirageFilterStreamDaa *self, 
     z_stream *zlib_stream = &self->priv->zlib_stream;
     gint ret;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: decompressing using zlib; in_len: %ld bytes\n", __debug__, in_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: decompressing using zlib; in_len: %" G_GSIZE_MODIFIER "d bytes\n", __debug__, in_len);
     inflateReset(zlib_stream);
 
     zlib_stream->next_in = in_buf;
@@ -432,7 +432,7 @@ static gint mirage_filter_stream_daa_inflate_lzma (MirageFilterStreamDaa *self, 
     ELzmaStatus status;
     SizeT inlen, outlen;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: decompressing using LZMA; in_len: %ld bytes\n", __debug__, in_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: decompressing using LZMA; in_len: %" G_GSIZE_MODIFIER "d bytes\n", __debug__, in_len);
 
     /* Initialize decoder */
     LzmaDec_Init(&self->priv->lzma_decoder);
@@ -465,7 +465,7 @@ static gint mirage_filter_stream_daa_inflate_lzma (MirageFilterStreamDaa *self, 
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: inflated: %ld bytes, consumed: %ld bytes\n", __debug__, outlen, inlen);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: inflated: %" G_GSIZE_MODIFIER "d bytes, consumed: %" G_GSIZE_MODIFIER "d bytes\n", __debug__, outlen, inlen);
     return outlen;
 }
 
@@ -752,7 +752,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptors (MirageFilterStreamDa
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing descriptors (stream position: 0x%lX)\n", __debug__, mirage_stream_tell(stream));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing descriptors (stream position: 0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, mirage_stream_tell(stream));
 
     /* Set number of parts to 1 (true for non-split images); if image consists
        of multiple parts, this will be set accordingly by the code below */
@@ -1385,7 +1385,7 @@ static gssize mirage_filter_stream_daa_partial_read (MirageFilterStream *_self, 
 
         /* Inflated size should match the expected one */
         if (inflated_size != expected_inflated_size && chunk_index != self->priv->num_chunks - 1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%lX bytes instead of 0x%lX)\n", __debug__, chunk_index, inflated_size, expected_inflated_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%" G_GSIZE_MODIFIER "X bytes instead of 0x%" G_GSIZE_MODIFIER "X)\n", __debug__, chunk_index, inflated_size, expected_inflated_size);
             return -1;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: successfully inflated chunk #%i (0x%" G_GSIZE_MODIFIER "X bytes)\n", __debug__, chunk_index, inflated_size);

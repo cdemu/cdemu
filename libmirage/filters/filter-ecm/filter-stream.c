@@ -333,11 +333,11 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
     }
     part = &self->priv->parts[part_idx];
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d\n", __debug__, position, position, part_idx);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d\n", __debug__, position, position, part_idx);
 
     /* Compute offset within part */
     part_offset = position - part->offset;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld\n", __debug__, part_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d\n", __debug__, part_offset);
 
     /* Decode part type */
     switch (part->type) {

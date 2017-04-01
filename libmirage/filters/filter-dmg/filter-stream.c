@@ -192,14 +192,14 @@ static void mirage_filter_stream_dmg_print_koly_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: 0x%X\n", __debug__, koly_block->flags);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  image_variant: %u\n", __debug__, koly_block->image_variant);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  running_data_fork_offset: 0x%lx\n", __debug__, koly_block->running_data_fork_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_offset: 0x%lx\n", __debug__, koly_block->data_fork_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_length: %lu\n", __debug__, koly_block->data_fork_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_offset: 0x%lx\n", __debug__, koly_block->rsrc_fork_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_length: %lu\n", __debug__, koly_block->rsrc_fork_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_offset: 0x%lx\n", __debug__, koly_block->xml_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_length: %lu\n", __debug__, koly_block->xml_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %lu\n", __debug__, koly_block->sector_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  running_data_fork_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->running_data_fork_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->data_fork_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_length: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->data_fork_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->rsrc_fork_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_length: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->rsrc_fork_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->xml_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_length: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->xml_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->sector_count);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_number: %u\n", __debug__, koly_block->segment_number);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_count: %u\n", __debug__, koly_block->segment_count);
@@ -243,9 +243,9 @@ static void mirage_filter_stream_dmg_print_blkx_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, blkx_block->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  info_version: %u\n", __debug__, blkx_block->info_version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first_sector_number: %lu\n", __debug__, blkx_block->first_sector_number);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %lu\n", __debug__, blkx_block->sector_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_start: %lu\n", __debug__, blkx_block->data_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first_sector_number: %" G_GINT64_MODIFIER "u\n", __debug__, blkx_block->first_sector_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %" G_GINT64_MODIFIER "u\n", __debug__, blkx_block->sector_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_start: %" G_GINT64_MODIFIER "u\n", __debug__, blkx_block->data_start);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  decompressed_buffer_requested: %u\n", __debug__, blkx_block->decompressed_buffer_requested);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_descriptor: %i\n", __debug__, blkx_block->blocks_descriptor);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.type: %u\n", __debug__, blkx_block->checksum.type);
@@ -726,7 +726,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
     /* Set file size */
     mirage_filter_stream_simplified_set_stream_length(_self, koly_block->sector_count * DMG_SECTOR_SIZE);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %lu\n", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
     /* Read descriptors */
     succeeded = mirage_filter_stream_dmg_read_descriptor(self, stream, error);

@@ -151,15 +151,15 @@ void mirage_print_gpt_header(MirageContextual *self, gpt_header_t *gpt_header)
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u\n", __debug__, gpt_header->header_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_crc: 0x%08x\n", __debug__, gpt_header->header_crc);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  reserved: %u\n", __debug__, gpt_header->reserved);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_header: %lu\n", __debug__, gpt_header->lba_header);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_backup: %lu\n", __debug__, gpt_header->lba_backup);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %lu\n", __debug__, gpt_header->lba_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %lu\n", __debug__, gpt_header->lba_end);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_header: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_header);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_backup: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_backup);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_end);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  GUID: 0x%016lx%016lx\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  GUID: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x\n", __debug__,
                  gpt_header->guid.as_int[0], gpt_header->guid.as_int[1]);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_gpt_table: %lu\n", __debug__, gpt_header->lba_gpt_table);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_gpt_table: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_gpt_table);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entries: %u\n", __debug__, gpt_header->gpt_entries);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entry_size: %u\n", __debug__, gpt_header->gpt_entry_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  crc_gpt_table: 0x%08x\n", __debug__, gpt_header->crc_gpt_table);
@@ -178,13 +178,13 @@ void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry)
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT entry:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%016lx%016lx\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x\n", __debug__,
                  gpt_entry->type.as_int[0], gpt_entry->type.as_int[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  guid: 0x%016lx%016lx\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  guid: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x\n", __debug__,
                  gpt_entry->guid.as_int[0], gpt_entry->guid.as_int[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %lu\n", __debug__, gpt_entry->lba_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %lu\n", __debug__, gpt_entry->lba_end);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attributes: 0x%016lx\n", __debug__, gpt_entry->attributes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_entry->lba_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_entry->lba_end);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attributes: 0x%016" G_GINT64_MODIFIER "x\n", __debug__, gpt_entry->attributes);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s\n", __debug__, name_str);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 

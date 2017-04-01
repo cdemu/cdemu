@@ -179,7 +179,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
        mode (because then we already know) */
     if (!writable) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %ld\n", __debug__, self->priv->format.frames);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %" G_GINT64_MODIFIER "d\n", __debug__, self->priv->format.frames);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d\n", __debug__, self->priv->format.channels);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d\n", __debug__, self->priv->format.format);
@@ -200,7 +200,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     /* Compute length in bytes */
     length = self->priv->format.frames * self->priv->format.channels * sizeof(guint16);
     if (!writable) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %ld (0x%lX) bytes\n", __debug__, length, length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes\n", __debug__, length, length);
     }
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
 
@@ -255,7 +255,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
         /* Adjust stream length */
         length = round(length/self->priv->io_ratio);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampled stream length: %ld (0x%lX) bytes\n", __debug__, length, length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampled stream length: %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes\n", __debug__, length, length);
         mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
     }
 
@@ -271,7 +271,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     /* Find the block of frames corresponding to current position; this
        is within the final, possibly resampled, stream */
     block = position / self->priv->buflen;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, position, position, block, self->priv->cached_block);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%d (cached: #%d)\n", __debug__, position, position, block, self->priv->cached_block);
 
     /* If we do not have block in cache, read it */
     if (block != self->priv->cached_block) {

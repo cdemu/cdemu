@@ -337,7 +337,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
     gssize total_read, read_len;
     guint8 *ptr = buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %ld (0x%lX) bytes from position %ld (0x%lX)!\n", __debug__, count, count, self->priv->position, self->priv->position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes from position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)!\n", __debug__, count, count, self->priv->position, self->priv->position);
 
     /* Make sure simplified_partial_read is provided */
     if (!MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_read) {
@@ -368,7 +368,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
         total_read += read_len;
         count -= read_len;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n", __debug__, read_len, read_len, count, count);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes... %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) remaining\n", __debug__, read_len, read_len, count, count);
 
         /* Update position */
         self->priv->position += read_len;
@@ -383,7 +383,7 @@ static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const v
     gssize total_write, write_len;
     const guint8 *ptr = buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write %ld (0x%lX) bytes at position %ld (0x%lX)!\n", __debug__, count, count, self->priv->position, self->priv->position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes at position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)!\n", __debug__, count, count, self->priv->position, self->priv->position);
 
     /* Make sure stream is writable */
     if (!mirage_stream_is_writable(MIRAGE_STREAM(self))) {
@@ -415,7 +415,7 @@ static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const v
         total_write += write_len;
         count -= write_len;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: written %ld (0x%lX) bytes... %ld (0x%lX) remaining\n", __debug__, write_len, write_len, count, count);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: written %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes... %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) remaining\n", __debug__, write_len, write_len, count, count);
 
         /* Update position */
         self->priv->position += write_len;
@@ -432,7 +432,7 @@ static gboolean mirage_filter_stream_seek_impl (MirageFilterStream *self, goffse
 {
     goffset new_position;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: seek: %ld (0x%lX), type %d\n", __debug__, offset, offset, type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: seek: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X), type %d\n", __debug__, offset, offset, type);
 
     /* Compute new position */
     switch (type) {
@@ -454,7 +454,7 @@ static gboolean mirage_filter_stream_seek_impl (MirageFilterStream *self, goffse
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: seeking to position %ld (0x%lX)\n", __debug__, new_position, new_position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: seeking to position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, new_position, new_position);
 
     /* Validate new position */
     if (new_position < 0) {
