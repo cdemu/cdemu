@@ -1,0 +1,862 @@
+# Russian translation of image-analyzer
+# Copyright (C) 2006-2015
+# This file is distributed under the same license as the gCDEmu package.
+# Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>, 2006-2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: image-analyzer 3.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-01-26 01:58+0100\n"
+"PO-Revision-Date: 2017-01-26 02:02+0100\n"
+"Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
+"AND_DOT_HERE com>\n"
+"Language-Team: Russian\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#: ../data/image-analyzer.desktop.in.h:1
+msgid "Image Analyzer"
+msgstr "Анализатор образов"
+
+#: ../data/image-analyzer.desktop.in.h:2
+msgid "Utility for CD/DVD image analysis and manipulation"
+msgstr "Программа для анализа образов дисков CD/DVD и управления ими"
+
+#: ../src/image-analyzer:83
+msgid "CD-ROM"
+msgstr "CD-ROM"
+
+#: ../src/image-analyzer:84
+msgid "DVD-ROM"
+msgstr "DVD-ROM"
+
+#: ../src/image-analyzer:85
+msgid "BlueRay Disc"
+msgstr "BlueRay диск"
+
+#: ../src/image-analyzer:86
+msgid "HD-DVD Disc"
+msgstr "HD-DVD диск"
+
+#: ../src/image-analyzer:87
+msgid "Hard-disk"
+msgstr "Жесткий диск"
+
+#: ../src/image-analyzer:93 ../src/image-analyzer:94
+msgid "CD-DA/CD-ROM"
+msgstr "CD-DA/CD-ROM"
+
+#: ../src/image-analyzer:95
+msgid "CD-I"
+msgstr "CD-I"
+
+#: ../src/image-analyzer:96
+msgid "CD-ROM XA"
+msgstr "CD-ROM XA"
+
+#: ../src/image-analyzer:102
+msgid "four channel audio"
+msgstr "4-канальный звук"
+
+#: ../src/image-analyzer:103
+msgid "copy permitted"
+msgstr "копирование разрешено"
+
+#: ../src/image-analyzer:104
+msgid "pre-emphasis"
+msgstr "предыскажение"
+
+#: ../src/image-analyzer:114
+msgid "Mode 0"
+msgstr "Режим 0"
+
+#: ../src/image-analyzer:115
+msgid "Audio"
+msgstr "Аудио"
+
+#: ../src/image-analyzer:116
+msgid "Mode 1"
+msgstr "Режим 1"
+
+#: ../src/image-analyzer:117
+msgid "Mode 2 Formless"
+msgstr "Режим 2 без формы"
+
+#: ../src/image-analyzer:118
+msgid "Mode 2 Form 1"
+msgstr "Режим 2 Форма 1"
+
+#: ../src/image-analyzer:119
+msgid "Mode 2 Form 2"
+msgstr "Режим 2 Форма 2"
+
+#: ../src/image-analyzer:120
+msgid "Mode 2 Mixed"
+msgstr "Режим 2 смешанный"
+
+#: ../src/image-analyzer:126
+msgid "Binary data"
+msgstr "Двоичные данные"
+
+#: ../src/image-analyzer:127
+msgid "Audio data"
+msgstr "Аудиоданные"
+
+#: ../src/image-analyzer:128
+msgid "Audio data (swapped)"
+msgstr "Аудиоданные (загруженные)"
+
+#: ../src/image-analyzer:138
+msgid "internal"
+msgstr "внутренние"
+
+#: ../src/image-analyzer:139
+msgid "external"
+msgstr "внешние"
+
+#: ../src/image-analyzer:140
+msgid "PW96 interleaved"
+msgstr "PW96 с чередованием"
+
+#: ../src/image-analyzer:141
+msgid "PW96 linear"
+msgstr "PW96 линейные"
+
+#: ../src/image-analyzer:142
+msgid "RW96"
+msgstr "RW96"
+
+#: ../src/image-analyzer:143
+msgid "Q16"
+msgstr "Q16"
+
+#: ../src/image-analyzer:162
+#, c-format
+msgid "Read sector (#%02d)"
+msgstr "Чтение сектора (#%02d)"
+
+#: ../src/image-analyzer:208
+msgid "Read"
+msgstr "Чтение"
+
+#: ../src/image-analyzer:227 ../src/image-analyzer:426
+#: ../src/image-analyzer:701
+msgid "Ready!"
+msgstr "Готово!"
+
+#: ../src/image-analyzer:232 ../src/image-analyzer:429
+#: ../src/image-analyzer:579 ../src/image-analyzer:707
+msgid "No disc loaded!"
+msgstr "Диск не смонтирован!"
+
+#: ../src/image-analyzer:248
+#, c-format
+msgid "Failed to get sector: %s"
+msgstr "Не удалось прочитать сектор: %s"
+
+#: ../src/image-analyzer:253
+msgid "Sector address: "
+msgstr "Адрес сектора: "
+
+#: ../src/image-analyzer:258
+msgid "Sector address MSF: "
+msgstr "Адрес сектора MSF: "
+
+#: ../src/image-analyzer:263
+msgid "Sector type: "
+msgstr "Тип сектора: "
+
+#: ../src/image-analyzer:275
+msgid "Sector angle: "
+msgstr "Угол сектора: "
+
+#: ../src/image-analyzer:276
+#, c-format
+msgid "%f rotations"
+msgstr "%f оборотов"
+
+#: ../src/image-analyzer:280
+msgid "Sector density: "
+msgstr "Плотность сектора: "
+
+#: ../src/image-analyzer:281
+#, c-format
+msgid "%f degrees per sector"
+msgstr "%f градусов на сектор"
+
+#: ../src/image-analyzer:287
+msgid "Q subchannel:"
+msgstr "Q субканал:"
+
+#: ../src/image-analyzer:294
+msgid "Subchannel CRC verification: "
+msgstr "Проверка контрольной суммы субканала: "
+
+#: ../src/image-analyzer:296 ../src/image-analyzer:304
+msgid "passed"
+msgstr "пройдено"
+
+#: ../src/image-analyzer:298
+msgid "bad CRC"
+msgstr "неверная контрольная сумма"
+
+#: ../src/image-analyzer:302
+msgid "Sector data L-EC verification: "
+msgstr "Проверка контрольной суммы данных в секторе: "
+
+#: ../src/image-analyzer:306
+msgid "bad sector"
+msgstr "дефектный сектор"
+
+#: ../src/image-analyzer:310
+msgid "Sector data dump:"
+msgstr "Выходные данные сектора: "
+
+#: ../src/image-analyzer:363
+#, c-format
+msgid "Sector analysis (#%02d)"
+msgstr "Анализ сектора (#%02d)"
+
+#: ../src/image-analyzer:395
+msgid "Analyze"
+msgstr "Анализировать"
+
+#: ../src/image-analyzer:410 ../src/image-analyzer:818
+#: ../src/image-analyzer:860 ../src/image-analyzer:905
+#: ../src/image-analyzer:926 ../src/image-analyzer:949
+#: ../src/image-analyzer:1005 ../src/image-analyzer:2317
+#: ../src/image-analyzer:2364
+msgid "Cancel"
+msgstr "Отмена"
+
+#: ../src/image-analyzer:446
+msgid "Analyzing sectors..."
+msgstr "Анализ секторов..."
+
+#: ../src/image-analyzer:455
+msgid "Performing sector analysis..."
+msgstr "Производится анализ секторов..."
+
+#: ../src/image-analyzer:468
+#, c-format
+msgid "Session #%d: "
+msgstr "Сессия #%d: "
+
+#: ../src/image-analyzer:469
+#, c-format
+msgid "start: %d, length %d, %d tracks"
+msgstr "начало: %d, длина %d, %d дорожек"
+
+#: ../src/image-analyzer:480
+#, c-format
+msgid "Track #%d: "
+msgstr "Дорожка #%d: "
+
+#: ../src/image-analyzer:481
+#, c-format
+msgid "start: %d, length %d"
+msgstr "начало: %d, длина %d"
+
+#: ../src/image-analyzer:495 ../src/image-analyzer:500
+#: ../src/image-analyzer:504
+#, c-format
+msgid "Sector %d (0x%X): "
+msgstr "Сектор %d (0x%X): "
+
+#: ../src/image-analyzer:505
+msgid "Failed to get sector!"
+msgstr "Не удалось прочитать сектор!"
+
+#: ../src/image-analyzer:533
+msgid "Sector analysis cancelled!"
+msgstr "Анализ секторов отменен!"
+
+#: ../src/image-analyzer:535
+msgid "Sector analysis complete!"
+msgstr "Анализ секторов завершен!"
+
+#: ../src/image-analyzer:550
+#, c-format
+msgid "Disc topology (#%02d)"
+msgstr "Топология диска (#%02d)"
+
+#: ../src/image-analyzer:595
+msgid "No DPM data provided!"
+msgstr "Отсутствуют данные DPM!"
+
+#: ../src/image-analyzer:620
+msgid "Sector address"
+msgstr "Адрес сектора"
+
+#: ../src/image-analyzer:621
+msgid "Sector density [degrees/sector]"
+msgstr "Плотность сектора [градусы/нектор]"
+
+#: ../src/image-analyzer:635
+#, c-format
+msgid "Disc structures (#%02d)"
+msgstr "Структура диска (#%02d)"
+
+#: ../src/image-analyzer:664
+msgid "Layer: "
+msgstr "Слой: "
+
+#: ../src/image-analyzer:675
+msgid "Type: "
+msgstr "Тип: "
+
+#: ../src/image-analyzer:686
+msgid "Get structure"
+msgstr "Прочитать структуру"
+
+#: ../src/image-analyzer:704
+msgid "Unsupported medium type!"
+msgstr "Неподдерживаемый тип данных!"
+
+#: ../src/image-analyzer:718
+#, c-format
+msgid "Layer %d, structure %d (0x%X):"
+msgstr "Слой %d, структура %d (0x%X):"
+
+#: ../src/image-analyzer:725
+#, c-format
+msgid "Failed to get structure: %s"
+msgstr "Не удалось прочитать структуру: %s"
+
+#: ../src/image-analyzer:730
+#, c-format
+msgid "%d bytes"
+msgstr "%d байт"
+
+#: ../src/image-analyzer:742
+#, c-format
+msgid "Log (#%02d)"
+msgstr "Журнал (#%02d)"
+
+#: ../src/image-analyzer:765
+msgid "Mirror to stdout"
+msgstr "Отразить на stdout"
+
+#: ../src/image-analyzer:770
+msgid "Clear"
+msgstr "Очистить"
+
+#: ../src/image-analyzer:775 ../src/image-analyzer:815
+msgid "Debug mask"
+msgstr "Отладочная маска"
+
+#: ../src/image-analyzer:818 ../src/image-analyzer:949
+#: ../src/image-analyzer:2364
+msgid "OK"
+msgstr "ОК"
+
+#: ../src/image-analyzer:858 ../src/image-analyzer:2458
+msgid "Open image"
+msgstr "Открыть образ"
+
+#: ../src/image-analyzer:860 ../src/image-analyzer:905
+msgid "Open"
+msgstr "Открыть"
+
+#: ../src/image-analyzer:867 ../src/image-analyzer:917
+#: ../src/image-analyzer:939
+msgid "All files"
+msgstr "Все файлы"
+
+#: ../src/image-analyzer:873
+msgid "All images"
+msgstr "Все образы"
+
+#: ../src/image-analyzer:903
+msgid "Open image dump"
+msgstr "Odpri izpis"
+
+#: ../src/image-analyzer:911 ../src/image-analyzer:933
+msgid "XML files"
+msgstr "Файлы XML"
+
+#: ../src/image-analyzer:924
+msgid "Save image dump"
+msgstr "Сохранить дамп образа"
+
+#: ../src/image-analyzer:926 ../src/image-analyzer:1006
+msgid "Save"
+msgstr "Сохранить"
+
+#: ../src/image-analyzer:952
+msgid "Output image"
+msgstr "Конечный образ"
+
+#: ../src/image-analyzer:962
+msgid "Filename: "
+msgstr "Имя файла: "
+
+#: ../src/image-analyzer:970
+msgid "Choose"
+msgstr "Выбрать"
+
+#: ../src/image-analyzer:975
+msgid "Writer: "
+msgstr "Записывающий накопитель: "
+
+#: ../src/image-analyzer:989
+msgid "Writer options"
+msgstr "Настройки записывающего накопителя"
+
+#: ../src/image-analyzer:1002
+msgid "Select output image file"
+msgstr "Выберите файл конечного образа"
+
+#: ../src/image-analyzer:1270
+#, c-format
+msgid "Invalid XML dump file (root tag is '%s', expected '%s'!"
+msgstr ""
+"Неверный дамп файла XML (корневая метка '%s', ожидаемо '%s'!)"
+
+#: ../src/image-analyzer:1620
+#, c-format
+msgid "Medium type: 0x%X (%s)"
+msgstr "Тип данных: 0x%X (%s)"
+
+#: ../src/image-analyzer:1624
+msgid "Filename(s)"
+msgstr "Имя(-ена) файлов"
+
+#: ../src/image-analyzer:1629 ../src/image-analyzer:1689
+msgid "Layout"
+msgstr "Распределение"
+
+#: ../src/image-analyzer:1633
+#, c-format
+msgid "First sesssion: %d"
+msgstr "Первая сессия: %d"
+
+#: ../src/image-analyzer:1637 ../src/image-analyzer:1693
+#, c-format
+msgid "First track: %d"
+msgstr "Первая дорожка: %d"
+
+#: ../src/image-analyzer:1641 ../src/image-analyzer:1697
+#: ../src/image-analyzer:1778 ../src/image-analyzer:1927
+#, c-format
+msgid "Start sector: %d (0x%X)"
+msgstr "Начальный сектор: %d (0x%X)"
+
+#: ../src/image-analyzer:1645 ../src/image-analyzer:1701
+#: ../src/image-analyzer:1783 ../src/image-analyzer:1833
+#, c-format
+msgid "Length: %d (0x%X)"
+msgstr "Длина: %d (0x%X)"
+
+#: ../src/image-analyzer:1650
+#, c-format
+msgid "Number of sessions: %d"
+msgstr "Количество сессий: %d"
+
+#: ../src/image-analyzer:1654
+#, c-format
+msgid "Number of tracks: %d"
+msgstr "Количество дорожек: %d"
+
+#: ../src/image-analyzer:1658
+#, c-format
+msgid "Sessions (%d)"
+msgstr "Сессии (%d)"
+
+#: ../src/image-analyzer:1672
+#, c-format
+msgid "Session %02d"
+msgstr "Сессия %02d"
+
+#: ../src/image-analyzer:1677
+#, c-format
+msgid "Session type: 0x%X (%s)"
+msgstr "Vrsta seje: 0x%X (%s)"
+
+#: ../src/image-analyzer:1683
+#, c-format
+msgid "MCN: %s"
+msgstr "MCN: %s"
+
+#: ../src/image-analyzer:1686 ../src/image-analyzer:1770
+#, c-format
+msgid "Session number: %d"
+msgstr "Номер сессии: %d"
+
+#: ../src/image-analyzer:1706
+#, c-format
+msgid "Lead-out length: %d (0x%X)"
+msgstr "Длина вывода: %d (0x%X)"
+
+#: ../src/image-analyzer:1713
+#, c-format
+msgid "Tracks (%d)"
+msgstr "Дорожки (%d)"
+
+#: ../src/image-analyzer:1722 ../src/image-analyzer:1817
+#, c-format
+msgid "Languages (%d)"
+msgstr "Языки (%d)"
+
+#: ../src/image-analyzer:1733
+msgid "Lead-in"
+msgstr "Начальная дорожка"
+
+#: ../src/image-analyzer:1735
+msgid "Lead-out"
+msgstr "Конечная дорожка"
+
+#: ../src/image-analyzer:1737
+#, c-format
+msgid "Track %02d"
+msgstr "Дорожка %02d"
+
+#: ../src/image-analyzer:1744
+#, c-format
+msgid "Flags: 0x%X (%s)"
+msgstr "Метки: 0x%X (%s)"
+
+#: ../src/image-analyzer:1749
+#, c-format
+msgid "Sector type: 0x%X (%s)"
+msgstr "Тип сектора: 0x%X (%s)"
+
+#: ../src/image-analyzer:1754
+#, c-format
+msgid "ADR: %d"
+msgstr "ADR: %d"
+
+#: ../src/image-analyzer:1759
+#, c-format
+msgid "CTL: %d"
+msgstr "CTL: %d"
+
+#: ../src/image-analyzer:1765
+#, c-format
+msgid "ISRC: %s"
+msgstr "ISRC: %s"
+
+#: ../src/image-analyzer:1773
+#, c-format
+msgid "Track number: %d"
+msgstr "Номер дорожки: %d"
+
+#: ../src/image-analyzer:1790
+#, c-format
+msgid "Fragments (%d)"
+msgstr "Фрагменты (%d)"
+
+#: ../src/image-analyzer:1800
+#, c-format
+msgid "Track start: %d (0x%X)"
+msgstr "Начало дорожки: %d (0x%X)"
+
+#: ../src/image-analyzer:1807
+#, c-format
+msgid "Indices (%d)"
+msgstr "Индексы (%d)"
+
+#: ../src/image-analyzer:1823
+#, c-format
+msgid "Fragment #%d"
+msgstr "Фрагмент #%d"
+
+#: ../src/image-analyzer:1828
+#, c-format
+msgid "Address: %d (0x%X)"
+msgstr "Адрес: %d (0x%X)"
+
+#: ../src/image-analyzer:1836
+msgid "Main data"
+msgstr "Данные главного канала"
+
+#: ../src/image-analyzer:1840 ../src/image-analyzer:1859
+#, c-format
+msgid "Filename: %s"
+msgstr "Имя файла: %s"
+
+#: ../src/image-analyzer:1844 ../src/image-analyzer:1863
+#, c-format
+msgid "Offset: %d (0x%X)"
+msgstr "Смещение: %d (0x%X)"
+
+#: ../src/image-analyzer:1848 ../src/image-analyzer:1867
+#, c-format
+msgid "Size: %d (0x%X)"
+msgstr "Размер: %d (0x%X)"
+
+#: ../src/image-analyzer:1852 ../src/image-analyzer:1871
+#, c-format
+msgid "Format: 0x%X (%s)"
+msgstr "Формат: 0x%X (%s)"
+
+#: ../src/image-analyzer:1855
+msgid "Subchannel data"
+msgstr "Данные субканала"
+
+#: ../src/image-analyzer:1878
+#, c-format
+msgid "Language %d"
+msgstr "Язык %d"
+
+#: ../src/image-analyzer:1881
+#, c-format
+msgid "Language code: %d"
+msgstr "Код языка: %d"
+
+#: ../src/image-analyzer:1885
+msgid "Title"
+msgstr "Название"
+
+#: ../src/image-analyzer:1886
+msgid "Performer"
+msgstr "Исполнитель"
+
+#: ../src/image-analyzer:1887
+msgid "Songwriter"
+msgstr "Автор"
+
+#: ../src/image-analyzer:1888
+msgid "Composer"
+msgstr "Композитор"
+
+#: ../src/image-analyzer:1889
+msgid "Arranger"
+msgstr "Аранжировщик"
+
+#: ../src/image-analyzer:1890
+msgid "Message"
+msgstr "Сообщение"
+
+#: ../src/image-analyzer:1891
+msgid "Disc ID"
+msgstr "ID диска"
+
+#: ../src/image-analyzer:1892
+msgid "Genre"
+msgstr "Жанр"
+
+#: ../src/image-analyzer:1893
+msgid "TOC"
+msgstr "TOC"
+
+#: ../src/image-analyzer:1894
+msgid "TOC2"
+msgstr "TOC2"
+
+#: ../src/image-analyzer:1895
+msgid "Reserved 8A"
+msgstr "Зарезервировано 8A"
+
+#: ../src/image-analyzer:1896
+msgid "Reserved 8B"
+msgstr "Зарезервировано 8B"
+
+#: ../src/image-analyzer:1897
+msgid "Reserved 8C"
+msgstr "Зарезервировано 8C"
+
+#: ../src/image-analyzer:1898
+msgid "Closed info"
+msgstr "Закрытая информация"
+
+#: ../src/image-analyzer:1899
+msgid "UPC/ISRC"
+msgstr "UPC/ISRC"
+
+#: ../src/image-analyzer:1900
+msgid "Size"
+msgstr "Размер"
+
+#: ../src/image-analyzer:1922
+msgid "DPM"
+msgstr "DPM"
+
+#: ../src/image-analyzer:1932
+#, c-format
+msgid "Resolution: %d (0x%X)"
+msgstr "Разрешение: %d (0x%X)"
+
+#: ../src/image-analyzer:1938
+#, c-format
+msgid "Entries (%d)"
+msgstr "Записи (%d)"
+
+#: ../src/image-analyzer:2083
+msgid "ERROR"
+msgstr "ОШИБКА"
+
+#: ../src/image-analyzer:2085
+msgid "CRITICAL"
+msgstr "КРИТИЧЕСКАЯ"
+
+#: ../src/image-analyzer:2087
+msgid "WARNING"
+msgstr "ВНИМАНИЕ"
+
+#: ../src/image-analyzer:2093
+#, c-format
+msgid "Image analyzer #%02d"
+msgstr "Анализатор образов #%02d"
+
+#: ../src/image-analyzer:2136
+msgid "Image filename/basename not set!"
+msgstr "Не задано имя файла!"
+
+#: ../src/image-analyzer:2149
+msgid "No image writer chosen!"
+msgstr "Не выбран записывающий накопитель!"
+
+#: ../src/image-analyzer:2228
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Не удалось смонтировать образ: %s"
+
+#: ../src/image-analyzer:2263
+#, c-format
+msgid "Failed to load XML dump: %s"
+msgstr "Не удалось загрузить дамп XML: %s"
+
+#: ../src/image-analyzer:2289
+#, c-format
+msgid "Failed to save XML dump: %s"
+msgstr "Не удалось сохранить дамп XML: %s"
+
+#: ../src/image-analyzer:2311
+msgid "Converting..."
+msgstr "Конвертация..."
+
+#: ../src/image-analyzer:2314
+msgid "Image conversion progress"
+msgstr "Прогресс конвертации образа"
+
+#: ../src/image-analyzer:2342
+msgid "Image conversion succeeded."
+msgstr "Конвертация образа завершена успешно."
+
+#: ../src/image-analyzer:2350
+#, c-format
+msgid "Image conversion failed: %s"
+msgstr "Ошибка конвертации образа: %s"
+
+#: ../src/image-analyzer:2361
+msgid "Enter password"
+msgstr "Введите пароль"
+
+#: ../src/image-analyzer:2374
+msgid "The image you are trying to load is encrypted."
+msgstr "Монтируемый образ зашифрован."
+
+#: ../src/image-analyzer:2380
+msgid "Password: "
+msgstr "Пароль: "
+
+#: ../src/image-analyzer:2410
+msgid "Print libMirage debug to stdout"
+msgstr "Вывести отладку libMirage в stdout"
+
+#: ../src/image-analyzer:2411
+msgid "libMirage debug mask"
+msgstr "Отладочная маска libMirage"
+
+#: ../src/image-analyzer:2441
+msgid "New window"
+msgstr "Новое окно"
+
+#: ../src/image-analyzer:2445 ../src/image-analyzer:2487
+msgid "About"
+msgstr "О программе"
+
+#: ../src/image-analyzer:2446
+msgid "Quit"
+msgstr "Выход"
+
+#: ../src/image-analyzer:2462
+msgid "Convert image"
+msgstr "Конвертировтаь образ"
+
+#: ../src/image-analyzer:2466
+msgid "Open dump"
+msgstr "Открыть дамп"
+
+#: ../src/image-analyzer:2467
+msgid "Save dump"
+msgstr "Сохранить дамп"
+
+#: ../src/image-analyzer:2471
+msgid "Close"
+msgstr "Закрыть"
+
+#: ../src/image-analyzer:2474
+msgid "File"
+msgstr "Файл"
+
+#: ../src/image-analyzer:2478
+msgid "Log"
+msgstr "Журнал"
+
+#: ../src/image-analyzer:2479
+msgid "Read sector"
+msgstr "Чтение сектор"
+
+#: ../src/image-analyzer:2480
+msgid "Sector analysis"
+msgstr "Анализ сектора"
+
+#: ../src/image-analyzer:2481
+msgid "Disc topology"
+msgstr "Топология диска"
+
+#: ../src/image-analyzer:2482
+msgid "Disc structures"
+msgstr "Структура диска"
+
+#: ../src/image-analyzer:2483
+msgid "Tools"
+msgstr "Инструменты"
+
+#: ../src/image-analyzer:2488
+msgid "Help"
+msgstr "Помощь"
+
+#: ../src/image-analyzer:2493
+msgid "<Primary>o"
+msgstr "<Primary>o"
+
+#: ../src/image-analyzer:2494
+msgid "<Primary>x"
+msgstr "<Primary>x"
+
+#: ../src/image-analyzer:2495
+msgid "<Primary>s"
+msgstr "<Primary>s"
+
+#: ../src/image-analyzer:2496
+msgid "<Primary>w"
+msgstr "<Primary>w"
+
+#: ../src/image-analyzer:2497
+msgid "<Primary>l"
+msgstr "<Primary>l"
+
+#: ../src/image-analyzer:2498
+msgid "<Primary>r"
+msgstr "<Primary>r"
+
+#: ../src/image-analyzer:2538
+msgid "Utility for CD/DVD image analysis and manipulation."
+msgstr "Программа для анализа образов дисков CD/DVD и управления ими."
+
+#: ../src/image-analyzer:2540
+msgid "The CDEmu project website"
+msgstr "Сайт программы CDEmu"
+
+#: ../src/image-analyzer:2542
+msgid "translator-credits"
+msgstr "Rok Mandeljc <rok.mandeljc@gmail.com>"

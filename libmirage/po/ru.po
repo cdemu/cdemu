@@ -1,0 +1,2083 @@
+# Russian translation of libmirage
+# Copyright (C) 2006-2015
+# This file is distributed under the same license as the gCDEmu package.
+# Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>, 2006-2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libmirage 3.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-01-25 23:36+0100\n"
+"PO-Revision-Date: 2017-01-25 23:15+0100\n"
+"Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
+"AND_DOT_HERE com>\n"
+"Language-Team: Russian\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#: ../filters/filter-cso/filter-stream.c:85
+#, c-format
+msgid "No parts in CSO file!"
+msgstr "Файл CSO не содержит частей!"
+
+#: ../filters/filter-cso/filter-stream.c:92
+#: ../filters/filter-dmg/filter-stream.c:464
+#, c-format
+msgid "Failed to allocate memory for index!"
+msgstr "Не удалось выделить память для индекса!"
+
+#: ../filters/filter-cso/filter-stream.c:98
+#: ../filters/filter-xz/filter-stream.c:153
+#, c-format
+msgid "Failed to seek to the beginning of index!"
+msgstr "Не удалось найти начало индекса!"
+
+#: ../filters/filter-cso/filter-stream.c:111
+#, c-format
+msgid "Failed to read from index!"
+msgstr "Ошибка чтения индекса!"
+
+#: ../filters/filter-cso/filter-stream.c:141
+#: ../filters/filter-daa/filter-stream.c:392
+#: ../filters/filter-dmg/filter-stream.c:545
+#: ../filters/filter-gzip/filter-stream.c:187
+#: ../filters/filter-isz/filter-stream.c:483
+#, c-format
+msgid "Failed to initialize zlib's inflate (error: %d)!"
+msgstr "Не удалось инициализировать декомпрессию zlib (ошибка: %d)!"
+
+#: ../filters/filter-cso/filter-stream.c:149
+#: ../filters/filter-dmg/filter-stream.c:566
+#: ../filters/filter-isz/filter-stream.c:505
+#, c-format
+msgid "Failed to allocate memory for inflate buffer!"
+msgstr "Не удалось выделить память для буфера декомпрессии!"
+
+#: ../filters/filter-cso/filter-stream.c:157
+#: ../filters/filter-dmg/filter-stream.c:573
+#: ../filters/filter-isz/filter-stream.c:513
+#, c-format
+msgid "Failed to allocate memory for I/O buffer!"
+msgstr "Не удалось выделить память для буфера ввода/вывода!"
+
+#: ../filters/filter-cso/filter-stream.c:191
+#, c-format
+msgid "Filter cannot handle given data: failed to read CISO header!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать заголовок CISO!"
+
+#: ../filters/filter-cso/filter-stream.c:201
+#: ../filters/filter-macbinary/filter-stream.c:240
+#, c-format
+msgid "Filter cannot handle given data: invalid header!"
+msgstr "Фильтр не в состоянии обработать полученные данные: некорректный заголовок!"
+
+#: ../filters/filter-cso/filter-stream.c:336
+msgid "CSO File Filter"
+msgstr "Фильтр файлов CSO"
+
+#: ../filters/filter-cso/filter-stream.c:339
+msgid "Compressed ISO images (*.ciso, *.cso)"
+msgstr "Сжатые образы ISO (*.ciso, *.cso)"
+
+#: ../filters/filter-cso/libmirage-cso.xml.in.h:1
+#: ../filters/filter-isz/libmirage-isz.xml.in.h:1
+msgid "Compressed ISO image file"
+msgstr "Файл сжатого образа ISO"
+
+#: ../filters/filter-daa/filter-stream.c:487
+#, c-format
+msgid "Failed to read main file's header!"
+msgstr "Не удалось прочитать заголовок основного файла!"
+
+#: ../filters/filter-daa/filter-stream.c:519
+#: ../filters/filter-daa/filter-stream.c:561
+#, c-format
+msgid "CRC32 checksum mismatch!"
+msgstr "Контрольная сумма CRC32 не совпадает!"
+
+#: ../filters/filter-daa/filter-stream.c:536
+#, c-format
+msgid "Failed to read part file's header!"
+msgstr "Не удалось прочитать заголовок части файла!"
+
+#: ../filters/filter-daa/filter-stream.c:589
+#, c-format
+msgid "Failed to find part for offset 0x%lX!"
+msgstr "Не удалось найти часть 0x%lX!"
+
+#: ../filters/filter-daa/filter-stream.c:607
+#, c-format
+msgid "Failed to seek to 0x%lX!"
+msgstr "Не удалось найти 0x%lX!"
+
+#: ../filters/filter-daa/filter-stream.c:613
+#, c-format
+msgid "Failed to read 0x%X bytes!"
+msgstr "Не удалось прочитать 0x%X байт!"
+
+#: ../filters/filter-daa/filter-stream.c:637
+#: ../filters/filter-daa/filter-stream.c:695
+#, c-format
+msgid "Failed to read descriptor data!"
+msgstr "Не удалось прочитать данные дескриптора!"
+
+#: ../filters/filter-daa/filter-stream.c:670
+#, c-format
+msgid "Invalid filename format type!"
+msgstr "Некорректный тип формата названия файла!"
+
+#: ../filters/filter-daa/filter-stream.c:688
+#, c-format
+msgid "Invalid size for encryption descriptor!"
+msgstr "Некорректный размер дескриптора шифрования!"
+
+#: ../filters/filter-daa/filter-stream.c:719
+#, c-format
+msgid "Image is encrypted!"
+msgstr "Образ зашифрован!"
+
+#: ../filters/filter-daa/filter-stream.c:731
+#, c-format
+msgid "Incorrect password!"
+msgstr "Неверный пароль!"
+
+#: ../filters/filter-daa/filter-stream.c:760
+#, c-format
+msgid "Failed to read descriptor type!"
+msgstr "Не удалось прочитать тип дескриптора!"
+
+#: ../filters/filter-daa/filter-stream.c:893
+#, c-format
+msgid "Failed to allocate chunk table buffer (%d bytes)!"
+msgstr "Не удалось выделить буфер таблицы частей (%d байт)!"
+
+#: ../filters/filter-daa/filter-stream.c:901
+#, c-format
+msgid "Failed to read chunk table data!"
+msgstr "Не удалось прочитать данные таблицы частей!"
+
+#: ../filters/filter-daa/filter-stream.c:935
+#, c-format
+msgid "Failed to allocate chunk table (%ld bytes)!"
+msgstr "Не удалось выделить таблицу частей (%ld байт)!"
+
+#: ../filters/filter-daa/filter-stream.c:1013
+#, c-format
+msgid "Failed to allocate I/O buffer size (%d bytes)!"
+msgstr "Не удалось выделить размер буфера ввода/вывода (%d байт)!"
+
+#: ../filters/filter-daa/filter-stream.c:1039
+#, c-format
+msgid "Failed to allocate part table!"
+msgstr "Не удалось выделить таблицу частей!"
+
+#: ../filters/filter-daa/filter-stream.c:1091
+#, c-format
+msgid "Failed to read part's signature!"
+msgstr "Не удалось прочитать подпись части!"
+
+#: ../filters/filter-daa/filter-stream.c:1105
+#, c-format
+msgid "Part's signature is invalid!"
+msgstr "Подпись части некорректна!"
+
+#: ../filters/filter-daa/filter-stream.c:1196
+#, c-format
+msgid "Compressed chunk table not supported yet!"
+msgstr "Сжатая таблица частей пока не поддерживается!"
+
+#: ../filters/filter-daa/filter-stream.c:1203
+#, c-format
+msgid "Bit swap type %d not supported yet!"
+msgstr "Тип замены битов %d пока не поддерживается!"
+
+#: ../filters/filter-daa/filter-stream.c:1229
+#, c-format
+msgid "Unsupported format: 0x%X!"
+msgstr "Неподдерживаемый формат: 0x%X!"
+
+#: ../filters/filter-daa/filter-stream.c:1245
+#, c-format
+msgid "Failed to allocate inflate buffer (%d bytes)!"
+msgstr "Не удалось выделить буфер для декомпрессии (%d байт)!"
+
+#: ../filters/filter-daa/filter-stream.c:1281
+#, c-format
+msgid "Filter cannot handle given data: failed to read 16-byte signature!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 16-байтную "
+"подпись!"
+
+#: ../filters/filter-daa/filter-stream.c:1293
+#: ../filters/filter-ecm/filter-stream.c:243
+#: ../filters/filter-gzip/filter-stream.c:296
+#: ../filters/filter-xz/filter-stream.c:267
+#, c-format
+msgid "Filter cannot handle given data: invalid signature!"
+msgstr "Фильтр не в состоянии обработать полученные данные: некорректная подпись!"
+
+#: ../filters/filter-daa/filter-stream.c:1423
+msgid "DAA File Filter"
+msgstr "Фильтр файлов DAA"
+
+#: ../filters/filter-daa/filter-stream.c:1426
+msgid "PowerISO images (*.daa)"
+msgstr "Образы PowerISO (*.daa)"
+
+#: ../filters/filter-daa/filter-stream.c:1427
+msgid "gBurner images (*.gbi)"
+msgstr "Образы gBurner (*.gbi)"
+
+#: ../filters/filter-daa/libmirage-daa.xml.in.h:1
+msgid "PowerISO image file"
+msgstr "Образ PowerISO"
+
+#: ../filters/filter-daa/libmirage-gbi.xml.in.h:1
+msgid "gBurner image file"
+msgstr "Образ gBurner"
+
+#: ../filters/filter-dmg/filter-stream.c:334
+#: ../filters/filter-dmg/filter-stream.c:348
+#: ../filters/filter-macbinary/filter-stream.c:272
+#: ../filters/filter-macbinary/filter-stream.c:316
+#, c-format
+msgid "Failed to allocate memory!"
+msgstr "Не удалось выделить память!"
+
+#: ../filters/filter-dmg/filter-stream.c:340
+#, c-format
+msgid "Failed to read XML resource-fork!"
+msgstr "Не удалось прочитать ветвь ресурсов XML!"
+
+#: ../filters/filter-dmg/filter-stream.c:354
+#, c-format
+msgid "Failed to read binary resource-fork!"
+msgstr "Не удалось прочитать двоичную ветвь ресурсов!"
+
+#: ../filters/filter-dmg/filter-stream.c:360
+#, c-format
+msgid "Image lacks either an XML or a binary descriptor!"
+msgstr "В изображении отсутствует XML или двоичный дескриптор!"
+
+#: ../filters/filter-dmg/filter-stream.c:366
+#: ../filters/filter-macbinary/filter-stream.c:286
+#, c-format
+msgid "Failed to parse resource-fork!"
+msgstr "Не удалось считать ветвь ресурсов!"
+
+#: ../filters/filter-dmg/filter-stream.c:430
+#, c-format
+msgid "Encountered unknown block type: %d!"
+msgstr "Неизвестный тип блока: %d!"
+
+#: ../filters/filter-dmg/filter-stream.c:473
+#, c-format
+msgid "Failed to find required 'blkx' type!"
+msgstr "Не удалось найти требуемый тип 'blkx'!"
+
+#: ../filters/filter-dmg/filter-stream.c:559
+#: ../filters/filter-isz/filter-stream.c:497
+#, c-format
+msgid "Failed to initialize libbz2's decompress (error: %d)!"
+msgstr "Не удалось инициализировать декомпрессию libbz2 (error: %d)!"
+
+#: ../filters/filter-dmg/filter-stream.c:595
+#: ../filters/filter-isz/filter-stream.c:293
+#, c-format
+msgid "Failed to allocate memory for streams!"
+msgstr "Не удалось выделить память для потоков!"
+
+#: ../filters/filter-dmg/filter-stream.c:612
+#: ../filters/filter-isz/filter-stream.c:309
+#, c-format
+msgid "Failed to create stream!"
+msgstr "Не удалось создать поток!"
+
+#: ../filters/filter-dmg/filter-stream.c:623
+#, c-format
+msgid "Failed to reallocate memory for koly blocks!"
+msgstr "Не удалось выделить память заново для блоков koly!"
+
+#: ../filters/filter-dmg/filter-stream.c:639
+#, c-format
+msgid "Failed to read koly block!"
+msgstr "Не удалось прочитать блок koly!"
+
+#: ../filters/filter-dmg/filter-stream.c:646
+#, c-format
+msgid "Invalid koly block!"
+msgstr "Некорректный блок koly!"
+
+#: ../filters/filter-dmg/filter-stream.c:677
+#, c-format
+msgid "Failed to allocate memory for koly block!"
+msgstr "Не удалось выделить память для блока koly!"
+
+#: ../filters/filter-dmg/filter-stream.c:691
+#, c-format
+msgid "Filter stream cannot handle given image: failed to read koly block!"
+msgstr ""
+"Поток фильтра не в состоянии обработать полученный образ: не удалось прочитать блок koly!"
+
+#: ../filters/filter-dmg/filter-stream.c:698
+#, c-format
+msgid "Filter stream cannot handle given image: invalid koly block!"
+msgstr "Поток фильтра не в состоянии обработать полученный образ: некорректный блок koly!"
+
+#: ../filters/filter-dmg/filter-stream.c:711
+#: ../filters/filter-isz/filter-stream.c:553
+#, c-format
+msgid "File is not the first file of a set!"
+msgstr "Данный файл не является первым в наборе!"
+
+#: ../filters/filter-dmg/filter-stream.c:721
+#, c-format
+msgid "Failed to open streams!"
+msgstr "Не удалось открыть потоки!"
+
+#: ../filters/filter-dmg/filter-stream.c:988
+msgid "DMG File Filter"
+msgstr "Фильтр файлов DMG"
+
+#: ../filters/filter-dmg/filter-stream.c:991
+msgid "Apple Disk Image (*.dmg)"
+msgstr "Образ Apple Disk (*.dmg)"
+
+#: ../filters/filter-ecm/filter-stream.c:70
+#: ../filters/filter-ecm/filter-stream.c:85
+#, c-format
+msgid "Failed to allocate %d ECM parts!"
+msgstr "Не удалось выделить %d частей ECM!"
+
+#: ../filters/filter-ecm/filter-stream.c:119
+#, c-format
+msgid "Failed to seek behind signature!"
+msgstr "Не удалось перейти за подпись!"
+
+#: ../filters/filter-ecm/filter-stream.c:129
+#: ../filters/filter-ecm/filter-stream.c:138
+#, c-format
+msgid "Failed to read a byte!"
+msgstr "Не удалось прочитать байт!"
+
+#: ../filters/filter-ecm/filter-stream.c:144
+#, c-format
+msgid "Corrupted ECM file; invalid sector count!"
+msgstr "Файл ECM поврежден; неверное количество секторов!"
+
+#: ../filters/filter-ecm/filter-stream.c:182
+#, c-format
+msgid "Unhandled ECM part type %d!"
+msgstr "Неподдерживаемый тип части ECM: %d!"
+
+#: ../filters/filter-ecm/filter-stream.c:190
+#, c-format
+msgid "Failed to seek over ECM part data!"
+msgstr "Не удалось перейти за пределы данных части ECM!"
+
+#: ../filters/filter-ecm/filter-stream.c:208
+#, c-format
+msgid "No parts in ECM file!"
+msgstr "В файле ECM нет частей!"
+
+#: ../filters/filter-ecm/filter-stream.c:237
+#: ../filters/filter-gzip/filter-stream.c:290
+#, c-format
+msgid "Filter cannot handle given data: failed to read 4 signature bytes!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 4 байта "
+"подписи!"
+
+#: ../filters/filter-ecm/filter-stream.c:519
+msgid "ECM File Filter"
+msgstr "Фильтр файлов ECM"
+
+#: ../filters/filter-ecm/filter-stream.c:522
+msgid "ECM'ified images (*.ecm)"
+msgstr "Сжатые образы ECM (*.ecm)"
+
+#: ../filters/filter-ecm/libmirage-ecm.xml.in.h:1
+msgid "ECM'ified image file"
+msgstr "Сжатые образы ECM"
+
+#: ../filters/filter-gzip/filter-stream.c:104
+#, c-format
+msgid "Failed to allocate part buffer (%d bytes)!"
+msgstr "Не удалось выделить буфер части (%d байт)!"
+
+#: ../filters/filter-gzip/filter-stream.c:119
+#: ../filters/filter-gzip/filter-stream.c:134
+#, c-format
+msgid "Failed to allocate %d GZIP parts!"
+msgstr "Не удалось выделить %d частей GZIP!"
+
+#: ../filters/filter-gzip/filter-stream.c:171
+#, c-format
+msgid "Failed to allocate buffers!"
+msgstr "Не удалось выделить буферы!"
+
+#: ../filters/filter-gzip/filter-stream.c:193
+#, c-format
+msgid "Failed to seek to the beginning of stream!"
+msgstr "Не удалось найти начало потока!"
+
+#: ../filters/filter-gzip/filter-stream.c:204
+#, c-format
+msgid "Failed to read %d bytes from underlying stream!"
+msgstr "Не удалось прочитать %d байт с нижнего потока!"
+
+#: ../filters/filter-gzip/filter-stream.c:207
+#, c-format
+msgid "Unexpectedly reached EOF!"
+msgstr "Неожиданный конец потока данных!"
+
+#: ../filters/filter-gzip/filter-stream.c:232
+#, c-format
+msgid "Failed to inflate!"
+msgstr "Не удалось провести декомпрессию!"
+
+#: ../filters/filter-gzip/filter-stream.c:256
+#, c-format
+msgid "No parts in GZIP file!"
+msgstr "В файле GZIP нет частей!"
+
+#: ../filters/filter-gzip/filter-stream.c:490
+msgid "GZIP File Filter"
+msgstr "Фильтр файлов GZIP"
+
+#: ../filters/filter-gzip/filter-stream.c:493
+msgid "gzip-compressed images (*.gz)"
+msgstr "Сжатые образы gzip (*.gz)"
+
+#: ../filters/filter-isz/filter-stream.c:139
+#: ../filters/filter-isz/filter-stream.c:177
+#, c-format
+msgid "Failed to seek to the beginning of segment table!"
+msgstr "Не удалось найти начало таблицы сегментов!"
+
+#: ../filters/filter-isz/filter-stream.c:151
+#, c-format
+msgid "Failed to read segment!"
+msgstr "Не удалось прочитать сегмент!"
+
+#: ../filters/filter-isz/filter-stream.c:171
+#: ../filters/filter-isz/filter-stream.c:218
+#: ../filters/filter-isz/filter-stream.c:263
+#, c-format
+msgid "Failed to allocate memory for segment table!"
+msgstr "Не удалось выделить память для таблицы сегментов!"
+
+#: ../filters/filter-isz/filter-stream.c:365
+#, c-format
+msgid "No parts in ISZ file!"
+msgstr "В файле ISZ нет частей!"
+
+#: ../filters/filter-isz/filter-stream.c:372
+#, c-format
+msgid "Failed to allocate memory for chunk table!"
+msgstr "Не удалось выделить память для таблицы частей!"
+
+#: ../filters/filter-isz/filter-stream.c:384
+#, c-format
+msgid "Unsupported pointer length!"
+msgstr "Неподдерживаемая длина указателя!"
+
+#: ../filters/filter-isz/filter-stream.c:392
+#, c-format
+msgid "Failed to allocate memory for chunk buffer!"
+msgstr "Не удалось выделить память для буфера частей!"
+
+#: ../filters/filter-isz/filter-stream.c:398
+#, c-format
+msgid "Failed to seek to the beginning of chunk table!"
+msgstr "Не удалось найти начало таблицы частей!"
+
+#: ../filters/filter-isz/filter-stream.c:406
+#, c-format
+msgid "Failed to read index!"
+msgstr "Не удалось прочитать индекс!"
+
+#: ../filters/filter-isz/filter-stream.c:535
+#, c-format
+msgid "Filter cannot handle given data: failed to read ISZ header!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать заголовок ISZ!"
+
+#: ../filters/filter-isz/filter-stream.c:544
+#, c-format
+msgid "Filter cannot handle given data: invalid ISZ header!"
+msgstr "Фильтр не в состоянии обработать полученные данные: neveljavna ISZ glava!"
+
+#: ../filters/filter-isz/filter-stream.c:826
+msgid "ISZ File Filter"
+msgstr "Фильтр файлов ISZ"
+
+#: ../filters/filter-isz/filter-stream.c:829
+msgid "Compressed ISO images (*.isz)"
+msgstr "Сжатые образы ISO (*.isz)"
+
+#: ../filters/filter-macbinary/filter-stream.c:226
+#, c-format
+msgid "Filter cannot handle given data: failed to read MacBinary header!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать "
+"заголовок MacBinary!"
+
+#: ../filters/filter-macbinary/filter-stream.c:249
+#, c-format
+msgid ""
+"File validates as MacBinary v1.0, however the check is unreliable and "
+"therefore disabled!"
+msgstr ""
+"Возможно, это файл формата MacBinary v1.0, однако проверка ненадежна и "
+"поэтому отключена!"
+
+#: ../filters/filter-macbinary/filter-stream.c:279
+#, c-format
+msgid "Failed to read resource-fork!"
+msgstr "Не удалось прочитать ветвь ресурсов!"
+
+#: ../filters/filter-macbinary/filter-stream.c:363
+#, c-format
+msgid "KenCode decompression is not supported!"
+msgstr "Декомпрессия KenCode не поддерживается!"
+
+#: ../filters/filter-macbinary/filter-stream.c:367
+#, c-format
+msgid "Encountered unknown part type: %d!"
+msgstr "Неизвестный тип части: %d!"
+
+#: ../filters/filter-macbinary/filter-stream.c:378
+#: ../filters/filter-macbinary/filter-stream.c:385
+#, c-format
+msgid "Error allocating memory for buffers!"
+msgstr "Ошибка выделения памяти для буферов!"
+
+#: ../filters/filter-macbinary/filter-stream.c:414
+#, c-format
+msgid "NDIF data structures not found!"
+msgstr "Не найдены структуры данных NDIF!"
+
+#: ../filters/filter-macbinary/filter-stream.c:570
+msgid "MACBINARY File Filter"
+msgstr "Фильтр файлов MACBINARY"
+
+#: ../filters/filter-macbinary/filter-stream.c:573
+msgid "MacBinary images (*.bin, *.macbin)"
+msgstr "Образы MacBinary (*.bin, *.macbin)"
+
+#: ../filters/filter-sndfile/filter-stream.c:171
+#, c-format
+msgid "Filter cannot handle given data: failed to open sndfile: %s"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось открыть "
+"sndfile: %s"
+
+#: ../filters/filter-sndfile/filter-stream.c:192
+#, c-format
+msgid "Audio file is not seekable!"
+msgstr "Аудиофайл не поддерживает произвольный доступ!"
+
+#: ../filters/filter-sndfile/filter-stream.c:196
+#, c-format
+msgid ""
+"Invalid number of channels in audio file (%d)! Only two-channel audio files "
+"are supported!"
+msgstr ""
+"Некорректное количество каналов аудиофайла (%d)! Поддерживаются только аудиофайлы "
+"с двумя каналами!"
+
+#: ../filters/filter-sndfile/filter-stream.c:214
+#, c-format
+msgid "Failed to allocate read buffer!"
+msgstr "Не удалось выделить буфер чтения!"
+
+#: ../filters/filter-sndfile/filter-stream.c:228
+#, c-format
+msgid "Failed to initialize resampler; error code %d!"
+msgstr "Не удалось инициализировать ресэмплер; код ошибки %d!"
+
+#: ../filters/filter-sndfile/filter-stream.c:237
+#, c-format
+msgid "Failed to allocate resampler output buffer!"
+msgstr "Не удалось выделить буфер вывода ресэмплера!"
+
+#: ../filters/filter-sndfile/filter-stream.c:246
+#, c-format
+msgid "Failed to allocate resampler input buffer!"
+msgstr "Не удалось выделить буфер ввода ресэмплера!"
+
+#: ../filters/filter-sndfile/filter-stream.c:388
+msgid "SNDFILE File Filter"
+msgstr "Фильтр файлов SNDFILE"
+
+#: ../filters/filter-sndfile/filter-stream.c:391
+#: ../images/image-iso/parser.c:425
+msgid "WAV audio files (*.wav)"
+msgstr "Аудиофайлы WAV (*.wav)"
+
+#: ../filters/filter-sndfile/filter-stream.c:392
+msgid "AIFF audio files (*.aiff)"
+msgstr "Аудиофайлы AIFF (*.aiff)"
+
+#: ../filters/filter-sndfile/filter-stream.c:393
+msgid "FLAC audio files (*.flac)"
+msgstr "Аудиофайлы FLAC (*.flac)"
+
+#: ../filters/filter-sndfile/filter-stream.c:394
+msgid "OGG audio files (*.ogg)"
+msgstr "Аудиофайлы OGG (*.ogg)"
+
+#: ../filters/filter-xz/filter-stream.c:59
+#, c-format
+msgid "Failed to (re)allocate read buffer (%d bytes)!"
+msgstr "Не удалось (заново) выделить буфер чтения (%d байт)!"
+
+#: ../filters/filter-xz/filter-stream.c:86
+#, c-format
+msgid "Failed to seek to the beginning of header!"
+msgstr "Не удалось перейти к началу заголовка!"
+
+#: ../filters/filter-xz/filter-stream.c:92
+#, c-format
+msgid "Failed to read stream's header!"
+msgstr "Не удалось прочитать заголовок потока!"
+
+#: ../filters/filter-xz/filter-stream.c:99
+#, c-format
+msgid "Failed to decode stream's header!"
+msgstr "Не удалось декодировать заголовок потока!"
+
+#: ../filters/filter-xz/filter-stream.c:107
+#, c-format
+msgid "Failed to seek to the beginning of footer!"
+msgstr "Не удалось найти начало конца!"
+
+#: ../filters/filter-xz/filter-stream.c:113
+#, c-format
+msgid "Failed to read stream's footer!"
+msgstr "Не удалось прочитать конец потока!"
+
+#: ../filters/filter-xz/filter-stream.c:120
+#, c-format
+msgid "Failed to decode stream's footer!"
+msgstr "Не удалось декодировать конец потока!"
+
+#: ../filters/filter-xz/filter-stream.c:129
+#, c-format
+msgid "Stream's header and footer do not match!"
+msgstr "Заголовок и конец потока не совпадают!"
+
+#: ../filters/filter-xz/filter-stream.c:158
+#, c-format
+msgid "Failed to read stream's index!"
+msgstr "Не удалось прочитать индекс потока!"
+
+#: ../filters/filter-xz/filter-stream.c:164
+#, c-format
+msgid "Failed to decode stream's index!"
+msgstr "Не удалось декодировать индекс потока!"
+
+#: ../filters/filter-xz/filter-stream.c:171
+#, c-format
+msgid "Declared and actual index size mismatch!"
+msgstr "Размеры объявленного и действительного индексов не совпадают!"
+
+#: ../filters/filter-xz/filter-stream.c:227
+#, c-format
+msgid "The largest block (%ld bytes) exceeds the limit of %d bytes!"
+msgstr "Največji blok (%ld bajtov) presega omejitev %d bajtov!"
+
+#: ../filters/filter-xz/filter-stream.c:236
+#, c-format
+msgid "Failed to allocate block buffer (%d bytes)!"
+msgstr "Не удалось выделить буфер блока (%d байт)!"
+
+#: ../filters/filter-xz/filter-stream.c:261
+#, c-format
+msgid "Filter cannot handle given data: failed to read 6 signature bytes!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 6 байт "
+"подписи!"
+
+#: ../filters/filter-xz/filter-stream.c:414
+msgid "XZ File Filter"
+msgstr "Фильтр файлов XZ"
+
+#: ../filters/filter-xz/filter-stream.c:417
+msgid "xz-compressed images (*.xz)"
+msgstr "Сжатые образы xz (*.xz)"
+
+#: ../images/image-b6t/libmirage-b6t.xml.in.h:1
+msgid "BlindWrite 5/6 image file"
+msgstr "Образ BlindWrite 5/6"
+
+#: ../images/image-b6t/parser.c:219
+#, c-format
+msgid "Failed to read whole BWA file!"
+msgstr "Не удалось прочитать файл BWA целиком!"
+
+#: ../images/image-b6t/parser.c:402
+#, c-format
+msgid "Failed to find data file '%s'!"
+msgstr "Не удалось найти файл данных '%s'!"
+
+#: ../images/image-b6t/parser.c:516
+#, c-format
+msgid "Invalid header!"
+msgstr "Некорректный заголовок!"
+
+#: ../images/image-b6t/parser.c:661
+#, c-format
+msgid "Unknown or unhandled disc type 0x%X!"
+msgstr "Неизвестный или неподдерживаемый тип дисков 0x%X!"
+
+#: ../images/image-b6t/parser.c:1029
+#, c-format
+msgid "Unknown track type 0x%X!"
+msgstr "Неизвестный тип дорожки 0x%X!"
+
+#: ../images/image-b6t/parser.c:1148
+#, c-format
+msgid "Invalid footer!"
+msgstr "Некорректный конец!"
+
+#: ../images/image-b6t/parser.c:1252
+#, c-format
+msgid ""
+"Parser cannot handle given image: failed to read 16 bytes from image file "
+"stream!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
+"прочитать 16 байт из потока файла образа!"
+
+#: ../images/image-b6t/parser.c:1259 ../images/image-c2d/parser.c:531
+#: ../images/image-nrg/parser.c:972
+#, c-format
+msgid "Parser cannot handle given image: invalid signature!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: некорректная "
+"подпись!"
+
+#: ../images/image-b6t/parser.c:1291
+#, c-format
+msgid "Failed to read whole B6T file!"
+msgstr "Не удалось прочитать файл B6T целиком!"
+
+#: ../images/image-b6t/parser.c:1332
+msgid "B6T Image Parser"
+msgstr "Считывающий накопитель образов B6T"
+
+#: ../images/image-b6t/parser.c:1334
+msgid "BlindWrite 5/6 images (*.b5t, *.b6t)"
+msgstr "Образы BlindWrite 5/6 (*.b5t, *.b6t)"
+
+#: ../images/image-c2d/libmirage-c2d.xml.in.h:1
+msgid "WinOnCD image file"
+msgstr "Образ WinOnCD"
+
+#: ../images/image-c2d/parser.c:156
+#, c-format
+msgid "Failed to read Z info header!"
+msgstr "Не удалось прочитать заголовок данных Z!"
+
+#: ../images/image-c2d/parser.c:165
+#, c-format
+msgid "Failed to read Z info!"
+msgstr "Не удалось прочитать данные Z!"
+
+#: ../images/image-c2d/parser.c:175
+#, c-format
+msgid "Compressed images are not supported yet!"
+msgstr "Сжатые образы пока не поддерживаются!"
+
+#: ../images/image-c2d/parser.c:524 ../images/image-nrg/parser.c:927
+#: ../images/image-nrg/parser.c:951
+#, c-format
+msgid "Parser cannot handle given image: failed to read signature!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
+"прочитать подпись!"
+
+#: ../images/image-c2d/parser.c:554
+#, c-format
+msgid "Failed to allocate memory for header (%ld bytes)!"
+msgstr "Не удалось выделить память для заголовка (%ld байт)!"
+
+#: ../images/image-c2d/parser.c:561 ../images/image-cif/parser.c:588
+#: ../images/image-mdx/parser.c:172
+#, c-format
+msgid "Failed to read header!"
+msgstr "Не удалось прочитать заголовок!"
+
+#: ../images/image-c2d/parser.c:575
+#, c-format
+msgid "Failed to allocate memory for descriptor (%d)!"
+msgstr "Не удалось выделить память для дескриптора (%d)!"
+
+#: ../images/image-c2d/parser.c:583 ../images/image-cdi/parser.c:975
+#: ../images/image-nrg/parser.c:998
+#, c-format
+msgid "Failed to read descriptor!"
+msgstr "Не удалось прочитать дескриптор!"
+
+#: ../images/image-c2d/parser.c:620
+msgid "C2D Image Parser"
+msgstr "Считывающий накопитель образов C2D"
+
+#: ../images/image-c2d/parser.c:622
+msgid "WinOnCD images (*.c2d)"
+msgstr "Образы WinOnCD (*.c2d)"
+
+#: ../images/image-ccd/libmirage-ccd.xml.in.h:1
+msgid "CloneCD image file"
+msgstr "Образ CloneCD"
+
+#: ../images/image-ccd/parser.c:268
+#, c-format
+msgid "ccd_next_entry == NULL; should not happen!"
+msgstr "ccd_next_entry == NULL; это недопустимо!"
+
+#: ../images/image-ccd/parser.c:785
+#, c-format
+msgid "Failed to get entry with point #%d!"
+msgstr "Не удалось найти точку входа #%d!"
+
+#: ../images/image-ccd/parser.c:874
+#, c-format
+msgid ""
+"Declared CD-TEXT size (%d) does not match declared number of entries (%d)!"
+msgstr ""
+"Обьявленный размер данных CD-TEXT (%d) не совпадает с объявленным "
+"количеством записей (%d)!"
+
+#: ../images/image-ccd/parser.c:901
+#, c-format
+msgid "Invalid CD-TEXT entry #%d (expecting only %d entries)!"
+msgstr "Некорректная запись CD-TEXT #%d (ожидаемо только %d записей)!"
+
+#: ../images/image-ccd/parser.c:1045 ../images/image-cue/parser.c:851
+#: ../images/image-toc/parser.c:1019 ../images/image-xcdroast/parser.c:599
+#: ../images/image-xcdroast/parser.c:682
+#, c-format
+msgid "Failed to read line #%d: %s!"
+msgstr "Не удалось прочитать строку #%d: %s!"
+
+#: ../images/image-ccd/parser.c:1139 ../images/image-cdi/parser.c:938
+#: ../images/image-cue/parser.c:920 ../images/image-readcd/parser.c:56
+#, c-format
+msgid "Parser cannot handle given image: invalid suffix!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: некорректный "
+"суффикс!"
+
+#: ../images/image-ccd/parser.c:1177
+#, c-format
+msgid "Could not find main data file!"
+msgstr "Не удалось найти файл основных данных!"
+
+#: ../images/image-ccd/parser.c:1181
+#, c-format
+msgid "Could not find subchannel data file!"
+msgstr "Не удалось найти файл данных субканалов!"
+
+#: ../images/image-ccd/parser.c:1242
+msgid "CCD Image Parser"
+msgstr "Считывающий накопитель образов CCD"
+
+#: ../images/image-ccd/parser.c:1244
+msgid "CloneCD images (*.ccd)"
+msgstr "Образы CloneCD (*.ccd)"
+
+#: ../images/image-cdi/libmirage-cdi.xml.in.h:1
+msgid "DiscJuggler image file"
+msgstr "Образ DiscJuggler"
+
+#: ../images/image-cdi/parser.c:128
+#, c-format
+msgid "Invalid track mode: %d!"
+msgstr "Неверный режим дорожки: %d!"
+
+#: ../images/image-cdi/parser.c:171
+#, c-format
+msgid "Invalid read mode: %d!"
+msgstr "Неверный режим чтения: %d!"
+
+#: ../images/image-cdi/parser.c:962
+#, c-format
+msgid "Failed to read descriptor length!"
+msgstr "Не удалось прочитать длину дескриптора!"
+
+#: ../images/image-cdi/parser.c:1025
+msgid "CDI Image Parser"
+msgstr "Считывающий накопитель образов CDI"
+
+#: ../images/image-cdi/parser.c:1027
+msgid "DiscJuggler images (*.cdi)"
+msgstr "Образы DiscJuggler (*.cdi)"
+
+#: ../images/image-cif/libmirage-cif.xml.in.h:1
+msgid "Adaptec Easy CD/DVD Creator image file"
+msgstr "Образ Adaptec Easy CD/DVD Creator"
+
+#: ../images/image-cif/parser.c:120
+#, c-format
+msgid "Failed to read sub-block length!"
+msgstr "Не удалось прочитать длину субблока!"
+
+#: ../images/image-cif/parser.c:131 ../images/image-cif/parser.c:252
+#, c-format
+msgid "Sanity check failed!"
+msgstr "Не удалось провести проверку на целостность!"
+
+#: ../images/image-cif/parser.c:140
+#, c-format
+msgid "Failed to read sub-block data (%d bytes)!"
+msgstr "Не удалось прочитать данные субблока (%d байт)!"
+
+#: ../images/image-cif/parser.c:240
+#, c-format
+msgid "Unknown track type (%d)!"
+msgstr "Неизвестный тип дорожки (%d)!"
+
+#: ../images/image-cif/parser.c:339
+#, c-format
+msgid "Unknown session type (%d)!"
+msgstr "Неизвестный тип сессии (%d)!"
+
+#: ../images/image-cif/parser.c:527
+#, c-format
+msgid "Failed to read number of entries!"
+msgstr "Не удалось прочитать количество записей!"
+
+#: ../images/image-cif/parser.c:543
+#, c-format
+msgid "Failed to read \"ofs\" entry!"
+msgstr "Не удалось прочитать запись \"ofs\"!"
+
+#: ../images/image-cif/parser.c:550 ../images/image-cif/parser.c:595
+#, c-format
+msgid "Invalid FOURCC; expected 'RIFF', got '%.4s'"
+msgstr "Некорректный FOURCC; ожидаемый 'RIFF', получен '%.4s'"
+
+#: ../images/image-cif/parser.c:625
+#, c-format
+msgid "Descriptor does not contain 'disc' block!"
+msgstr "Дескриптор не содержит блок 'disc'!"
+
+#: ../images/image-cif/parser.c:631
+#, c-format
+msgid "Descriptor does not contain 'ofs ' block!"
+msgstr "Дескриптор не содержит блок 'ofs'!"
+
+#: ../images/image-cif/parser.c:691
+#, c-format
+msgid "Parser cannot handle given image: failed to read header!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
+"прочитать заголовок!"
+
+#: ../images/image-cif/parser.c:701
+#, c-format
+msgid "Parser cannot handle given image: image does not begin with 'RIFF'!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: образ "
+"не начинается с 'RIFF'!"
+
+#: ../images/image-cif/parser.c:707
+#, c-format
+msgid "Parser cannot handle given image: invalid header!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: некорректный "
+"заголовок!"
+
+#: ../images/image-cif/parser.c:755
+msgid "CIF Image Parser"
+msgstr "Считывающий накопитель образов CIF"
+
+#: ../images/image-cif/parser.c:757
+msgid "Adaptec Easy CD/DVD Creator images (*.cif)"
+msgstr "Образы Adaptec Easy CD/DVD Creator (*.cif)"
+
+#: ../images/image-cue/parser.c:73 ../images/image-cue/parser.c:194
+#: ../images/image-cue/parser.c:337 ../images/image-cue/parser.c:351
+#: ../images/image-cue/parser.c:372 ../images/image-cue/parser.c:396
+#, c-format
+msgid "Current track is not set!"
+msgstr "Текущая дорожка не установлена!"
+
+#: ../images/image-cue/parser.c:87
+#, c-format
+msgid "Finishing last track resulted in negative fragment length!"
+msgstr "Завершение последней дорожки привело к отрицательной длине фрагмента!"
+
+#: ../images/image-cue/parser.c:115 ../images/image-mds/parser.c:393
+#: ../images/image-toc/parser.c:180
+#, c-format
+msgid "Failed to find data file!"
+msgstr "Не удалось найти файл данных!"
+
+#: ../images/image-cue/parser.c:179
+#, c-format
+msgid "Invalid track mode string '%s'!"
+msgstr "Некорректная строка режима дорожки '%s'!"
+
+#: ../images/image-cue/parser.c:995
+msgid "CUE Image Parser"
+msgstr "Считывающий накопитель образов CUE"
+
+#: ../images/image-cue/parser.c:997
+msgid "CUE images (*.cue)"
+msgstr "Образы CUE (*.cue)"
+
+#: ../images/image-harddisk/libmirage-apple.xml.in.h:1
+msgid "Apple Disk image"
+msgstr "Образ Apple Disk"
+
+#: ../images/image-harddisk/parser.c:56
+#, c-format
+msgid "Parser cannot handle given image: file too small!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: файл "
+"слишком мал!"
+
+#: ../images/image-harddisk/parser.c:66
+#, c-format
+msgid "Failed to seek to ISO signature!"
+msgstr "Не удалось найти подпись ISO!"
+
+#: ../images/image-harddisk/parser.c:72
+#, c-format
+msgid "Failed to read ISO signature!"
+msgstr "Не удалось прочитать подпись ISO!"
+
+#: ../images/image-harddisk/parser.c:79
+#, c-format
+msgid "Image is an ISO image - deferring!"
+msgstr "Это образ ISO - пропускаем!"
+
+#: ../images/image-harddisk/parser.c:91
+#, c-format
+msgid "Failed to seek to beginning of file!"
+msgstr "Не удалось найти начало файла!"
+
+#: ../images/image-harddisk/parser.c:97
+#, c-format
+msgid "Failed to read driver descriptor map!"
+msgstr "Не удалось найти карту дескриптора драйвера!"
+
+#: ../images/image-harddisk/parser.c:114
+#, c-format
+msgid "Failed to seek to beginning of APM entries!"
+msgstr "Не удалось найти начало записей APM!"
+
+#: ../images/image-harddisk/parser.c:120
+#, c-format
+msgid "Failed to read APM entry!"
+msgstr "Не удалось прочитать запись APM!"
+
+#: ../images/image-harddisk/parser.c:141
+#, c-format
+msgid "Parser cannot map this sector size!"
+msgstr "Считывающий накопитель не в состоянии отобразить размер данного сектора!"
+
+#: ../images/image-harddisk/parser.c:157
+#, c-format
+msgid "Failed to seek to GPT header!"
+msgstr "Не удалось найти заголовок GPT!"
+
+#: ../images/image-harddisk/parser.c:163
+#, c-format
+msgid "Failed to read GPT header!"
+msgstr "Не удалось прочитать заголовок GPT!"
+
+#: ../images/image-harddisk/parser.c:180
+#, c-format
+msgid "Failed to seek to beginning of GPT entries!"
+msgstr "Не удалось найти начало записей GPT!"
+
+#: ../images/image-harddisk/parser.c:186
+#, c-format
+msgid "Failed to read GPT entry!"
+msgstr "Не удалось прочитать запись GPT!"
+
+#: ../images/image-harddisk/parser.c:217
+#, c-format
+msgid "Failed to seek to Master Directory Block (MDB)!"
+msgstr "Не удалось перейти к MDB!"
+
+#: ../images/image-harddisk/parser.c:223
+#, c-format
+msgid "Failed to read Master Directory Block (MDB)!"
+msgstr "Не удалось прочитать MDB!"
+
+#. Nope, can't load the file
+#: ../images/image-harddisk/parser.c:241 ../images/image-mdx/parser.c:110
+#: ../images/image-readcd/parser.c:88
+#, c-format
+msgid "Parser cannot handle given image!"
+msgstr "Считывающий накопитель не в состоянии обработать полученный образ!"
+
+#: ../images/image-harddisk/parser.c:387
+msgid "Hard-disk Image Parser"
+msgstr "Считывающий накопитель образов жестких дисков"
+
+#: ../images/image-harddisk/parser.c:389
+msgid "Apple Disk image (*.cdr)"
+msgstr "Образ Apple Disk (*.cdr)"
+
+#: ../images/image-harddisk/parser.c:390
+msgid "Apple Disk image (*.smi)"
+msgstr "Образ Apple Disk (*.smi)"
+
+#: ../images/image-harddisk/parser.c:391
+msgid "Apple Disk image (*.img)"
+msgstr "Образ Apple Disk (*.img)"
+
+#: ../images/image-iso/parser.c:74
+#, c-format
+msgid "Parser cannot handle given image: file is too small!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: файл "
+"слишком мал!"
+
+#: ../images/image-iso/parser.c:98
+#, c-format
+msgid "Failed to seek to %lXh to read 8-byte pattern!"
+msgstr "Не удалось перейти к %lXh, чтобы прочитать 8-байтный образец!"
+
+#: ../images/image-iso/parser.c:104 ../images/image-mdx/parser.c:56
+#, c-format
+msgid "Failed to read 8-byte pattern!"
+msgstr "Не удалось прочитать 8-байтный образец!"
+
+#: ../images/image-iso/parser.c:135
+#, c-format
+msgid ""
+"Parser cannot handle given image: file size does not correspond to any "
+"supported combination of sector and subchannel size!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: размер файла "
+"не соответствует ни одной поддерживаемой комбинации секторов и размеру "
+"субканала!"
+
+#: ../images/image-iso/parser.c:164
+#, c-format
+msgid "Failed to seek to offset %lXh to read 16-byte pattern!"
+msgstr "Не удалось перейти в положение %lXh, чтобы прочитать 16-байтный образец!"
+
+#: ../images/image-iso/parser.c:170
+#, c-format
+msgid "Failed to read 16-byte pattern!"
+msgstr "Не удалось прочитать 16-байтный образец!"
+
+#: ../images/image-iso/parser.c:179
+#, c-format
+msgid "Unhalded main sector data size %d!"
+msgstr "Неподдерживаемый размер данных основного сектора %d!"
+
+#: ../images/image-iso/parser.c:211
+#, c-format
+msgid "Failed to seek to offset %lXh to read subchannel data!"
+msgstr "Не удалось перейти в положение %lXh, чтобы прочитать данные субканала!"
+
+#: ../images/image-iso/parser.c:217
+#, c-format
+msgid "Failed to read subchannel data!"
+msgstr "Не удалось прочитать данные субканала!"
+
+#: ../images/image-iso/parser.c:238
+#, c-format
+msgid "Unhalded subchannel data size %d!"
+msgstr "Неподдерживаемый размер данных субканала %d!"
+
+#: ../images/image-iso/parser.c:422
+msgid "ISO Image Parser"
+msgstr "Считывающий накопитель образов ISO"
+
+#: ../images/image-iso/parser.c:424
+msgid "ISO images (*.iso, *.bin, *.img)"
+msgstr "Образы ISO (*.iso, *.bin, *.img)"
+
+#: ../images/image-iso/writer.c:319
+msgid "ISO Image Writer"
+msgstr "Zapisovalnik odtisov diskov ISO"
+
+#: ../images/image-iso/writer.c:328
+msgid "Audio file suffix"
+msgstr "Суффикс аудиофайла"
+
+#: ../images/image-iso/writer.c:329
+msgid ""
+"Suffix to use for image files of audio tracks. Applicable only when in raw "
+"write is disabled."
+msgstr ""
+"Суффикс для использования в изображениях или аудиофайлах. Применимо только "
+"в том случае, если прямая запись отключена."
+
+#: ../images/image-iso/writer.c:335 ../images/image-toc/writer.c:617
+msgid "Write raw"
+msgstr "Прямая запись"
+
+#: ../images/image-iso/writer.c:336 ../images/image-toc/writer.c:618
+msgid ""
+"A flag indicating whether to write full 2352-byte sector data or only user "
+"data part of it (e.g., 2048 bytes for Mode 1)"
+msgstr ""
+"Переключатель между режимами записи всех данных 2352-байтного сектора или только "
+"их пользовательской части (например, "
+"2048 байт для режима 1)"
+
+#: ../images/image-iso/writer.c:341 ../images/image-toc/writer.c:623
+msgid "Write subchannel"
+msgstr "Записывать субканал"
+
+#: ../images/image-iso/writer.c:342 ../images/image-toc/writer.c:624
+msgid ""
+"A flag indicating whether to write subchannel data or not. If set, it "
+"implies raw writing."
+msgstr ""
+"Переключатель записи данных субканала. При установке "
+"должна быть включена прямая запись."
+
+#: ../images/image-iso/writer.c:347 ../images/image-toc/writer.c:629
+msgid "Swap raw audio data"
+msgstr "Подхватывать сырые аудиоданные"
+
+#: ../images/image-iso/writer.c:348 ../images/image-toc/writer.c:630
+msgid ""
+"A flag indicating whether to swap audio data. Applicable only to raw writing."
+msgstr ""
+"Переключатель подхвата сырых аудиоданных. Доступно только для прямой "
+"записи."
+
+#: ../images/image-mds/libmirage-mds.xml.in.h:2
+#, no-c-format
+msgid "Alcohol 120% image file (*.mds)"
+msgstr "Образ Alchohol 120% (*.mds)"
+
+#: ../images/image-mds/libmirage-xmd.xml.in.h:1
+msgid "GameJack image file (*.xmd)"
+msgstr "Образ GameJack (*.xmd)"
+
+#: ../images/image-mds/parser.c:371
+#, c-format
+msgid "Track block does not have a footer!"
+msgstr "У блока дорожки отсутствует заголовок!"
+
+#: ../images/image-mds/parser.c:768 ../images/image-mdx/parser.c:333
+#, c-format
+msgid "Parser cannot handle given image: failed to read signature and version!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
+"прочитать подпись и версию!"
+
+#: ../images/image-mds/parser.c:776 ../images/image-mdx/parser.c:340
+#, c-format
+msgid "Parser cannot handle given image: invalid signature and/or version!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: некорректная "
+"подпись и/или версия!"
+
+#: ../images/image-mds/parser.c:808
+#, c-format
+msgid "Failed to read whole MDS file!"
+msgstr "Не удалось прочитать файл MDS целиком!"
+
+#: ../images/image-mds/parser.c:854
+#, c-format
+msgid "Medium of type 0x%X not supported yet!"
+msgstr "Тип данных 0x%X пока не поддерживается!"
+
+#: ../images/image-mds/parser.c:893
+msgid "MDS Image Parser"
+msgstr "Считывающий накопитель образов MDS"
+
+#: ../images/image-mds/parser.c:896
+#, no-c-format
+msgid "Alchohol 120% images (*.mds)"
+msgstr "Образы Alchohol 120% (*.mds)"
+
+#: ../images/image-mds/parser.c:897
+msgid "GameJack images (*.xmd)"
+msgstr "Образы GameJack (*.xmd)"
+
+#: ../images/image-mdx/libmirage-mdx.xml.in.h:1
+msgid "DaemonTools image file"
+msgstr "Образ DaemonTools"
+
+#: ../images/image-mdx/parser.c:79
+#, c-format
+msgid "Failed to read sync pattern!"
+msgstr "Не удалось прочитать образец синхронизации!"
+
+#: ../images/image-mdx/parser.c:213
+#, c-format
+msgid "Invalid filename suffix; only 'mdx' and 'mds' are supported!"
+msgstr "Некорректный суффикс имени файла; поддерживаются только 'mdx' и 'mds'!"
+
+#: ../images/image-mdx/parser.c:390
+msgid "MDX Image Parser"
+msgstr "Считывающий накопитель образов MDX"
+
+#: ../images/image-mdx/parser.c:392
+msgid "DaemonTools images (*.mdx, *.mds)"
+msgstr "Образы DaemonTools (*.mdx, *.mds)"
+
+#: ../images/image-nrg/parser.c:101
+#, c-format
+msgid "Failed to allocate memory for block index!"
+msgstr "Не удалось выделить память для индекса блока!"
+
+#: ../images/image-nrg/parser.c:204
+#, c-format
+msgid "Failed to look up 'MTYP' block!"
+msgstr "Не удалось найти блок 'MTYP'!"
+
+#: ../images/image-nrg/parser.c:232
+#, c-format
+msgid "Unhandled medium type: %d!"
+msgstr "Неподдерживаемый тип данных: %d!"
+
+#: ../images/image-nrg/parser.c:341
+#, c-format
+msgid "Failed to look up 'ETN2' or 'ETNF' block!"
+msgstr "Не удалось найти блок 'ETN2' или 'ETNF'!"
+
+#: ../images/image-nrg/parser.c:354
+#, c-format
+msgid "Failed to allocate space for ETN blocks!"
+msgstr "Не удалось выделить место для блоков ETN!"
+
+#: ../images/image-nrg/parser.c:400
+#, c-format
+msgid "Failed to look up 'CUEX' or 'CUES' block!"
+msgstr "Не удалось найти блок 'CUEX' или 'CUES'!"
+
+#: ../images/image-nrg/parser.c:413
+#, c-format
+msgid "Failed to allocate memory for CUE blocks!"
+msgstr "Не удалось выделить место для блоков CUE!"
+
+#: ../images/image-nrg/parser.c:461
+#, c-format
+msgid "Failed to look up 'DAOX' or 'DAOI' block!"
+msgstr "Не удалось найти блок 'DAOX' или 'DAOI' bloka!"
+
+#: ../images/image-nrg/parser.c:473
+#, c-format
+msgid "Failed to allocate space for DAO header!"
+msgstr "Не удалось выделить место для блоков DAO!"
+
+#: ../images/image-nrg/parser.c:877
+#, c-format
+msgid "Failed to look up 'CDTX' block!"
+msgstr "Не удалось найти блок 'CDTX'!"
+
+#: ../images/image-nrg/parser.c:940
+#, c-format
+msgid "Failed to read trailer offset!"
+msgstr "Не удалось прочитать конечное положение!"
+
+#: ../images/image-nrg/parser.c:963
+#, c-format
+msgid "Failed to seek to trailer offset (32-bit)!"
+msgstr "Не удалось перейти к конечному положению (32-битное)!"
+
+#: ../images/image-nrg/parser.c:1094
+msgid "NRG Image Parser"
+msgstr "Считывающий накопитель образов NRG"
+
+#: ../images/image-nrg/parser.c:1096
+msgid "Nero Burning Rom images (*.nrg)"
+msgstr "Образы Nero Burning Rom (*.nrg)"
+
+#: ../images/image-nrg/libmirage-nrg.xml.in.h:1
+msgid "Nero Burning ROM image file"
+msgstr "Образ Nero Burning Rom"
+
+#: ../images/image-readcd/parser.c:65
+#, c-format
+msgid "Parser cannot handle given image: failed to read 2-byte TOC length!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
+"прочитать 2-байтную длину TOC!"
+
+#: ../images/image-readcd/parser.c:300
+#, c-format
+msgid "Data file not found!"
+msgstr "Файл данных не найден!"
+
+#: ../images/image-readcd/parser.c:307
+#, c-format
+msgid "Failed to create stream on data file!"
+msgstr "Не удалось создать поток файла данных!"
+
+#: ../images/image-readcd/parser.c:323
+#, c-format
+msgid "Failed to read whole TOC file!"
+msgstr "Не удалось прочитать файл TOC целиком!"
+
+#: ../images/image-readcd/parser.c:485
+msgid "READCD Image Parser"
+msgstr "Считывающий накопитель образов READCD"
+
+#: ../images/image-readcd/parser.c:487
+msgid "readcd images (*.toc)"
+msgstr "Образы readcd (*.toc)"
+
+#: ../images/image-toc/parser.c:1227 ../images/image-xcdroast/parser.c:824
+#, c-format
+msgid "Parser cannot handle given image: invalid TOC file!"
+msgstr ""
+"Считывающий накопитель не в состоянии обработать полученный образ: некорректный "
+"файл TOC!"
+
+#: ../images/image-toc/parser.c:1336
+msgid "TOC Image Parser"
+msgstr "Считывающий накопитель образов TOC"
+
+#: ../images/image-toc/parser.c:1338
+msgid "cdrdao images (*.toc)"
+msgstr "Образы cdrdao (*.toc)"
+
+#: ../images/image-toc/writer.c:608
+msgid "TOC Image Writer"
+msgstr "Записывающий накопитель образов TOC"
+
+#: ../images/image-xcdroast/parser.c:894
+msgid "X-CD-Roast Image Parser"
+msgstr "Считывающий накопитель образов X-CD-Roast"
+
+#: ../images/image-xcdroast/parser.c:896
+msgid "X-CD-Roast images (*.toc)"
+msgstr "Образы X-CD-Roast (*.toc)"
+
+#: ../images/image-xcdroast/libmirage-xcdroast.xml.in.h:1
+msgid "X-CD Roast image file"
+msgstr "Образ X-CD-Roast"
+
+#: ../mirage/cdtext-coder.c:377
+#, c-format
+msgid "Invalid block number #%i!"
+msgstr "Некорректный номер блока #%i!"
+
+#: ../mirage/cdtext-coder.c:681
+#, c-format
+msgid "Block number %d exceeds number of blocks %d!"
+msgstr "Номер блока %d превышает общее количество блоков %d!"
+
+#. FIXME: error
+#: ../mirage/cdtext-coder.c:686
+#, c-format
+msgid "Requested block %d has no language code set!"
+msgstr "У запрашиваемого блока %d не установлен код языка!"
+
+#: ../mirage/context.c:318
+#, c-format
+msgid "Context does not have a password function!"
+msgstr "У контекста отсутствует функция пароля!"
+
+#: ../mirage/context.c:326
+#, c-format
+msgid "Password has not been provided!"
+msgstr "Пароль недоступен!"
+
+#: ../mirage/context.c:364
+#, c-format
+msgid "No image files given!"
+msgstr "Не выбран файл образа!"
+
+#. No parser found
+#: ../mirage/context.c:416
+#, c-format
+msgid "No parser can handle the image file!"
+msgstr "Ни один считывающий накопитель не в состоянии обработать файл образа!"
+
+#: ../mirage/context.c:469
+#, c-format
+msgid "Failed to open read-only file stream on data file: %s!"
+msgstr "Не удалось открыть поток файла данных только для чтения: %s!"
+
+#: ../mirage/context.c:564
+#, c-format
+msgid "Failed to open read-write file stream on data file: %s!"
+msgstr ""
+"Не удалось открыть поток файла данных для чтения/записи: %s!"
+
+#: ../mirage/context.c:578
+#, c-format
+msgid "Invalid filter type '%s' in filter chain!"
+msgstr "Некорректный тип фильтра '%s' в очереди!"
+
+#: ../mirage/context.c:588
+#, c-format
+msgid "Failed to create filter type '%s': %s!"
+msgstr "Не удалось создать тип фильтра '%s': %s!"
+
+#: ../mirage/contextual.c:295 ../mirage/contextual.c:330
+#: ../mirage/contextual.c:366
+#, c-format
+msgid "Context not set!"
+msgstr "Контекст не установлен!"
+
+#: ../mirage/disc.c:586
+#, c-format
+msgid "Session with number %d already exists!"
+msgstr "Сессия с номером %d уже существует!"
+
+#: ../mirage/disc.c:715
+#, c-format
+msgid "Session index %d out of range!"
+msgstr "Индекс сессии %d вне диапазона!"
+
+#: ../mirage/disc.c:725
+#, c-format
+msgid "Session with index %d not found!"
+msgstr "Сессия с индексом %d не найдена!"
+
+#: ../mirage/disc.c:762
+#, c-format
+msgid "Session with number %d not found!"
+msgstr "Сессия с номером %d не найдена!"
+
+#: ../mirage/disc.c:788
+#, c-format
+msgid "Session address %d (0x%X) out of range!"
+msgstr "Адрес сессии %d (0x%X) вне диапазона!"
+
+#: ../mirage/disc.c:806
+#, c-format
+msgid "Session containing address %d not found!"
+msgstr "Сессия, содержащая адрес %d, не найдена!"
+
+#: ../mirage/disc.c:850
+#, c-format
+msgid "Session with track %d not found!"
+msgstr "Сессия, содержащая дорожку %d, не найдена!"
+
+#: ../mirage/disc.c:900 ../mirage/disc.c:932
+#, c-format
+msgid "Session %p is not in disc layout!"
+msgstr "Сессия %p не связана с диском!"
+
+#: ../mirage/disc.c:909
+#, c-format
+msgid "Session before session %p not found!"
+msgstr "Сессия, установленная до сессии %p, не найдена!"
+
+#: ../mirage/disc.c:942
+#, c-format
+msgid "Session after session %p not found!"
+msgstr "Сессия, установленная после сессии %p, не найдена!"
+
+#: ../mirage/disc.c:1032
+#, c-format
+msgid "Session not found!"
+msgstr "Сессия не найдена!"
+
+#: ../mirage/disc.c:1135 ../mirage/disc.c:1185
+#, c-format
+msgid "Track has no parent!"
+msgstr "У дорожки отсутствует родительский объект!"
+
+#: ../mirage/disc.c:1172 ../mirage/session.c:760
+#, c-format
+msgid "Invalid track number %d!"
+msgstr "Некорректный номер дорожки %d!"
+
+#: ../mirage/disc.c:1224 ../mirage/session.c:818
+#, c-format
+msgid "Track index %d out of range!"
+msgstr "Индекс дорожки %d вне диапазона!"
+
+#: ../mirage/disc.c:1245 ../mirage/session.c:830
+#, c-format
+msgid "Track with index %d not found!"
+msgstr "Дорожка с индексом %d не найдена!"
+
+#: ../mirage/disc.c:1382
+#, c-format
+msgid "Invalid medium type!"
+msgstr "Некорректный тип данных!"
+
+#: ../mirage/disc.c:1387
+#, c-format
+msgid "Invalid layer %d!"
+msgstr "Некорректный слой %d!"
+
+#: ../mirage/disc.c:1401
+#, c-format
+msgid "Disc structure data not provided and could not be fabricated!"
+msgstr "Данные структуры диска отсутствуют и не могут быть созданы!"
+
+#: ../mirage/disc.c:1576
+#, c-format
+msgid "DPM data not available!"
+msgstr "Данные DPM недоступны!"
+
+#: ../mirage/disc.c:1586
+#, c-format
+msgid "Sector address %d out of range!"
+msgstr "Адрес сектора %d вне диапазона!"
+
+#: ../mirage/file-stream.c:116
+#, c-format
+msgid "File '%s' does not exist!"
+msgstr "Файл '%s' не существует!"
+
+#: ../mirage/file-stream.c:131
+#, c-format
+msgid "Failed to open file %s stream on data file '%s': %s!"
+msgstr "Ошибка открытия потока данных (%s) файла '%s': %s!"
+
+#: ../mirage/file-stream.c:131
+msgid "input/output"
+msgstr "ввод/вывод"
+
+#: ../mirage/file-stream.c:131
+msgid "input"
+msgstr "ввод"
+
+#: ../mirage/file-stream.c:165
+#, c-format
+msgid "No file input stream!"
+msgstr "Отсутствует входной поток данных!"
+
+#: ../mirage/file-stream.c:178
+#, c-format
+msgid "No file output stream!"
+msgstr "Отсутствует выходной поток данных!"
+
+#: ../mirage/file-stream.c:191
+#, c-format
+msgid "No file stream!"
+msgstr "Отсутствует поток данных!"
+
+#: ../mirage/file-stream.c:218
+#, c-format
+msgid "Cannot move file for non-writable stream!"
+msgstr ""
+"Файлы, принадлежащие недоступному для записи потоку данных, не могут быть перемещены!"
+
+#: ../mirage/file-stream.c:248
+#, c-format
+msgid "Failed to move file: %s"
+msgstr "Не удалось переместить файл: %s"
+
+#: ../mirage/file-stream.c:263
+#, c-format
+msgid "Failed to re-open moved file: %s"
+msgstr "Не удалось открыть заново перемещенный файл: %s"
+
+#: ../mirage/filter-stream.c:324
+#, c-format
+msgid "No underlying stream!"
+msgstr "Отсутствует основной поток данных!"
+
+#: ../mirage/filter-stream.c:345
+#, c-format
+msgid "Simplified partial read function is not implemented!"
+msgstr "Функция упрощенного частичного чтения не реализована!"
+
+#: ../mirage/filter-stream.c:363
+#, c-format
+msgid "Failed to do a partial read."
+msgstr "Не удалось произвести частичное чтение."
+
+#: ../mirage/filter-stream.c:391
+#, c-format
+msgid "Stream is not writable!"
+msgstr "Поток не доступен для записи!"
+
+#: ../mirage/filter-stream.c:398
+#, c-format
+msgid "Simplified partial write function is not implemented!"
+msgstr "Функция упрощенной частичной записи не реализована!"
+
+#: ../mirage/filter-stream.c:410
+#, c-format
+msgid "Failed to do a partial write."
+msgstr "Не удалось произвести частичную запись."
+
+#: ../mirage/filter-stream.c:452
+#, c-format
+msgid "Invalid seek type."
+msgstr "Некорректный тип поиска."
+
+#: ../mirage/filter-stream.c:461
+#, c-format
+msgid "Seek before beginning of file not allowed!"
+msgstr "Переход к положению до начала файла недопустим!"
+
+#: ../mirage/fragment.c:196
+#, c-format
+msgid "Main channel data input stream not set!"
+msgstr "Входящий поток данных главного канала не установлен!"
+
+#: ../mirage/fragment.c:203
+#, c-format
+msgid "Failed to seek to the end of main channel data input stream: %s"
+msgstr ""
+"Не удалось перейти в конец входящего потока данных главного "
+"канала: %s"
+
+#: ../mirage/fragment.c:491
+#, c-format
+msgid "Mismatch between given data (%d) and set main channel data size (%d)!"
+msgstr ""
+"Размер полученных данных (%d) и ожидаемых данных главного "
+"канала (%d) не совпадают!"
+
+#: ../mirage/fragment.c:527 ../mirage/fragment.c:861
+#, c-format
+msgid "Failed to seek to position 0x%zX"
+msgstr "Не удалось перейти в положение 0x%zX"
+
+#: ../mirage/fragment.c:534 ../mirage/fragment.c:867
+#, c-format
+msgid "Failed to write data: %s"
+msgstr "Не удалось записать данные: %s"
+
+#: ../mirage/fragment.c:828
+#, c-format
+msgid "Mismatch between given data (%d) and accepted subchannel size (%d)!"
+msgstr ""
+"Размер полученных данных (%d) и ожидаемых данных субканала (%d) не совпадают!"
+
+#: ../mirage/language.c:146 ../mirage/language.c:184
+#, c-format
+msgid "Invalid pack type %d!"
+msgstr "Некорректный тип пакета %d!"
+
+#: ../mirage/language.c:189
+#, c-format
+msgid "Data not set for pack type %d!"
+msgstr "Не установлены данные для типа пакета %d!"
+
+#: ../mirage/mirage.c:155
+#, c-format
+msgid "Failed to open plugin directory '%s'!"
+msgstr "Не удалось открыть каталог плагинов '%s'!"
+
+#: ../mirage/mirage.c:226 ../mirage/mirage.c:283 ../mirage/mirage.c:307
+#: ../mirage/mirage.c:333 ../mirage/mirage.c:363 ../mirage/mirage.c:387
+#: ../mirage/mirage.c:413 ../mirage/mirage.c:443 ../mirage/mirage.c:467
+#: ../mirage/mirage.c:493 ../mirage/mirage.c:526 ../mirage/mirage.c:552
+#, c-format
+msgid "Library not initialized!"
+msgstr "Библиотека не инициализирована!"
+
+#: ../mirage/mirage.c:340 ../mirage/mirage.c:420 ../mirage/mirage.c:500
+#, c-format
+msgid "Iteration has been cancelled!"
+msgstr "Итерация отменена!"
+
+#: ../mirage/mirage.c:562
+#, c-format
+msgid "Writer '%s' not found!"
+msgstr "Записывающий накопитель '%s' не найден!"
+
+#: ../mirage/parser.c:347
+#, c-format
+msgid "Failed to create data stream!"
+msgstr "Не удалось создать поток данных!"
+
+#: ../mirage/sector.c:77
+#, c-format
+msgid "Sync pattern not available for sector type %d!"
+msgstr ""
+"Шаблон синхронизации не доступен для типа сектора %d!"
+
+#: ../mirage/sector.c:97
+#, c-format
+msgid "Header not available for sector type %d!"
+msgstr "Заголовок не доступен для типа сектора %d!"
+
+#: ../mirage/sector.c:114
+#, c-format
+msgid "Subheader not available for sector type %d!"
+msgstr "Подзаголовок не доступен для типа сектора %d!"
+
+#: ../mirage/sector.c:155
+#, c-format
+msgid "Data not available for sector type %d!"
+msgstr "Данные не доступны для типа сектора %d!"
+
+#: ../mirage/sector.c:181
+#, c-format
+msgid "EDC/ECC not available for sector type %d!"
+msgstr "Информация EDC/ECC не доступна для типа сектора %d!"
+
+#: ../mirage/sector.c:218
+#, c-format
+msgid "Unhandled sector size %d for Audio sector!"
+msgstr "Неподдерживаемый размер %d для сектора аудио!"
+
+#: ../mirage/sector.c:264
+#, c-format
+msgid "Unhandled sector size %d for Mode 0 sector!"
+msgstr "Неподдерживаемый размер %d для сектора Mode 0!"
+
+#: ../mirage/sector.c:344
+#, c-format
+msgid "Unhandled sector size %d for Mode 1 sector!"
+msgstr "Неподдерживаемый размер %d для сектора Mode 1!"
+
+#: ../mirage/sector.c:391
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Formless sector!"
+msgstr "Неподдерживаемый размер %d для сектора Mode 2 Formless!"
+
+#: ../mirage/sector.c:496
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Form 1 sector!"
+msgstr "Неподдерживаемый размер %d для сектора Mode 2 Form 1!"
+
+#: ../mirage/sector.c:605
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Form 2 sector!"
+msgstr "Неподдерживаемый размер %d для сектора Mode 2 Form 2!"
+
+#: ../mirage/sector.c:676
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Mixed sector!"
+msgstr "Неподдерживаемый размер %d для сектора Mode 2 Mixed!"
+
+#: ../mirage/sector.c:893
+#, c-format
+msgid "Raw sectors require 2352 bytes of data!"
+msgstr "Для секторов прямой записи требуется 2352 байта данных!"
+
+#: ../mirage/sector.c:1014
+#, c-format
+msgid ""
+"Requested subchannel size (%d) and actual subchannel size (%d) mismatch!"
+msgstr "Требуемый (%d) и действительный размеры субканала (%d) не совпадают!"
+
+#: ../mirage/sector.c:1113
+#, c-format
+msgid "Expected %d bytes for sync pattern!"
+msgstr "Ожидается %d байт для шаблона синхронизации!"
+
+#: ../mirage/sector.c:1190
+#, c-format
+msgid "Expected %d bytes for header!"
+msgstr "Ожидается %d байт для заголовка!"
+
+#: ../mirage/sector.c:1274
+#, c-format
+msgid "Expected %d bytes for subheader!"
+msgstr "Ожидается %d байт для подзаголовка!"
+
+#: ../mirage/sector.c:1345
+#, c-format
+msgid "Expected %d bytes for data!"
+msgstr "Ожидается %d байт для части данных сектора!"
+
+#: ../mirage/sector.c:1421
+#, c-format
+msgid "Expected %d bytes for EDC/ECC!"
+msgstr "Ожидается %d байт для EDC/ECC!"
+
+#: ../mirage/sector.c:1493 ../mirage/sector.c:1549
+#, c-format
+msgid "Subchannel format %d not supported yet!"
+msgstr "Формат субканала %d пока не поддерживается!"
+
+#: ../mirage/sector.c:1520
+#, c-format
+msgid "Expected 96 bytes for PW subchannel!"
+msgstr "Ожидается 96 байт для субканала PW!"
+
+#: ../mirage/sector.c:1530
+#, c-format
+msgid "Expected 16 bytes for Q subchannel!"
+msgstr "Ожидается 16 байт для субканала Q!"
+
+#: ../mirage/session.c:680
+#, c-format
+msgid "Track with number %d already exists!"
+msgstr "Дорожка с номером %d уже существует!"
+
+#: ../mirage/session.c:867
+#, c-format
+msgid "Track with number %d not found!"
+msgstr "Дорожка с номером %d не найдета!"
+
+#: ../mirage/session.c:893
+#, c-format
+msgid "Track address %d out of range!"
+msgstr "Дорожка с номером %d вне диапазона!"
+
+#: ../mirage/session.c:911
+#, c-format
+msgid "Track containing address %d not found!"
+msgstr "Дорожка, содержащая адрес %d, не найдена!"
+
+#: ../mirage/session.c:961 ../mirage/session.c:995
+#, c-format
+msgid "Track %p is not in session layout!"
+msgstr "Дорожка %p не связана с сессией!"
+
+#: ../mirage/session.c:971
+#, c-format
+msgid "Track before track %p not found!"
+msgstr "Дорожка, установленная до дорожки %p, не найдена!"
+
+#: ../mirage/session.c:1006
+#, c-format
+msgid "Track after track %p not found!"
+msgstr "Дорожка, установленная после дорожки %p, не найдена!"
+
+#: ../mirage/session.c:1047 ../mirage/track.c:1327
+#, c-format
+msgid "Language with language code %d already exists!"
+msgstr "Язык с кодом %d уже существует!"
+
+#: ../mirage/session.c:1158
+#, c-format
+msgid "Invalid language index %d!"
+msgstr "Некорректный индекс языка %d!"
+
+#: ../mirage/session.c:1168 ../mirage/track.c:1447
+#, c-format
+msgid "Language with index %d not found!"
+msgstr "Язык с индексом %d не найден!"
+
+#: ../mirage/session.c:1205 ../mirage/track.c:1484
+#, c-format
+msgid "Language with language code %d not found!"
+msgstr "Язык с кодом %d не найден!"
+
+#: ../mirage/session.c:1308
+#, c-format
+msgid "Failed to decode CD-TEXT data!"
+msgstr "Не удалось декодировать данные CD-TEXT!"
+
+#: ../mirage/session.c:1464 ../mirage/session.c:1493
+#, c-format
+msgid "Session is not in disc layout!"
+msgstr "Сессия не связана с диском!"
+
+#: ../mirage/track.c:498 ../mirage/track.c:586
+#, c-format
+msgid "Sector address out of range!"
+msgstr "Адрес сектора вне диапазона!"
+
+#: ../mirage/track.c:505
+#, c-format
+msgid "Failed to get fragment to feed sector: %s"
+msgstr "Не удалось получить фрагмент для заполнения сектора: %s"
+
+#: ../mirage/track.c:517
+#, c-format
+msgid "Failed read main channel data: %s"
+msgstr "Не удалось считать данные главного канала: %s"
+
+#: ../mirage/track.c:525
+#, c-format
+msgid "Failed to read subchannel data: %s"
+msgstr "Не удалось считать данные субканала: %s"
+
+#: ../mirage/track.c:539
+#, c-format
+msgid "Failed to feed data: %s"
+msgstr "Не удалось заполнить данные: %s"
+
+#: ../mirage/track.c:596
+#, c-format
+msgid "Cannot append sector to track that is not last in the layout!"
+msgstr "Невозможно добавить сектор в дорожку, не являющуюся последней в расположении!"
+
+#: ../mirage/track.c:605
+#, c-format
+msgid "Failed to get last fragment to append sector: %s"
+msgstr "Не удалось получить последний фрагмент для добавления сектора: %s"
+
+#: ../mirage/track.c:614
+#, c-format
+msgid "Failed to get fragment to write sector: %s"
+msgstr "Не удалось получить фрагмент для записи сектора: %s"
+
+#: ../mirage/track.c:632
+#, c-format
+msgid "Failed to extract data from sector: %s"
+msgstr "Не удалось извлечь данные из сектора: %s"
+
+#: ../mirage/track.c:640
+#, c-format
+msgid "Failed write main channel data: %s"
+msgstr "Не удалось записать данные главного канала: %s"
+
+#: ../mirage/track.c:649
+#, c-format
+msgid "Failed to write subchannel data: %s"
+msgstr "Не удалось записать данные субканала: %s"
+
+#: ../mirage/track.c:932
+#, c-format
+msgid "Fragment index %d out of range!"
+msgstr "Индекс фрагмента %d вне диапазона!"
+
+#: ../mirage/track.c:942
+#, c-format
+msgid "Fragment with index %d not found!"
+msgstr "Индекс фрагмента %d не найден!"
+
+#: ../mirage/track.c:981
+#, c-format
+msgid "Fragment with address %d not found!"
+msgstr "Фрагмент с адресом %d не найден!"
+
+#: ../mirage/track.c:1047
+#, c-format
+msgid "No fragment with subchannel found!"
+msgstr "Не удалось найти ни одного фрагмента с данными субканала!"
+
+#: ../mirage/track.c:1125
+#, c-format
+msgid "Invalid index start address (%d); before track start!"
+msgstr "Некорректный адрес стартового индекса (%d); до начала дорожки!"
+
+#: ../mirage/track.c:1209
+#, c-format
+msgid "Index number %d out of range!"
+msgstr "Номер индекса %d вне диапазона!"
+
+#: ../mirage/track.c:1219
+#, c-format
+msgid "Index with number %d not found!"
+msgstr "Индекс с номером %d не найден!"
+
+#: ../mirage/track.c:1258
+#, c-format
+msgid "Index with address %d not found!"
+msgstr "Индекс с адресом %d не найден!"
+
+#: ../mirage/track.c:1437
+#, c-format
+msgid "Language index %d out of range!"
+msgstr "Индекс языка %d вне диапазона!"
+
+#: ../mirage/track.c:1535 ../mirage/track.c:1564
+#, c-format
+msgid "Track is not in session layout!"
+msgstr "Дорожка не связана с сессией!"
+
+#: ../mirage/writer.c:300
+#, c-format
+msgid "Parameter '%s' has invalid type (expected '%s', got '%s')!"
+msgstr ""
+"Некорректный тип параметра '%s' (ожидаем: '%s', получен: '%s')"
+
+#: ../mirage/writer.c:319
+#, c-format
+msgid "Parameter '%s' has invalid value!"
+msgstr "Некорректное значение параметра '%s'!"
