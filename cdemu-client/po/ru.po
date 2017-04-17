@@ -1,0 +1,677 @@
+# Russian translation of cdemu-client.
+# Copyright (C) 2006-2015
+# This file is distributed under the same license as the gCDEmu package.
+# Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>, 2006-2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cdemu-client 3.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-10-11 11:28+0200\n"
+"PO-Revision-Date: 2014-04-29 23:30+0200\n"
+"Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
+"AND_DOT_HERE com>\n"
+"Language-Team: Russian <>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.6\n"
+
+#: ../src/cdemu:84
+#, c-format
+msgid "ERROR: %s"
+msgstr "ОШИБКА: %s"
+
+#: ../src/cdemu:89
+#, c-format
+msgid "WARNING: %s"
+msgstr "ВНИМАНИЕ: %s"
+
+#: ../src/cdemu:106
+msgid "loads an image to the device"
+msgstr "монтирует образ в накопитель"
+
+#: ../src/cdemu:111 ../src/cdemu:189 ../src/cdemu:339 ../src/cdemu:445
+#: ../src/cdemu:526 ../src/cdemu:605 ../src/cdemu:685 ../src/cdemu:765
+#: ../src/cdemu:845
+msgid "device"
+msgstr "накопитель"
+
+#: ../src/cdemu:112
+msgid "image file(s)"
+msgstr "файл(ы) образа"
+
+#: ../src/cdemu:113
+msgid "password for encrypted images"
+msgstr "пароль для зашифрованных образов"
+
+#: ../src/cdemu:114
+msgid "encoding for text-based images"
+msgstr "кодирование для образов, основанных на тексте"
+
+#: ../src/cdemu:115
+msgid "flag the DVD disc as CSS-encoded"
+msgstr "отметить DVD-диск как закодированный CSS"
+
+#: ../src/cdemu:135 ../src/cdemu:218 ../src/cdemu:347 ../src/cdemu:382
+#: ../src/cdemu:419 ../src/cdemu:461 ../src/cdemu:489 ../src/cdemu:541
+#: ../src/cdemu:569 ../src/cdemu:620 ../src/cdemu:648 ../src/cdemu:700
+#: ../src/cdemu:728 ../src/cdemu:780 ../src/cdemu:808 ../src/cdemu:860
+#: ../src/cdemu:889
+#, c-format
+msgid "Failed to get number of devices: %s"
+msgstr "Не удалось получить количество накопителей: %s"
+
+#: ../src/cdemu:142 ../src/cdemu:225 ../src/cdemu:390
+#, c-format
+msgid "Failed to get status of device %i: %s"
+msgstr "Не удалось получить состояние накопителя %i: %s"
+
+#: ../src/cdemu:153 ../src/cdemu:236
+msgid "No empty device found"
+msgstr "Не найден пустой накопитель"
+
+#: ../src/cdemu:158 ../src/cdemu:241 ../src/cdemu:362 ../src/cdemu:455
+#: ../src/cdemu:474 ../src/cdemu:509 ../src/cdemu:535 ../src/cdemu:554
+#: ../src/cdemu:588 ../src/cdemu:614 ../src/cdemu:633 ../src/cdemu:668
+#: ../src/cdemu:694 ../src/cdemu:713 ../src/cdemu:748 ../src/cdemu:774
+#: ../src/cdemu:793 ../src/cdemu:828 ../src/cdemu:873 ../src/cdemu:911
+#, c-format
+msgid "String '%s' is not a number"
+msgstr "Строка '%s' не является числом"
+
+#: ../src/cdemu:170
+msgid "The image you are trying to load is encrypted."
+msgstr "Образ, который вы пытаетесь смонтировать в накопитель, зашифрован."
+
+#: ../src/cdemu:171
+msgid "Password: "
+msgstr "Пароль: "
+
+#: ../src/cdemu:175
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Не удалось смонтировать образ: %s"
+
+#: ../src/cdemu:184
+msgid "load blank/recordable image to the device"
+msgstr "смонтировать чистый/записываемый образ в накопитель"
+
+#: ../src/cdemu:190
+msgid "image filename/basename"
+msgstr "имя файла образа"
+
+#: ../src/cdemu:191
+msgid "ID of image writer to use"
+msgstr "ID используемого накопителя"
+
+#: ../src/cdemu:192
+msgid "medium type"
+msgstr "тип данных"
+
+#: ../src/cdemu:193
+msgid "additional writer parameter(s)"
+msgstr "дополнительные параметры накопителя"
+
+#: ../src/cdemu:251
+#, c-format
+msgid "Failed to load blank image: %s"
+msgstr "Не удалось смонтировать чистый образ: %s"
+
+#: ../src/cdemu:269
+#, c-format
+msgid "Parameter token '%s' is not a key=value pair!"
+msgstr "Значение параметра '%s' не является парой ключ=значение!"
+
+#: ../src/cdemu:282 ../src/cdemu:1064 ../src/cdemu:1100
+#, c-format
+msgid "Failed to get parameter sheet for writer: %s"
+msgstr "Не удалось выбрать список параметров накопителя: %s"
+
+#: ../src/cdemu:294
+#, c-format
+msgid "Parameter '%s' not found in writer's parameter sheet!"
+msgstr ""
+"Параметр '%s' не найден в списке параметров накопителя!"
+
+#: ../src/cdemu:307
+#, c-format
+msgid "Invalid value '%s' given for parameter '%s'!"
+msgstr "Неверное значение '%s' присвоено параметру '%s'!"
+
+#: ../src/cdemu:319
+#, c-format
+msgid "String '%s' given as value for parameter '%s' is not a number!"
+msgstr "Строка '%s', присвоенная как значение параметру '%s', не является числом!"
+
+#: ../src/cdemu:321
+#, c-format
+msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
+msgstr "Некорректный тип '%s' параметра '%s'!"
+
+#: ../src/cdemu:334
+msgid "unloads the device"
+msgstr "демонтирует образ из накопителя"
+
+#: ../src/cdemu:353 ../src/cdemu:360
+#, c-format
+msgid "Failed to unload device %i: %s"
+msgstr "Не удалось демонтировать образ из накопителя %i: %s"
+
+#: ../src/cdemu:372
+msgid "displays the devices' status"
+msgstr "отображает статус накопителей"
+
+#: ../src/cdemu:384
+msgid "Devices' status:"
+msgstr "Статус накопителей:"
+
+#: ../src/cdemu:385 ../src/cdemu:422 ../src/cdemu:492 ../src/cdemu:572
+#: ../src/cdemu:651 ../src/cdemu:731 ../src/cdemu:811 ../src/cdemu:892
+msgid "DEV"
+msgstr "НКП"
+
+#: ../src/cdemu:385
+msgid "LOADED"
+msgstr "СМОНТИРОВАН"
+
+#: ../src/cdemu:385
+msgid "FILENAME"
+msgstr "ИМЯ ФАЙЛА"
+
+#: ../src/cdemu:409
+msgid "displays the device mapping information"
+msgstr "отображает информацию о карте накопителя"
+
+#: ../src/cdemu:421
+msgid "Device mapping:"
+msgstr "Карта накопителя:"
+
+#: ../src/cdemu:422
+msgid "SCSI CD-ROM"
+msgstr "SCSI CD-ROM"
+
+#: ../src/cdemu:422
+msgid "SCSI generic"
+msgstr "SCSI общий"
+
+#: ../src/cdemu:427
+#, c-format
+msgid "Failed to get device mapping of device %i: %s"
+msgstr "Не удалось получить карту накопителя %i: %s"
+
+#: ../src/cdemu:440
+msgid "displays/sets daemon debug mask"
+msgstr "отображает/устанавливает отладочную маску демона"
+
+#: ../src/cdemu:446 ../src/cdemu:527 ../src/cdemu:606 ../src/cdemu:686
+#: ../src/cdemu:766
+msgid "new value"
+msgstr "новое значение"
+
+#: ../src/cdemu:463
+#, c-format
+msgid "Setting daemon debug mask of all devices to 0x%X."
+msgstr "Установка отладочной маски демона всех накопителей на 0x%X."
+
+#: ../src/cdemu:468 ../src/cdemu:480
+#, c-format
+msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
+msgstr "Не удалось установить отладочную маску демона накопителя %i на 0x%X: %s"
+
+#: ../src/cdemu:476
+#, c-format
+msgid "Setting daemon debug mask of device %i to 0x%X."
+msgstr "Установка отладочной маски демона накопителя %i на 0x%X."
+
+#: ../src/cdemu:491
+msgid "Devices' daemon debug masks:"
+msgstr "Отладочные маски демона накопителей:"
+
+#: ../src/cdemu:492 ../src/cdemu:572
+msgid "DEBUG MASK"
+msgstr "ОТЛАДОЧНАЯ МАСКА"
+
+#: ../src/cdemu:498 ../src/cdemu:507
+#, c-format
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr "Не удалось получить отладочную маску демона накопителя %i: %s"
+
+#: ../src/cdemu:511
+#, c-format
+msgid "Daemon debug mask of device %i: 0x%X"
+msgstr "Отладочная маска демона накопителя %i: 0x%X"
+
+#: ../src/cdemu:521
+msgid "displays/sets library debug mask"
+msgstr "отображает/устанавливает отладочную маску библиотеки"
+
+#: ../src/cdemu:543
+#, c-format
+msgid "Setting library debug mask of all devices to 0x%X."
+msgstr "Установка отладочной маски библиотеки всех накопителей на  0x%X."
+
+#: ../src/cdemu:548 ../src/cdemu:560
+#, c-format
+msgid "Failed to set library debug mask of device %i to 0x%X: %s"
+msgstr "Не удалось установить отладочную маску библиотеки накопителя %i на 0x%X: %s"
+
+#: ../src/cdemu:556
+#, c-format
+msgid "Setting library debug mask of device %i to 0x%X."
+msgstr "Установка отладочной маски библиотеки накопителя %i на 0x%X."
+
+#: ../src/cdemu:571
+msgid "Devices' library debug masks:"
+msgstr "Отладочные маски библиотеки накопителей:"
+
+#: ../src/cdemu:578 ../src/cdemu:586
+#, c-format
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr "Не удалось получить отладочную маску библиотеки накопителя %i: %s"
+
+#: ../src/cdemu:590
+#, c-format
+msgid "Library debug mask of device %i: 0x%X"
+msgstr "Отладочная маска библиотеки накопителя %i: 0x%X"
+
+#: ../src/cdemu:600
+msgid "displays/sets DPM emulation flag"
+msgstr "отображает/устанавливает эмуляцию местоположения данных (DPM)"
+
+#: ../src/cdemu:622
+#, c-format
+msgid "Setting DPM emulation flag of all devices to %i."
+msgstr "Установка эмуляции местоположения данных (DPM) всех накопителей на %i."
+
+#: ../src/cdemu:627 ../src/cdemu:639
+#, c-format
+msgid "Failed to set DPM emulation flag of device %i to %i: %s"
+msgstr "Не удалось установить эмуляцию местоположения данных (DPM) накопителя %i на %i: %s"
+
+#: ../src/cdemu:635
+#, c-format
+msgid "Setting DPM emulation flag of device %i to %i."
+msgstr "Установка эмуляции местоположения данных (DPM) накопителя %i на %i."
+
+#: ../src/cdemu:650
+msgid "Devices' DPM emulation flag:"
+msgstr "Эмуляция местоположения данных (DPM) накопителей:"
+
+#: ../src/cdemu:651 ../src/cdemu:731 ../src/cdemu:811
+msgid "ENABLED"
+msgstr "ВКЛЮЧЕНО"
+
+#: ../src/cdemu:657 ../src/cdemu:666
+#, c-format
+msgid "Failed to get DPM emulation flag of device %i: %s"
+msgstr "Не удалось получить эмуляцию местоположения данных (DPM) накопителя %i: %s"
+
+#: ../src/cdemu:670
+#, c-format
+msgid "DPM emulation flag of device %i: %i"
+msgstr "Эмуляция местоположения данных (DPM) накопителя %i: %i"
+
+#: ../src/cdemu:680
+msgid "displays/sets transfer rate emulation flag"
+msgstr "отображает/устанавливает эмуляцию скорости считывания данных (TR)"
+
+#: ../src/cdemu:702
+#, c-format
+msgid "Setting transfer rate emulation flag of all devices to %i."
+msgstr "Установка эмуляции скорости считывания данных (TR) всех накопителей на %i."
+
+#: ../src/cdemu:707 ../src/cdemu:719
+#, c-format
+msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
+msgstr ""
+"Не удалось установить эмуляцию скорости считывания данных (TR) накопителя %i на %i: %s"
+
+#: ../src/cdemu:715
+#, c-format
+msgid "Setting transfer rate emulation flag of device %i to %i."
+msgstr "Установка эмуляции скорости считывания данных (TR) накопителя %i на %i."
+
+#: ../src/cdemu:730
+msgid "Devices' transfer rate emulation flag:"
+msgstr "Эмуляция скорости считывания данных (TR) накопителей:"
+
+#: ../src/cdemu:737 ../src/cdemu:746
+#, c-format
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr ""
+"Не удалось получить эмуляцию скорости считывания данных (TR) накопителя %i: %s"
+
+#: ../src/cdemu:750
+#, c-format
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "Эмуляция скорости считывания данных (TR) накопителя %i: %i"
+
+#: ../src/cdemu:760
+msgid "displays/sets bad sector emulation flag"
+msgstr "отображает/устанавливает эмуляцию плохих секторов"
+
+#: ../src/cdemu:782
+#, c-format
+msgid "Setting bad sector emulation flag of all devices to %i."
+msgstr "Установка эмуляции плохих секторов всех накопителей на %i."
+
+#: ../src/cdemu:787 ../src/cdemu:799
+#, c-format
+msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
+msgstr ""
+"Не удалось установить эмуляцию плохих секторов накопителя %i на %i: %s"
+
+#: ../src/cdemu:795
+#, c-format
+msgid "Setting bad sector emulation flag of device %i to %i."
+msgstr "Установка эмуляции плохих секторов накопителя %i na %i."
+
+#: ../src/cdemu:810
+msgid "Devices' bad sector emulation flag:"
+msgstr "Эмуляция плохих секторов накопителей:"
+
+#: ../src/cdemu:817 ../src/cdemu:826
+#, c-format
+msgid "Failed to get bad sector emulation flag of device %i: %s"
+msgstr ""
+"Не удалось получить эмуляцию плохих секторов накопителя %i: %s"
+
+#: ../src/cdemu:830
+#, c-format
+msgid "Bad sector emulation flag of device %i: %i"
+msgstr "Эмуляция плохих секторов накопителя %i: %i"
+
+#: ../src/cdemu:840
+msgid "displays/sets device ID"
+msgstr "отображает/устанавливает идентификатор накопителя"
+
+#: ../src/cdemu:846
+msgid ""
+"new device ID: vendor ID, product ID, revision and vendor-specific string"
+msgstr ""
+"новый идентификатор накопителя: идентификатор производителя, "
+"идентификатор продукта, версия и атрибут производителя"
+
+#: ../src/cdemu:854
+msgid "New device ID must consist of exactly four strings!"
+msgstr "Новый идентификатор накопителя должен содержать точно четыре строки!"
+
+#: ../src/cdemu:862
+#, c-format
+msgid "Setting device ID of all devices to %s."
+msgstr "Установка идентификаторов всех накопителей на %s."
+
+#: ../src/cdemu:867 ../src/cdemu:879
+#, c-format
+msgid "Failed to set device ID of device %i to %s: %s"
+msgstr "Не удалось установить идентификатор накопителя %i на %s: %s"
+
+#: ../src/cdemu:875
+#, c-format
+msgid "Setting device ID of device %i to %s."
+msgstr "Установка идентификатора накопителя %i на %s."
+
+#: ../src/cdemu:891
+msgid "Devices' IDs:"
+msgstr "Идентификаторы накопителей:"
+
+#: ../src/cdemu:892
+msgid "DEVICE ID"
+msgstr "ИДЕНТИФИКАТОР НАКОПИТЕЛЯ"
+
+#: ../src/cdemu:899 ../src/cdemu:909
+#, c-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr "Не удалось установить идентификатор накопителя %i: %s"
+
+#: ../src/cdemu:913
+#, c-format
+msgid "Device ID of device %i: %s"
+msgstr "Идентификатор накопителя %i: %s"
+
+#: ../src/cdemu:923
+msgid "enumerates supported parsers"
+msgstr "перечисляет поддерживаемые считывающие накопители"
+
+#: ../src/cdemu:933
+#, c-format
+msgid "Failed to enumerate supported parsers: %s"
+msgstr "Не удалось перечислить поддерживаемые считывающие накопители: %s"
+
+#: ../src/cdemu:937
+msgid "Supported parsers:"
+msgstr "Поддерживаемые считывающие накопители:"
+
+#: ../src/cdemu:951
+msgid "enumerates supported writers"
+msgstr "перечисляет поддерживаемые записывающие накопители"
+
+#: ../src/cdemu:961
+#, c-format
+msgid "Failed to enumerate supported writers: %s"
+msgstr "Не удалось перечислить поддерживаемые записывающие накопители: %s"
+
+#: ../src/cdemu:964
+msgid "Supported writers:"
+msgstr "Записывающие накопители:"
+
+#: ../src/cdemu:976
+msgid "enumerates supported filter streams"
+msgstr "перечисляет поддерживаемые потоки фильтров"
+
+#: ../src/cdemu:986
+#, c-format
+msgid "Failed to enumerate supported filter streams: %s"
+msgstr "Не удалось перечислить поддерживаемые потоки фильтров: %s"
+
+#: ../src/cdemu:989
+msgid "Supported filter streams:"
+msgstr "Поддерживаемые потоки фильтров:"
+
+#: ../src/cdemu:992
+#, c-format
+msgid "    write support: %d"
+msgstr "    поддержка записи: %d"
+
+#: ../src/cdemu:1004
+msgid "enumerates valid daemon debug masks"
+msgstr "перечисляет допустимые отладочные маски демона"
+
+#: ../src/cdemu:1014
+#, c-format
+msgid "Failed to enumerate supported daemon debug masks: %s"
+msgstr "Не удалось перечислить поддерживаемые отладочные маски демона: %s"
+
+#: ../src/cdemu:1016
+msgid "Supported daemon debug masks:"
+msgstr "Поддерживаемые отладочные маски демона:"
+
+#: ../src/cdemu:1028
+msgid "enumerates valid library debug masks"
+msgstr "перечисляет допустимые отладочные маски библиотеки"
+
+#: ../src/cdemu:1038
+#, c-format
+msgid "Failed to enumerate supported library debug masks: %s"
+msgstr "Не удалось перечислить поддерживаемые отладочные маски библиотеки: %s"
+
+#: ../src/cdemu:1040
+msgid "Supported library debug masks:"
+msgstr "Поддерживаемые отладочные маски библиотеки:"
+
+#: ../src/cdemu:1052
+msgid "prints the list of writer's parameters"
+msgstr "выводит список параметров накопителя"
+
+#: ../src/cdemu:1057
+msgid "writer ID"
+msgstr "идентификатор записывающего накопителя"
+
+#: ../src/cdemu:1067
+msgid "Writer's parameter sheet:"
+msgstr "Список параметров записывающего накопителя:"
+
+#: ../src/cdemu:1072
+#, c-format
+msgid "  Name: %s"
+msgstr "  Название: %s"
+
+#: ../src/cdemu:1073
+#, c-format
+msgid "  Description: %s"
+msgstr "  Описание: %s"
+
+#: ../src/cdemu:1074
+#, c-format
+msgid "  Type: %s"
+msgstr "  Тип: %s"
+
+#: ../src/cdemu:1075
+#, c-format
+msgid "  Default value: %s"
+msgstr "  Значение по умолчанию: %s"
+
+#: ../src/cdemu:1078
+#, c-format
+msgid "  Possible value: %s"
+msgstr "  Возможное значение: %s"
+
+#: ../src/cdemu:1082
+msgid "enum"
+msgstr "enum"
+
+#: ../src/cdemu:1084
+msgid "string"
+msgstr "строка"
+
+#: ../src/cdemu:1086
+msgid "boolean"
+msgstr "boolean"
+
+#: ../src/cdemu:1088
+msgid "integer"
+msgstr "целое"
+
+#: ../src/cdemu:1090
+msgid "unknown"
+msgstr "неизвестно"
+
+#: ../src/cdemu:1107
+#, c-format
+msgid "Unsupported writer: %s"
+msgstr "Неподдерживаемый записывающий накопитель: %s"
+
+#: ../src/cdemu:1113
+#, c-format
+msgid "Failed to parse parameter sheet: %s"
+msgstr "Не удалось считать список параметров: %s"
+
+#: ../src/cdemu:1125
+msgid "displays version information"
+msgstr "отображает информацию о версии"
+
+#: ../src/cdemu:1135
+#, c-format
+msgid "Failed to get library version: %s"
+msgstr "Не удалось получить версию библиотеки: %s"
+
+#: ../src/cdemu:1140
+#, c-format
+msgid "Failed to get daemon version: %s"
+msgstr "Не удалось получить версию демона: %s"
+
+#: ../src/cdemu:1142
+#, c-format
+msgid "Library version: %s"
+msgstr "Версия библиотеки: %s"
+
+#: ../src/cdemu:1143
+#, c-format
+msgid "Daemon version: %s"
+msgstr "Версия демона: %s"
+
+#: ../src/cdemu:1153
+msgid "creates another virtual device"
+msgstr "создает новый виртуальный накопитель"
+
+#: ../src/cdemu:1162
+#, c-format
+msgid "Failed to add device: %s"
+msgstr "Не удалось добавить накопитель: %s"
+
+#: ../src/cdemu:1164
+msgid "Device added successfully."
+msgstr "Накопитель добавлен успешно."
+
+#: ../src/cdemu:1174
+msgid "removes the last virtual device"
+msgstr "удаляет последний виртуальный накопитель"
+
+#: ../src/cdemu:1183
+#, c-format
+msgid "Failed to remove device: %s"
+msgstr "Не удалось удалить накопитель: %s"
+
+#: ../src/cdemu:1185
+msgid "Device removed successfully."
+msgstr "Накопитель удален успешно."
+
+#: ../src/cdemu:1203
+msgid "Command-line CDEmu client."
+msgstr "Клиент CDEmu для командной строки"
+
+#: ../src/cdemu:1204
+msgid "sets D-BUS bus type to use"
+msgstr "устанавливает тип шины D-BUS для использования"
+
+#: ../src/cdemu:1207
+msgid "valid commands"
+msgstr "допустимые команды"
+
+#: ../src/cdemu:1207
+msgid "command help"
+msgstr "помощь по командам"
+
+#: ../src/cdemu:1249
+#, c-format
+msgid "Invalid bus parameter '%s', using default!"
+msgstr "Некорректный параметр шины '%s'; используется заданный по умолчанию!"
+
+#: ../src/cdemu:1254
+#, c-format
+msgid "Failed to connect to CDEmu daemon: %s"
+msgstr "Не удалось подключиться к демону CDEmu: %s"
+
+#: ../src/cdemu:1260
+#, c-format
+msgid ""
+"Failed to acquire daemon interface version (this most likely means your "
+"daemon is out-of-date): %s"
+msgstr ""
+"Не удалось получить версию интерфейса демона CDEmu (скорее всего, ваш "
+"демон устарел): %s"
+
+#: ../src/cdemu:1264
+#, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"Обнаружена версия интерфейса демона CDEmu %i.%i, требуется версия %i."
+"%i!"
+
+#: ../src/cdemu:1352
+#, c-format
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "Не удалось загрузить конфигурацию из файла '%s': %s"
+
+#: ../data/cdemu-client.desktop.in.h:1
+msgid "CDEmu client"
+msgstr "Клиент CDEmu"
+
+#: ../data/cdemu-client.desktop.in.h:2
+msgid "Client for handling optical media (CD/DVD) images"
+msgstr "Клиент для управления образами оптических дисков (CD/DVD)"
