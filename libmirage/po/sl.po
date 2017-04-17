@@ -108,12 +108,12 @@ msgstr "Napaka pri branju glave iz delne datoteke!"
 #: ../filters/filter-daa/filter-stream.c:592
 #, c-format
 msgid "Failed to find part for offset %s!"
-msgstr "Nisem uspel najti dela za položaj 0x%s!"
+msgstr "Nisem uspel najti dela za položaj %s!"
 
 #: ../filters/filter-daa/filter-stream.c:614
 #, c-format
 msgid "Failed to seek to %s!"
-msgstr "Napaka pri premiku na položaj 0x%s!"
+msgstr "Napaka pri premiku na položaj %s!"
 
 #: ../filters/filter-daa/filter-stream.c:621
 #, c-format
