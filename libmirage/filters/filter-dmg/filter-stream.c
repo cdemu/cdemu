@@ -597,7 +597,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
     }
 
     /* Fill in existing stream */
-    streams[0] = g_object_ref(g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self)));
+    streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
     self->priv->num_streams++;
 
     const gchar *original_filename = mirage_stream_get_filename(streams[0]);
