@@ -1,4 +1,4 @@
-libmirage.so.10 libmirage10 #MINVER#
+libmirage.so.11 libmirage11 #MINVER#
  crc16_1021_lut@Base 2.1.0
  crc32_d8018001_lut@Base 2.1.0
  ecma_130_scrambler_lut@Base 3.0.0

@@ -4,7 +4,7 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
 Build-Depends: libglib2.0-dev (>= 2.28), libao-dev (>= 0.8.0), 
- libmirage10-dev (>= 3.0.0), debhelper (>= 9), cmake (>= 2.8.5)
+ libmirage11-dev (>= 3.0.0), debhelper (>= 9), cmake (>= 2.8.5)
 Standards-Version: 3.9.7
 
 
