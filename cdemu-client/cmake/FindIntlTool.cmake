@@ -21,7 +21,7 @@ mark_as_advanced (
 if (INTLTOOL_UPDATE_EXECUTABLE)
     execute_process (
         COMMAND ${INTLTOOL_UPDATE_EXECUTABLE} --version
-        COMMAND head --lines=1
+        COMMAND head -n 1
         COMMAND cut -d " " -f 3
         OUTPUT_VARIABLE INTLTOOL_VERSION
     )
