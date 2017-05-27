@@ -1,6 +1,3 @@
-if (POST_INSTALL_HOOKS)
-        install(CODE "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)")
-    endif ()
 set(filter_short "daa")
 set(filter_name "filter-${filter_short}")
 
