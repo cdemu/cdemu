@@ -17,7 +17,7 @@ set (MIRAGE_VERSION_SHORT ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR})
 # MINOR is increased when features are added to the API (e.g., addition
 # of interfaces). In this case, PATCH should be reset to zero.
 # PATCH is increased for all other changes such as bug-fixes.
-set (MIRAGE_SOVERSION_MAJOR 10)
+set (MIRAGE_SOVERSION_MAJOR 11)
 set (MIRAGE_SOVERSION_MINOR 0)
 set (MIRAGE_SOVERSION_PATCH 0)
 
