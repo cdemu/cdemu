@@ -24,6 +24,11 @@ if (SNDFILE_FOUND AND SAMPLERATE_FOUND)
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES} ${SNDFILE_LIBRARIES} ${SAMPLERATE_LIBRARIES})
 
+    # On OS X, we need to explicitly enable dynamic resolving of undefined symbols
+    if(APPLE)
+        target_link_libraries(${filter_name} "-undefined dynamic_lookup")
+    endif()
+
     # Disable library prefix
     set_target_properties(${filter_name} PROPERTIES PREFIX "")
 

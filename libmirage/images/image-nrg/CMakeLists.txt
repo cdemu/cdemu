@@ -11,6 +11,11 @@ if (TRUE)
     )
     target_link_libraries(${image_name} ${GLIB_LIBRARIES})
 
+    # On OS X, we need to explicitly enable dynamic resolving of undefined symbols
+    if(APPLE)
+        target_link_libraries(${image_name} "-undefined dynamic_lookup")
+    endif()
+
     # Disable library prefix
     set_target_properties(${image_name} PROPERTIES PREFIX "")
 
