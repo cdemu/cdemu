@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libmirage 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-25 23:36+0100\n"
+"POT-Creation-Date: 2017-06-10 22:23+0200\n"
 "PO-Revision-Date: 2017-01-25 23:15+0100\n"
 "Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
 "AND_DOT_HERE com>\n"
@@ -69,13 +69,15 @@ msgstr "Не удалось выделить память для буфера в
 #, c-format
 msgid "Filter cannot handle given data: failed to read CISO header!"
 msgstr ""
-"Фильтр не в состоянии обработать полученные данные: не удалось прочитать заголовок CISO!"
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать "
+"заголовок CISO!"
 
 #: ../filters/filter-cso/filter-stream.c:201
 #: ../filters/filter-macbinary/filter-stream.c:240
 #, c-format
 msgid "Filter cannot handle given data: invalid header!"
-msgstr "Фильтр не в состоянии обработать полученные данные: некорректный заголовок!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: некорректный заголовок!"
 
 #: ../filters/filter-cso/filter-stream.c:336
 msgid "CSO File Filter"
@@ -106,131 +108,132 @@ msgstr "Контрольная сумма CRC32 не совпадает!"
 msgid "Failed to read part file's header!"
 msgstr "Не удалось прочитать заголовок части файла!"
 
-#: ../filters/filter-daa/filter-stream.c:589
+#: ../filters/filter-daa/filter-stream.c:592
 #, c-format
-msgid "Failed to find part for offset 0x%lX!"
-msgstr "Не удалось найти часть 0x%lX!"
+msgid "Failed to find part for offset %s!"
+msgstr "Не удалось найти часть %s!"
 
-#: ../filters/filter-daa/filter-stream.c:607
+#: ../filters/filter-daa/filter-stream.c:614
 #, c-format
-msgid "Failed to seek to 0x%lX!"
-msgstr "Не удалось найти 0x%lX!"
+msgid "Failed to seek to %s!"
+msgstr "Не удалось найти %s!"
 
-#: ../filters/filter-daa/filter-stream.c:613
+#: ../filters/filter-daa/filter-stream.c:621
 #, c-format
 msgid "Failed to read 0x%X bytes!"
 msgstr "Не удалось прочитать 0x%X байт!"
 
-#: ../filters/filter-daa/filter-stream.c:637
-#: ../filters/filter-daa/filter-stream.c:695
+#: ../filters/filter-daa/filter-stream.c:645
+#: ../filters/filter-daa/filter-stream.c:703
 #, c-format
 msgid "Failed to read descriptor data!"
 msgstr "Не удалось прочитать данные дескриптора!"
 
-#: ../filters/filter-daa/filter-stream.c:670
+#: ../filters/filter-daa/filter-stream.c:678
 #, c-format
 msgid "Invalid filename format type!"
 msgstr "Некорректный тип формата названия файла!"
 
-#: ../filters/filter-daa/filter-stream.c:688
+#: ../filters/filter-daa/filter-stream.c:696
 #, c-format
 msgid "Invalid size for encryption descriptor!"
 msgstr "Некорректный размер дескриптора шифрования!"
 
-#: ../filters/filter-daa/filter-stream.c:719
+#: ../filters/filter-daa/filter-stream.c:727
 #, c-format
 msgid "Image is encrypted!"
 msgstr "Образ зашифрован!"
 
-#: ../filters/filter-daa/filter-stream.c:731
+#: ../filters/filter-daa/filter-stream.c:739
 #, c-format
 msgid "Incorrect password!"
 msgstr "Неверный пароль!"
 
-#: ../filters/filter-daa/filter-stream.c:760
+#: ../filters/filter-daa/filter-stream.c:768
 #, c-format
 msgid "Failed to read descriptor type!"
 msgstr "Не удалось прочитать тип дескриптора!"
 
-#: ../filters/filter-daa/filter-stream.c:893
+#: ../filters/filter-daa/filter-stream.c:901
 #, c-format
 msgid "Failed to allocate chunk table buffer (%d bytes)!"
 msgstr "Не удалось выделить буфер таблицы частей (%d байт)!"
 
-#: ../filters/filter-daa/filter-stream.c:901
+#: ../filters/filter-daa/filter-stream.c:909
 #, c-format
 msgid "Failed to read chunk table data!"
 msgstr "Не удалось прочитать данные таблицы частей!"
 
-#: ../filters/filter-daa/filter-stream.c:935
+#: ../filters/filter-daa/filter-stream.c:946
 #, c-format
-msgid "Failed to allocate chunk table (%ld bytes)!"
-msgstr "Не удалось выделить таблицу частей (%ld байт)!"
+msgid "Failed to allocate chunk table (%s bytes)!"
+msgstr "Не удалось выделить таблицу частей (%s байт)!"
 
-#: ../filters/filter-daa/filter-stream.c:1013
+#: ../filters/filter-daa/filter-stream.c:1025
 #, c-format
 msgid "Failed to allocate I/O buffer size (%d bytes)!"
 msgstr "Не удалось выделить размер буфера ввода/вывода (%d байт)!"
 
-#: ../filters/filter-daa/filter-stream.c:1039
+#: ../filters/filter-daa/filter-stream.c:1051
 #, c-format
 msgid "Failed to allocate part table!"
 msgstr "Не удалось выделить таблицу частей!"
 
-#: ../filters/filter-daa/filter-stream.c:1091
+#: ../filters/filter-daa/filter-stream.c:1103
 #, c-format
 msgid "Failed to read part's signature!"
 msgstr "Не удалось прочитать подпись части!"
 
-#: ../filters/filter-daa/filter-stream.c:1105
+#: ../filters/filter-daa/filter-stream.c:1117
 #, c-format
 msgid "Part's signature is invalid!"
 msgstr "Подпись части некорректна!"
 
-#: ../filters/filter-daa/filter-stream.c:1196
+#: ../filters/filter-daa/filter-stream.c:1208
 #, c-format
 msgid "Compressed chunk table not supported yet!"
 msgstr "Сжатая таблица частей пока не поддерживается!"
 
-#: ../filters/filter-daa/filter-stream.c:1203
+#: ../filters/filter-daa/filter-stream.c:1215
 #, c-format
 msgid "Bit swap type %d not supported yet!"
 msgstr "Тип замены битов %d пока не поддерживается!"
 
-#: ../filters/filter-daa/filter-stream.c:1229
+#: ../filters/filter-daa/filter-stream.c:1241
 #, c-format
 msgid "Unsupported format: 0x%X!"
 msgstr "Неподдерживаемый формат: 0x%X!"
 
-#: ../filters/filter-daa/filter-stream.c:1245
+#: ../filters/filter-daa/filter-stream.c:1257
 #, c-format
 msgid "Failed to allocate inflate buffer (%d bytes)!"
 msgstr "Не удалось выделить буфер для декомпрессии (%d байт)!"
 
-#: ../filters/filter-daa/filter-stream.c:1281
+#: ../filters/filter-daa/filter-stream.c:1293
 #, c-format
 msgid "Filter cannot handle given data: failed to read 16-byte signature!"
 msgstr ""
-"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 16-байтную "
-"подпись!"
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 16-"
+"байтную подпись!"
 
-#: ../filters/filter-daa/filter-stream.c:1293
+#: ../filters/filter-daa/filter-stream.c:1305
 #: ../filters/filter-ecm/filter-stream.c:243
 #: ../filters/filter-gzip/filter-stream.c:296
-#: ../filters/filter-xz/filter-stream.c:267
+#: ../filters/filter-xz/filter-stream.c:271
 #, c-format
 msgid "Filter cannot handle given data: invalid signature!"
-msgstr "Фильтр не в состоянии обработать полученные данные: некорректная подпись!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: некорректная подпись!"
 
-#: ../filters/filter-daa/filter-stream.c:1423
+#: ../filters/filter-daa/filter-stream.c:1435
 msgid "DAA File Filter"
 msgstr "Фильтр файлов DAA"
 
-#: ../filters/filter-daa/filter-stream.c:1426
+#: ../filters/filter-daa/filter-stream.c:1438
 msgid "PowerISO images (*.daa)"
 msgstr "Образы PowerISO (*.daa)"
 
-#: ../filters/filter-daa/filter-stream.c:1427
+#: ../filters/filter-daa/filter-stream.c:1439
 msgid "gBurner images (*.gbi)"
 msgstr "Образы gBurner (*.gbi)"
 
@@ -323,12 +326,15 @@ msgstr "Не удалось выделить память для блока koly
 #, c-format
 msgid "Filter stream cannot handle given image: failed to read koly block!"
 msgstr ""
-"Поток фильтра не в состоянии обработать полученный образ: не удалось прочитать блок koly!"
+"Поток фильтра не в состоянии обработать полученный образ: не удалось "
+"прочитать блок koly!"
 
 #: ../filters/filter-dmg/filter-stream.c:698
 #, c-format
 msgid "Filter stream cannot handle given image: invalid koly block!"
-msgstr "Поток фильтра не в состоянии обработать полученный образ: некорректный блок koly!"
+msgstr ""
+"Поток фильтра не в состоянии обработать полученный образ: некорректный блок "
+"koly!"
 
 #: ../filters/filter-dmg/filter-stream.c:711
 #: ../filters/filter-isz/filter-stream.c:553
@@ -391,8 +397,8 @@ msgstr "В файле ECM нет частей!"
 #, c-format
 msgid "Filter cannot handle given data: failed to read 4 signature bytes!"
 msgstr ""
-"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 4 байта "
-"подписи!"
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 4 "
+"байта подписи!"
 
 #: ../filters/filter-ecm/filter-stream.c:519
 msgid "ECM File Filter"
@@ -507,12 +513,14 @@ msgstr "Не удалось прочитать индекс!"
 #, c-format
 msgid "Filter cannot handle given data: failed to read ISZ header!"
 msgstr ""
-"Фильтр не в состоянии обработать полученные данные: не удалось прочитать заголовок ISZ!"
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать "
+"заголовок ISZ!"
 
 #: ../filters/filter-isz/filter-stream.c:544
 #, c-format
 msgid "Filter cannot handle given data: invalid ISZ header!"
-msgstr "Фильтр не в состоянии обработать полученные данные: neveljavna ISZ glava!"
+msgstr ""
+"Фильтр не в состоянии обработать полученные данные: neveljavna ISZ glava!"
 
 #: ../filters/filter-isz/filter-stream.c:826
 msgid "ISZ File Filter"
@@ -590,8 +598,8 @@ msgid ""
 "Invalid number of channels in audio file (%d)! Only two-channel audio files "
 "are supported!"
 msgstr ""
-"Некорректное количество каналов аудиофайла (%d)! Поддерживаются только аудиофайлы "
-"с двумя каналами!"
+"Некорректное количество каналов аудиофайла (%d)! Поддерживаются только "
+"аудиофайлы с двумя каналами!"
 
 #: ../filters/filter-sndfile/filter-stream.c:214
 #, c-format
@@ -618,7 +626,7 @@ msgid "SNDFILE File Filter"
 msgstr "Фильтр файлов SNDFILE"
 
 #: ../filters/filter-sndfile/filter-stream.c:391
-#: ../images/image-iso/parser.c:425
+#: ../images/image-iso/parser.c:437
 msgid "WAV audio files (*.wav)"
 msgstr "Аудиофайлы WAV (*.wav)"
 
@@ -689,28 +697,28 @@ msgstr "Не удалось декодировать индекс потока!"
 msgid "Declared and actual index size mismatch!"
 msgstr "Размеры объявленного и действительного индексов не совпадают!"
 
-#: ../filters/filter-xz/filter-stream.c:227
+#: ../filters/filter-xz/filter-stream.c:230
 #, c-format
-msgid "The largest block (%ld bytes) exceeds the limit of %d bytes!"
-msgstr "Največji blok (%ld bajtov) presega omejitev %d bajtov!"
+msgid "The largest block (%s bytes) exceeds the limit of %d bytes!"
+msgstr "Največji blok (%s bajtov) presega omejitev %d bajtov!"
 
-#: ../filters/filter-xz/filter-stream.c:236
+#: ../filters/filter-xz/filter-stream.c:240
 #, c-format
 msgid "Failed to allocate block buffer (%d bytes)!"
 msgstr "Не удалось выделить буфер блока (%d байт)!"
 
-#: ../filters/filter-xz/filter-stream.c:261
+#: ../filters/filter-xz/filter-stream.c:265
 #, c-format
 msgid "Filter cannot handle given data: failed to read 6 signature bytes!"
 msgstr ""
-"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 6 байт "
-"подписи!"
+"Фильтр не в состоянии обработать полученные данные: не удалось прочитать 6 "
+"байт подписи!"
 
-#: ../filters/filter-xz/filter-stream.c:414
+#: ../filters/filter-xz/filter-stream.c:418
 msgid "XZ File Filter"
 msgstr "Фильтр файлов XZ"
 
-#: ../filters/filter-xz/filter-stream.c:417
+#: ../filters/filter-xz/filter-stream.c:421
 msgid "xz-compressed images (*.xz)"
 msgstr "Сжатые образы xz (*.xz)"
 
@@ -754,16 +762,16 @@ msgid ""
 "Parser cannot handle given image: failed to read 16 bytes from image file "
 "stream!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
-"прочитать 16 байт из потока файла образа!"
+"Считывающий накопитель не в состоянии обработать полученный образ: не "
+"удалось прочитать 16 байт из потока файла образа!"
 
 #: ../images/image-b6t/parser.c:1259 ../images/image-c2d/parser.c:531
 #: ../images/image-nrg/parser.c:972
 #, c-format
 msgid "Parser cannot handle given image: invalid signature!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: некорректная "
-"подпись!"
+"Считывающий накопитель не в состоянии обработать полученный образ: "
+"некорректная подпись!"
 
 #: ../images/image-b6t/parser.c:1291
 #, c-format
@@ -802,13 +810,13 @@ msgstr "Сжатые образы пока не поддерживаются!"
 #, c-format
 msgid "Parser cannot handle given image: failed to read signature!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
-"прочитать подпись!"
+"Считывающий накопитель не в состоянии обработать полученный образ: не "
+"удалось прочитать подпись!"
 
 #: ../images/image-c2d/parser.c:554
 #, c-format
-msgid "Failed to allocate memory for header (%ld bytes)!"
-msgstr "Не удалось выделить память для заголовка (%ld байт)!"
+msgid "Failed to allocate memory for header (%zu bytes)!"
+msgstr "Не удалось выделить память для заголовка (%zu байт)!"
 
 #: ../images/image-c2d/parser.c:561 ../images/image-cif/parser.c:588
 #: ../images/image-mdx/parser.c:172
@@ -862,36 +870,36 @@ msgstr ""
 msgid "Invalid CD-TEXT entry #%d (expecting only %d entries)!"
 msgstr "Некорректная запись CD-TEXT #%d (ожидаемо только %d записей)!"
 
-#: ../images/image-ccd/parser.c:1045 ../images/image-cue/parser.c:851
-#: ../images/image-toc/parser.c:1019 ../images/image-xcdroast/parser.c:599
-#: ../images/image-xcdroast/parser.c:682
+#: ../images/image-ccd/parser.c:1049 ../images/image-cue/parser.c:855
+#: ../images/image-toc/parser.c:1023 ../images/image-xcdroast/parser.c:603
+#: ../images/image-xcdroast/parser.c:690
 #, c-format
 msgid "Failed to read line #%d: %s!"
 msgstr "Не удалось прочитать строку #%d: %s!"
 
-#: ../images/image-ccd/parser.c:1139 ../images/image-cdi/parser.c:938
-#: ../images/image-cue/parser.c:920 ../images/image-readcd/parser.c:56
+#: ../images/image-ccd/parser.c:1143 ../images/image-cdi/parser.c:938
+#: ../images/image-cue/parser.c:924 ../images/image-readcd/parser.c:56
 #, c-format
 msgid "Parser cannot handle given image: invalid suffix!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: некорректный "
-"суффикс!"
+"Считывающий накопитель не в состоянии обработать полученный образ: "
+"некорректный суффикс!"
 
-#: ../images/image-ccd/parser.c:1177
+#: ../images/image-ccd/parser.c:1181
 #, c-format
 msgid "Could not find main data file!"
 msgstr "Не удалось найти файл основных данных!"
 
-#: ../images/image-ccd/parser.c:1181
+#: ../images/image-ccd/parser.c:1185
 #, c-format
 msgid "Could not find subchannel data file!"
 msgstr "Не удалось найти файл данных субканалов!"
 
-#: ../images/image-ccd/parser.c:1242
+#: ../images/image-ccd/parser.c:1246
 msgid "CCD Image Parser"
 msgstr "Считывающий накопитель образов CCD"
 
-#: ../images/image-ccd/parser.c:1244
+#: ../images/image-ccd/parser.c:1248
 msgid "CloneCD images (*.ccd)"
 msgstr "Образы CloneCD (*.ccd)"
 
@@ -980,22 +988,22 @@ msgstr "Дескриптор не содержит блок 'ofs'!"
 #, c-format
 msgid "Parser cannot handle given image: failed to read header!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
-"прочитать заголовок!"
+"Считывающий накопитель не в состоянии обработать полученный образ: не "
+"удалось прочитать заголовок!"
 
 #: ../images/image-cif/parser.c:701
 #, c-format
 msgid "Parser cannot handle given image: image does not begin with 'RIFF'!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: образ "
-"не начинается с 'RIFF'!"
+"Считывающий накопитель не в состоянии обработать полученный образ: образ не "
+"начинается с 'RIFF'!"
 
 #: ../images/image-cif/parser.c:707
 #, c-format
 msgid "Parser cannot handle given image: invalid header!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: некорректный "
-"заголовок!"
+"Считывающий накопитель не в состоянии обработать полученный образ: "
+"некорректный заголовок!"
 
 #: ../images/image-cif/parser.c:755
 msgid "CIF Image Parser"
@@ -1028,11 +1036,11 @@ msgstr "Не удалось найти файл данных!"
 msgid "Invalid track mode string '%s'!"
 msgstr "Некорректная строка режима дорожки '%s'!"
 
-#: ../images/image-cue/parser.c:995
+#: ../images/image-cue/parser.c:999
 msgid "CUE Image Parser"
 msgstr "Считывающий накопитель образов CUE"
 
-#: ../images/image-cue/parser.c:997
+#: ../images/image-cue/parser.c:1001
 msgid "CUE images (*.cue)"
 msgstr "Образы CUE (*.cue)"
 
@@ -1085,7 +1093,8 @@ msgstr "Не удалось прочитать запись APM!"
 #: ../images/image-harddisk/parser.c:141
 #, c-format
 msgid "Parser cannot map this sector size!"
-msgstr "Считывающий накопитель не в состоянии отобразить размер данного сектора!"
+msgstr ""
+"Считывающий накопитель не в состоянии отобразить размер данного сектора!"
 
 #: ../images/image-harddisk/parser.c:157
 #, c-format
@@ -1147,61 +1156,61 @@ msgstr ""
 "Считывающий накопитель не в состоянии обработать полученный образ: файл "
 "слишком мал!"
 
-#: ../images/image-iso/parser.c:98
+#: ../images/image-iso/parser.c:101
 #, c-format
-msgid "Failed to seek to %lXh to read 8-byte pattern!"
-msgstr "Не удалось перейти к %lXh, чтобы прочитать 8-байтный образец!"
+msgid "Failed to seek to %s to read 8-byte pattern!"
+msgstr "Не удалось перейти к %s, чтобы прочитать 8-байтный образец!"
 
-#: ../images/image-iso/parser.c:104 ../images/image-mdx/parser.c:56
+#: ../images/image-iso/parser.c:108 ../images/image-mdx/parser.c:56
 #, c-format
 msgid "Failed to read 8-byte pattern!"
 msgstr "Не удалось прочитать 8-байтный образец!"
 
-#: ../images/image-iso/parser.c:135
+#: ../images/image-iso/parser.c:139
 #, c-format
 msgid ""
 "Parser cannot handle given image: file size does not correspond to any "
 "supported combination of sector and subchannel size!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: размер файла "
-"не соответствует ни одной поддерживаемой комбинации секторов и размеру "
+"Считывающий накопитель не в состоянии обработать полученный образ: размер "
+"файла не соответствует ни одной поддерживаемой комбинации секторов и размеру "
 "субканала!"
 
-#: ../images/image-iso/parser.c:164
+#: ../images/image-iso/parser.c:171
 #, c-format
-msgid "Failed to seek to offset %lXh to read 16-byte pattern!"
-msgstr "Не удалось перейти в положение %lXh, чтобы прочитать 16-байтный образец!"
+msgid "Failed to seek to offset %s to read 16-byte pattern!"
+msgstr "Не удалось перейти в положение %s, чтобы прочитать 16-байтный образец!"
 
-#: ../images/image-iso/parser.c:170
+#: ../images/image-iso/parser.c:178
 #, c-format
 msgid "Failed to read 16-byte pattern!"
 msgstr "Не удалось прочитать 16-байтный образец!"
 
-#: ../images/image-iso/parser.c:179
+#: ../images/image-iso/parser.c:187
 #, c-format
 msgid "Unhalded main sector data size %d!"
 msgstr "Неподдерживаемый размер данных основного сектора %d!"
 
-#: ../images/image-iso/parser.c:211
+#: ../images/image-iso/parser.c:222
 #, c-format
-msgid "Failed to seek to offset %lXh to read subchannel data!"
-msgstr "Не удалось перейти в положение %lXh, чтобы прочитать данные субканала!"
+msgid "Failed to seek to offset %s to read subchannel data!"
+msgstr "Не удалось перейти в положение %s, чтобы прочитать данные субканала!"
 
-#: ../images/image-iso/parser.c:217
+#: ../images/image-iso/parser.c:229
 #, c-format
 msgid "Failed to read subchannel data!"
 msgstr "Не удалось прочитать данные субканала!"
 
-#: ../images/image-iso/parser.c:238
+#: ../images/image-iso/parser.c:250
 #, c-format
 msgid "Unhalded subchannel data size %d!"
 msgstr "Неподдерживаемый размер данных субканала %d!"
 
-#: ../images/image-iso/parser.c:422
+#: ../images/image-iso/parser.c:434
 msgid "ISO Image Parser"
 msgstr "Считывающий накопитель образов ISO"
 
-#: ../images/image-iso/parser.c:424
+#: ../images/image-iso/parser.c:436
 msgid "ISO images (*.iso, *.bin, *.img)"
 msgstr "Образы ISO (*.iso, *.bin, *.img)"
 
@@ -1218,8 +1227,8 @@ msgid ""
 "Suffix to use for image files of audio tracks. Applicable only when in raw "
 "write is disabled."
 msgstr ""
-"Суффикс для использования в изображениях или аудиофайлах. Применимо только "
-"в том случае, если прямая запись отключена."
+"Суффикс для использования в изображениях или аудиофайлах. Применимо только в "
+"том случае, если прямая запись отключена."
 
 #: ../images/image-iso/writer.c:335 ../images/image-toc/writer.c:617
 msgid "Write raw"
@@ -1230,9 +1239,8 @@ msgid ""
 "A flag indicating whether to write full 2352-byte sector data or only user "
 "data part of it (e.g., 2048 bytes for Mode 1)"
 msgstr ""
-"Переключатель между режимами записи всех данных 2352-байтного сектора или только "
-"их пользовательской части (например, "
-"2048 байт для режима 1)"
+"Переключатель между режимами записи всех данных 2352-байтного сектора или "
+"только их пользовательской части (например, 2048 байт для режима 1)"
 
 #: ../images/image-iso/writer.c:341 ../images/image-toc/writer.c:623
 msgid "Write subchannel"
@@ -1243,8 +1251,8 @@ msgid ""
 "A flag indicating whether to write subchannel data or not. If set, it "
 "implies raw writing."
 msgstr ""
-"Переключатель записи данных субканала. При установке "
-"должна быть включена прямая запись."
+"Переключатель записи данных субканала. При установке должна быть включена "
+"прямая запись."
 
 #: ../images/image-iso/writer.c:347 ../images/image-toc/writer.c:629
 msgid "Swap raw audio data"
@@ -1254,8 +1262,7 @@ msgstr "Подхватывать сырые аудиоданные"
 msgid ""
 "A flag indicating whether to swap audio data. Applicable only to raw writing."
 msgstr ""
-"Переключатель подхвата сырых аудиоданных. Доступно только для прямой "
-"записи."
+"Переключатель подхвата сырых аудиоданных. Доступно только для прямой записи."
 
 #: ../images/image-mds/libmirage-mds.xml.in.h:2
 #, no-c-format
@@ -1275,15 +1282,15 @@ msgstr "У блока дорожки отсутствует заголовок!"
 #, c-format
 msgid "Parser cannot handle given image: failed to read signature and version!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
-"прочитать подпись и версию!"
+"Считывающий накопитель не в состоянии обработать полученный образ: не "
+"удалось прочитать подпись и версию!"
 
 #: ../images/image-mds/parser.c:776 ../images/image-mdx/parser.c:340
 #, c-format
 msgid "Parser cannot handle given image: invalid signature and/or version!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: некорректная "
-"подпись и/или версия!"
+"Считывающий накопитель не в состоянии обработать полученный образ: "
+"некорректная подпись и/или версия!"
 
 #: ../images/image-mds/parser.c:808
 #, c-format
@@ -1406,8 +1413,8 @@ msgstr "Образ Nero Burning Rom"
 #, c-format
 msgid "Parser cannot handle given image: failed to read 2-byte TOC length!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: не удалось "
-"прочитать 2-байтную длину TOC!"
+"Считывающий накопитель не в состоянии обработать полученный образ: не "
+"удалось прочитать 2-байтную длину TOC!"
 
 #: ../images/image-readcd/parser.c:300
 #, c-format
@@ -1432,18 +1439,18 @@ msgstr "Считывающий накопитель образов READCD"
 msgid "readcd images (*.toc)"
 msgstr "Образы readcd (*.toc)"
 
-#: ../images/image-toc/parser.c:1227 ../images/image-xcdroast/parser.c:824
+#: ../images/image-toc/parser.c:1235 ../images/image-xcdroast/parser.c:836
 #, c-format
 msgid "Parser cannot handle given image: invalid TOC file!"
 msgstr ""
-"Считывающий накопитель не в состоянии обработать полученный образ: некорректный "
-"файл TOC!"
+"Считывающий накопитель не в состоянии обработать полученный образ: "
+"некорректный файл TOC!"
 
-#: ../images/image-toc/parser.c:1336
+#: ../images/image-toc/parser.c:1344
 msgid "TOC Image Parser"
 msgstr "Считывающий накопитель образов TOC"
 
-#: ../images/image-toc/parser.c:1338
+#: ../images/image-toc/parser.c:1346
 msgid "cdrdao images (*.toc)"
 msgstr "Образы cdrdao (*.toc)"
 
@@ -1451,11 +1458,11 @@ msgstr "Образы cdrdao (*.toc)"
 msgid "TOC Image Writer"
 msgstr "Записывающий накопитель образов TOC"
 
-#: ../images/image-xcdroast/parser.c:894
+#: ../images/image-xcdroast/parser.c:906
 msgid "X-CD-Roast Image Parser"
 msgstr "Считывающий накопитель образов X-CD-Roast"
 
-#: ../images/image-xcdroast/parser.c:896
+#: ../images/image-xcdroast/parser.c:908
 msgid "X-CD-Roast images (*.toc)"
 msgstr "Образы X-CD-Roast (*.toc)"
 
@@ -1508,8 +1515,7 @@ msgstr "Не удалось открыть поток файла данных т
 #: ../mirage/context.c:564
 #, c-format
 msgid "Failed to open read-write file stream on data file: %s!"
-msgstr ""
-"Не удалось открыть поток файла данных для чтения/записи: %s!"
+msgstr "Не удалось открыть поток файла данных для чтения/записи: %s!"
 
 #: ../mirage/context.c:578
 #, c-format
@@ -1664,7 +1670,8 @@ msgstr "Отсутствует поток данных!"
 #, c-format
 msgid "Cannot move file for non-writable stream!"
 msgstr ""
-"Файлы, принадлежащие недоступному для записи потоку данных, не могут быть перемещены!"
+"Файлы, принадлежащие недоступному для записи потоку данных, не могут быть "
+"перемещены!"
 
 #: ../mirage/file-stream.c:248
 #, c-format
@@ -1724,32 +1731,35 @@ msgstr "Входящий поток данных главного канала �
 #: ../mirage/fragment.c:203
 #, c-format
 msgid "Failed to seek to the end of main channel data input stream: %s"
-msgstr ""
-"Не удалось перейти в конец входящего потока данных главного "
-"канала: %s"
+msgstr "Не удалось перейти в конец входящего потока данных главного канала: %s"
 
 #: ../mirage/fragment.c:491
 #, c-format
 msgid "Mismatch between given data (%d) and set main channel data size (%d)!"
 msgstr ""
-"Размер полученных данных (%d) и ожидаемых данных главного "
-"канала (%d) не совпадают!"
+"Размер полученных данных (%d) и ожидаемых данных главного канала (%d) не "
+"совпадают!"
 
-#: ../mirage/fragment.c:527 ../mirage/fragment.c:861
+#: ../mirage/fragment.c:530
 #, c-format
-msgid "Failed to seek to position 0x%zX"
-msgstr "Не удалось перейти в положение 0x%zX"
+msgid "Failed to seek to position %s"
+msgstr "Не удалось перейти в положение %s"
 
-#: ../mirage/fragment.c:534 ../mirage/fragment.c:867
+#: ../mirage/fragment.c:538 ../mirage/fragment.c:875
 #, c-format
 msgid "Failed to write data: %s"
 msgstr "Не удалось записать данные: %s"
 
-#: ../mirage/fragment.c:828
+#: ../mirage/fragment.c:832
 #, c-format
 msgid "Mismatch between given data (%d) and accepted subchannel size (%d)!"
 msgstr ""
 "Размер полученных данных (%d) и ожидаемых данных субканала (%d) не совпадают!"
+
+#: ../mirage/fragment.c:868
+#, c-format
+msgid "Failed to seek to position %s!"
+msgstr "Не удалось перейти в положение %s"
 
 #: ../mirage/language.c:146 ../mirage/language.c:184
 #, c-format
@@ -1792,8 +1802,7 @@ msgstr "Не удалось создать поток данных!"
 #: ../mirage/sector.c:77
 #, c-format
 msgid "Sync pattern not available for sector type %d!"
-msgstr ""
-"Шаблон синхронизации не доступен для типа сектора %d!"
+msgstr "Шаблон синхронизации не доступен для типа сектора %d!"
 
 #: ../mirage/sector.c:97
 #, c-format
@@ -1994,7 +2003,8 @@ msgstr "Не удалось заполнить данные: %s"
 #: ../mirage/track.c:596
 #, c-format
 msgid "Cannot append sector to track that is not last in the layout!"
-msgstr "Невозможно добавить сектор в дорожку, не являющуюся последней в расположении!"
+msgstr ""
+"Невозможно добавить сектор в дорожку, не являющуюся последней в расположении!"
 
 #: ../mirage/track.c:605
 #, c-format
@@ -2074,8 +2084,7 @@ msgstr "Дорожка не связана с сессией!"
 #: ../mirage/writer.c:300
 #, c-format
 msgid "Parameter '%s' has invalid type (expected '%s', got '%s')!"
-msgstr ""
-"Некорректный тип параметра '%s' (ожидаем: '%s', получен: '%s')"
+msgstr "Некорректный тип параметра '%s' (ожидаем: '%s', получен: '%s')"
 
 #: ../mirage/writer.c:319
 #, c-format
