@@ -859,4 +859,4 @@ msgstr "Сайт программы CDEmu"
 
 #: ../src/image-analyzer:2542
 msgid "translator-credits"
-msgstr "Rok Mandeljc <rok.mandeljc@gmail.com>"
+msgstr "Grigorii Chirkov"

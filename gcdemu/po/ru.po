@@ -560,7 +560,7 @@ msgstr "Сайт программы CDEmu"
 
 #: ../src/gcdemu:1776
 msgid "translator-credits"
-msgstr "Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>"
+msgstr "Grigorii Chirkov"
 
 #: ../src/gcdemu:1783
 msgid "Devices"
