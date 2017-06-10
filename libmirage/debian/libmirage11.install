@@ -1,4 +1,4 @@
 usr/lib/*/lib*.so.*
-usr/lib/*/libmirage-3.0/*.so
+usr/lib/*/libmirage-3.1/*.so
 usr/share/mime/packages/*.xml
 
