@@ -23,7 +23,7 @@ from __future__ import print_function
 import gi
 
 gi.require_version('Gtk', '3.0')
-gi.require_version('Mirage', '3.0')
+gi.require_version('Mirage', '3.1')
 
 from gi.repository import GLib, GObject, Gio
 from gi.repository import Gtk, Pango
