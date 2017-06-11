@@ -1,0 +1,621 @@
+# French translation of gCDEmu.
+# Copyright (C) 2009 Loïc Martin
+# This file is distributed under the same license as the gCDEmu package.
+# Davi da Silva Böger <dsboger@gmail.com>, 2008.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gCDEmu 3.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-10-11 11:34+0200\n"
+"PO-Revision-Date: 2017-06-11 20:04+0100\n"
+"Last-Translator: Davi da Silva Böger <dsboger@gmail.com>\n"
+"Language-Team: Brazilian Portuguese\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/gcdemu.desktop.in.h:1
+msgid "gCDEmu"
+msgstr "gCDEmu"
+
+#: ../data/gcdemu.desktop.in.h:2
+msgid "gCDEmu GUI"
+msgstr "Interface gráfica gCDEmu"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:1
+msgid "Show notifications"
+msgstr "Exibir notificações"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:2
+msgid ""
+"Whether to show notifications on events such as daemon start/stop and device "
+"state changes."
+msgstr ""
+"Exibir ou não notificações de eventos como iniciar/parar serviço e "
+"alterações em dispositivos."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
+msgid "Use system bus"
+msgstr "Usar barramento D-Bus do sistema"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:4
+msgid "Whether system bus should be used instead of session one."
+msgstr "Usar barramento D-Bus do sistema no lugar do barramento de sessão."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:5
+msgid "Use D-Bus service activation facility"
+msgstr "Usar ativação automática de serviços D-Bus"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:6
+msgid ""
+"Whether to use D-Bus service activation facility or not. If enabled, D-Bus "
+"will attempt to autostart the daemon when gCDEmu tries to establish "
+"connection with it."
+msgstr ""
+"Usar ou não a ativação automática de serviços D-Bus. Se habilitado, D-Bus "
+"tentará iniciar o serviço cdemu automaticamente quando gCDEmu tentar "
+"conectar-se com o mesmo."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
+msgid "Icon name (connected)"
+msgstr "Nome do ícone (conectado)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:8
+msgid ""
+"Name of icon to display in the tray when connected to daemon. It should be "
+"either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"Nome do ícone mostrado na bandeja quando conectado ao serviço. Deve ser "
+"um nome válido para um ícone padrão (\"stock name\") ou o nome de um arquivo "
+"\"pixmap\" disponível em um local padrão (p.ex. /usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
+msgid "Icon name (disconnected)"
+msgstr "Nome do ícone (desconectado)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:10
+msgid ""
+"Name of icon to display in the tray when disconnected from daemon. It should "
+"be either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"Nome do ícone mostrado na bandeja quando conectado ao serviço. Deve ser "
+"um nome válido para um ícone padrão (\"stock name\") ou o nome de um arquivo "
+"\"pixmap\" disponível em um local padrão (p.ex. /usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
+msgid "Icon display policy."
+msgstr "Política de exibição de ícone"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:12
+msgid ""
+"Icon display policy. Valid options are \"always\", \"never\" and "
+"\"when_connected\". If set to \"always\", the icon is always shown. If set "
+"to \"never\", the icon is never shown. If set to \"when_connected\", the "
+"icon is shown only when gCDEmu is connected to a daemon."
+msgstr ""
+"Política de exibição de ícone. Opções válidas são \"always\", "
+"\"never\" e \"when_connected\". Se usado \"always\", o ícone é sempre "
+"exibido. Se usado \"never\", o ícone nunca é exibido. Se usado "
+"\"when_connected\", o ícone é exibido somente quando gCDEmu estiver "
+"conectado com o serviço."
+
+#: ../src/gcdemu:294
+msgid "Daemon autostart error"
+msgstr "Erro de inicialização do serviço"
+
+#: ../src/gcdemu:294
+#, c-format
+msgid ""
+"Daemon autostart failed. Error:\n"
+"%s"
+msgstr ""
+"Inicialização do serviço falhou. Erro:\n"
+"%s"
+
+#: ../src/gcdemu:303
+msgid "Incompatible daemon interface"
+msgstr "Versão do serviço incompatível"
+
+#: ../src/gcdemu:303
+#, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"Versão do serviço CDEmu detectada é %i.%i, mas versão %i.%i é necessária"
+
+#: ../src/gcdemu:360
+msgid "Failed to add device"
+msgstr "Falha ao adicionar dispositivo"
+
+#: ../src/gcdemu:360
+#, c-format
+msgid ""
+"Failed to add new device. Error:\n"
+"%s"
+msgstr ""
+"Falha ao adicionar novo dispositivo. Erro:\n"
+"%s"
+
+#: ../src/gcdemu:366
+msgid "Failed to remove device"
+msgstr "Falha ao remover dispositivo"
+
+#: ../src/gcdemu:366
+#, c-format
+msgid ""
+"Failed to remove device. Error:\n"
+"%s"
+msgstr ""
+"Falha ao remover dispositivo. Erro:\n"
+"%s"
+
+#: ../src/gcdemu:494
+#, c-format
+msgid ""
+"Failed to unload device #%02d:\n"
+"%s"
+msgstr ""
+"Falha ao descarregar dispositivo #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:505
+#, c-format
+msgid ""
+"Failed to load image %s to device #%02d:\n"
+"%s"
+msgstr ""
+"Falha ao carregar imagem %s no dispositivo #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:511
+#, c-format
+msgid ""
+"Failed to create blank disc on device #%02d:\n"
+"%s"
+msgstr ""
+"Falha ao criar disco vazio no dispositivo #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:521
+#, c-format
+msgid ""
+"Failed to set device ID for device #%02d to %s:\n"
+"%s"
+msgstr ""
+"Falha ao alterar ID do dispositivo #%02d para %s:\n"
+"%s"
+
+#: ../src/gcdemu:531
+#, c-format
+msgid ""
+"Failed to set DPM emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Falha ao alterar emulação DPM do dispositivo #%02d para %i:\n"
+"%s"
+
+#: ../src/gcdemu:540
+#, c-format
+msgid ""
+"Failed to set TR emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Falha ao alterar emulação de taxa de transferência do dispositivo #%02d "
+"para %i:\n"
+"%s"
+
+#: ../src/gcdemu:549
+#, c-format
+msgid ""
+"Failed to set bad sector emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Falha ao alterar emulação de setor defeituoso do dispositivo #%02d para %i:\n"
+"%s"
+
+#: ../src/gcdemu:559
+#, c-format
+msgid ""
+"Failed to set daemon debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"Falha ao alterar máscara de debug de serviço do dispositivo #%02d para "
+"0x%X:\n"
+"%s"
+
+#: ../src/gcdemu:568
+#, c-format
+msgid ""
+"Failed to set library debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"Falha ao alterar máscara de debug de biblioteca do dispositivo #%02d para "
+"0x%X:\n"
+"%s"
+
+#: ../src/gcdemu:620 ../src/gcdemu:1477
+msgid "Status"
+msgstr "Status"
+
+#: ../src/gcdemu:633
+msgid "Loaded: "
+msgstr "Carregado: "
+
+#: ../src/gcdemu:643
+msgid "File name(s): "
+msgstr "Nome do(s) arquivo(s): "
+
+#: ../src/gcdemu:659 ../src/gcdemu:733
+msgid "Load"
+msgstr "Carregar"
+
+#: ../src/gcdemu:665
+msgid "Create blank"
+msgstr "Criar vazio"
+
+#: ../src/gcdemu:672
+msgid "Device mapping"
+msgstr "Mapeamento de dispositivos"
+
+#: ../src/gcdemu:684
+msgid "SCSI CD-ROM device: "
+msgstr "Dispositivo CD-ROM SCSI: "
+
+#: ../src/gcdemu:694
+msgid "SCSI generic device: "
+msgstr "Dispositivo SCSI genérico: "
+
+#: ../src/gcdemu:709
+msgid "Remove device"
+msgstr "Remover dispositivo"
+
+#: ../src/gcdemu:725
+msgid "Yes"
+msgstr "Sim"
+
+#: ../src/gcdemu:727
+msgid "Unload"
+msgstr "Descarregar"
+
+#: ../src/gcdemu:731
+msgid "No"
+msgstr "Não"
+
+#: ../src/gcdemu:766
+msgid "Device ID"
+msgstr "ID do dispositivo"
+
+#: ../src/gcdemu:779
+msgid "Vendor ID: "
+msgstr "ID do fabricante: "
+
+#: ../src/gcdemu:790
+msgid "Product ID: "
+msgstr "ID do produto: "
+
+#: ../src/gcdemu:801
+msgid "Revision: "
+msgstr "Revisão: "
+
+#: ../src/gcdemu:812
+msgid "Vendor-specific: "
+msgstr "Interno do fabricante: "
+
+#: ../src/gcdemu:827
+msgid "Set device ID"
+msgstr "Aplicar ID ao dispositivo"
+
+#: ../src/gcdemu:833
+msgid "DPM emulation"
+msgstr "Emulação DPM"
+
+#: ../src/gcdemu:839
+msgid "Transfer rate emulation"
+msgstr "Emulação de taxa de transferência"
+
+#: ../src/gcdemu:845
+msgid "Bad sector emulation"
+msgstr "Emulação de setor defeituoso"
+
+#: ../src/gcdemu:929
+msgid "Set debug mask"
+msgstr "Aplicar máscara de debug"
+
+#: ../src/gcdemu:961
+msgid "Open file"
+msgstr "Abrir arquivo"
+
+#: ../src/gcdemu:961 ../src/gcdemu:1114 ../src/gcdemu:1160 ../src/gcdemu:1247
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../src/gcdemu:961
+msgid "Open"
+msgstr "Abrir"
+
+#: ../src/gcdemu:968
+msgid "All files"
+msgstr "Todos os arquivos"
+
+#: ../src/gcdemu:973
+msgid "All image files"
+msgstr "Todas as imagens de disco"
+
+#: ../src/gcdemu:1034
+msgid "Extra Options"
+msgstr "Opções adicionais"
+
+#: ../src/gcdemu:1043
+msgid "Encoding: "
+msgstr "Codificação: "
+
+#: ../src/gcdemu:1062 ../src/gcdemu:1130
+msgid "Password: "
+msgstr "Senha: "
+
+#: ../src/gcdemu:1073
+msgid "Raw image of CSS-encrypted DVD"
+msgstr "Imagem de DVD com encriptação CSS"
+
+#: ../src/gcdemu:1114
+msgid "Enter password"
+msgstr "Digitar senha"
+
+#: ../src/gcdemu:1114 ../src/gcdemu:1160
+msgid "OK"
+msgstr "OK"
+
+#: ../src/gcdemu:1126
+msgid "The image you are trying to load is encrypted."
+msgstr "A imagem que você está tentando carregar é encriptada"
+
+#: ../src/gcdemu:1160
+msgid "Create blank disc image"
+msgstr "Criar imagem de disco vazia"
+
+#: ../src/gcdemu:1165
+msgid "Image"
+msgstr "Imagem"
+
+#: ../src/gcdemu:1177
+msgid "Filename: "
+msgstr "Nome de arquivo: "
+
+#: ../src/gcdemu:1185 ../src/gcdemu:1247
+msgid "Choose"
+msgstr "Escolher"
+
+#: ../src/gcdemu:1190
+msgid "Medium type: "
+msgstr "Tipo de mídia: "
+
+#: ../src/gcdemu:1213
+msgid "Writer: "
+msgstr "Escritor: "
+
+#: ../src/gcdemu:1233
+msgid "Writer options"
+msgstr "Opções do escritor"
+
+#: ../src/gcdemu:1247
+msgid "Choose file"
+msgstr "Escolher arquivo"
+
+#: ../src/gcdemu:1403
+msgid "Image filename/basename not set!"
+msgstr "Nome de arquivo de imagem não definido"
+
+#: ../src/gcdemu:1406
+msgid "No image writer is chosen!"
+msgstr "Escritor de imagem não escolhido"
+
+#: ../src/gcdemu:1411
+msgid "Invalid option"
+msgstr "Opção inválida"
+
+#: ../src/gcdemu:1454
+#, c-format
+msgid "Device #%02d: properties"
+msgstr "Dispositivo #%02d: Propriedades"
+
+#: ../src/gcdemu:1454
+msgid "Close"
+msgstr "Fechar"
+
+#: ../src/gcdemu:1462
+#, c-format
+msgid "Device #%02d"
+msgstr "Dispositivo #%02d"
+
+#: ../src/gcdemu:1485
+msgid "Options"
+msgstr "Opções"
+
+#: ../src/gcdemu:1492
+msgid "Daemon debug mask"
+msgstr "Máscara de debug de serviço"
+
+#: ../src/gcdemu:1493
+msgid "Daemon"
+msgstr "Serviço"
+
+#: ../src/gcdemu:1497
+msgid "Library debug mask"
+msgstr "Máscara de debug de biblioteca"
+
+#: ../src/gcdemu:1498
+msgid "Library"
+msgstr "Biblioteca"
+
+#: ../src/gcdemu:1546 ../src/gcdemu:1548
+msgid "Device"
+msgstr "Dispositivo"
+
+#: ../src/gcdemu:1548
+msgid "Empty"
+msgstr "Vazio"
+
+#: ../src/gcdemu:1556 ../src/gcdemu:1558
+msgid "Device status change"
+msgstr "Alteração de status de dispositivo"
+
+#: ../src/gcdemu:1556
+#, c-format
+msgid "Device #%02d has been loaded."
+msgstr "Dispositivo #%02d foi carregado"
+
+#: ../src/gcdemu:1558
+#, c-format
+msgid "Device #%02d has been emptied."
+msgstr "Dispositivo #%02d foi esvaziado"
+
+#: ../src/gcdemu:1563 ../src/gcdemu:1568 ../src/gcdemu:1573 ../src/gcdemu:1578
+#: ../src/gcdemu:1583 ../src/gcdemu:1588
+msgid "Device option change"
+msgstr "Alteração de configuração de dispositivo"
+
+#: ../src/gcdemu:1563
+#, c-format
+msgid ""
+"Device #%02d has had its device ID changed:\n"
+"  Vendor ID: '%s'\n"
+"  Product ID: '%s'\n"
+"  Revision: '%s'\n"
+"  Vendor-specific: '%s'"
+msgstr ""
+"Dispositivo #%02d teve seu ID alterado:\n"
+"  ID do fabricante: '%s'\n"
+"  ID do produto: '%s'\n"
+"  Revisão: '%s'\n"
+"  Interno do frabicante: '%s'"
+
+#: ../src/gcdemu:1568
+#, c-format
+msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
+msgstr "Emulação DPM do dispositivo #%02d alterada para %s"
+
+#: ../src/gcdemu:1573
+#, c-format
+msgid "Device #%02d has had its TR emulation option changed. New value: %s"
+msgstr ""
+"Emulação de taxa de transferência do dispositivo #%02d alterada para %s"
+
+#: ../src/gcdemu:1578
+#, c-format
+msgid ""
+"Device #%02d has had its bad sector emulation option changed. New value: %s"
+msgstr "Emulação de setor defeituoso do dispositivo #%02d altarada para %s"
+
+#: ../src/gcdemu:1583
+#, c-format
+msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
+msgstr "Máscara de debug de serviço do dispositivo #%02d alterada para 0x%X"
+
+#: ../src/gcdemu:1588
+#, c-format
+msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
+msgstr ""
+"Máscara de debug de biblioteca do dispositivo #%02d alterada para 0x%X"
+
+#: ../src/gcdemu:1634
+msgid "Device error"
+msgstr "Erro de dispositivo"
+
+#: ../src/gcdemu:1670
+msgid "Left click for Property Dialog, right click to unload."
+msgstr ""
+"Clique esquerdo para diálogo de propriedades, clique direito para "
+"descarregar"
+
+#: ../src/gcdemu:1672
+msgid "Left click for Property Dialog, right click to load."
+msgstr ""
+"Clique esquerdo para diálogo de propriedades, clique direito para carregar"
+
+#: ../src/gcdemu:1679
+msgid "Click for Property Dialog"
+msgstr "Clique para diálogo de propriedades"
+
+#: ../src/gcdemu:1771
+msgid "A GUI for controlling CDEmu devices."
+msgstr "Uma interface gráfica para controlar os dispositivos do CDEmu"
+
+#: ../src/gcdemu:1773
+msgid "The CDEmu project website"
+msgstr "Sítio do projeto CDEmu"
+
+#: ../src/gcdemu:1776
+msgid "translator-credits"
+msgstr "Davi da Silva Böger <dsboger@gmail.com>"
+
+#: ../src/gcdemu:1783
+msgid "Devices"
+msgstr "Dispositivos"
+
+#: ../src/gcdemu:1787
+msgid "New device..."
+msgstr "Novo dispositivo..."
+
+#: ../src/gcdemu:1804
+msgid "Show _notifications"
+msgstr "Exibir _notificações"
+
+#: ../src/gcdemu:1814
+msgid "About"
+msgstr "Sobre"
+
+#: ../src/gcdemu:1822
+msgid "Quit"
+msgstr "Sair"
+
+#: ../src/gcdemu:1895
+msgid "Daemon started"
+msgstr "Serviço iniciado"
+
+#: ../src/gcdemu:1895
+msgid "CDEmu daemon has been started."
+msgstr "O serviço CDEmu foi iniciado."
+
+#: ../src/gcdemu:1898
+msgid "Daemon stopped"
+msgstr "Serviço parado"
+
+#: ../src/gcdemu:1898
+msgid "CDEmu daemon has been stopped."
+msgstr "O serviço CDEmu foi parado."
+
+#: ../src/gcdemu:1923
+msgid "Device added"
+msgstr "Dispositivo adicionado"
+
+#: ../src/gcdemu:1923
+#, c-format
+msgid "Device #%02d has been created."
+msgstr "O dispositivo #%02d foi adicionado."
+
+#: ../src/gcdemu:1927
+msgid "Device removed"
+msgstr "Dispositivo removido"
+
+#: ../src/gcdemu:1927
+#, c-format
+msgid "Device #%02d has been removed."
+msgstr "O dispositivo #%02d foi removido."
+
+#: ../src/gcdemu:2095
+msgid "Failed to load AppIndicator library!"
+msgstr "Falha ao carregar biblioteca AppIndicator!"
+
+#: ../src/gcdemu:2096
+msgid "AppIndicator not available"
+msgstr "AppIndicator não disponível"
+
+#: ../src/gcdemu:2130
+msgid "gCDEmu tray mode"
+msgstr "Modo de bandeja do gCDEmu"
+
