@@ -19,6 +19,7 @@ endif()
 # Dependencies
 find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
+find_package (PkgConfig REQUIRED)
 
 if (POST_INSTALL_HOOKS)
     find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
@@ -36,9 +37,24 @@ install (
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 )
 
+# determine the bash-completion install path
+pkg_check_modules(BASH_COMPLETION bash-completion)
+if (BASH_COMPLETION_FOUND)
+    pkg_get_variable(def_completionsdir bash-completion completionsdir)
+else()
+    # fallback to the old path
+    set(def_completionsdir ${CMAKE_INSTALL_SYSCONFDIR}/bash_completion.d)
+endif()
+
+set(CMAKE_INSTALL_COMPLETIONSDIR "${def_completionsdir}"
+    CACHE PATH "bash shell completions (${def_completionsdir})")
+
 install (
     FILES data/cdemu-bash-completion.sh
-    DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/bash_completion.d
+    DESTINATION ${CMAKE_INSTALL_COMPLETIONSDIR}
+    # the completion filename must match executable name for autoloading
+    # to work (bash-completion 2.0)
+    RENAME cdemu
 )
 
 install (
