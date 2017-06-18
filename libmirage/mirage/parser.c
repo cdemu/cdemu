@@ -190,10 +190,22 @@ gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc)
     if (length <= 90*60*75) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies CD-ROM image\n", __debug__);
         return MIRAGE_MEDIUM_CD;
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies DVD-ROM image\n", __debug__);
+    } else if (length <= 2295104) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies single-layer DVD-ROM image\n", __debug__);
         return MIRAGE_MEDIUM_DVD;
-    };
+    } else if (length <= 4173824) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies dual-layer DVD-ROM image\n", __debug__);
+        return MIRAGE_MEDIUM_DVD;
+    } else if (length <= 12219392) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies single-layer BD-ROM image\n", __debug__);
+        return MIRAGE_MEDIUM_BD;
+    } else if (length <= 24438784) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies dual-layer BD-ROM image\n", __debug__);
+        return MIRAGE_MEDIUM_BD;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: disc layout size (%d) exceeds all known media types - assuming BD-ROM!\n", __debug__, length);
+        return MIRAGE_MEDIUM_BD;
+    }
 }
 
 /**
