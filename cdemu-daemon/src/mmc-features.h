@@ -68,6 +68,7 @@ typedef enum {
     ProfileIndex_DVDROM,
     ProfileIndex_DVDPLUSR,
     ProfileIndex_BDROM,
+    ProfileIndex_BDR_SRM,
     NumProfiles
 } ProfileIndex;
 
@@ -622,6 +623,7 @@ typedef enum {
     PROFILE_DVDROM = 0x0010,
     PROFILE_DVDPLUSR = 0x001B,
     PROFILE_BDROM = 0x0040,
+    PROFILE_BDR_SRM = 0x0041,
 } ProfileCode;
 
 #pragma pack()

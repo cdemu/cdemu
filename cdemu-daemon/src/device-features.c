@@ -107,6 +107,7 @@ void cdemu_device_features_init (CdemuDevice *self)
         feature->profiles[ProfileIndex_DVDROM].profile = GUINT16_TO_BE(PROFILE_DVDROM);
         feature->profiles[ProfileIndex_DVDPLUSR].profile = GUINT16_TO_BE(PROFILE_DVDPLUSR);
         feature->profiles[ProfileIndex_BDROM].profile = GUINT16_TO_BE(PROFILE_BDROM);
+        feature->profiles[ProfileIndex_BDR_SRM].profile = GUINT16_TO_BE(PROFILE_BDR_SRM);
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
@@ -443,7 +444,8 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
             break;
         }
         case ProfileIndex_DVDROM:
-        case ProfileIndex_DVDPLUSR: {
+        case ProfileIndex_DVDPLUSR:
+        case ProfileIndex_BDR_SRM: {
             descriptors = WriteDescriptors_DVD;
             num_descriptors = sizeof(WriteDescriptors_DVD)/sizeof(WriteDescriptors_DVD[0]);
             end_sector = self->priv->medium_capacity;
@@ -550,7 +552,21 @@ static guint32 ActiveFeatures_BDROM[] =
     /* 0x0001: Core; persistent */
     /* 0x0002: Morphing; persistent */
     /* 0x0003: Removable Medium; persistent */
+    0x0010, /* Random Readable */
     0x0040, /* BD Read */
+    0x0107, /* Real Time Streaming */
+};
+
+static guint32 ActiveFeatures_BDR_SRM[] =
+{
+    /* 0x0000: Profile List; persistent */
+    /* 0x0001: Core; persistent */
+    /* 0x0002: Morphing; persistent */
+    /* 0x0003: Removable Medium; persistent */
+    0x0010, /* Random Readable */
+    0x0021, /* Incremental Streaming Writable */
+    0x0040, /* BD Read */
+    0x0041, /* BD Write */
     0x0107, /* Real Time Streaming */
 };
 
@@ -641,6 +657,16 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             cdemu_device_set_current_features(self, ActiveFeatures_BDROM, G_N_ELEMENTS(ActiveFeatures_BDROM));
             /* Set 'current bit' on profiles */
             f_0x0000->profiles[ProfileIndex_BDROM].cur = 1;
+            break;
+        }
+        case ProfileIndex_BDR_SRM: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_BDR_SRM;
+            /* Current features */
+            cdemu_device_set_current_features(self, ActiveFeatures_BDR_SRM, G_N_ELEMENTS(ActiveFeatures_BDR_SRM));
+            /* Set 'current bit' on profiles */
+            f_0x0000->profiles[ProfileIndex_BDROM].cur = 1;
+            f_0x0000->profiles[ProfileIndex_BDR_SRM].cur = 1;
             break;
         }
         default: {

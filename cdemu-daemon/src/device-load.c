@@ -111,6 +111,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
     const gchar *writer_id = NULL;
     gint medium_type = MIRAGE_MEDIUM_CD;
     gint medium_capacity = 80*60*75; /* 80 min */
+    gint profile_index = ProfileIndex_NONE;
 
     /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
@@ -136,22 +137,32 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
                 /* 74-minute CD-R (650 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
                 medium_capacity = 74*60*75;
+                profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "cdr80")) {
                 /* 80-minute CD-R (700 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
                 medium_capacity = 80*60*75;
+                profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "cdr90")) {
                 /* 90-minute CD-R (800 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
                 medium_capacity = 90*60*75;
+                profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "cdr99")) {
                 /* 99-minute CD-R (900 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
                 medium_capacity = 99*60*75;
+                profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "dvd+r")) {
                 /* DVD+R Single-Layer */
                 medium_type = MIRAGE_MEDIUM_DVD;
                 medium_capacity = 2295104;
+                profile_index = ProfileIndex_DVDPLUSR;
+            } else if (!g_ascii_strcasecmp(medium_string, "bdr")) {
+                /* BD-R Single-Layer */
+                medium_type = MIRAGE_MEDIUM_BD;
+                medium_capacity = 12219392;
+                profile_index = ProfileIndex_BDR_SRM;
             } else {
                 g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid medium type '%s'!"), medium_string);
                 return FALSE;
@@ -219,7 +230,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
     self->priv->open_session = NULL;
     self->priv->open_track = NULL;
 
-    cdemu_device_set_profile(self, (medium_type == MIRAGE_MEDIUM_CD) ? ProfileIndex_CDR : ProfileIndex_DVDPLUSR);
+    cdemu_device_set_profile(self, profile_index);
 
     /* Set default recording mode */
     cdemu_device_recording_set_mode(self, 1); /* TAO */
