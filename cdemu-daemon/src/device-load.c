@@ -66,8 +66,12 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
             cdemu_device_set_profile(self, ProfileIndex_DVDROM);
             break;
         }
+        case MIRAGE_MEDIUM_BD: {
+            cdemu_device_set_profile(self, ProfileIndex_BDROM);
+            break;
+        }
         default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, medium_type);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unknown media type: 0x%X!\n", __debug__, medium_type);
             break;
         }
     }

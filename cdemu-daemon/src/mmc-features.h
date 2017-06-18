@@ -67,6 +67,7 @@ typedef enum {
     ProfileIndex_CDR,
     ProfileIndex_DVDROM,
     ProfileIndex_DVDPLUSR,
+    ProfileIndex_BDROM,
     NumProfiles
 } ProfileIndex;
 
@@ -437,6 +438,43 @@ struct Feature_0x002D
     guint16 data_type_supported;
 };
 
+/* BD Read Feature */
+struct Feature_0x0040
+{
+    guint16 code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
+    #else
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
+    #endif
+
+    guint8 length;
+
+    guint8 reserved2[4];
+
+    guint16 class0_bdre_read_support;
+    guint16 class1_bdre_read_support;
+    guint16 class2_bdre_read_support;
+    guint16 class3_bdre_read_support;
+
+    guint16 class0_bdr_read_support;
+    guint16 class1_bdr_read_support;
+    guint16 class2_bdr_read_support;
+    guint16 class3_bdr_read_support;
+
+    guint16 class0_bdrom_read_support;
+    guint16 class1_bdrom_read_support;
+    guint16 class2_bdrom_read_support;
+    guint16 class3_bdrom_read_support;
+};
+
 /* Power Management Feature */
 struct Feature_0x0100
 {
@@ -583,6 +621,7 @@ typedef enum {
     PROFILE_CDR = 0x0009,
     PROFILE_DVDROM = 0x0010,
     PROFILE_DVDPLUSR = 0x001B,
+    PROFILE_BDROM = 0x0040,
 } ProfileCode;
 
 #pragma pack()

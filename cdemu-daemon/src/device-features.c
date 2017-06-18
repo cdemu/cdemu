@@ -106,6 +106,7 @@ void cdemu_device_features_init (CdemuDevice *self)
         feature->profiles[ProfileIndex_CDR].profile = GUINT16_TO_BE(PROFILE_CDR);
         feature->profiles[ProfileIndex_DVDROM].profile = GUINT16_TO_BE(PROFILE_DVDROM);
         feature->profiles[ProfileIndex_DVDPLUSR].profile = GUINT16_TO_BE(PROFILE_DVDPLUSR);
+        feature->profiles[ProfileIndex_BDROM].profile = GUINT16_TO_BE(PROFILE_BDROM);
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
@@ -257,6 +258,31 @@ void cdemu_device_features_init (CdemuDevice *self)
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
+    /* Feature 0x0040: BD Read Feature */
+    /* IMPLEMENTATION NOTE: non-persistent; version set to 0x00 as per MMC5 */
+    general_feature = initialize_feature(0x0040, sizeof(struct Feature_0x0040));
+    if (general_feature) {
+        struct Feature_0x0040 *feature = (struct Feature_0x0040 *)general_feature;
+
+        feature->ver = 0x00;
+
+        /* Claim that we can read everything */
+        feature->class0_bdre_read_support = 0xFFFF;
+        feature->class1_bdre_read_support = 0xFFFF;
+        feature->class2_bdre_read_support = 0xFFFF;
+        feature->class3_bdre_read_support = 0xFFFF;
+
+        feature->class0_bdr_read_support = 0xFFFF;
+        feature->class1_bdr_read_support = 0xFFFF;
+        feature->class2_bdr_read_support = 0xFFFF;
+        feature->class3_bdr_read_support = 0xFFFF;
+
+        feature->class0_bdrom_read_support = 0xFFFF;
+        feature->class1_bdrom_read_support = 0xFFFF;
+        feature->class2_bdrom_read_support = 0xFFFF;
+        feature->class3_bdrom_read_support = 0xFFFF;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
     /* Feature 0x0100: Power Management Feature */
     /* IMPLEMENTATION NOTE: persistent; version left at 0x00. No other content. */
@@ -518,6 +544,16 @@ static guint32 ActiveFeatures_DVDPLUSR[] =
     0x010A, /* DCBs */
 };
 
+static guint32 ActiveFeatures_BDROM[] =
+{
+    /* 0x0000: Profile List; persistent */
+    /* 0x0001: Core; persistent */
+    /* 0x0002: Morphing; persistent */
+    /* 0x0003: Removable Medium; persistent */
+    0x0040, /* BD Read */
+    0x0107, /* Real Time Streaming */
+};
+
 
 static void cdemu_device_set_current_features (CdemuDevice *self, guint32 *feats, gint feats_len)
 {
@@ -596,6 +632,15 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             cdemu_device_set_current_features(self, ActiveFeatures_DVDPLUSR, G_N_ELEMENTS(ActiveFeatures_DVDPLUSR));
             /* Set 'current bit' on profiles */
             f_0x0000->profiles[ProfileIndex_DVDPLUSR].cur = 1;
+            break;
+        }
+        case ProfileIndex_BDROM: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_BDROM;
+            /* Current features */
+            cdemu_device_set_current_features(self, ActiveFeatures_BDROM, G_N_ELEMENTS(ActiveFeatures_BDROM));
+            /* Set 'current bit' on profiles */
+            f_0x0000->profiles[ProfileIndex_BDROM].cur = 1;
             break;
         }
         default: {
