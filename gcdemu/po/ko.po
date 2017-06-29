@@ -1,15 +1,15 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Korean translation of gCDEmu.
+# Copyright (C) 2017 Ko Jae Min
+# This file is distributed under the same license as the gCDEmu package.
+# Ko Jae Min <kjm890215@hanmail.net>, 2017.
 #
-#, fuzzy
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: gCDEmu 3.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-14 15:04+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2017-06-30 00:55+0200\n"
+"PO-Revision-Date: 2017-06-30 00:50+0200\n"
 "Last-Translator: Ko Jae Min <kjm890215@hanmail.net>\n"
 "Language-Team: CDemu for Korean <LL@li.org>\n"
 "Language: Korean\n"
@@ -17,401 +17,447 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: UTF-8\n"
 
-#: src/gcdemu:296
+#: ../data/gcdemu.desktop.in.h:1
+msgid "gCDEmu"
+msgstr ""
+
+#: ../data/gcdemu.desktop.in.h:2
+msgid "gCDEmu GUI"
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:1
+#, fuzzy
+msgid "Show notifications"
+msgstr "알림창 보여주기(_n)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:2
+msgid ""
+"Whether to show notifications on events such as daemon start/stop and device "
+"state changes."
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
+msgid "Use system bus"
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:4
+msgid "Whether system bus should be used instead of session one."
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:5
+msgid "Use D-Bus service activation facility"
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:6
+msgid ""
+"Whether to use D-Bus service activation facility or not. If enabled, D-Bus "
+"will attempt to autostart the daemon when gCDEmu tries to establish "
+"connection with it."
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
+msgid "Icon name (connected)"
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:8
+msgid ""
+"Name of icon to display in the tray when connected to daemon. It should be "
+"either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
+#, fuzzy
+msgid "Icon name (disconnected)"
+msgstr "gCDEmu - 연결 끊어짐"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:10
+msgid ""
+"Name of icon to display in the tray when disconnected from daemon. It should "
+"be either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
+msgid "Icon display policy."
+msgstr ""
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:12
+msgid ""
+"Icon display policy. Valid options are \"always\", \"never\" and "
+"\"when_connected\". If set to \"always\", the icon is always shown. If set "
+"to \"never\", the icon is never shown. If set to \"when_connected\", the "
+"icon is shown only when gCDEmu is connected to a daemon."
+msgstr ""
+
+#: ../src/gcdemu:296
 msgid "Daemon autostart error"
 msgstr "CDemu 대몬 자동실행 오류"
 
-#: src/gcdemu:296
-#, python-format
+#: ../src/gcdemu:296
+#, c-format
 msgid ""
 "Daemon autostart failed. Error:\n"
 "%s"
-msgstr "대몬을 자동실행하는 중에 다음과 같은 오류가 났습니다: \n"
+msgstr ""
+"대몬을 자동실행하는 중에 다음과 같은 오류가 났습니다: \n"
 "%s"
 
-#: src/gcdemu:305
+#: ../src/gcdemu:305
 msgid "Incompatible daemon interface"
 msgstr "대몬의 인터페이스와 호환되지 않습니다."
 
-#: src/gcdemu:305
-#, python-format
+#: ../src/gcdemu:305
+#, c-format
 msgid ""
 "CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
-msgstr "CDEmu의 대몬 인터페이스 %i.%i 버전을 찾았습니다, 하지만 %i.%i이 필요합니다!"
+msgstr ""
+"CDEmu의 대몬 인터페이스 %i.%i 버전을 찾았습니다, 하지만 %i.%i이 필요합니다!"
 
-#: src/gcdemu:362
+#: ../src/gcdemu:362
 msgid "Failed to add device"
 msgstr "장치 추가 실패"
 
-#: src/gcdemu:362
-#, python-format
+#: ../src/gcdemu:362
+#, c-format
 msgid ""
 "Failed to add new device. Error:\n"
 "%s"
-msgstr "다음과 같은 오류로 장치 추가에 실패했습니다:\n"
+msgstr ""
+"다음과 같은 오류로 장치 추가에 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:368
+#: ../src/gcdemu:368
 msgid "Failed to remove device"
 msgstr "장치를 제거하는 것을 실패했습니다."
 
-#: src/gcdemu:368
-#, python-format
+#: ../src/gcdemu:368
+#, c-format
 msgid ""
 "Failed to remove device. Error:\n"
 "%s"
-msgstr "다음과 같은 오류로 장치 제거에 실패했습니다.:"
-"%s"
+msgstr "다음과 같은 오류로 장치 제거에 실패했습니다.:%s"
 
-#: src/gcdemu:496
-#, python-format
+#: ../src/gcdemu:496
+#, c-format
 msgid ""
 "Failed to unload device #%02d:\n"
 "%s"
-msgstr "장치 #%02d에서 이미지를 꺼내는데 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에서 이미지를 꺼내는데 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:507
-#, python-format
+#: ../src/gcdemu:507
+#, fuzzy, c-format
 msgid ""
 "Failed to load image %s to device #%02d:\n"
 "%s"
-msgstr "장치 #%02d에 이미지를 불러오는데 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에 이미지를 불러오는데 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:513
-#, python-format
+#: ../src/gcdemu:513
+#, c-format
 msgid ""
 "Failed to create blank disc on device #%02d:\n"
 "%s"
-msgstr "장치 #%02d에 빈 디스크를 만드는 것을 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에 빈 디스크를 만드는 것을 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:523
-#, python-format
+#: ../src/gcdemu:523
+#, c-format
 msgid ""
 "Failed to set device ID for device #%02d to %s:\n"
 "%s"
-msgstr "장치 #%02d에 %s로 ID를 설정하는 것을 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에 %s로 ID를 설정하는 것을 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:533
-#, python-format
+#: ../src/gcdemu:533
+#, c-format
 msgid ""
 "Failed to set DPM emulation for device #%02d to %i:\n"
 "%s"
-msgstr "장치 #%02d에 %i로 DPM 에뮬레이션 설정을 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에 %i로 DPM 에뮬레이션 설정을 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:542
-#, python-format
+#: ../src/gcdemu:542
+#, c-format
 msgid ""
 "Failed to set TR emulation for device #%02d to %i:\n"
 "%s"
-msgstr "장치 #%02d에 %i로 TR 에뮬레이션 설정을 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에 %i로 TR 에뮬레이션 설정을 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:551
-#, python-format
+#: ../src/gcdemu:551
+#, c-format
 msgid ""
 "Failed to set bad sector emulation for device #%02d to %i:\n"
 "%s"
-msgstr "장치 #%02d에 %i로 배드섹터 에뮬레이션 설정을 실패했습니다:\n"
+msgstr ""
+"장치 #%02d에 %i로 배드섹터 에뮬레이션 설정을 실패했습니다:\n"
 "%s"
 
-#: src/gcdemu:561
-#, python-format
+#: ../src/gcdemu:561
+#, c-format
 msgid ""
 "Failed to set daemon debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
 
-#: src/gcdemu:570
-#, python-format
+#: ../src/gcdemu:570
+#, c-format
 msgid ""
 "Failed to set library debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
 
-#. *** Frame: status ***
-#: src/gcdemu:622 src/gcdemu:1479
+#: ../src/gcdemu:622 ../src/gcdemu:1479
 msgid "Status"
 msgstr "현재 상태"
 
-#. Loaded
-#: src/gcdemu:635
+#: ../src/gcdemu:635
 msgid "Loaded: "
 msgstr "이미지 삽입 여부"
 
-#. Filename(s)
-#: src/gcdemu:645
+#: ../src/gcdemu:645
 msgid "File name(s): "
 msgstr "파일 이름: "
 
-#. Load/create blank buttons
-#: src/gcdemu:661 src/gcdemu:735
+#: ../src/gcdemu:661 ../src/gcdemu:735
 msgid "Load"
 msgstr "불러오기"
 
-#: src/gcdemu:667
+#: ../src/gcdemu:667
 msgid "Create blank"
 msgstr "빈 디스크 만들기"
 
-#. *** Frame: mapping ***
-#: src/gcdemu:674
+#: ../src/gcdemu:674
 msgid "Device mapping"
 msgstr "장치 맵핑"
 
-#. SCSI CD-ROM device
-#: src/gcdemu:686
+#: ../src/gcdemu:686
 msgid "SCSI CD-ROM device: "
 msgstr "SCSI CD-ROM 장치: "
 
-#. SCSI generic device
-#: src/gcdemu:696
+#: ../src/gcdemu:696
 msgid "SCSI generic device: "
 msgstr "SCSI 일반 장치: "
 
-#: src/gcdemu:711
+#: ../src/gcdemu:711
 msgid "Remove device"
 msgstr "장치 제거"
 
-#: src/gcdemu:727
+#: ../src/gcdemu:727
 msgid "Yes"
 msgstr "예"
 
-#: src/gcdemu:729
+#: ../src/gcdemu:729
 msgid "Unload"
 msgstr "꺼내기"
 
-#: src/gcdemu:733
+#: ../src/gcdemu:733
 msgid "No"
 msgstr "아니오"
 
-#. *** Device ID ***
-#. Device ID
-#: src/gcdemu:768
+#: ../src/gcdemu:768
 msgid "Device ID"
 msgstr "장치 ID"
 
-#. Vendor ID
-#: src/gcdemu:781
+#: ../src/gcdemu:781
 msgid "Vendor ID: "
 msgstr "제조사 ID: "
 
-#. Product ID
-#: src/gcdemu:792
+#: ../src/gcdemu:792
 msgid "Product ID: "
 msgstr "제품 ID: "
 
-#. Revision
-#: src/gcdemu:803
+#: ../src/gcdemu:803
 msgid "Revision: "
 msgstr "리비전: "
 
-#. Vendor-specific
-#: src/gcdemu:814
+#: ../src/gcdemu:814
 msgid "Vendor-specific: "
 msgstr "제조사 구분자: "
 
-#. Button
-#: src/gcdemu:829
+#: ../src/gcdemu:829
 msgid "Set device ID"
 msgstr "장치 ID 설정"
 
-#. *** DPM emulation ***
-#: src/gcdemu:835
+#: ../src/gcdemu:835
 msgid "DPM emulation"
 msgstr "DPM 에뮬레이션"
 
-#. *** Transfer rate emulation ***
-#: src/gcdemu:841
+#: ../src/gcdemu:841
 msgid "Transfer rate emulation"
 msgstr "파일 전송율(TR) 에뮬레이션"
 
-#. *** Bad sector emulation ***
-#: src/gcdemu:847
+#: ../src/gcdemu:847
 msgid "Bad sector emulation"
 msgstr "배드섹터 에뮬레이션"
 
-#. Button
-#: src/gcdemu:931
+#: ../src/gcdemu:931
 msgid "Set debug mask"
 msgstr "디버그 마스크 설정"
 
-#: src/gcdemu:963
+#: ../src/gcdemu:963
 msgid "Open file"
 msgstr "파일 열기"
 
-#: src/gcdemu:963 src/gcdemu:1116 src/gcdemu:1162 src/gcdemu:1249
+#: ../src/gcdemu:963 ../src/gcdemu:1116 ../src/gcdemu:1162 ../src/gcdemu:1249
 msgid "Cancel"
 msgstr "취소"
 
-#: src/gcdemu:963
+#: ../src/gcdemu:963
 msgid "Open"
 msgstr "열기"
 
-#: src/gcdemu:970
+#: ../src/gcdemu:970
 msgid "All files"
 msgstr "모든 파일"
 
-#: src/gcdemu:975
+#: ../src/gcdemu:975
 msgid "All image files"
 msgstr "모든 이미지 파일"
 
-#: src/gcdemu:1036
+#: ../src/gcdemu:1036
 msgid "Extra Options"
 msgstr "추가 옵션"
 
-#. *** Encoding ***
-#. Label
-#: src/gcdemu:1045
+#: ../src/gcdemu:1045
 msgid "Encoding: "
 msgstr "인코딩: "
 
-#. *** Password ***
-#. Label
-#. Label & text entry
-#: src/gcdemu:1064 src/gcdemu:1132
+#: ../src/gcdemu:1064 ../src/gcdemu:1132
 msgid "Password: "
 msgstr "비밀번호: "
 
-#. *** CSS-encrypted DVD flag ***
-#: src/gcdemu:1075
+#: ../src/gcdemu:1075
 msgid "Raw image of CSS-encrypted DVD"
 msgstr "CSS로 보호된 DVD 이미지"
 
-#: src/gcdemu:1116
+#: ../src/gcdemu:1116
 msgid "Enter password"
 msgstr "비밀번호 입력"
 
-#: src/gcdemu:1116 src/gcdemu:1162
+#: ../src/gcdemu:1116 ../src/gcdemu:1162
 msgid "OK"
 msgstr "확인"
 
-#. Label
-#: src/gcdemu:1128
+#: ../src/gcdemu:1128
 msgid "The image you are trying to load is encrypted."
 msgstr "선택하신 이미지는 보호된 이미지입니다."
 
-#: src/gcdemu:1162
+#: ../src/gcdemu:1162
 msgid "Create blank disc image"
 msgstr "빈 디스크 이미지 만들기"
 
-#. Frame: image settings
-#: src/gcdemu:1167
+#: ../src/gcdemu:1167
 msgid "Image"
 msgstr "이미지"
 
-#. Filename
-#: src/gcdemu:1179
+#: ../src/gcdemu:1179
 msgid "Filename: "
 msgstr "파일 이름: "
 
-#: src/gcdemu:1187 src/gcdemu:1249
+#: ../src/gcdemu:1187 ../src/gcdemu:1249
 msgid "Choose"
 msgstr "선택"
 
-#. Medium type
-#: src/gcdemu:1192
+#: ../src/gcdemu:1192
 msgid "Medium type: "
 msgstr ""
 
-#. Writer
-#: src/gcdemu:1215
+#: ../src/gcdemu:1215
 msgid "Writer: "
 msgstr "굽는 장치: "
 
-#. Frame: writer options
-#: src/gcdemu:1235
+#: ../src/gcdemu:1235
 msgid "Writer options"
 msgstr "굽기 옵션"
 
-#: src/gcdemu:1249
+#: ../src/gcdemu:1249
 msgid "Choose file"
 msgstr "파일 선택"
 
-#: src/gcdemu:1405
+#: ../src/gcdemu:1405
 msgid "Image filename/basename not set!"
 msgstr "이미지의 이름 혹은 기반 이름이 설정되지 않았습니다!"
 
-#: src/gcdemu:1408
+#: ../src/gcdemu:1408
 msgid "No image writer is chosen!"
 msgstr "굽는 장치가 선택되지 않았습니다!"
 
-#: src/gcdemu:1413
+#: ../src/gcdemu:1413
 msgid "Invalid option"
 msgstr ""
 
-#. *** GUI ***
-#. Create dialog
-#: src/gcdemu:1456
-#, python-format
+#: ../src/gcdemu:1456
+#, c-format
 msgid "Device #%02d: properties"
 msgstr "장치 #%02d: 속성"
 
-#: src/gcdemu:1456
+#: ../src/gcdemu:1456
 msgid "Close"
 msgstr "닫기"
 
-#. Label
-#: src/gcdemu:1464
-#, python-format
+#: ../src/gcdemu:1464
+#, c-format
 msgid "Device #%02d"
 msgstr "장치 #%02d"
 
-#: src/gcdemu:1487
+#: ../src/gcdemu:1487
 msgid "Options"
 msgstr "옵션"
 
-#. Page: daemon debug mask
-#: src/gcdemu:1494
+#: ../src/gcdemu:1494
 msgid "Daemon debug mask"
 msgstr "대몬 디버그 마스크"
 
-#: src/gcdemu:1495
+#: ../src/gcdemu:1495
 msgid "Daemon"
 msgstr "대몬"
 
-#. Page: library debug mask
-#: src/gcdemu:1499
+#: ../src/gcdemu:1499
 msgid "Library debug mask"
 msgstr "라이브러리 디버그 마스크"
 
-#: src/gcdemu:1500
+#: ../src/gcdemu:1500
 msgid "Library"
 msgstr "라이브러리"
 
-#. Indicate there's more than one file
-#: src/gcdemu:1548 src/gcdemu:1550
+#: ../src/gcdemu:1548 ../src/gcdemu:1550
 msgid "Device"
 msgstr "장치"
 
-#: src/gcdemu:1550
+#: ../src/gcdemu:1550
 msgid "Empty"
 msgstr "비어있음"
 
-#: src/gcdemu:1558 src/gcdemu:1560
+#: ../src/gcdemu:1558 ../src/gcdemu:1560
 msgid "Device status change"
 msgstr "장치 상태가 바뀌었음"
 
-#: src/gcdemu:1558
-#, python-format
+#: ../src/gcdemu:1558
+#, c-format
 msgid "Device #%02d has been loaded."
 msgstr "장치 #%02d에 디스크가 들어갔습니다."
 
-#: src/gcdemu:1560
-#, python-format
+#: ../src/gcdemu:1560
+#, c-format
 msgid "Device #%02d has been emptied."
 msgstr "장치 #%02d에서 디스크를 꺼냈습니다."
 
-#: src/gcdemu:1565 src/gcdemu:1570 src/gcdemu:1575 src/gcdemu:1580
-#: src/gcdemu:1585 src/gcdemu:1590
+#: ../src/gcdemu:1565 ../src/gcdemu:1570 ../src/gcdemu:1575 ../src/gcdemu:1580
+#: ../src/gcdemu:1585 ../src/gcdemu:1590
 msgid "Device option change"
 msgstr ""
 
-#: src/gcdemu:1565
-#, python-format
+#: ../src/gcdemu:1565
+#, c-format
 msgid ""
 "Device #%02d has had its device ID changed:\n"
 "  Vendor ID: '%s'\n"
@@ -425,140 +471,126 @@ msgstr ""
 "  리비전: '%s'\n"
 "  제조사 구분자: '%s'"
 
-#: src/gcdemu:1570
-#, python-format
+#: ../src/gcdemu:1570
+#, c-format
 msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
 msgstr "장치 #%02d의 DPM 에뮬레이션 설정이 %s 으로 바뀌었습니다."
 
-#: src/gcdemu:1575
-#, python-format
+#: ../src/gcdemu:1575
+#, c-format
 msgid "Device #%02d has had its TR emulation option changed. New value: %s"
 msgstr "장치 #%02d의 TR 에뮬레이션 설정이 %s 으로 바뀌었습니다."
 
-#: src/gcdemu:1580
-#, python-format
+#: ../src/gcdemu:1580
+#, c-format
 msgid ""
 "Device #%02d has had its bad sector emulation option changed. New value: %s"
 msgstr "장치 #%02d의 배드섹터 에뮬레이션 설정이 %s 으로 바뀌었습니다."
 
-#: src/gcdemu:1585
-#, python-format
+#: ../src/gcdemu:1585
+#, fuzzy, c-format
 msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
 msgstr "장치 #%02d의 대몬 디버그 마스크 설정이 %s 으로 바뀌었습니다."
 
-#: src/gcdemu:1590
-#, python-format
+#: ../src/gcdemu:1590
+#, fuzzy, c-format
 msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
 msgstr "장치 #%02d의 라이브러리 디버그 마스크 설정이 %s 으로 바뀌었습니다."
 
-#: src/gcdemu:1636
+#: ../src/gcdemu:1636
 msgid "Device error"
 msgstr "장치 오류"
 
-#: src/gcdemu:1672
+#: ../src/gcdemu:1672
 msgid "Left click for Property Dialog, right click to unload."
-msgstr "속성창을 보시려면 왼쪽 버튼을 클릭하시고 꺼내시려면 오른쪽 버튼을 클릭하십시오."
+msgstr ""
+"속성창을 보시려면 왼쪽 버튼을 클릭하시고 꺼내시려면 오른쪽 버튼을 클릭하십시"
+"오."
 
-#: src/gcdemu:1674
+#: ../src/gcdemu:1674
 msgid "Left click for Property Dialog, right click to load."
-msgstr "속성창을 보시려면 왼쪽 버튼을 클릭하시고 넣으시려면 오른쪽 버튼을 클릭하십시오"
+msgstr ""
+"속성창을 보시려면 왼쪽 버튼을 클릭하시고 넣으시려면 오른쪽 버튼을 클릭하십시"
+"오"
 
-#: src/gcdemu:1681
+#: ../src/gcdemu:1681
 msgid "Click for Property Dialog"
 msgstr "속성창을 위해 클릭"
 
-#: src/gcdemu:1773
+#: ../src/gcdemu:1773
 msgid "A GUI for controlling CDEmu devices."
 msgstr "CDEmu 장치들을 조정하기 위한 GUI"
 
-#: src/gcdemu:1775
+#: ../src/gcdemu:1775
 msgid "The CDEmu project website"
 msgstr "CDEmu 프로젝트 웹사이트"
 
-#: src/gcdemu:1778
+#: ../src/gcdemu:1778
 msgid "translator-credits"
 msgstr "번역자"
 
-#. Devices
-#: src/gcdemu:1785
+#: ../src/gcdemu:1785
 msgid "Devices"
 msgstr "장치들"
 
-#: src/gcdemu:1789
+#: ../src/gcdemu:1789
 msgid "New device..."
 msgstr "새로운 장치..."
 
-#. Use system bus
-#. item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
-#. item.set_active(self.use_system_bus)
-#. item.connect("toggled", self.on_use_system_bus_toggled)
-#. self.menu.append(item)
-#. self.item_use_system_bus = item
-#. Show notifications
-#: src/gcdemu:1806
+#: ../src/gcdemu:1806
 msgid "Show _notifications"
 msgstr "알림창 보여주기(_n)"
 
-#. About
-#: src/gcdemu:1816
+#: ../src/gcdemu:1816
 msgid "About"
 msgstr "우리에 대하여"
 
-#. Quit
-#: src/gcdemu:1824
+#: ../src/gcdemu:1824
 msgid "Quit"
 msgstr "끝내기"
 
-#: src/gcdemu:1897
+#: ../src/gcdemu:1897
 msgid "Daemon started"
 msgstr "대몬 실행됨"
 
-#: src/gcdemu:1897
+#: ../src/gcdemu:1897
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu 대몬이 실행되었습니다."
 
-#: src/gcdemu:1900
+#: ../src/gcdemu:1900
 msgid "Daemon stopped"
 msgstr "대몬 정지"
 
-#: src/gcdemu:1900
+#: ../src/gcdemu:1900
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu 대몬이 정지했습니다."
 
-#: src/gcdemu:1925
+#: ../src/gcdemu:1925
 msgid "Device added"
 msgstr "장치 추가됨"
 
-#: src/gcdemu:1925
-#, python-format
+#: ../src/gcdemu:1925
+#, c-format
 msgid "Device #%02d has been created."
 msgstr "장치 #%02d 가 추가됨."
 
-#: src/gcdemu:1929
+#: ../src/gcdemu:1929
 msgid "Device removed"
 msgstr "장치 제거됨"
 
-#: src/gcdemu:1929
-#, python-format
+#: ../src/gcdemu:1929
+#, c-format
 msgid "Device #%02d has been removed."
 msgstr "장치 #%02d가 제거되었습니다."
 
-#: src/gcdemu:2012
-msgid "gCDEmu - connected"
-msgstr "gCDEmu - 연결됨"
-
-#: src/gcdemu:2015
-msgid "gCDEmu - disconnected"
-msgstr "gCDEmu - 연결 끊어짐"
-
-#: src/gcdemu:2097
+#: ../src/gcdemu:2097
 msgid "Failed to load AppIndicator library!"
 msgstr "인디케이터 라이브러리를 불러오는데 실패했습니다!"
 
-#: src/gcdemu:2098
+#: ../src/gcdemu:2098
 msgid "AppIndicator not available"
 msgstr "인디케이터를 사용할 수 없습니다"
 
-#: src/gcdemu:2132
+#: ../src/gcdemu:2132
 msgid "gCDEmu tray mode"
 msgstr "gCDEmu 트레이 모드"
