@@ -51,8 +51,17 @@ struct _MirageParserIsoPrivate
 \**********************************************************************/
 static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, struct IsoFileInfo *file_info, GError **error)
 {
-    const gint valid_sector_sizes[] = { 2048, 2332, 2336, 2352 };
-    const gint data_offset[] = { 0, 0, 0, 16 };
+    const struct {
+        gint sector_size;
+        gint data_offset;
+    } valid_sector_sizes[] = {
+        { 2048,  0 }, /* 2048-byte Mode 1 / Mode 2 Form 1 sector; offset: 0 */
+        { 2332,  8 }, /* 2332-byte Mode 2 Form 1 sector; offset: 8 (sub-header) */
+        { 2336,  8 }, /* 2336-byte Mode 2 Form 1 sector: offset: 8 (sub-header) */
+        { 2352, 16 }, /* 2352-byte Mode 1 sector; offset: 16 (sync+header) */
+        { 2352, 24 }, /* 2352-byte Mode 2 Form 1 sector; offset: 24 (synch+header+sub-header */
+    };
+
     const gint valid_subchannel_sizes[] = { 0, 16, 96 };
 
     MirageStream *stream = file_info->stream;
@@ -75,11 +84,12 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
         return FALSE;
     }
 
-    /* Check all possible combinations of sector data and subchannel sizes */
+    /* Assuming a data track with ISO9660 or UDF filesystem, check all
+       possible combinations of sector data and subchannel sizes */
     for (gint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
         for (gint j = 0; j < G_N_ELEMENTS(valid_sector_sizes); j++) {
-            gint full_sector_size = valid_sector_sizes[j] + valid_subchannel_sizes[i];
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking %d-byte sector size with %d-byte subchannel...\n", __debug__, valid_sector_sizes[j], valid_subchannel_sizes[i]);
+            gint full_sector_size = valid_sector_sizes[j].sector_size + valid_subchannel_sizes[i];
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking %d-byte sector size with %d-byte subchannel and data offset %d...\n", __debug__, valid_sector_sizes[j].sector_size, valid_subchannel_sizes[i], valid_sector_sizes[j].data_offset);
 
             /* Check if file size is a multiple of full sector size */
             if (file_length % full_sector_size != 0) {
@@ -91,7 +101,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
             /* Check for CD001 or BEA01 at sector 16 */
             guint8 buf[8];
-            goffset offset = 16*full_sector_size + data_offset[j];
+            goffset offset = 16*full_sector_size + valid_sector_sizes[j].data_offset;
 
             if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "Xh to read 8-byte pattern!\n", __debug__, offset);
@@ -111,7 +121,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
             if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
                 || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
-                file_info->main_data_size = valid_sector_sizes[j];
+                file_info->main_data_size = valid_sector_sizes[j].sector_size;
                 file_info->subchannel_data_size = valid_subchannel_sizes[i];
                 file_info->main_data_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
 
