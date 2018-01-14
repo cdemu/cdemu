@@ -474,8 +474,10 @@ static void mirage_parser_iso_init (MirageParserIso *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
         Q_("ISO Image Parser"),
-        2,
+        4,
         Q_("ISO images (*.iso, *.bin, *.img)"), "application/x-cd-image",
+        Q_("GameCube ISO images (*.iso"), "application/x-gamecube-iso-image",
+        Q_("Wii ISO images (*.iso)"), "application/x-wii-iso-image",
         Q_("WAV audio files (*.wav)"), "audio/x-wav"
     );
 }
