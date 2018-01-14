@@ -34,6 +34,10 @@ struct IsoFileInfo
     MirageStream *stream;
 };
 
+/* Nintendo ISO image patterns */
+static const guint8 pattern_nintendo_gamecube_iso[4] = { 0xC2, 0x33, 0x9F, 0x3D };
+static const guint8 pattern_nintendo_wii_iso[4] = { 0x5D, 0x1C, 0x9E, 0xA3 };
+
 
 /**********************************************************************\
  *                          Private structure                         *
@@ -49,6 +53,29 @@ struct _MirageParserIsoPrivate
 /**********************************************************************\
  *                         File identification                        *
 \**********************************************************************/
+static gboolean mirage_parser_iso_read_data_from_offset (MirageParserIso *self, MirageStream *stream, goffset offset, guint8 *buf, gint buflen, GError **error)
+{
+    /* Seek to offset */
+    if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "Xh to read %d bytes of data!\n", __debug__, offset, buflen);
+
+        gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
+        g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to %s to read %d bytes of data!"), tmp, buflen);
+
+        return FALSE;
+    }
+
+    /* Read */
+    if (mirage_stream_read(stream, buf, buflen, NULL) != buflen) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes of data!\n", __debug__, buflen);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read %d bytes of data!"), buflen);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, struct IsoFileInfo *file_info, GError **error)
 {
     const struct {
@@ -84,6 +111,13 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
         return FALSE;
     }
 
+    /* Mark track mode and subchannel format for auto-detection via
+       mirage_parser_iso_determine_track_type() and
+       mirage_parser_iso_determine_subchannel_type(). This is a general
+       case that may get overriden by some of the checks below */
+    file_info->track_mode = -1;
+    file_info->subchannel_format = -1;
+
     /* Assuming a data track with ISO9660 or UDF filesystem, check all
        possible combinations of sector data and subchannel sizes */
     for (gint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
@@ -103,19 +137,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
             guint8 buf[8];
             goffset offset = 16*full_sector_size + valid_sector_sizes[j].data_offset;
 
-            if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "Xh to read 8-byte pattern!\n", __debug__, offset);
-
-                gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
-                g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to %s to read 8-byte pattern!"), tmp);
-
-                return FALSE;
-            }
-
-            if (mirage_stream_read(stream, buf, 8, NULL) != 8) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read 8-byte pattern!"));
+            if (!mirage_parser_iso_read_data_from_offset(self, stream, offset, buf, 8, error)) {
                 return FALSE;
             }
 
@@ -130,6 +152,40 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: CD001/BEA01 pattern not found!\n", __debug__);
             }
+        }
+    }
+
+    /* Check for Nintendo GameCube or Wii disc dump. These have 2048-byte
+       sector data, and contain a 4-byte signature at offset 0x1C or 0x18,
+       respectively. */
+    if (file_length % 2048 == 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size is multiple of 2048; checking for Nintendo GameCube or Wii signature...\n", __debug__);
+
+        guint8 buf_gamecube[4];
+        guint8 buf_wii[4];
+
+        /* Nintendo GameCube ISO */
+        if (!mirage_parser_iso_read_data_from_offset(self, stream, 0x1C, buf_gamecube, 4, error)) {
+            return FALSE;
+        }
+
+        /* Nintendo Wii ISO */
+        if (!mirage_parser_iso_read_data_from_offset(self, stream, 0x18, buf_wii, 4, error)) {
+            return FALSE;
+        }
+
+        if (!memcmp(buf_gamecube, pattern_nintendo_gamecube_iso, sizeof(pattern_nintendo_gamecube_iso))
+            || !memcmp(buf_wii, pattern_nintendo_wii_iso, sizeof(pattern_nintendo_wii_iso))) {
+            file_info->main_data_size = 2048;
+            file_info->subchannel_data_size = 0;
+            file_info->main_data_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
+
+            file_info->track_mode = MIRAGE_SECTOR_MODE1; /* Mode 1 track */
+            file_info->subchannel_format = 0; /* No sub-channel */
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a Nintendo GameCube or Wii ISO image\n", __debug__);
+
+            return TRUE;
         }
     }
 
@@ -173,19 +229,7 @@ static gboolean mirage_parser_iso_determine_track_type (MirageParserIso *self, s
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte main sector data; determining track type at address 16 (offset %" G_GOFFSET_MODIFIER "Xh)...\n", __debug__, offset);
 
-            if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "Xh to read 16-byte pattern!\n", __debug__, offset);
-
-                gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
-                g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %s to read 16-byte pattern!"), tmp);
-
-                return FALSE;
-            }
-
-            if (mirage_stream_read(stream, buf, 16, NULL) != 16) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read 16-byte pattern!"));
+            if (!mirage_parser_iso_read_data_from_offset(self, stream, offset, buf, 16, error)) {
                 return FALSE;
             }
 
@@ -224,19 +268,7 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 96-byte internal PW subchannel data found!\n", __debug__);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining whether it is linear or interleaved from subchannel data of sector 16 (offset %" G_GOFFSET_MODIFIER "Xh)...\n", __debug__, offset);
 
-            if (!mirage_stream_seek(stream, offset, G_SEEK_SET, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "Xh to read subchannel data!\n", __debug__, offset);
-
-                gchar tmp[100] = ""; /* Work-around for lack of direct G_GOFFSET_MODIFIER support in xgettext() */
-                g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "Xh", offset);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to seek to offset %s to read subchannel data!"), tmp);
-
-                return FALSE;
-            }
-
-            if (mirage_stream_read(stream, buf, sizeof(buf), NULL) != sizeof(buf)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read subchannel data!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read subchannel data!"));
+            if (!mirage_parser_iso_read_data_from_offset(self, stream, offset, buf, 96, error)) {
                 return FALSE;
             }
 
