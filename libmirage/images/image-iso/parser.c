@@ -159,31 +159,37 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
        sector data, and contain a 4-byte signature at offset 0x1C or 0x18,
        respectively. */
     if (file_length % 2048 == 0) {
+        gboolean is_nintendo = FALSE;
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size is multiple of 2048; checking for Nintendo GameCube or Wii signature...\n", __debug__);
 
-        guint8 buf_gamecube[4];
-        guint8 buf_wii[4];
-
         /* Nintendo GameCube ISO */
-        if (!mirage_parser_iso_read_data_from_offset(self, stream, 0x1C, buf_gamecube, 4, error)) {
-            return FALSE;
+        if (!is_nintendo) {
+            guint8 buf[4];
+            if (mirage_parser_iso_read_data_from_offset(self, stream, 0x1C, buf, 4, NULL)
+                && !memcmp(buf, pattern_nintendo_gamecube_iso, sizeof(pattern_nintendo_gamecube_iso))) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: GameCube ISO signature found!\n", __debug__);
+                is_nintendo = TRUE;
+            }
         }
 
         /* Nintendo Wii ISO */
-        if (!mirage_parser_iso_read_data_from_offset(self, stream, 0x18, buf_wii, 4, error)) {
-            return FALSE;
+        if (!is_nintendo) {
+            guint8 buf[4];
+            if (mirage_parser_iso_read_data_from_offset(self, stream, 0x18, buf, 4, NULL)
+                && !memcmp(buf, pattern_nintendo_wii_iso, sizeof(pattern_nintendo_wii_iso))) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Wii ISO signature found!\n", __debug__);
+                is_nintendo = TRUE;
+            }
         }
 
-        if (!memcmp(buf_gamecube, pattern_nintendo_gamecube_iso, sizeof(pattern_nintendo_gamecube_iso))
-            || !memcmp(buf_wii, pattern_nintendo_wii_iso, sizeof(pattern_nintendo_wii_iso))) {
+        if (is_nintendo) {
             file_info->main_data_size = 2048;
             file_info->subchannel_data_size = 0;
             file_info->main_data_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
 
             file_info->track_mode = MIRAGE_SECTOR_MODE1; /* Mode 1 track */
             file_info->subchannel_format = 0; /* No sub-channel */
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a Nintendo GameCube or Wii ISO image\n", __debug__);
 
             return TRUE;
         }
