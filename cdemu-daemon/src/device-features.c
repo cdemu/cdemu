@@ -285,6 +285,27 @@ void cdemu_device_features_init (CdemuDevice *self)
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
+    /* Feature 0x0041: BD Write Feature */
+    /* IMPLEMENTATION NOTE: non-persistent; version set to 0x00 as per MMC5 */
+    general_feature = initialize_feature(0x0041, sizeof(struct Feature_0x0041));
+    if (general_feature) {
+        struct Feature_0x0041 *feature = (struct Feature_0x0041 *)general_feature;
+
+        feature->ver = 0x00;
+
+        /* Claim that we can write everything */
+        feature->class0_bdre_write_support = 0xFFFF;
+        feature->class1_bdre_write_support = 0xFFFF;
+        feature->class2_bdre_write_support = 0xFFFF;
+        feature->class3_bdre_write_support = 0xFFFF;
+
+        feature->class0_bdr_write_support = 0xFFFF;
+        feature->class1_bdr_write_support = 0xFFFF;
+        feature->class2_bdr_write_support = 0xFFFF;
+        feature->class3_bdr_write_support = 0xFFFF;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
+
     /* Feature 0x0100: Power Management Feature */
     /* IMPLEMENTATION NOTE: persistent; version left at 0x00. No other content. */
     general_feature = initialize_feature(0x0100, sizeof(struct Feature_0x0100));

@@ -476,6 +476,38 @@ struct Feature_0x0040
     guint16 class3_bdrom_read_support;
 };
 
+/* BD Write Feature */
+struct Feature_0x0041
+{
+    guint16 code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
+    #else
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
+    #endif
+
+    guint8 length;
+
+    guint8 reserved2[4];
+
+    guint16 class0_bdre_write_support;
+    guint16 class1_bdre_write_support;
+    guint16 class2_bdre_write_support;
+    guint16 class3_bdre_write_support;
+
+    guint16 class0_bdr_write_support;
+    guint16 class1_bdr_write_support;
+    guint16 class2_bdr_write_support;
+    guint16 class3_bdr_write_support;
+};
+
 /* Power Management Feature */
 struct Feature_0x0100
 {
