@@ -17,6 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <glib-unix.h>
 #include "cdemu.h"
 
 CdemuDaemon *daemon_obj;
@@ -51,43 +52,24 @@ static void log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLeve
 }
 
 
-/* Signal handler */
-static void __unix_signal_handler (int signal_number)
+static gboolean signal_handler(gpointer user_data)
 {
-    g_message(Q_("Received signal - %s\n"), g_strsignal(signal_number));
-    switch (signal_number) {
-        case SIGINT:
-        case SIGQUIT:
-        case SIGTERM:
-        case SIGHUP: {
-            cdemu_daemon_stop_daemon(daemon_obj);
-            break;
-        }
-        default: {
-            break;
-        }
-    }
+    CdemuDaemon *self = (CdemuDaemon*)user_data;
+    cdemu_daemon_stop_daemon(self);
+    return G_SOURCE_CONTINUE;
 }
 
 static void setup_signal_trap ()
 {
-    struct sigaction action;
-
-    action.sa_handler = __unix_signal_handler;
-    sigemptyset(&action.sa_mask);
-    action.sa_flags = 0;
-
-    if (sigaction(SIGTERM, &action, 0) > 0) {
-        g_warning(Q_("Failed to set sigaction for SIGTERM!"));
+    if (g_unix_signal_add(SIGTERM, signal_handler, daemon_obj) <= 0) {
+        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
     }
-    if (sigaction(SIGINT, &action, 0) > 0) {
-        g_warning(Q_("Failed to set sigaction for SIGINT!"));
+    if (g_unix_signal_add(SIGINT, signal_handler, daemon_obj) <= 0) {
+        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
     }
-    if (sigaction(SIGQUIT, &action, 0) > 0) {
-        g_warning(Q_("Failed to set sigaction for SIGQUIT!"));
-    }
-    if (sigaction(SIGHUP, &action, 0) > 0) {
-        g_warning(Q_("Failed to set sigaction for SIGHUP!"));
+    /* SIGQUIT not supported by g_unix_signal_source_new: */
+    if (g_unix_signal_add(SIGHUP, signal_handler, daemon_obj) <= 0) {
+        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
     }
 }
 
