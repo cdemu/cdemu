@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # image-analyzer: Gtk+ CD/DVD-ROM image analysis and conversion tool
