@@ -711,8 +711,8 @@ class DiscStructuresWindow (Gtk.Window):
         text_buffer = self.text_buffer
 
         # Read address and type
-        layer = self.spin_button_layer.get_value()
-        structure_type = self.spin_button_type.get_value()
+        layer = self.spin_button_layer.get_value_as_int()
+        structure_type = self.spin_button_type.get_value_as_int()
 
         # Clear buffer
         text_buffer.set_text(_("Layer %d, structure %d (0x%X):") % (layer, structure_type, structure_type))
