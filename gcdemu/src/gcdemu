@@ -1373,6 +1373,8 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         parameters["medium-type"] = GLib.Variant("s", self.combobox_medium.get_model().get_value(i, 1))
 
         # Writer parameters
+        # NOTE: we do not need to wrap items() in list(), because we do
+        # not modify the source dictionary during iteration
         for parameter_id, widget in self.writer_options_widgets.items():
             if isinstance(widget, Gtk.Entry):
                 # Text entry
