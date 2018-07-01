@@ -149,8 +149,10 @@ def print_binary_fragment_subchannel_format (value):
     return "; ".join(strings)
 
 def print_raw_buffer (buf):
-    return " ".join([ format(ord(c), '02X') for c in buf ])
-
+    if sys.version_info[0] < 3:
+        return " ".join([ format(ord(c), '02X') for c in buf ])
+    else:
+        return " ".join([ format(c, '02X') for c in buf ])
 
 ########################################################################
 #                          Read sector window                          #
