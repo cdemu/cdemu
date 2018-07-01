@@ -290,7 +290,10 @@ class cmd_create_blank (object):
             valid_parameters[parameter_entry[0]] = parameter_entry
 
         # Now, go over given parameters and validate them
-        for key,value in parameters.items():
+        # NOTE: we need to use list(parameters.items()) because we may
+        # change the dictionary (pop() call during validation), and that
+        # raises error in python3
+        for key,value in list(parameters.items()):
             try:
                 parameter_entry = valid_parameters[key]
             except KeyError as e:
