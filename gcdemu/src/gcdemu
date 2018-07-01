@@ -18,6 +18,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from __future__ import print_function
+
 import argparse
 import datetime
 import os
@@ -141,7 +143,7 @@ class CDEmuDaemonProxy (GObject.GObject):
         elif signal == "DeviceRemoved":
             self.emit(signal)
         else:
-            print ("Unknown signal: ", sender, signal, params)
+            print("Unknown signal: ", sender, signal, params)
 
 
     def GetDaemonVersion (self):
@@ -466,7 +468,7 @@ class CDEmuDevice (GObject.GObject):
             self.library_debug_mask = self.proxy.DeviceGetOption(self.number, "library-debug-mask")
             self.emit("library-debug-mask-changed")
         else:
-            print ("Unknown option: %s!" % option)
+            print("Unknown option: %s!" % option)
 
 
     def on_mapping_ready (self, d):
@@ -1697,12 +1699,12 @@ class gCDEmuTray (GObject.GObject):
         # Lookup "icon" in standard paths
         icon_info = Gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
         if icon_info is None:
-            print ("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
+            print("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
             self.logo = None
             return
         logo_filename = icon_info.get_filename()
         if logo_filename is None:
-            print ("Failed to get icon filename; Do you have the librsvg2 package?")
+            print("Failed to get icon filename; Do you have the librsvg2 package?")
             self.logo = None
             return
 
@@ -1841,13 +1843,13 @@ class gCDEmuTray (GObject.GObject):
     def on_settings_changed (self, key):
         if key == "use-system-bus":
             self.use_system_bus = self.settings.get_boolean(key)
-            print ("New setting: use system bus: %d" % self.use_system_bus)
+            print("New setting: use system bus: %d" % self.use_system_bus)
             self.item_use_system_bus.set_active(self.use_system_bus)
             self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
         elif key == "show-notifications":
             self.show_notifications = self.settings.get_boolean(key)
             self.item_show_notifications.set_active(self.show_notifications)
-            print ("New setting: show notifications: %d" % self.show_notifications)
+            print("New setting: show notifications: %d" % self.show_notifications)
         elif key == "icon-connected":
             self.icon_connected = self.settings.get_string(key)
             self.update_icon()
@@ -1856,12 +1858,12 @@ class gCDEmuTray (GObject.GObject):
             self.update_icon()
         elif key == "daemon-autostart":
             self.daemon_autostart = self.settings.get_boolean(key)
-            print ("New setting: daemon autostart: %d" % self.daemon_autostart)
+            print("New setting: daemon autostart: %d" % self.daemon_autostart)
         elif key == "icon-policy":
             self.icon_policy = self.settings.get_string(key)
             self.update_icon()
         else:
-            print ("Unknown setting key: %s!" % key)
+            print("Unknown setting key: %s!" % key)
 
     def on_about_activated (self, menuitem):
         self.about.run()
@@ -2001,7 +2003,7 @@ class gCDEmuTray_Gtk (gCDEmuTray):
                 visible = False
         else:
             # Fix invalid setting...
-            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
+            print("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
             self.icon_policy = "always"
             visible = True
         self.tray_icon.set_visible(visible)
@@ -2053,7 +2055,7 @@ class gCDEmuTray_Indicator (gCDEmuTray):
                 visible = False
         else:
             # Fix invalid setting...
-            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
+            print("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
             self.icon_policy = "always"
             visible = True
 
