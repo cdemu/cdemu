@@ -897,7 +897,7 @@ class cmd_device_id (object):
                 for device in range(0, num_devices):
                     try:
                         values = proxy.DeviceGetOption(device, "device-id")
-                        device_id = map(str, values)
+                        device_id = list(map(str, values))
                     except GLib.Error as e:
                         print_warning(_("Failed to get device ID of device %i: %s") % (device, e))
                         continue
@@ -907,7 +907,7 @@ class cmd_device_id (object):
                 try:
                     device = int(arguments.device, 0)
                     values = proxy.DeviceGetOption(device, "device-id")
-                    device_id = map (str, values)
+                    device_id = list(map(str, values))
                 except GLib.Error as e:
                     raise CDEmuError(_("Failed to get device ID of device %i: %s") % (device, e))
                 except ValueError:
