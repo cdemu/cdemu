@@ -717,8 +717,7 @@ class DiscStructuresWindow (Gtk.Window):
         structure_type = self.spin_button_type.get_value_as_int()
 
         # Clear buffer
-        text_buffer.set_text(_("Layer %d, structure %d (0x%X):") % (layer, structure_type, structure_type))
-        text_buffer.set_text("\n")
+        text_buffer.set_text(_("Layer %d, structure %d (0x%X):\n") % (layer, structure_type, structure_type))
 
         # Get structure from disc
         try:
