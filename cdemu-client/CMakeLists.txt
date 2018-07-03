@@ -40,9 +40,18 @@ install (
 # determine the bash-completion install path
 pkg_check_modules(BASH_COMPLETION bash-completion)
 if (BASH_COMPLETION_FOUND)
-    pkg_get_variable(def_completionsdir bash-completion completionsdir)
+    # pkg_get_variable() was introduced in CMake 3.4, but for now, we
+    # need to support older versions as well.
+    if (${CMAKE_VERSION} VERSION_LESS "3.4.0")
+        execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=completionsdir bash-completion
+            OUTPUT_VARIABLE def_completionsdir
+            ERROR_QUIET
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    else()
+        pkg_get_variable(def_completionsdir bash-completion completionsdir)
+    endif()
 else()
-    # fallback to the old path
+    # Fall back to the old path
     set(def_completionsdir ${CMAKE_INSTALL_SYSCONFDIR}/bash_completion.d)
 endif()
 
