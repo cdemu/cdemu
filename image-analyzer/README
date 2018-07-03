@@ -30,11 +30,14 @@ and manipulation, with following functionality:
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - Python >= 2.6
- - PyGObject >= 3.0.0 (gtk-3, gobject and glib modules are required)
+ - Python3 >= 3.4 or Python2 >= 2.7
+ - PyGObject >= 3.0.0
  - libMirage >= 3.1.0, and its GIR bindings
  - IntlTool >= 0.21
  - GetText >= 0.15
+
+ - GObject and GLib >= 2.42 GIR files
+ - Gtk3 GIR files
 
  - Matplotlib with Gtk3 support
 

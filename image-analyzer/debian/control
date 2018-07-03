@@ -11,7 +11,7 @@ Standards-Version: 3.9.7
 
 Package: image-analyzer
 Architecture: all
-Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0,
+Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0, libglib2.0-0 (>= 2.42),
  gir1.2-gtk-3.0, gir1.2-pango-1.0, gir1.2-mirage-3.1 (>= 3.1.0), python3-matplotlib,
  ${python3:Depends}, ${misc:Depends}
 Conflicts: image-analyzer-dbg
