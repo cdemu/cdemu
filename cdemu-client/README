@@ -26,10 +26,15 @@ retrieving/setting devices' debug masks.
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
- - Python >= 2.6
- - PyGObject >= 3.0.0 (glib and gio modules are required)
+
+ - CMake >= 2.8.5
  - IntlTool >= 0.21
  - GetText >= 0.15
+
+ - Python3 >= 3.4 (default) or Python2 >= 2.7
+ - PyGObject >= 3.0.0
+
+ - GLib, GIO >= 2.28 GIR
 
 
 3. Installation:

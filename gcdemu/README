@@ -31,13 +31,19 @@ notifications via libnotify (provided that python bindings are installed).
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - Python >= 2.6
- - PyGObject >= 3.0.0 (gtk-3, gobject and glib modules are required)
+ - CMake >= 2.8.5
  - IntlTool >= 0.21
  - GetText >= 0.15
 
- - libnotify GIR files (optional; for notifications)
- - AppIndicator GIR files (optional; for AppIndicator mode)
+ - Python3 >= 3.4 (default) or Python2 >= 2.7
+ - PyGObject >= 3.0.0
+
+ - GLib, GObject, GIO >= 2.28 GIR
+ - Gtk3 GIR
+ - GdkPixbuf GIR
+
+ - libnotify GIR (optional; for notifications)
+ - AppIndicator3 GIR (optional; for AppIndicator mode)
 
 
 3. Installation:
