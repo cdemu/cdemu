@@ -9,5 +9,5 @@ override_dh_auto_configure:
 	dh_auto_configure -- "-DPOST_INSTALL_HOOKS:BOOL=OFF"
 
 %:
-	dh $@ --with python2
+	dh $@ --with python3
 
