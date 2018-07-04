@@ -62,14 +62,6 @@ the client will prompt for it using standard input without echo.
 Allows an encoding for text-based image format (such as CUE) to be specified. This
 might be needed if the image descriptor file contains non-ASCII characters and does
 not use Unicode.
-
-.B --dvd-report-css <true/false>
-Mark the DVD image as CSS-encrypted. This influences the generation of fake
-Disc Structure 0x01, and as such works only with images of DVD videos that do
-not provide this information (most images, with exception of perhaps mds/mdf, don't).
-Enabling this option allows images of CSS-encrypted DVDs (e.g. created using 'dd'
-or 'readcd' without running through a CSS decryption step when creating the image)
-to be played by a deCSS-enabled Linux media player.
 .TP
 .B create-blank [options] --writer_id=<writer-id> <device> <image_file>
 Creates blank recordable disc in the specified device. \fBdevice\fR is the number
@@ -131,6 +123,18 @@ Displays/sets bad sector emulation flag. \fBdevice\fR is the number of the
 desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
 If this argument is omitted, currently set value is displayed.
 .TP
+.B dvd-report-css <device> [new-value]
+Report the loaded DVD as CSS-encrypted. \fBdevice\fR is the number of the
+desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
+If this argument is omitted, currently set value is displayed.
+
+This flag influences the generation of fake Disc Structure 0x01, and as
+such works only with images of DVD videos that do not provide this
+information (most images, with exception of perhaps mds/mdf, don't).
+Enabling this option allows images of CSS-encrypted DVDs (e.g. created using 'dd'
+or 'readcd' without running through a CSS decryption step when creating the image)
+to be played by a deCSS-enabled Linux media player.
+.TP
 .B device-id <device> [new-vendor-id] [new-product-id] [new-revision] [new-vendor-specific]
 Displays/sets device ID. \fBdevice\fR is the number of the desired device.
 \fBnew-vendor-id\fR is the new vendor ID string to be set (8 characters max).
@@ -174,7 +178,8 @@ cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
  cdemu load 0 ~/image.daa --password=seeninplain
 .TP
 .B Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
- cdemu load 0 ~/image.iso --dvd-report-css=true
+ cdemu load 0 ~/image.iso
+ cdemu dvd-report-css 0 1
 .TP
 .B Creating a blank recordable disc: DVD+R SL with ISO image writer:
 cdemu create-blank --writer-id=WRITER-ISO --medium-type=dvd+r 0 ~/output-image.iso

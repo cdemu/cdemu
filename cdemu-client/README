@@ -65,7 +65,8 @@ Loading an encrypted image with password provided as an argument:
 the password using standard input without echo)
 
 Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
- cdemu load 0 ~/image.iso --dvd-report-css=true
+ cdemu load 0 ~/image.iso
+ cdemu dvd-report-css 0 1
 
 Creating a blank recordable disc: DVD+R SL with ISO image writer:
  cdemu create-blank --writer-id=WRITER-ISO --medium-type=dvd+r 0 ~/output-image.iso

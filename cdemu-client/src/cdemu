@@ -121,7 +121,6 @@ class cmd_load (object):
         parser.add_argument("image_file", type=str, nargs="+", help=_("image file(s)"))
         parser.add_argument("--password", type=str, help=_("password for encrypted images"))
         parser.add_argument("--encoding", type=str, help=_("encoding for text-based images"))
-        parser.add_argument("--dvd-report-css", action="store_true", help=_("flag the DVD disc as CSS-encoded"))
 
     def __call__ (self, proxy, arguments):
         # We need to pass absolute filenames to daemon
@@ -133,8 +132,6 @@ class cmd_load (object):
             parser_params["encoding"] = GLib.Variant("s", arguments.encoding)
         if hasattr(arguments, "password"):
             parser_params["password"] = GLib.Variant("s", arguments.password)
-        if hasattr(arguments, "dvd_report_css"):
-            parser_params["dvd-report-css"] = GLib.Variant("b", arguments.dvd_report_css)
 
         # Particular device vs. any device
         if arguments.device == "any":
@@ -843,6 +840,86 @@ class cmd_bad_sector_emulation (object):
 
 
 ########################################################################
+#                            DVD report CSS                            #
+########################################################################
+class cmd_dvd_report_css (object):
+    def __init__ (self, subparsers):
+        name = "dvd-report-css"
+        description_msg = _("")
+        help_msg = _("displays/sets DVD report CSS/CPPM flag")
+
+        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser.set_defaults(command_function=self)
+
+        parser.add_argument("device", type=str, help=_("device"))
+        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+
+    def __call__ (self, proxy, arguments):
+        # Set DVD report CSS flag
+        if hasattr(arguments, "new_value"):
+            try:
+                enabled = str2bool(arguments.new_value)
+            except ValueError:
+                raise CDEmuError(_("String '%s' is not a number") % (arguments[1]))
+
+            if arguments.device == "all":
+                try:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.Error as e:
+                    raise CDEmuError(_("Failed to get number of devices: %s") % (e))
+
+                print(_("Setting DVD report CSS/CPPM flag of all devices to %i.") % (enabled))
+                for device in range(0, num_devices):
+                    try:
+                        proxy.DeviceSetOption(device, "dvd-report-css", GLib.Variant("b", enabled))
+                    except GLib.Error as e:
+                        print_warning(_("Failed to set DVD report CSS/CPPM flag of device %i to %i: %s") % (device, enabled, e))
+                        continue
+            else:
+                try:
+                    device = int(arguments.device, 0)
+                except ValueError:
+                    raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
+
+                print(_("Setting DVD report CSS/CPPM flag of device %i to %i.") % (device, enabled))
+                try:
+                    proxy.DeviceSetOption(device, "dvd-report-css", GLib.Variant("b", enabled))
+                except GLib.Error as e:
+                    raise CDEmuError(_("Failed to set DVD report CSS/CPPM flag of device %i to %i: %s") % (device, enabled, e))
+
+        # Get DVD report CSS flag
+        else:
+            # Particular device vs. all devices
+            if arguments.device == "all":
+                try:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.Error as e:
+                    raise CDEmuError(_("Failed to get number of devices: %s") % (e))
+
+                print_header(_("Devices' DVD report CSS/CPPM flag:"))
+                print("%-5s %-10s" % (_("DEV"), _("ENABLED")))
+
+                for device in range(0, num_devices):
+                    try:
+                        enabled = proxy.DeviceGetOption(device, "dvd-report-css")
+                    except GLib.Error as e:
+                        print_warning(_("Failed to get DVD report CSS/CPPM flag of device %i: %s") % (device, e))
+                        continue
+
+                    print("%-5s %i" % (device, enabled))
+            else:
+                try:
+                    device = int(arguments.device, 0)
+                    enabled = proxy.DeviceGetOption(device, "dvd-report-css")
+                except GLib.Error as e:
+                    raise CDEmuError(_("Failed to get DVD report CSS/CPPM flag of device %i: %s") % (device, e))
+                except ValueError:
+                    raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
+
+                print(_("DVD report CSS/CPPM flag of device %i: %i") % (device, enabled))
+
+
+########################################################################
 #                               Device ID                              #
 ########################################################################
 class cmd_device_id (object):
@@ -1232,6 +1309,7 @@ def create_parser ():
     cmd_dpm_emulation(subparsers) # DPM emulation
     cmd_tr_emulation(subparsers) # TR emulation
     cmd_bad_sector_emulation(subparsers) # Bad sector emulation
+    cmd_dvd_report_css(subparsers) # DVD report CSS/CPPM
     cmd_device_id(subparsers) # Device ID
     cmd_enum_parsers(subparsers) # Enumerate parsers
     cmd_enum_writers(subparsers) # Enumerate writers
