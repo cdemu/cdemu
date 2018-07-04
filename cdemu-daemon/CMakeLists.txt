@@ -81,6 +81,7 @@ set (cdemu-daemon_SOURCES
     src/device.c
     src/device-commands.c
     src/device-delay.c
+    src/device-disc-structures.c
     src/device-features.c
     src/device-kernel-io.c
     src/device-load.c

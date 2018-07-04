@@ -1298,88 +1298,30 @@ static gboolean command_read_disc_structure (CdemuDevice *self, const guint8 *ra
         return FALSE;
     }
 
-    if (cdb->format == 0xFF) {
-        /* List of supported structures */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested structure: 0x%X; layer: %d\n", __debug__, cdb->format, cdb->layer);
 
-        /* This appears to be a capability list of the device rather
-           than the list of present structures on the disc. So we
-           return a hard-coded list based on the medium type */
+    /* Attempt to obtain the structure from the image */
+    const guint8 *struct_data = NULL;
+    gint struct_len = 0;
 
-        /* Note: the lengths that are not mandated by the MMC are taken
-           from what my current optical drive returns */
-        if (cdb->media_type == 0x00) {
-            /* DVD */
-            static const struct READ_DISC_STRUCTURE_FormatFF_Entry entries[] = {
-                { .format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x01, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x02, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 188) },
-                { .format_code = 0x04, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x05, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x06, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 20) },
-                { .format_code = 0x07, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 24576) },
-                { .format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x09, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x0A, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 12) },
-                { .format_code = 0x0B, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x0C, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 30720) },
-                { .format_code = 0x0D, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32772) },
-                { .format_code = 0x0E, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 64) },
-                { .format_code = 0x0F, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 18) },
-                { .format_code = 0x10, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x11, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 256) },
-                { .format_code = 0x20, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x21, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x22, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x23, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x24, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x30, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32768) },
-                { .format_code = 0x82, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32) },
-                { .format_code = 0x86, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 24576) },
-                { .format_code = 0xC0, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0xFF, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 112) },
-            };
-
-            memcpy(self->priv->buffer+sizeof(struct READ_DISC_STRUCTURE_Header), entries, sizeof(entries));
-            self->priv->buffer_size += sizeof(entries);
-        } else if (cdb->media_type == 0x01) {
-            /* BluRay */
-
-            /* For some reason, my physical drive reports length of 0 for all ...*/
-            static const struct READ_DISC_STRUCTURE_FormatFF_Entry entries[] = {
-                { .format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x09, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x0A, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x0F, .sds = 1, .rds = 0, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x12, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x30, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x80, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x81, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x82, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x84, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0xC0, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0xFF, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-            };
-
-            memcpy(self->priv->buffer+sizeof(struct READ_DISC_STRUCTURE_Header), entries, sizeof(entries));
-            self->priv->buffer_size += sizeof(entries);
-        }
+    if (mirage_disc_get_disc_structure(self->priv->disc, cdb->layer, cdb->format, &struct_data, &struct_len, NULL)) {
+        memcpy(self->priv->buffer+sizeof(struct READ_DISC_STRUCTURE_Header), struct_data, struct_len);
+        self->priv->buffer_size += struct_len;
     } else {
-        /* Try to get the structure */
-        const guint8 *tmp_data = NULL;
+        /* Structure not found in the image; try to fabricate it */
+        guint8 *tmp_data = NULL;
         gint tmp_len = 0;
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested structure: 0x%X; layer: %d\n", __debug__, cdb->format, cdb->layer);
-        if (!mirage_disc_get_disc_structure(self->priv->disc, cdb->layer, cdb->format, &tmp_data, &tmp_len, NULL)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: structure not present on disc!\n", __debug__);
+        if (!cdemu_device_generate_disc_structure(self, cdb->layer, cdb->format, &tmp_data, &tmp_len)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: structure %Xh in layer %Xh not provided by image and cannot be fabricated!\n", __debug__, cdb->format, cdb->layer);
             cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
 
         memcpy(self->priv->buffer+sizeof(struct READ_DISC_STRUCTURE_Header), tmp_data, tmp_len);
         self->priv->buffer_size += tmp_len;
+
+        g_free(tmp_data);
     }
 
     /* Header */

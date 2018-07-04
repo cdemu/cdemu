@@ -94,6 +94,8 @@ struct _CdemuDevicePrivate
     gboolean tr_emulation;
     gboolean bad_sector_emulation;
 
+    gboolean dvd_report_css;
+
     /* Device ID */
     gchar *id_vendor_id;
     gchar *id_product_id;
@@ -163,6 +165,9 @@ void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar 
 /* Delay emulation */
 void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors);
 void cdemu_device_delay_finalize (CdemuDevice *self);
+
+/* Disc structure fabrication */
+gboolean cdemu_device_generate_disc_structure (CdemuDevice *self, gint layer, gint format, guint8 **structure_buffer, gint *structure_length);
 
 /* Features */
 gpointer cdemu_device_get_feature (CdemuDevice *self, gint feature);

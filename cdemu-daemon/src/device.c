@@ -124,6 +124,8 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     self->priv->tr_emulation = FALSE;
     self->priv->bad_sector_emulation = FALSE;
 
+    self->priv->dvd_report_css = FALSE;
+
     return TRUE;
 }
 
