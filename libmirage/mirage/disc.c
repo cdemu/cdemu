@@ -163,7 +163,7 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
 }
 
 
-static void mirage_disc_generate_disc_structure (MirageDisc *self, gint layer, gint type)
+static void mirage_disc_generate_disc_structure_dvd (MirageDisc *self, gint layer, gint type)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
 
@@ -1392,7 +1392,9 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
 
     if (!array) {
         /* Structure needs to be fabricated (if appropriate) */
-        mirage_disc_generate_disc_structure(self, layer, type);
+        if (self->priv->medium_type == MIRAGE_MEDIUM_DVD) {
+            mirage_disc_generate_disc_structure_dvd(self, layer, type);
+        }
 
         /* Try getting it again */
         array = g_hash_table_lookup(self->priv->disc_structures, GINT_TO_POINTER(key));
