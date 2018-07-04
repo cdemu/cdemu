@@ -1263,12 +1263,12 @@ static gboolean command_read_disc_information (CdemuDevice *self, const guint8 *
     return TRUE;
 }
 
-/* READ DVD STRUCTURE*/
-static gboolean command_read_dvd_structure (CdemuDevice *self, const guint8 *raw_cdb)
+/* READ DISC STRUCTURE*/
+static gboolean command_read_disc_structure (CdemuDevice *self, const guint8 *raw_cdb)
 {
-    struct READ_DVD_STRUCTURE_CDB *cdb = (struct READ_DVD_STRUCTURE_CDB *)raw_cdb;
-    struct READ_DVD_STRUCTURE_Header *head = (struct READ_DVD_STRUCTURE_Header *)self->priv->buffer;
-    self->priv->buffer_size = sizeof(struct READ_DVD_STRUCTURE_Header);
+    struct READ_DISC_STRUCTURE_CDB *cdb = (struct READ_DISC_STRUCTURE_CDB *)raw_cdb;
+    struct READ_DISC_STRUCTURE_Header *head = (struct READ_DISC_STRUCTURE_Header *)self->priv->buffer;
+    self->priv->buffer_size = sizeof(struct READ_DISC_STRUCTURE_Header);
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
@@ -1294,7 +1294,7 @@ static gboolean command_read_dvd_structure (CdemuDevice *self, const guint8 *raw
         return FALSE;
     }
 
-    memcpy(self->priv->buffer+sizeof(struct READ_DVD_STRUCTURE_Header), tmp_data, tmp_len);
+    memcpy(self->priv->buffer+sizeof(struct READ_DISC_STRUCTURE_Header), tmp_data, tmp_len);
     self->priv->buffer_size += tmp_len;
 
     /* Header */
@@ -2532,9 +2532,9 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
           "READ DISC INFORMATION",
           command_read_disc_information,
           TRUE },
-        { READ_DVD_STRUCTURE,
+        { READ_DISC_STRUCTURE,
           "READ DISC STRUCTURE",
-          command_read_dvd_structure,
+          command_read_disc_structure,
           TRUE },
         { READ_TOC_PMA_ATIP,
           "READ TOC/PMA/ATIP",

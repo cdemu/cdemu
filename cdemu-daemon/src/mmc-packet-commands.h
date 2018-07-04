@@ -48,7 +48,7 @@ typedef enum {
     READ_CD = 0xBE,
     READ_CD_MSF = 0xB9,
     READ_DISC_INFORMATION = 0x51,
-    READ_DVD_STRUCTURE = 0xAD,
+    READ_DISC_STRUCTURE = 0xAD,
     READ_FORMAT_CAPACITIES = 0x23,
     READ_SUBCHANNEL = 0x42,
     READ_TOC_PMA_ATIP = 0x43,
@@ -1259,9 +1259,9 @@ struct READ_DISC_INFORMATION_Data
 
 
 /**********************************************************************\
- *                          READ DVD STRUCTURE                        *
+ *                         READ DISC STRUCTURE                        *
 \**********************************************************************/
-struct READ_DVD_STRUCTURE_CDB
+struct READ_DISC_STRUCTURE_CDB
 {
     guint8 code;
 
@@ -1293,14 +1293,14 @@ struct READ_DVD_STRUCTURE_CDB
 };
 
 
-struct READ_DVD_STRUCTURE_Header
+struct READ_DISC_STRUCTURE_Header
 {
     guint16 length;
     guint8 reserved1;
     guint8 reserved2;
 };
 
-struct READ_DVD_STRUCTURE_Format0_Descriptor
+struct READ_DISC_STRUCTURE_Format0_Descriptor
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 book_type : 4;
@@ -1374,7 +1374,7 @@ struct READ_DVD_STRUCTURE_Format0_Descriptor
 };
 
 
-struct READ_DVD_STRUCTURE_Format1_Descriptor
+struct READ_DISC_STRUCTURE_Format1_Descriptor
 {
    guint8 copy_protection;
    guint8 region_info;
@@ -1383,7 +1383,7 @@ struct READ_DVD_STRUCTURE_Format1_Descriptor
 };
 
 
-struct READ_DVD_STRUCTURE_Format4_Descriptor
+struct READ_DISC_STRUCTURE_Format4_Descriptor
 {
     guint8 disc_manufacturing_data[2048];
 };
