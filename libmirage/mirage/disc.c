@@ -162,71 +162,6 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __debug__);
 }
 
-
-static void mirage_disc_generate_disc_structure_dvd (MirageDisc *self, gint layer, gint type)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
-
-    switch (type) {
-        case 0x0000: {
-            MirageDiscStructurePhysicalInfo *phys_info = g_new0(MirageDiscStructurePhysicalInfo, 1);
-
-            gint disc_length = mirage_disc_layout_get_length(self);
-
-            phys_info->book_type = 0x00; /* DVD-ROM */
-            phys_info->part_ver = 0x05; /* Let's say we comply with v.5 of DVD-ROM book */
-            phys_info->disc_size = 0x00; /* 120mm disc */
-            phys_info->max_rate = 0x0F; /* Not specified */
-            phys_info->num_layers = 0x00; /* 0x00: 1 layer */
-            phys_info->track_path = 0; /* Parallell track path */
-            phys_info->layer_type = 1; /* Layer contains embossed data */
-            phys_info->linear_density = 0; /* 0.267 um/bit */
-            phys_info->track_density = 0; /* 0.74 um/track */
-            /* The following three fields are 24-bit... */
-            phys_info->data_start = GUINT32_FROM_BE(0x30000) >> 8; /* DVD-ROM */
-            phys_info->data_end = GUINT32_FROM_BE(0x30000+disc_length) >> 8; /* FIXME: It seems lead-in (out?) length should be subtracted here (241-244 sectors...) */
-            phys_info->layer0_end = GUINT32_FROM_BE(0x00) >>8; /* We don't contain multiple layers, but we don't use OTP, so we might get away with this */
-            phys_info->bca = 0;
-
-            /* Store the structure */
-            mirage_disc_set_disc_structure(self, layer, type, (const guint8 *)phys_info, sizeof(MirageDiscStructurePhysicalInfo));
-            break;
-        }
-        case 0x0001: {
-            MirageDiscStructureCopyright *copy_info = g_new0(MirageDiscStructureCopyright, 1);
-
-            GVariant *dvd_report_css_value;
-            gboolean dvd_report_css = FALSE;
-
-            dvd_report_css_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "dvd-report-css");
-            if (dvd_report_css_value) {
-                dvd_report_css = g_variant_get_boolean(dvd_report_css_value);
-                g_variant_unref(dvd_report_css_value);
-            }
-
-            if (dvd_report_css) {
-                copy_info->copy_protection = 0x01; /* CSS/CPPM */
-                copy_info->region_info = 0x00; /* Playable in all regions */
-            } else {
-                copy_info->copy_protection = 0x00;/* None */
-                copy_info->region_info = 0x00; /* N/A */
-            }
-
-            /* Store the structure */
-            mirage_disc_set_disc_structure(self, layer, type, (const guint8 *)copy_info, sizeof(MirageDiscStructureCopyright));
-            break;
-        }
-        case 0x0004: {
-            MirageDiscStructureManufacturingData *manu_info = g_new0(MirageDiscStructureManufacturingData, 1);
-
-            /* Store the structure */
-            mirage_disc_set_disc_structure(self, layer, type, (const guint8 *)manu_info, sizeof(MirageDiscStructureManufacturingData));
-            break;
-        }
-    }
-}
-
-
 static gint sort_sessions_by_number (MirageSession *session1, MirageSession *session2)
 {
     gint number1 = mirage_session_layout_get_session_number(session1);
@@ -1391,18 +1326,8 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
     array = g_hash_table_lookup(self->priv->disc_structures, GINT_TO_POINTER(key));
 
     if (!array) {
-        /* Structure needs to be fabricated (if appropriate) */
-        if (self->priv->medium_type == MIRAGE_MEDIUM_DVD) {
-            mirage_disc_generate_disc_structure_dvd(self, layer, type);
-        }
-
-        /* Try getting it again */
-        array = g_hash_table_lookup(self->priv->disc_structures, GINT_TO_POINTER(key));
-
-        if (!array) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Disc structure data not provided and could not be fabricated!"));
-            return FALSE;
-        }
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Disc structure data not provided!"));
+        return FALSE;
     }
 
     if (data) {
