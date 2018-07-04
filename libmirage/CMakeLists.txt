@@ -124,7 +124,6 @@ set (libmirage_HEADERS
     mirage/contextual.h
     mirage/debug.h
     mirage/disc.h
-    mirage/disc-structures.h
     mirage/error.h
     mirage/file-stream.h
     mirage/filter-stream.h
@@ -212,7 +211,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/mirage ${PROJECT_BINARY_DIR}/mirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/reference
-        IGNORE_HFILES "compat-input-stream.h disc-structures.h"
+        IGNORE_HFILES "compat-input-stream.h"
         CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/mirage
         LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}

@@ -41,7 +41,6 @@
 #include <mirage/cdtext-coder.h>
 #include <mirage/debug.h>
 #include <mirage/disc.h>
-#include <mirage/disc-structures.h>
 #include <mirage/error.h>
 #include <mirage/file-stream.h>
 #include <mirage/filter-stream.h>
