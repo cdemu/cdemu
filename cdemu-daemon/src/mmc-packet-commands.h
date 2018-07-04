@@ -1266,11 +1266,11 @@ struct READ_DISC_STRUCTURE_CDB
     guint8 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 reserved1 : 3;
-        guint8 reserved2 : 5;
+        guint8 reserved1  : 4;
+        guint8 media_type : 4;
     #else
-        guint8 reserved2 : 5;
-        guint8 reserved1 : 3;
+        guint8 media_type : 4;
+        guint8 reserved1  : 4;
     #endif
 
     guint32 lba;
@@ -1283,9 +1283,9 @@ struct READ_DISC_STRUCTURE_CDB
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 agid      : 2;
-        guint8 reserved3 : 6;
+        guint8 reserved2 : 6;
     #else
-        guint8 reserved3 : 6;
+        guint8 reserved2 : 6;
         guint8 agid      : 2;
     #endif
 

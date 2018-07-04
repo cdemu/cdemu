@@ -1277,9 +1277,24 @@ static gboolean command_read_disc_structure (CdemuDevice *self, const guint8 *ra
         return FALSE;
     }
 
-    if (self->priv->current_profile != PROFILE_DVDROM) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ DVD STRUCTURE is supported only with DVD media\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, CANNOT_READ_MEDIUM_INCOMPATIBLE_FORMAT);
+    /* Validate media type */
+    if (cdb->media_type == 0x00) {
+        /* DVD and HD DVD types */
+        if (self->priv->current_profile != PROFILE_DVDROM && self->priv->current_profile != PROFILE_DVDPLUSR) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested to read DVD structure from non-DVD medium!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            return FALSE;
+        }
+    } else if (cdb->media_type == 0x01) {
+        /* BD */
+        if (self->priv->current_profile != PROFILE_BDROM && self->priv->current_profile != PROFILE_BDR_SRM) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested to read BD structure from non-BD medium!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            return FALSE;
+        }
+    } else {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid medium type code!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
