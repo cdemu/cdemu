@@ -187,6 +187,9 @@ GVariant *cdemu_device_get_option (CdemuDevice *self, gchar *option_name, GError
     } else if (!g_strcmp0(option_name, "bad-sector-emulation")) {
         /* *** bad-sector-emulation *** */
         option_value = g_variant_new("b", self->priv->bad_sector_emulation);
+    } else if (!g_strcmp0(option_name, "dvd-report-css")) {
+        /* *** dvd-report-css *** */
+        option_value = g_variant_new("b", self->priv->dvd_report_css);
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */
         option_value = g_variant_new("(ssss)", self->priv->id_vendor_id, self->priv->id_product_id, self->priv->id_revision, self->priv->id_vendor_specific);
@@ -245,6 +248,14 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
             succeeded = FALSE;
         } else {
             g_variant_get(option_value, "b", &self->priv->bad_sector_emulation);
+        }
+    } else if (!g_strcmp0(option_name, "dvd-report-css")) {
+        /* *** dvd-report-css *** */
+        if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("b"))) {
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
+            succeeded = FALSE;
+        } else {
+            g_variant_get(option_value, "b", &self->priv->dvd_report_css);
         }
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */

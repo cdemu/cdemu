@@ -384,7 +384,6 @@ control the daemon:
         Currently supported parameters:
             - "password": password for encrypted images (string)
             - "encoding": encoding for text-based images (string)
-            - "dvd-report-css": boolean indicating whether DVD image should report CSS or not
 
     - Attempts to load the image into specified device.
     - The client might wish to detect MIRAGE_E_NEEDPASSWORD error, which
@@ -514,6 +513,13 @@ is of type G_TYPE_INT.
      code (EDC) over it, and comparing it to stored EDC; if the two do not
      match, sector is proclaimed as a bad one. Some copy-protection schemes
      rely on this behavior.
+
+* dvd-report-css
+   + arguments: enabled (boolean - "b")
+
+   - A boolean indicating whether the DVD should report CSS/CPPM or not.
+     This flag might be required by some media players when a raw
+     image of a CSS-protected DVD is loaded into virtual device.
 
 * device-id
    + arguments: vendor_id, product_id, revision, vendor_specific  (tuple of strings:  - "(ssss)"
