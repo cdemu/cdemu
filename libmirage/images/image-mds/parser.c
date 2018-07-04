@@ -297,49 +297,46 @@ static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
        data consists of 8200 bytes, containing afore-mentioned sequence for each
        layer. */
     if (self->priv->header->disc_structures_offset) {
-        MirageDiscStructureCopyright *copy_info;
-        MirageDiscStructureManufacturingData *manu_info;
-        MirageDiscStructurePhysicalInfo *phys_info;
-
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc structures\n", __debug__);
 
         cur_ptr = self->priv->mds_data + self->priv->header->disc_structures_offset;
 
-        /* DVD copyright information */
-        copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureCopyright *);
-        cur_ptr += sizeof(MirageDiscStructureCopyright);
+        /* 0x0001: DVD copyright information */
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0001, cur_ptr, 4);
+        cur_ptr += 4;
 
-        /* DVD manufacture information */
-        manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureManufacturingData *);
-        cur_ptr += sizeof(MirageDiscStructureManufacturingData);
+        /* 0x0004: DVD manufacturing information */
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0004, cur_ptr, 2048);
+        cur_ptr += 2048;
 
-        /* Physical information */
-        phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructurePhysicalInfo *);
-        cur_ptr += sizeof(MirageDiscStructurePhysicalInfo);
+        /* 0x0000: Physical information */
+        int num_layers = (cur_ptr[2] & 0x60) >> 4; /* Bits 5 and 6 of byte 2 comprise num_layers field */
+        if (num_layers == 0x01) {
+            num_layers = 2; /* field value 01b specifies 2 layers */
+        } else {
+            num_layers = 1; /* field value 00b specifies 1 layer */
+        }
 
-        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
-        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
-        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of layers: %d\n", __debug__, num_layers);
+
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0000, cur_ptr, 2048);
+        cur_ptr += 2048;
 
         /* Second round if it's dual-layer... */
-        if (phys_info->num_layers == 0x01) {
+        if (num_layers == 2) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dual-layer disc; reading disc structures for second layer\n", __debug__);
 
-            /* DVD copyright information */
-            copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureCopyright *);
-            cur_ptr += sizeof(MirageDiscStructureCopyright);
+            /* 0x0001: DVD copyright information */
+            mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0001, cur_ptr, 4);
+            cur_ptr += 4;
 
-            /* DVD manufacture information */
-            manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureManufacturingData *);
-            cur_ptr += sizeof(MirageDiscStructureManufacturingData);
+            /* 0x0004: DVD manufacturing information */
+            mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0004, cur_ptr, 2048);
+            cur_ptr += 2048;
 
-            /* Physical information */
-            phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructurePhysicalInfo *);
-            cur_ptr += sizeof(MirageDiscStructurePhysicalInfo);
-
-            mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
-            mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
-            mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
+            /* 0x0000: Physical information */
+            mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0000, cur_ptr, 2048);
+            cur_ptr += 2048;
         }
     }
 }
