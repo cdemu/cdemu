@@ -1388,6 +1388,23 @@ struct READ_DISC_STRUCTURE_Format4_Descriptor
     guint8 disc_manufacturing_data[2048];
 };
 
+struct READ_DISC_STRUCTURE_FormatFF_Entry
+{
+    guint8 format_code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 sds : 1;
+        guint8 rds : 1;
+        guint8 reserved1 : 6;
+    #else
+        guint8 reserved1 : 6;
+        guint8 rds : 1;
+        guint8 sds : 1;
+    #endif
+
+    guint16 structure_length;
+};
+
 
 /**********************************************************************\
  *                         READ FORMAT CAPACITIES                     *
