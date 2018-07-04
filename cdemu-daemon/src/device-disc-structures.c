@@ -123,30 +123,55 @@ struct DVD_STRUCTURE_Copyright
 // *********************************************************************
 // *                             DVD disc                              *
 // *********************************************************************
-static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint layer, gint format, guint8 **structure_buffer, gint *structure_length)
+static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint layer G_GNUC_UNUSED, gint format, guint8 **structure_buffer, gint *structure_length)
 {
+    /* Clear the outputs, just in case */
+    *structure_buffer = NULL;
+    *structure_length = 0;
+
     switch (format) {
         case 0x00: {
             /* 00h: Physical Format Information */
             struct DVD_STRUCTURE_PhysicalFormat *info = g_new0(struct DVD_STRUCTURE_PhysicalFormat, 1);
 
             gint disc_length = mirage_disc_layout_get_length(self->priv->disc);
+            gint num_layers = (disc_length >= 2295104) ? 2 : 1; /* Attempt to detect dual-layer disc */
 
-            info->book_type = 0x00; /* DVD-ROM */
-            info->part_ver = 0x05; /* Let's say we comply with v.5 of DVD-ROM book */
-            info->disc_size = 0x00; /* 120mm disc */
-            info->max_rate = 0x0F; /* Not specified */
-            info->num_layers = 0x00; /* 0x00: 1 layer */
-            info->track_path = 0; /* Parallell track path */
-            info->layer_type = 1; /* Layer contains embossed data */
-            info->linear_density = 0; /* 0.267 um/bit */
-            info->track_density = 0; /* 0.74 um/track */
+            if (self->priv->current_profile == PROFILE_DVDROM) {
+                /* DVD-ROM */
+                info->book_type = 0x00; /* DVD-ROM */
+                info->part_ver = 0x01;
+                info->disc_size = 0x00; /* 120mm disc */
+                info->max_rate = 0x02; /* 10.08 Mbps */
+                info->num_layers = (num_layers == 2); /* 0x00: 1 layer, 0x01: 2 layers */
+                info->track_path = 0; /* Parallell track path */
+                info->layer_type = 1 << 0; /* Layer contains embossed data (bit 0) */
+                info->linear_density = 0; /* 0.267 um/bit */
+                info->track_density = 0; /* 0.74 um/track */
 
-            /* The following three fields are 24-bit... */
-            info->data_start = GUINT32_FROM_BE(0x30000) >> 8; /* DVD-ROM */
-            info->data_end = GUINT32_FROM_BE(0x30000+disc_length) >> 8; /* FIXME: It seems lead-in (out?) length should be subtracted here (241-244 sectors...) */
-            info->layer0_end = GUINT32_FROM_BE(0x00) >>8; /* We don't contain multiple layers, but we don't use OTP, so we might get away with this */
-            info->bca = 0;
+                /* The following three fields are 24-bit... */
+                info->data_start = GUINT32_FROM_BE(0x30000) >> 8; /* DVD-ROM, DVD-R/-RW, DVD+RW */
+                info->data_end = GUINT32_FROM_BE(0x30000+disc_length) >> 8; /* FIXME: It seems lead-in (out?) length should be subtracted here (241-244 sectors...) */
+                info->layer0_end = GUINT32_FROM_BE(0x00) >>8; /* We do not use Opposite track path, so leave at 0 */
+                info->bca = 0;
+            } else {
+                /* DVD+R */
+                info->book_type = 0x0A; /* DVD+R */
+                info->part_ver = 0x02;
+                info->disc_size = 0x00; /* 120mm disc */
+                info->max_rate = 0x0F; /* Max rate unspecified */
+                info->num_layers = 0; /* Single layer */
+                info->track_path = 0; /* Parallel track path */
+                info->layer_type = 1 << 1; /* Layer contains recordable area (bit 1) */
+                info->linear_density = 0; /* 0.267 um/bit */
+                info->track_density = 0; /* 0.74 um/track */
+
+                /* The following three fields are 24-bit... */
+                info->data_start = GUINT32_FROM_BE(0x30000) >> 8; /* DVD-ROM, DVD-R/-RW, DVD+RW */
+                info->data_end = GUINT32_FROM_BE(0x260500) >> 8; /* Max capacity? */
+                info->layer0_end = GUINT32_FROM_BE(0x00) >>8; /* We do not use Opposite track path, so leave at 0 */
+                info->bca = 0;
+            }
 
             *structure_buffer = (guint8 *)info;
             *structure_length = sizeof(struct DVD_STRUCTURE_Copyright);
@@ -225,9 +250,6 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
         }
     }
 
-    *structure_buffer = NULL;
-    *structure_length = 0;
-
     return FALSE;
 }
 
@@ -235,7 +257,7 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
 // *********************************************************************
 // *                            BluRay disc                            *
 // *********************************************************************
-static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self, gint layer, gint format, guint8 **structure_buffer, gint *structure_length)
+static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self G_GNUC_UNUSED, gint layer G_GNUC_UNUSED, gint format G_GNUC_UNUSED, guint8 **structure_buffer, gint *structure_length)
 {
     switch (format) {
         case 0xFF: {
