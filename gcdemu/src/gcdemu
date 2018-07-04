@@ -433,6 +433,7 @@ class CDEmuDevice (GObject.GObject):
         self.dpm_emulation = self.proxy.DeviceGetOption(self.number, "dpm-emulation")
         self.tr_emulation = self.proxy.DeviceGetOption(self.number, "tr-emulation")
         self.bad_sector_emulation = self.proxy.DeviceGetOption(self.number, "bad-sector-emulation")
+        self.dvd_report_css = self.proxy.DeviceGetOption(self.number, "dvd-report-css")
         self.device_id = self.proxy.DeviceGetOption(self.number, "device-id")
         self.daemon_debug_mask = self.proxy.DeviceGetOption(self.number, "daemon-debug-mask")
         self.library_debug_mask = self.proxy.DeviceGetOption(self.number, "library-debug-mask")
@@ -467,6 +468,9 @@ class CDEmuDevice (GObject.GObject):
         elif option == "bad-sector-emulation":
             self.bad_sector_emulation = self.proxy.DeviceGetOption(self.number, "bad-sector-emulation")
             self.emit("bad-sector-emulation-changed")
+        elif option == "dvd-report-css":
+            self.dvd_report_css = self.proxy.DeviceGetOption(self.number, "dvd-report-css")
+            self.emit("dvd-report-css-changed")
         elif option == "daemon-debug-mask":
             self.daemon_debug_mask = self.proxy.DeviceGetOption(self.number, "daemon-debug-mask")
             self.emit("daemon-debug-mask-changed")
@@ -558,6 +562,15 @@ class CDEmuDevice (GObject.GObject):
         except GLib.Error as e:
             self.emit("error", _("Failed to set bad sector emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
+    def set_dvd_report_css (self, value):
+        if self.dvd_report_css == value:
+            return
+
+        try:
+            self.proxy.DeviceSetOption(self.number, "dvd-report-css", GLib.Variant('b', value))
+        except GLib.Error as e:
+            self.emit("error", _("Failed to set DVD report CSS/CPPM for device #%02d to %i:\n%s") % (self.number, value, e))
+
 
     def set_daemon_debug_mask (self, value):
         if self.daemon_debug_mask == value:
@@ -599,6 +612,10 @@ GObject.signal_new("tr-emulation-changed", CDEmuDevice,
     None,
     ())
 GObject.signal_new("bad-sector-emulation-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    ())
+GObject.signal_new("dvd-report-css-changed", CDEmuDevice,
     GObject.SignalFlags.RUN_FIRST,
     None,
     ())
@@ -857,6 +874,12 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
         self.add(checkbutton)
         self.checkbutton_bad_sector = checkbutton
 
+        # *** DVD report CSS ***
+        checkbutton = Gtk.CheckButton(_("DVD report CSS/CPPM"), False)
+        checkbutton.connect("toggled", lambda t: self.emit("dvd-report-css-changed", t.get_active()))
+        self.add(checkbutton)
+        self.checkbutton_dvd_report_css = checkbutton
+
         self.show_all()
 
 
@@ -882,6 +905,8 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
     def set_bad_sector_emulation (self, value):
         self.checkbutton_bad_sector.set_active(value)
 
+    def set_dvd_report_css (self, value):
+        self.checkbutton_dvd_report_css.set_active(value)
 
 GObject.type_register(gCDEmuDeviceOptionsPage)
 GObject.signal_new("device-id-changed", gCDEmuDeviceOptionsPage,
@@ -897,6 +922,10 @@ GObject.signal_new("tr-emulation-changed", gCDEmuDeviceOptionsPage,
     None,
     (GObject.TYPE_BOOLEAN,))
 GObject.signal_new("bad-sector-emulation-changed", gCDEmuDeviceOptionsPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_BOOLEAN,))
+GObject.signal_new("dvd-report-css-changed", gCDEmuDeviceOptionsPage,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_BOOLEAN,))
@@ -1013,7 +1042,6 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         # Clear parameters
         self.combobox_encoding.set_active(0)
         self.entry_password.set_text("")
-        self.check_button_css.set_active(False)
 
         # Run the dialog
         return Gtk.FileChooserDialog.run(self)
@@ -1031,10 +1059,6 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         password = self.entry_password.get_text()
         if password:
             parameters["password"] = GLib.Variant("s", password)
-
-        # CSS-encrypted DVD flag
-        if self.check_button_css.get_active():
-            parameters["dvd-report-css"] = GLib.Variant("b", True)
 
         return parameters
 
@@ -1077,12 +1101,6 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         entry.set_visibility(False)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_password = entry
-
-
-        # *** CSS-encrypted DVD flag ***
-        checkbutton = Gtk.CheckButton(_("Raw image of CSS-encrypted DVD"))
-        grid.attach(checkbutton, 0, 2, 2, 1)
-        self.check_button_css = checkbutton
 
 
         expander.show_all()
@@ -1500,6 +1518,7 @@ class gCDEmuDevice (GObject.GObject):
         self.connect_signal(self.page_options, "dpm-emulation-changed", lambda w, v: self.device.set_dpm_emulation(v))
         self.connect_signal(self.page_options, "tr-emulation-changed", lambda w, v: self.device.set_tr_emulation(v))
         self.connect_signal(self.page_options, "bad-sector-emulation-changed", lambda w, v: self.device.set_bad_sector_emulation(v))
+        self.connect_signal(self.page_options, "dvd-report-css-changed", lambda w, v: self.device.set_dvd_report_css(v))
 
         # Page: daemon debug mask
         self.page_daemon = gCDEmuDeviceDebugMaskPage(_("Daemon debug mask"), cdemu.daemon_debug_masks)
@@ -1518,6 +1537,7 @@ class gCDEmuDevice (GObject.GObject):
         self.connect_signal(self.device, "dpm-emulation-changed", lambda w: self.update_dpm_emulation(True))
         self.connect_signal(self.device, "tr-emulation-changed", lambda w: self.update_tr_emulation(True))
         self.connect_signal(self.device, "bad-sector-emulation-changed", lambda w: self.update_bad_sector_emulation(True))
+        self.connect_signal(self.device, "dvd-report-css-changed", lambda w: self.update_dvd_report_css(True))
         self.connect_signal(self.device, "daemon-debug-mask-changed", lambda w: self.update_daemon_debug_mask(True))
         self.connect_signal(self.device, "library-debug-mask-changed", lambda w: self.update_library_debug_mask(True))
         self.connect_signal(self.device, "error", lambda w, t: self.show_error(t))
@@ -1532,6 +1552,7 @@ class gCDEmuDevice (GObject.GObject):
         self.update_dpm_emulation(False)
         self.update_tr_emulation(False)
         self.update_bad_sector_emulation(False)
+        self.update_dvd_report_css(False)
         self.update_daemon_debug_mask(False)
         self.update_library_debug_mask(False)
 
@@ -1589,6 +1610,11 @@ class gCDEmuDevice (GObject.GObject):
         self.page_options.set_bad_sector_emulation(self.device.bad_sector_emulation)
         if notify:
             self.emit("device-notification", _("Device option change"), _("Device #%02d has had its bad sector emulation option changed. New value: %s") % (self.device.number, self.device.bad_sector_emulation))
+
+    def update_dvd_report_css (self, notify = False):
+        self.page_options.set_dvd_report_css(self.device.dvd_report_css)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its DVD report CSS/CPPM option changed. New value: %s") % (self.device.number, self.device.dvd_report_css))
 
     def update_daemon_debug_mask (self, notify = False):
         self.page_daemon.set_debug_mask(self.device.daemon_debug_mask)
