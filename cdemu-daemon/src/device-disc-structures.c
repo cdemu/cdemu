@@ -21,6 +21,11 @@
 #include "device-private.h"
 
 
+/**********************************************************************\
+ *                          Disc structures                           *
+\**********************************************************************/
+#pragma pack(1)
+
 struct DISC_STRUCTURE_ListEntry
 {
     guint8 format_code;
@@ -119,10 +124,12 @@ struct DVD_STRUCTURE_Copyright
     guint8   reserved2;
 };
 
+#pragma pack()
 
-// *********************************************************************
-// *                             DVD disc                              *
-// *********************************************************************
+
+/**********************************************************************\
+ *                              DVD disc                              *
+\**********************************************************************/
 static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint layer G_GNUC_UNUSED, gint format, guint8 **structure_buffer, gint *structure_length)
 {
     /* Clear the outputs, just in case */
@@ -254,9 +261,9 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
 }
 
 
-// *********************************************************************
-// *                            BluRay disc                            *
-// *********************************************************************
+/**********************************************************************\
+ *                            Blu-ray disc                            *
+\**********************************************************************/
 static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self G_GNUC_UNUSED, gint layer G_GNUC_UNUSED, gint format G_GNUC_UNUSED, guint8 **structure_buffer, gint *structure_length)
 {
     switch (format) {
