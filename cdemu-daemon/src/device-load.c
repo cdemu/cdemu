@@ -55,6 +55,14 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         return FALSE;
     }
 
+    /* Mark loaded discs as non-writable */
+    self->priv->recordable_disc = FALSE;
+    self->priv->rewritable_disc = FALSE;
+    self->priv->disc_closed = TRUE;
+
+    /* Loading succeeded */
+    self->priv->loaded = TRUE;
+
     /* Set current profile (and modify feature flags accordingly */
     medium_type = mirage_disc_get_medium_type(self->priv->disc);
     switch (medium_type) {
@@ -76,13 +84,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         }
     }
 
-    /* Mark loaded discs as non-writable */
-    self->priv->recordable_disc = FALSE;
-    self->priv->rewritable_disc = FALSE;
-    self->priv->disc_closed = TRUE;
-
-    /* Loading succeeded */
-    self->priv->loaded = TRUE;
+    /* Signal event */
     self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
 
     /* Send notification */
@@ -230,13 +232,16 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
     self->priv->open_session = NULL;
     self->priv->open_track = NULL;
 
+    /* Loading succeeded */
+    self->priv->loaded = TRUE;
+
+    /* Set profile */
     cdemu_device_set_profile(self, profile_index);
 
     /* Set default recording mode */
     cdemu_device_recording_set_mode(self, 1); /* TAO */
 
-    /* Loading succeeded */
-    self->priv->loaded = TRUE;
+    /* Signal event */
     self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
 
     /* Send notification */
