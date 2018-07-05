@@ -267,6 +267,21 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
 static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self G_GNUC_UNUSED, gint layer G_GNUC_UNUSED, gint format G_GNUC_UNUSED, guint8 **structure_buffer, gint *structure_length)
 {
     switch (format) {
+        case 0x00: {
+            /* Disc Information (DI) */
+
+            /* The disc information structure consists of one or more
+               disc information (DI) units and emergency brake (EB) data
+               units. The structure of the former is only roughly
+               outlined in the MMC-5, while details are in BluRay specs
+               that are not publicly available.
+
+               Therefore, for now, we return only zeroed data buffer.*/
+            *structure_buffer = g_malloc0(4096);
+            *structure_length = 4096;
+
+            return TRUE;
+        }
         case 0xFF: {
             /* For some reason, my physical drive reports length of 0 for all ...*/
             static const struct DISC_STRUCTURE_ListEntry entries[] = {
