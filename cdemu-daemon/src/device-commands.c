@@ -317,6 +317,191 @@ static gboolean command_get_event_status_notification (CdemuDevice *self, const 
 }
 
 /* GET PERFORMANCE */
+static void __copy_performance_descriptors (struct GET_PERFORMANCE_00_Header *header,
+                                            struct GET_PERFORMANCE_00_Descriptor *descriptors,
+                                            gint num_descriptors,
+                                            gint max_descriptors)
+{
+    /* Copy the descriptors behind header */
+    gint total_descriptors = MIN(num_descriptors, max_descriptors);
+    if (total_descriptors) {
+        memcpy(header + 1, descriptors, total_descriptors * sizeof(struct GET_PERFORMANCE_00_Descriptor));
+    }
+
+    /* Modify the header's data_length based on number of descriptors*/
+    header->data_length = GUINT32_TO_BE(4 + total_descriptors*sizeof(struct GET_PERFORMANCE_00_Descriptor));
+}
+
+static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFORMANCE_CDB *cdb)
+{
+    struct GET_PERFORMANCE_00_Header *ret_header = (struct GET_PERFORMANCE_00_Header *)self->priv->buffer;
+    self->priv->buffer_size = sizeof(struct GET_PERFORMANCE_00_Header);
+
+    /* Initialize header */
+    ret_header->data_length = GUINT32_TO_BE(4); /* No descriptors */
+    ret_header->except = cdb->except;
+    ret_header->write = cdb->write;
+
+    /* Validate the tolerance field - must be 10b */
+    if (cdb->tolerance != 2) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: tolerance field is not 10b!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        return FALSE;
+    }
+
+
+    if (cdb->except) {
+        /* Return no descriptors for exception data */
+        return TRUE;
+    }
+
+    if (cdb->write) {
+        /* *** Writing performance descriptors *** */
+
+        /* If no disc is loaded, return default */
+        if (!self->priv->loaded) {
+            struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                {
+                    .start_lba = GUINT32_TO_BE(0),
+                    .start_performance =  GUINT32_TO_BE(0x00005690),
+                    .end_lba = GUINT32_TO_BE(0),
+                    .end_performance = GUINT32_TO_BE(0x00005690)
+                }
+            };
+            __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+            return TRUE;
+        }
+
+        /* If disc is not recordable, return no descriptors */
+        if (!self->priv->recordable_disc) {
+            return TRUE;
+        }
+
+        gint medium_type = mirage_disc_get_medium_type(self->priv->disc);
+        switch (medium_type) {
+            case MIRAGE_MEDIUM_CD: {
+                /* CD-R */
+                struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                    {
+                        .start_lba = GUINT32_TO_BE(0),
+                        .start_performance =  GUINT32_TO_BE(0x00000B4E),
+                        .end_lba = GUINT32_TO_BE(0x0004B0BA),
+                        .end_performance = GUINT32_TO_BE(0x00001B90)
+                    }, {
+                        .start_lba = GUINT32_TO_BE(0x0004B0BA),
+                        .start_performance =  GUINT32_TO_BE(0x00001B90),
+                        .end_lba = GUINT32_TO_BE(self->priv->medium_capacity),
+                        .end_performance = GUINT32_TO_BE(0x00001B90)
+                    }
+                };
+                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                return TRUE;
+            }
+            case MIRAGE_MEDIUM_DVD: {
+                /* DVD+R */
+                struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                    {
+                        .start_lba = GUINT32_TO_BE(0),
+                        .start_performance =  GUINT32_TO_BE(0x000015A4),
+                        .end_lba = GUINT32_TO_BE(self->priv->medium_capacity),
+                        .end_performance = GUINT32_TO_BE(0x000015A4)
+                    }
+                };
+                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                return TRUE;
+            }
+            case MIRAGE_MEDIUM_BD: {
+                /* BD-R */
+                struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                    {
+                        .start_lba = GUINT32_TO_BE(0),
+                        .start_performance =  GUINT32_TO_BE(0x0000231E),
+                        .end_lba = GUINT32_TO_BE(self->priv->medium_capacity),
+                        .end_performance = GUINT32_TO_BE(0x0000231E)
+                    }
+                };
+                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                return TRUE;
+            }
+            default: {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: writing performance descriptors are not implemented for medium type %d!\n", __debug__, medium_type);
+                break;
+            }
+        }
+    } else {
+        /* *** Reading performance descriptors *** */
+
+        /* If no disc is loaded, return default */
+        if (!self->priv->loaded) {
+            struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                {
+                    .start_lba = GUINT32_TO_BE(0),
+                    .start_performance =  GUINT32_TO_BE(0x00002383),
+                    .end_lba = GUINT32_TO_BE(0),
+                    .end_performance = GUINT32_TO_BE(0x00005690)
+                }
+            };
+            __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+            return TRUE;
+        }
+
+        gint medium_type = mirage_disc_get_medium_type(self->priv->disc);
+        gint disc_length = mirage_disc_layout_get_length(self->priv->disc);
+        if (self->priv->recordable_disc) {
+            disc_length = self->priv->medium_capacity;
+        }
+
+        switch (medium_type) {
+            case MIRAGE_MEDIUM_CD: {
+                /* CD-ROM */
+                struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                    {
+                        .start_lba = GUINT32_TO_BE(0),
+                        .start_performance =  GUINT32_TO_BE(0x00000B4E),
+                        .end_lba = GUINT32_TO_BE(disc_length),
+                        .end_performance = GUINT32_TO_BE(0x00001B90)
+                    }
+                };
+                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                return TRUE;
+            }
+            case MIRAGE_MEDIUM_DVD: {
+                /* DVD-ROM */
+                struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                    {
+                        .start_lba = GUINT32_TO_BE(0),
+                        .start_performance =  GUINT32_TO_BE(0x00001AA2),
+                        .end_lba = GUINT32_TO_BE(disc_length),
+                        .end_performance = GUINT32_TO_BE(0x000040EC)
+                    }
+                };
+                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                return TRUE;
+            }
+            case MIRAGE_MEDIUM_BD: {
+                /* BD-ROM */
+                struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
+                    {
+                        .start_lba = GUINT32_TO_BE(0),
+                        .start_performance =  GUINT32_TO_BE(0x000039A0),
+                        .end_lba = GUINT32_TO_BE(disc_length),
+                        .end_performance = GUINT32_TO_BE(0x00008C78)
+                    }
+                };
+                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                return TRUE;
+            }
+            default: {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: reading performance descriptors are not implemented for medium type %d!\n", __debug__, medium_type);
+                break;
+            }
+        }
+    }
+
+    return TRUE;
+}
+
+
 static gboolean command_get_performance (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct GET_PERFORMANCE_CDB *cdb = (struct GET_PERFORMANCE_CDB *)raw_cdb;
@@ -325,96 +510,14 @@ static gboolean command_get_performance (CdemuDevice *self, const guint8 *raw_cd
     switch (cdb->type) {
         case 0x00: {
             /* Performance */
+            if (!__get_performance_00(self, cdb)) {
+                return FALSE;
+            }
+
+            /* Modify buffer length based on header size */
             struct GET_PERFORMANCE_00_Header *ret_header = (struct GET_PERFORMANCE_00_Header *)self->priv->buffer;
-            self->priv->buffer_size = sizeof(struct GET_PERFORMANCE_00_Header);
+            self->priv->buffer_size = 4 + GUINT32_FROM_BE(ret_header->data_length);
 
-            MirageMediumType medium_type = MIRAGE_MEDIUM_CD;
-            gint end_address = 93*60*75 - 151; /* My drive returns data for 93-minute disc by default */
-
-            /* Determine type of medium and its capacity */
-            if (self->priv->loaded) {
-                medium_type = mirage_disc_get_medium_type(self->priv->disc);
-
-                if (self->priv->recordable_disc) {
-                    if (medium_type == MIRAGE_MEDIUM_CD) {
-                        end_address = self->priv->medium_capacity - 151;
-                    } else {
-                        end_address = self->priv->medium_capacity;
-                    }
-                } else {
-                    switch (medium_type) {
-                        case MIRAGE_MEDIUM_CD: {
-                            end_address = 80*60*75 - 150;
-                            break;
-                        }
-                        case MIRAGE_MEDIUM_DVD: {
-                            end_address = 2295104;
-                            break;
-                        }
-                        default: {
-                            /* Do nothing */
-                            break;
-                        }
-                    }
-                }
-            }
-
-            /* Create descriptors */
-            gint num_descriptors = 0;
-            switch (medium_type) {
-                case MIRAGE_MEDIUM_CD: {
-                    /* We have two descriptors for CD */
-                    num_descriptors = 2;
-
-                    if (max_descriptors >= 1) {
-                        struct GET_PERFORMANCE_00_Descriptor *descriptor = (struct GET_PERFORMANCE_00_Descriptor *)(self->priv->buffer + self->priv->buffer_size);
-
-                        descriptor->start_lba = GUINT32_TO_BE(0);
-                        descriptor->start_performance = GUINT32_TO_BE(0x0DC8);
-                        descriptor->end_lba = GUINT32_TO_BE(0x4F9D3);
-                        descriptor->end_performance = GUINT32_TO_BE(0x2113);
-
-                        self->priv->buffer_size += sizeof(struct GET_PERFORMANCE_00_Descriptor);
-                    }
-
-                    if (max_descriptors >= 2) {
-                        struct GET_PERFORMANCE_00_Descriptor *descriptor = (struct GET_PERFORMANCE_00_Descriptor *)(self->priv->buffer + self->priv->buffer_size);
-
-                        descriptor->start_lba = GUINT32_TO_BE(0x4F9D4);
-                        descriptor->start_performance = GUINT32_TO_BE(0x2113);
-                        descriptor->end_lba = GUINT32_TO_BE(end_address);
-                        descriptor->end_performance = GUINT32_TO_BE(0x2113);
-
-                        self->priv->buffer_size += sizeof(struct GET_PERFORMANCE_00_Descriptor);
-                    }
-
-                    break;
-                }
-                case MIRAGE_MEDIUM_DVD: {
-                    /* We have one descriptor for DVD */
-                    num_descriptors = 1;
-
-                    if (max_descriptors >= 1) {
-                        struct GET_PERFORMANCE_00_Descriptor *descriptor = (struct GET_PERFORMANCE_00_Descriptor *)(self->priv->buffer + self->priv->buffer_size);
-
-                        descriptor->start_lba = GUINT32_TO_BE(0);
-                        descriptor->start_performance = GUINT32_TO_BE(0x23B5);
-                        descriptor->end_lba = GUINT32_TO_BE(end_address);
-                        descriptor->end_performance = GUINT32_TO_BE(0x5690);
-
-                        self->priv->buffer_size += sizeof(struct GET_PERFORMANCE_00_Descriptor);
-                    }
-
-                    break;
-                }
-                default: {
-                    /* We return nothing for the rest */
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: performance descriptor not implemented for medium type %d!\n", __debug__, medium_type);
-                    break;
-                }
-            }
-
-            ret_header->data_length = GUINT32_TO_BE(4 + num_descriptors*sizeof(struct GET_PERFORMANCE_00_Descriptor));
             break;
         }
         case 0x03: {

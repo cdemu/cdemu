@@ -364,9 +364,13 @@ struct GET_PERFORMANCE_CDB
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reserved1 : 3;
-        guint8 data_type : 5;
+        guint8 tolerance : 2;
+        guint8 write     : 1;
+        guint8 except    : 2;
     #else
-        guint8 data_type : 5;
+        guint8 except    : 2;
+        guint8 write     : 1;
+        guint8 tolerance : 2;
         guint8 reserved1 : 3;
     #endif
 
