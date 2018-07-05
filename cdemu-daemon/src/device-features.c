@@ -424,22 +424,32 @@ struct PerformanceDescriptor
 
 /* The values below are taken from my drive; NOTE: the amount of items
    in this list must match the size of descriptor list in Mode Page 0x2A! */
-static struct PerformanceDescriptor WriteDescriptors_CD[6] = {
-    { TRUE,  TRUE,  0, 1, 0x2113, 0x2113 }, /* 8467/8467 kB/s (56x/56x) */
-    { TRUE,  TRUE,  0, 1, 0x1B90, 0x1B90 }, /* 7056/7056 kB/s (48x/48x) */
-    { FALSE, FALSE, 0, 1, 0x1B90, 0x160D }, /* 7056/5645 kB/s (48x/40x) */
-    { FALSE, FALSE, 0, 1, 0x1B90, 0x108A }, /* 7056/4234 kB/s (48x/32x) */
-    { FALSE, FALSE, 0, 0, 0x0DC8, 0x0B06 }, /* 3528/2822 kB/s (32x/20x) */
-    { FALSE, FALSE, 0, 0, 0x06E4, 0x0583 }, /* 1764/1411 kB/s (12x/10x) */
+static const struct PerformanceDescriptor WriteDescriptors_CD[] = {
+    { FALSE, FALSE, 0, 0, 0x00001B90, 0x00001B90 },
+    { FALSE, FALSE, 0, 0, 0x0000160D, 0x0000160D },
+    { FALSE, FALSE, 0, 0, 0x0000108A, 0x0000108A },
+    { FALSE, FALSE, 0, 0, 0x00000B07, 0x00000B07 },
+    { FALSE, FALSE, 0, 0, 0x000006E4, 0x000006E4 },
+    { FALSE, FALSE, 0, 0, 0x000002C2, 0x000002C2 },
 };
 
-static struct PerformanceDescriptor WriteDescriptors_DVD[6] = {
-    { FALSE, FALSE, 0, 1, 0x5690, 0x6162 }, /* 22160/24930 kB/s (16x/18x) */
-    { TRUE,  TRUE,  0, 1, 0x5690, 0x5690 }, /* 22160/22160 kB/s (16x/16x) */
-    { TRUE,  TRUE,  0, 1, 0x40EC, 0x40EC }, /* 16620/16620 kB/s (12x/12x) */
-    { FALSE, FALSE, 0, 0, 0x2B48, 0x2B48 }, /* 11080/11080 kB/s (8x/8x) */
-    { FALSE, FALSE, 0, 0, 0x2B48, 0x2076 }, /* 11080/ 8310 kB/s (8x/6x) */
-    { FALSE, FALSE, 0, 0, 0x1B0D, 0x15A4 }, /*  6925/ 5540 kB/s (5x/4x) */
+static const struct PerformanceDescriptor WriteDescriptors_DVD[] = {
+    { FALSE, FALSE, 0, 0, 0x00005690, 0x00005690 },
+    { FALSE, FALSE, 0, 0, 0x000040EC, 0x000040EC },
+    { FALSE, FALSE, 0, 0, 0x0000361A, 0x0000361A },
+    { FALSE, FALSE, 0, 0, 0x00002B48, 0x00002B48 },
+    { FALSE, FALSE, 0, 0, 0x00002076, 0x00002076 },
+    { FALSE, FALSE, 0, 0, 0x00001B0D, 0x00001B0D },
+    { FALSE, FALSE, 0, 0, 0x000015A4, 0x000015A4 },
+    { FALSE, FALSE, 0, 0, 0x000011DA, 0x000011DA },
+    { FALSE, FALSE, 0, 0, 0x0000103B, 0x0000103B },
+    { FALSE, FALSE, 0, 0, 0x00000CFC, 0x00000CFC },
+    { FALSE, FALSE, 0, 0, 0x00000AD2, 0x00000AD2 },
+    { FALSE, FALSE, 0, 0, 0x00000569, 0x00000569 },
+};
+
+static const struct PerformanceDescriptor WriteDescriptors_BD[] = {
+    { FALSE, FALSE, 0, 0, 0x0000231E, 0x0000231E },
 };
 
 static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, ProfileIndex profile_index)
@@ -455,28 +465,39 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
     gint num_descriptors;
 
     gint end_sector;
+    if (self->priv->loaded) {
+        if (self->priv->recordable_disc) {
+            end_sector = self->priv->medium_capacity;
+        } else {
+            end_sector = mirage_disc_layout_get_length(self->priv->disc);
+        }
+    } else {
+        end_sector = 0x0023127F;
+    }
 
     switch (profile_index) {
         case ProfileIndex_CDROM:
         case ProfileIndex_CDR: {
             descriptors = WriteDescriptors_CD;
-            num_descriptors = sizeof(WriteDescriptors_CD)/sizeof(WriteDescriptors_CD[0]);
-            end_sector = self->priv->medium_capacity - 150;
+            num_descriptors = G_N_ELEMENTS(WriteDescriptors_CD);
             break;
         }
         case ProfileIndex_DVDROM:
-        case ProfileIndex_DVDPLUSR:
-        case ProfileIndex_BDR_SRM: {
+        case ProfileIndex_DVDPLUSR: {
             descriptors = WriteDescriptors_DVD;
-            num_descriptors = sizeof(WriteDescriptors_DVD)/sizeof(WriteDescriptors_DVD[0]);
-            end_sector = self->priv->medium_capacity;
+            num_descriptors = G_N_ELEMENTS(WriteDescriptors_DVD);
+            break;
+        }
+        case ProfileIndex_BDROM:
+        case ProfileIndex_BDR_SRM: {
+            descriptors = WriteDescriptors_BD;
+            num_descriptors = G_N_ELEMENTS(WriteDescriptors_BD);
             break;
         }
         case ProfileIndex_NONE:
         default: {
             descriptors = WriteDescriptors_CD;
-            num_descriptors = sizeof(WriteDescriptors_CD)/sizeof(WriteDescriptors_CD[0]);
-            end_sector = 0x0006622D; /* This is what my drive reports when emtpy */
+            num_descriptors = G_N_ELEMENTS(WriteDescriptors_CD);
             break;
         }
     }
