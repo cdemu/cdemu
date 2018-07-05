@@ -52,7 +52,7 @@ static void log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLeve
 }
 
 
-static gboolean signal_handler(gpointer user_data)
+static gboolean signal_handler (gpointer user_data)
 {
     CdemuDaemon *self = (CdemuDaemon*)user_data;
     cdemu_daemon_stop_daemon(self);
@@ -65,11 +65,11 @@ static void setup_signal_trap ()
         g_warning(Q_("Failed to add signal handler for SIGTERM!"));
     }
     if (g_unix_signal_add(SIGINT, signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
+        g_warning(Q_("Failed to add signal handler for SIGINT!"));
     }
     /* SIGQUIT not supported by g_unix_signal_source_new: */
     if (g_unix_signal_add(SIGHUP, signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
+        g_warning(Q_("Failed to add signal handler for SIGHUP!"));
     }
 }
 
