@@ -355,8 +355,12 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         g_variant_get(parameters, "(s)", &writer_id);
         writer = mirage_create_writer(writer_id, &error);
         if (writer) {
-            ret = g_variant_new("(a(sssvas))", encode_writer_parameter_sheet(writer));
+            GVariantBuilder *parameter_sheet = encode_writer_parameter_sheet(writer);
             g_object_unref(writer);
+
+            ret = g_variant_new("(a(sssvas))", parameter_sheet);
+            g_variant_builder_unref(parameter_sheet);
+
             succeeded = TRUE;
         }
 
