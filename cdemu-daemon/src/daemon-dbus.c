@@ -349,7 +349,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         }
     } else if (!g_strcmp0(method_name, "EnumWriterParameters")) {
         /* *** EnumWriterParameters *** */
-        const gchar *writer_id;
+        gchar *writer_id;
         MirageWriter *writer;
 
         g_variant_get(parameters, "(s)", &writer_id);
@@ -359,6 +359,8 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             g_object_unref(writer);
             succeeded = TRUE;
         }
+
+        g_free(writer_id);
     } else {
         g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid method name '%s'!"), method_name);
     }
