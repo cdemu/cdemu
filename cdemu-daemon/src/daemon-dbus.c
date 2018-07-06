@@ -313,7 +313,10 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             { "DAEMON_DEBUG_RECORDING", DAEMON_DEBUG_RECORDING },
         };
 
-        ret = g_variant_new("(a(si))", encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks)));
+        GVariantBuilder *masks = encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks));
+        ret = g_variant_new("(a(si))", masks);
+        g_variant_builder_unref(masks);
+
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumLibraryDebugMasks")) {
         /* *** EnumLibraryDebugMasks *** */
@@ -322,19 +325,30 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
 
         succeeded = mirage_get_supported_debug_masks(&dbg_masks, &num_dbg_masks, &error);
         if (succeeded) {
-            ret = g_variant_new("(a(si))", encode_masks(dbg_masks, num_dbg_masks));
+            GVariantBuilder *masks = encode_masks(dbg_masks, num_dbg_masks);
+            ret = g_variant_new("(a(si))", masks);
+            g_variant_builder_unref(masks);
         }
     } else if (!g_strcmp0(method_name, "EnumSupportedParsers")) {
         /* *** EnumSupportedParsers *** */
-        ret = g_variant_new("(a(ssa(ss)))", encode_parsers());
+        GVariantBuilder *parsers = encode_parsers();
+        ret = g_variant_new("(a(ssa(ss)))", parsers);
+        g_variant_builder_unref(parsers);
+
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedWriters")) {
         /* *** EnumSupportedWriters *** */
-        ret = g_variant_new("(a(ss))", encode_writers());
+        GVariantBuilder *writers = encode_writers();
+        ret = g_variant_new("(a(ss))", writers);
+        g_variant_builder_unref(writers);
+
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFilterStreams")) {
         /* *** EnumSupportedFilterStreams *** */
-        ret = g_variant_new("(a(ssba(ss)))", encode_filter_streams());
+        GVariantBuilder *filter_streams = encode_filter_streams();
+        ret = g_variant_new("(a(ssba(ss)))", filter_streams);
+        g_variant_builder_unref(filter_streams);
+
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "AddDevice")) {
         /* *** AddDevice *** */
