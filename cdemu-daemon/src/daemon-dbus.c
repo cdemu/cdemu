@@ -188,13 +188,15 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
 
         CdemuDevice *device;
 
-        g_variant_get(parameters, "(i&s@a{sv})", &device_number, &filename, &options);
+        g_variant_get(parameters, "(is@a{sv})", &device_number, &filename, &options);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             succeeded = cdemu_device_create_blank_disc(device, filename, options, &error);
         }
 
         g_object_unref(device);
+        g_free(filename);
+        g_variant_unref(options);
     } else if (!g_strcmp0(method_name, "DeviceUnload")) {
         /* *** DeviceUnload *** */
         gint device_number;
