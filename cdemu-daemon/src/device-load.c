@@ -123,7 +123,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
     }
 
     /* Extract and parse some of options */
-    GHashTable *writer_parameters = g_hash_table_new(g_str_hash, g_str_equal);
+    GHashTable *writer_parameters = g_hash_table_new_full(g_str_hash, g_str_equal, (GDestroyNotify)g_free, (GDestroyNotify)g_variant_unref);
 
     for (guint i = 0; i < g_variant_n_children(options); i++) {
         gchar *key;
@@ -167,11 +167,19 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
                 profile_index = ProfileIndex_BDR_SRM;
             } else {
                 g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid medium type '%s'!"), medium_string);
+                g_free(key);
+                g_variant_unref(value);
+                g_hash_table_unref(writer_parameters);
                 return FALSE;
             }
         } else if (g_str_has_prefix(key, "writer.")) {
-            g_hash_table_insert(writer_parameters, key, value);
+            /* Create a copy of key and ref the value, because of the
+               generic cleanup below. */
+            g_hash_table_insert(writer_parameters, g_strdup(key), g_variant_ref(value));
         }
+
+        g_free(key);
+        g_variant_unref(value);
     }
 
     /* Image writer ID must be provided in parameters */

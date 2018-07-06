@@ -379,6 +379,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             error->domain = g_quark_from_string(DBUS_ERROR_CDEMU);
         }
         g_dbus_method_invocation_return_gerror(invocation, error);
+        g_error_free(error);
     }
 }
 
