@@ -361,12 +361,24 @@ static void mirage_writer_iso_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->dispose(gobject);
 }
 
+static void mirage_writer_iso_finalize (GObject *gobject)
+{
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(gobject);
+
+    /* Free the image basename */
+    g_free(self->priv->image_file_basename);
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->finalize(gobject);
+}
+
 static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageWriterClass *writer_class = MIRAGE_WRITER_CLASS(klass);
 
     gobject_class->dispose = mirage_writer_iso_dispose;
+    gobject_class->finalize = mirage_writer_iso_finalize;
 
     writer_class->open_image = mirage_writer_iso_open_image;
     writer_class->create_fragment = mirage_writer_iso_create_fragment;

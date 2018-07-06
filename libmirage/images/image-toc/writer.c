@@ -643,12 +643,24 @@ static void mirage_writer_toc_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_writer_toc_parent_class)->dispose(gobject);
 }
 
+static void mirage_writer_toc_finalize (GObject *gobject)
+{
+    MirageWriterToc *self = MIRAGE_WRITER_TOC(gobject);
+
+    /* Free the image basename */
+    g_free(self->priv->image_file_basename);
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_writer_toc_parent_class)->finalize(gobject);
+}
+
 static void mirage_writer_toc_class_init (MirageWriterTocClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageWriterClass *writer_class = MIRAGE_WRITER_CLASS(klass);
 
     gobject_class->dispose = mirage_writer_toc_dispose;
+    gobject_class->finalize = mirage_writer_toc_finalize;
 
     writer_class->open_image = mirage_writer_toc_open_image;
     writer_class->create_fragment = mirage_writer_toc_create_fragment;
