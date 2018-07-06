@@ -371,6 +371,7 @@ static void cdemu_device_dispose (GObject *gobject)
     cdemu_device_stop(self);
 
     /* Unload disc */
+    self->priv->locked = FALSE; /* Make sure we can unload the disc */
     cdemu_device_unload_disc(self, NULL);
 
     /* Unref audio play object */
