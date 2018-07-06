@@ -268,6 +268,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
 
     /* I/O stream */
     stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
+    g_free(filename);
     if (!stream) {
         g_object_unref(fragment);
         return NULL;

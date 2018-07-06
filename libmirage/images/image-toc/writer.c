@@ -335,6 +335,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
                     /* TOC does not list first track's pregap. Unless it
                        is greater than standard 150? But the first fragment
                        (j == 0) always model the standard pregap */
+                    g_free(length_msf);
                     g_object_unref(fragment);
                     continue;
                 }
@@ -346,6 +347,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
                 }
             }
 
+            g_free(length_msf);
             g_object_unref(fragment);
         }
 
@@ -559,6 +561,7 @@ static MirageFragment *mirage_writer_toc_create_fragment (MirageWriter *_self, M
 
     /* I/O stream */
     stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
+    g_free(filename);
     if (!stream) {
         g_object_unref(fragment);
         return NULL;
