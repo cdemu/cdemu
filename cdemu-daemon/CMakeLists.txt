@@ -7,7 +7,7 @@ project (cdemu-daemon C)
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Versioning
-set (CDEMU_DAEMON_VERSION 3.1.0)
+set (CDEMU_DAEMON_VERSION 3.2.0)
 set (CDEMU_DAEMON_INTERFACE_VERSION_MAJOR 7)
 set (CDEMU_DAEMON_INTERFACE_VERSION_MINOR 0)
 
@@ -28,7 +28,7 @@ find_package (PkgConfig 0.16 REQUIRED)
 find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
 
-pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=3.1.0)
+pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=3.2.0)
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.30 gobject-2.0>=2.30 gmodule-2.0>=2.30 gthread-2.0>=2.30 gio-2.0>=2.30)
 pkg_check_modules (AO REQUIRED ao>=0.8.0)
 
