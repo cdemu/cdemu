@@ -1,4 +1,4 @@
 usr/lib/*/lib*.so.*
-usr/lib/*/libmirage-3.1/*.so
+usr/lib/*/libmirage-3.2/*.so
 usr/share/mime/packages/*.xml
 usr/share/locale/*/LC_MESSAGES/libmirage.mo

@@ -27,11 +27,11 @@ Description: CD-ROM image access library
  file, which is based on GObjects.
 
 
-Package: gir1.2-mirage-3.1
+Package: gir1.2-mirage-3.2
 Section: introspection
 Architecture: any
-Conflicts: gir1.2-mirage-3.0
-Replaces: gir1.2-mirage-3.0
+Conflicts: gir1.2-mirage-3.0, gir1.2-mirage-3.1
+Replaces: gir1.2-mirage-3.0, gir1.2-mirage-3.1
 Depends: libmirage11 (= ${binary:Version}), ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (typelib files)
  This package provides typelib files.
