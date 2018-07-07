@@ -112,7 +112,7 @@ _cdemu_create_blank ()
             return 0
             ;;
         "--medium-type")
-            local medium_types="cdr74 cdr80 cdr90 cdr99 dvd+r"
+            local medium_types="cdr74 cdr80 cdr90 cdr99 dvd+r bdr"
             COMPREPLY=( $(compgen -W "${medium_types}" -- ${cur}) )
             return 0
             ;;
