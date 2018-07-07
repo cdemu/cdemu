@@ -1,5 +1,5 @@
 Image Analyzer
-3.1.0
+3.2.0
 ~~~~~
 
 
@@ -37,7 +37,7 @@ and manipulation, with following functionality:
  - Python3 >= 3.4 (default) or Python2 >= 2.7
  - PyGObject >= 3.0.0
 
- - libMirage >= 3.1.0 GIR
+ - libMirage >= 3.2.0 GIR
  - GLib, GObject, and Gio >= 2.42 GIR
  - Gtk3 GIR
  - Pango GIR
