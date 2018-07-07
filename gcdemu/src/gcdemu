@@ -449,8 +449,12 @@ class CDEmuDevice (GObject.GObject):
         if d != self.number:
             return
 
-        [ self.loaded, self.filenames ] = self.proxy.DeviceGetStatus(self.number)
-        self.emit("status-changed")
+        # We may fail to retrieve status when a device was removed
+        try:
+            [ self.loaded, self.filenames ] = self.proxy.DeviceGetStatus(self.number)
+            self.emit("status-changed")
+        except:
+            pass
 
     def on_option_changed (self, d, option):
         if d != self.number:
