@@ -328,9 +328,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
 
     /*** Mode Page 0x2A: CD/DVD Capabilities and Mechanical Status Mode Page ***/
-    /* IMPLEMENTATION NOTE: We claim to do things we can (more or less), and nothing
-       can be changed, just like INF8090 says. We also have 6 Write Speed Performance
-       Descriptors, which are appended at the end of the page */
+    /* IMPLEMENTATION NOTE: We claim to do things we can (more or less),
+       and nothing can be changed, just like INF8090 says. */
     mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A), NULL);
     if (mode_page) {
         struct ModePage_0x2A *page = mode_page->page_default;
@@ -383,23 +382,20 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         page->rot_ctl_sel = 1; /* Rotation control selected */
         page->cur_wspeed = page->cur_write_speed; /* Copy */
 
-        page->num_wsp_descriptors = GUINT16_TO_BE(0); /* NOTE: write speed performance descriptors are initialized separately! */
+        page->num_wsp_descriptors = GUINT16_TO_BE(0); /* NOTE: write speed performance descriptors are initialized dynamically when profile changes! */
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
+    /* We resize the "current" Mode Page 0x2A to provide space for
+       maximum of 6 Write Speed Performance Descriptors, which are then
+       dynamically loaded into the page when profile changes. */
     if (1) {
-        /* A hack; we need to resize the "current" Mode Page 0x2A to accept
-           write speed performance descriptors */
-        mode_page->page_current = g_realloc(mode_page->page_current, sizeof(struct ModePage_0x2A) + 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor));
+        gint desc_length = MODE_PAGE_0x2A_MAX_DESCRIPTORS*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor);
+        mode_page->page_current = g_realloc(mode_page->page_current, sizeof(struct ModePage_0x2A) + desc_length);
 
-        /* Modify page size */
+        /* Clear the descriptor area */
         struct ModePage_0x2A *page = mode_page->page_current;
-        page->length += 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor);
-
-        page->num_wsp_descriptors = GUINT16_TO_BE(6);
-
-        /* NOTE: the actual write speed performance descriptors are initialized when profile changes! */
-        memset((page+1), 0, 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor));
+        memset((page+1), 0, desc_length);
     }
 };
 

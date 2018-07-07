@@ -469,6 +469,8 @@ struct ModePage_0x2A
     guint16 num_wsp_descriptors;
 };
 
+#define MODE_PAGE_0x2A_MAX_DESCRIPTORS 6
+
 struct ModePage_0x2A_WriteSpeedPerformanceDescriptor
 {
     guint8 reserved1;

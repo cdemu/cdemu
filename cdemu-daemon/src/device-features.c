@@ -454,12 +454,6 @@ static const struct PerformanceDescriptor WriteDescriptors_BD[] = {
 
 static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, ProfileIndex profile_index)
 {
-    /* Clear old list and its elements */
-    if (self->priv->write_descriptors) {
-        g_list_free_full(self->priv->write_descriptors, g_free);
-        self->priv->write_descriptors = NULL;
-    }
-
     /* Select performance list descriptor */
     const struct PerformanceDescriptor *descriptors;
     gint num_descriptors;
@@ -502,8 +496,12 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
         }
     }
 
-    /* Build/populate the descriptor list(s) */
-    struct ModePage_0x2A_WriteSpeedPerformanceDescriptor *p_0x2A_descs = (struct ModePage_0x2A_WriteSpeedPerformanceDescriptor *)(((struct ModePage_0x2A *)cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT)) + 1);
+    /* Update list of descriptors for GET PERFORMANCE */
+    if (self->priv->write_descriptors) {
+        /* Clear old list and its elements */
+        g_list_free_full(self->priv->write_descriptors, g_free);
+        self->priv->write_descriptors = NULL;
+    }
 
     for (gint i = 0; i < num_descriptors; i++) {
         const struct PerformanceDescriptor *source_descriptor = &descriptors[i];
@@ -519,11 +517,27 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
         perf_descriptor->write_speed = GUINT32_TO_BE(source_descriptor->write_speed);
 
         self->priv->write_descriptors = g_list_append(self->priv->write_descriptors, perf_descriptor);
+    }
+
+
+    /* Update list of descriptors in Mode Page 0x2A */
+    gint total_descriptors = MIN(MODE_PAGE_0x2A_MAX_DESCRIPTORS, num_descriptors);
+
+    struct ModePage_0x2A *p_0x2A = cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
+    struct ModePage_0x2A_WriteSpeedPerformanceDescriptor *p_0x2A_descs = (struct ModePage_0x2A_WriteSpeedPerformanceDescriptor *)(p_0x2A + 1);
+
+    for (gint i = 0; i < total_descriptors; i++) {
+        const struct PerformanceDescriptor *source_descriptor = &descriptors[i];
 
         /* List of descriptors for Mode Page 0x2A */
         p_0x2A_descs[i].rc = source_descriptor->rc;
         p_0x2A_descs[i].write_speed = GUINT16_TO_BE(source_descriptor->write_speed);
     }
+
+    p_0x2A->num_wsp_descriptors = GUINT16_TO_BE(total_descriptors);
+
+    /* Modify page length */
+    p_0x2A->length = sizeof(struct ModePage_0x2A) + total_descriptors*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor) - 2;
 }
 
 
