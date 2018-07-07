@@ -176,9 +176,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             succeeded = cdemu_device_load_disc(device, filenames, options, &error);
+            g_object_unref(device);
         }
 
-        g_object_unref(device);
         g_strfreev(filenames);
         g_variant_unref(options);
     } else if (!g_strcmp0(method_name, "DeviceCreateBlank")) {
@@ -193,9 +193,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             succeeded = cdemu_device_create_blank_disc(device, filename, options, &error);
+            g_object_unref(device);
         }
 
-        g_object_unref(device);
         g_free(filename);
         g_variant_unref(options);
     } else if (!g_strcmp0(method_name, "DeviceUnload")) {
@@ -207,9 +207,8 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             succeeded = cdemu_device_unload_disc(device, &error);
+            g_object_unref(device);
         }
-
-        g_object_unref(device);
     } else if (!g_strcmp0(method_name, "DeviceGetStatus")) {
         /* *** DeviceGetStatus *** */
         gint device_number;
@@ -226,9 +225,8 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             g_strfreev(filenames);
 
             succeeded = TRUE;
+            g_object_unref(device);
         }
-
-        g_object_unref(device);
     } else if (!g_strcmp0(method_name, "DeviceSetOption")) {
         /* *** DeviceSetOption *** */
         gint device_number;
@@ -240,9 +238,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             succeeded = cdemu_device_set_option(device, option_name, option_value, &error);
+            g_object_unref(device);
         }
 
-        g_object_unref(device);
         g_free(option_name);
         g_variant_unref(option_value);
     } else if (!g_strcmp0(method_name, "DeviceGetOption")) {
@@ -259,9 +257,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
                 ret = g_variant_new("(v)", option_value);
                 succeeded = TRUE;
             }
+            g_object_unref(device);
         }
 
-        g_object_unref(device);
         g_free(option_name);
     } else if (!g_strcmp0(method_name, "GetNumberOfDevices")) {
         /* *** GetNumberOfDevices *** */
@@ -283,9 +281,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
 
             g_free(sr_device);
             g_free(sg_device);
-        }
 
-        g_object_unref(device);
+            g_object_unref(device);
+        }
     } else if (!g_strcmp0(method_name, "GetDaemonInterfaceVersion")) {
         /* *** GetDaemonInterfaceVersion *** */
         ret = g_variant_new("(i)", CDEMU_DAEMON_INTERFACE_VERSION_MAJOR);
