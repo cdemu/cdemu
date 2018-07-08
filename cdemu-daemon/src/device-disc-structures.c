@@ -218,7 +218,7 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
 
             /* Note: the lengths that are not mandated by the MMC are
                taken from what my pyhical drive returns. */
-            static const struct DISC_STRUCTURE_ListEntry entries[] = {
+            const struct DISC_STRUCTURE_ListEntry entries[] = {
                 { .format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
                 { .format_code = 0x01, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
                 { .format_code = 0x02, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
@@ -284,7 +284,7 @@ static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self G_GNUC
         }
         case 0xFF: {
             /* For some reason, my physical drive reports length of 0 for all ...*/
-            static const struct DISC_STRUCTURE_ListEntry entries[] = {
+            const struct DISC_STRUCTURE_ListEntry entries[] = {
                 { .format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
                 { .format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
                 { .format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
