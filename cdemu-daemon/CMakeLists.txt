@@ -29,7 +29,7 @@ find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
 
 pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=3.2.0)
-pkg_check_modules (GLIB REQUIRED glib-2.0>=2.30 gobject-2.0>=2.30 gmodule-2.0>=2.30 gthread-2.0>=2.30 gio-2.0>=2.30)
+pkg_check_modules (GLIB REQUIRED glib-2.0>=2.38 gobject-2.0>=2.38 gmodule-2.0>=2.38 gthread-2.0>=2.38 gio-2.0>=2.38)
 pkg_check_modules (AO REQUIRED ao>=0.8.0)
 
 # Auto-generated files

@@ -20,8 +20,6 @@
 #ifndef __CDEMU_AUDIO_PRIVATE_H__
 #define __CDEMU_AUDIO_PRIVATE_H__
 
-#define CDEMU_AUDIO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMU_TYPE_AUDIO, CdemuAudioPrivate))
-
 struct _CdemuAudioPrivate
 {
     /* Thread */

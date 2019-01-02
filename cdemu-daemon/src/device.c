@@ -319,11 +319,11 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(CdemuDevice, cdemu_device, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(CdemuDevice, cdemu_device, MIRAGE_TYPE_OBJECT)
 
 static void cdemu_device_init (CdemuDevice *self)
 {
-    self->priv = CDEMU_DEVICE_GET_PRIVATE(self);
+    self->priv = cdemu_device_get_instance_private(self);
 
     self->priv->io_channel = NULL;
     self->priv->io_thread = NULL;
@@ -459,8 +459,4 @@ static void cdemu_device_class_init (CdemuDeviceClass *klass)
     g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
     g_signal_new("kernel-io-error", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
     g_signal_new("mapping-ready", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(CdemuDevicePrivate));
 }

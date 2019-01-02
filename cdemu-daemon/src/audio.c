@@ -307,11 +307,11 @@ gint cdemu_audio_get_status (CdemuAudio *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(CdemuAudio, cdemu_audio, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(CdemuAudio, cdemu_audio, MIRAGE_TYPE_OBJECT)
 
 static void cdemu_audio_init (CdemuAudio *self)
 {
-    self->priv = CDEMU_AUDIO_GET_PRIVATE(self);
+    self->priv = cdemu_audio_get_instance_private(self);
 
     self->priv->playback_thread = NULL;
     self->priv->device = NULL;
@@ -335,8 +335,4 @@ static void cdemu_audio_class_init (CdemuAudioClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->finalize = cdemu_audio_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(CdemuAudioPrivate));
 }
-

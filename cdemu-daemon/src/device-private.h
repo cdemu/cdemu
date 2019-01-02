@@ -20,8 +20,6 @@
 #ifndef __CDEMU_DEVICE_PRIVATE_H__
 #define __CDEMU_DEVICE_PRIVATE_H__
 
-#define CDEMU_DEVICE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMU_TYPE_DEVICE, CdemuDevicePrivate))
-
 struct _CdemuCommand
 {
     guint8 cdb[12];

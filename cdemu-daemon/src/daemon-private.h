@@ -20,8 +20,6 @@
 #ifndef __CDEMU_DAEMON_PRIVATE_H__
 #define __CDEMU_DAEMON_PRIVATE_H__
 
-#define CDEMU_DAEMON_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMU_TYPE_DAEMON, CdemuDaemonPrivate))
-
 struct _CdemuDaemonPrivate
 {
     gchar *version;

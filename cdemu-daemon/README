@@ -116,7 +116,7 @@ document that describes the daemon's interface, methods and signals.
 CDEmu daemon has the following software requirements:
 
  - CMake >= 2.8.5
- - GLib >= 2.30
+ - GLib >= 2.38
  - libao >= 0.8.0
 
  - libMirage >= 3.2.0 (part of the suite)
