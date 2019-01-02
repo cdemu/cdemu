@@ -1008,9 +1008,10 @@ class ImageWriterDialog (Gtk.Dialog):
         dialog = Gtk.FileChooserDialog(
             title=_("Select output image file"),
             parent=self,
-            action=Gtk.FileChooserAction.SAVE,
-            buttons=(_("Cancel"), Gtk.ResponseType.CANCEL,
-                _("Save"), Gtk.ResponseType.ACCEPT))
+            action=Gtk.FileChooserAction.SAVE)
+        dialog.add_buttons(
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+            _("Save"), Gtk.ResponseType.ACCEPT)
         dialog.set_do_overwrite_confirmation(True)
         dialog.set_local_only(False)
 
@@ -2137,10 +2138,10 @@ class MainWindow (Gtk.ApplicationWindow):
                 if filename is None or len(filename) == 0:
                     error_dialog = Gtk.MessageDialog(
                         parent=self.image_writer_dialog,
-                        flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                        type=Gtk.MessageType.WARNING,
+                        modal=True, destroy_with_parent=True,
+                        message_type=Gtk.MessageType.WARNING,
                         buttons=Gtk.ButtonsType.CLOSE,
-                        message_format=_("Image filename/basename not set!"))
+                        text=_("Image filename/basename not set!"))
                     error_dialog.run()
                     error_dialog.destroy()
                     continue
@@ -2150,10 +2151,10 @@ class MainWindow (Gtk.ApplicationWindow):
                 if writer is None:
                     error_dialog = Gtk.MessageDialog(
                         parent=self.image_writer_dialog,
-                        flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                        type=Gtk.MessageType.WARNING,
+                        modal=True, destroy_with_parent=True,
+                        message_type=Gtk.MessageType.WARNING,
                         buttons=Gtk.ButtonsType.CLOSE,
-                        message_format=_("No image writer chosen!"))
+                        text=_("No image writer chosen!"))
                     error_dialog.run()
                     error_dialog.destroy()
                     continue
@@ -2229,10 +2230,10 @@ class MainWindow (Gtk.ApplicationWindow):
         except GLib.Error as e:
             error_dialog = Gtk.MessageDialog(
                 parent=self,
-                flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                type=Gtk.MessageType.WARNING,
+                modal=True, destroy_with_parent=True,
+                message_type=Gtk.MessageType.WARNING,
                 buttons=Gtk.ButtonsType.CLOSE,
-                message_format=_("Failed to load image: %s" % (e.message)))
+                text=_("Failed to load image: %s" % (e.message)))
             error_dialog.run()
             error_dialog.destroy()
             return
@@ -2264,10 +2265,10 @@ class MainWindow (Gtk.ApplicationWindow):
         except Exception as e:
             error_dialog = Gtk.MessageDialog(
                 parent=self,
-                flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                type=Gtk.MessageType.ERROR,
+                modal=True, destroy_with_parent=True,
+                message_type=Gtk.MessageType.ERROR,
                 buttons=Gtk.ButtonsType.CLOSE,
-                message_format=_("Failed to load XML dump: %s" % (e.message)))
+                text=_("Failed to load XML dump: %s" % (e.message)))
             error_dialog.run()
             error_dialog.destroy()
             return
@@ -2290,10 +2291,10 @@ class MainWindow (Gtk.ApplicationWindow):
         except Exception as e:
             error_dialog = Gtk.MessageDialog(
                 parent=self,
-                flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                type=Gtk.MessageType.WARNING,
+                modal=True, destroy_with_parent=True,
+                message_type=Gtk.MessageType.WARNING,
                 buttons=Gtk.ButtonsType.CLOSE,
-                message_format=_("Failed to save XML dump: %s" % (e.message)))
+                text=_("Failed to save XML dump: %s" % (e.message)))
             error_dialog.run()
             error_dialog.destroy()
             return
@@ -2320,7 +2321,7 @@ class MainWindow (Gtk.ApplicationWindow):
         progress_dialog = Gtk.Dialog(
             _("Image conversion progress"),
             parent=self,
-            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            modal=True, destroy_with_parent=True,
             buttons=(_("Cancel"), Gtk.ResponseType.CANCEL))
         progress_dialog.connect("delete-event", lambda w, e: w.hide() or True) # Needed because we don't "run" the dialog
         progress_dialog.set_border_width(5)
@@ -2342,18 +2343,18 @@ class MainWindow (Gtk.ApplicationWindow):
             # Success message
             message_dialog = Gtk.MessageDialog(
                 parent=self,
-                flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                type=Gtk.MessageType.INFO,
+                modal=True, destroy_with_parent=True,
+                message_type=Gtk.MessageType.INFO,
                 buttons=Gtk.ButtonsType.CLOSE,
-                message_format=_("Image conversion succeeded."))
+                text=_("Image conversion succeeded."))
         except GLib.Error as e:
             # Error message
             message_dialog = Gtk.MessageDialog(
                 parent=self,
-                flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                type=Gtk.MessageType.ERROR,
+                modal=True, destroy_with_parent=True,
+                message_type=Gtk.MessageType.ERROR,
                 buttons=Gtk.ButtonsType.CLOSE,
-                message_format=_("Image conversion failed: %s" % (e.message)))
+                text=_("Image conversion failed: %s" % (e.message)))
 
         progress_dialog.destroy()
 
@@ -2366,7 +2367,7 @@ class MainWindow (Gtk.ApplicationWindow):
         dialog = Gtk.Dialog(
             _("Enter password"),
             parent=self,
-            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            modal=True, destroy_with_parent=True,
             buttons=(_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT));
         dialog.set_default_response(Gtk.ResponseType.ACCEPT)
 
