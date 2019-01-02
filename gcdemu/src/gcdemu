@@ -731,14 +731,14 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         self.label_dev_sg = label2
 
         # "Remove device" button
-        align = Gtk.Alignment()
-        align.set(0.5, 1.0, 0, 0) # Center horizontally, put at the bottom
-        align.set_padding(0, 5, 0, 0) # Pad 5 pixels at the bottom
-        align.set_vexpand(True)
-        self.add(align)
-
+        # Center horizontally, put 5 pixels above the bottom (and make
+        # sure it expands vertically)
         button = Gtk.Button.new_with_label(_("Remove device"))
-        align.add(button)
+        self.add(button)
+        button.set_vexpand(True)
+        button.set_valign(Gtk.Align.END)
+        button.set_halign(Gtk.Align.CENTER)
+        button.set_margin_bottom(5)
         button.connect("clicked", lambda b: self.emit("remove-device"))
         self.button_remove = button
 
