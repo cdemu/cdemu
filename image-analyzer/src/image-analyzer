@@ -174,19 +174,19 @@ class ReadSectorWindow (Gtk.Window):
         self.disc = None
 
         # Grid
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
 
         # Scrolled window
-        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window = Gtk.ScrolledWindow.new()
         scrolled_window.set_hexpand(True)
         scrolled_window.set_vexpand(True)
         grid.attach(scrolled_window, 0, 0, 2, 1)
 
         # Text
-        text_view = Gtk.TextView()
+        text_view = Gtk.TextView.new()
         text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         text_view.set_editable(False)
         scrolled_window.add(text_view)
@@ -206,7 +206,7 @@ class ReadSectorWindow (Gtk.Window):
         self.text_buffer = text_buffer
 
         # Spin button: sector
-        adjustment = Gtk.Adjustment(0, 0, 0, 1, 75, 0)
+        adjustment = Gtk.Adjustment.new(0, 0, 0, 1, 75, 0)
         spin_button = Gtk.SpinButton.new(adjustment, 1, 0)
         spin_button.set_hexpand(True)
         grid.attach(spin_button, 0, 1, 1, 1)
@@ -375,19 +375,19 @@ class SectorAnalysisWindow (Gtk.Window):
         self.disc = None
 
         # Grid
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
 
         # Scrolled window
-        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window = Gtk.ScrolledWindow.new()
         scrolled_window.set_hexpand(True)
         scrolled_window.set_vexpand(True)
         grid.attach(scrolled_window, 0, 0, 2, 1)
 
         # Text
-        text_view = Gtk.TextView()
+        text_view = Gtk.TextView.new()
         text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         text_view.set_editable(False)
         scrolled_window.add(text_view)
@@ -406,7 +406,7 @@ class SectorAnalysisWindow (Gtk.Window):
         self.button_analyze = button
 
         # Progress bar
-        progress_bar = Gtk.ProgressBar()
+        progress_bar = Gtk.ProgressBar.new()
         progress_bar.set_show_text(True)
         progress_bar.set_hexpand(True)
         grid.attach(progress_bar, 0, 2, 1, 1)
@@ -559,7 +559,7 @@ class DiscTopologyWindow (Gtk.Window):
         self.set_default_size(800, 600)
         self.set_border_width(5)
 
-        box = Gtk.VBox()
+        box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         self.add(box)
 
         # Matplotlib figure
@@ -647,19 +647,19 @@ class DiscStructuresWindow (Gtk.Window):
         self.disc = None
 
         # Grid
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
 
         # Scrolled window
-        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window = Gtk.ScrolledWindow.new()
         scrolled_window.set_hexpand(True)
         scrolled_window.set_vexpand(True)
         grid.attach(scrolled_window, 0, 0, 5, 1)
 
         # Text
-        text_view = Gtk.TextView()
+        text_view = Gtk.TextView.new()
         text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         text_view.set_editable(False)
         scrolled_window.add(text_view)
@@ -669,22 +669,22 @@ class DiscStructuresWindow (Gtk.Window):
         self.text_buffer = text_view.get_buffer()
 
         # Label: layer
-        label = Gtk.Label(_("Layer: "))
+        label = Gtk.Label.new(_("Layer: "))
         grid.attach(label, 0, 1, 1, 1)
 
         # Spin button: layer
-        adjustment = Gtk.Adjustment(0, 0, 1, 1, 1, 0)
+        adjustment = Gtk.Adjustment.new(0, 0, 1, 1, 1, 0)
         spin_button = Gtk.SpinButton.new(adjustment, 1, 0)
         spin_button.set_hexpand(True)
         grid.attach_next_to(spin_button, label, Gtk.PositionType.RIGHT, 1, 1)
         self.spin_button_layer = spin_button
 
         # Label: type
-        label = Gtk.Label(_("Type: "))
+        label = Gtk.Label.new(_("Type: "))
         grid.attach_next_to(label, spin_button, Gtk.PositionType.RIGHT, 1, 1)
 
         # Spin button: type
-        adjustment = Gtk.Adjustment(0, 0, GObject.G_MAXINT64, 1, 1, 0)
+        adjustment = Gtk.Adjustment.new(0, 0, GLib.MAXINT64, 1, 1, 0)
         spin_button = Gtk.SpinButton.new(adjustment, 1, 0)
         spin_button.set_hexpand(True)
         grid.attach_next_to(spin_button, label, Gtk.PositionType.RIGHT, 1, 1)
@@ -751,35 +751,35 @@ class LogWindow (Gtk.Window):
         self.set_border_width(5)
 
         # Grid
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
 
         # Scrolled window
-        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window = Gtk.ScrolledWindow.new()
         scrolled_window.set_hexpand(True)
         scrolled_window.set_vexpand(True)
         grid.attach(scrolled_window, 0, 0, 3, 1)
 
         # Text view
-        text_view = Gtk.TextView()
+        text_view = Gtk.TextView.new()
         text_view.set_editable(False)
         scrolled_window.add(text_view)
         self.text_view = text_view
 
         # Checbox: mirror to stdout
-        checkbutton = Gtk.CheckButton(_("Mirror to stdout"))
+        checkbutton = Gtk.CheckButton.new_with_label(_("Mirror to stdout"))
         grid.attach(checkbutton, 0, 1, 1, 1)
         self.checkbutton_stdout = checkbutton
 
         # Button: clear
-        button1 = Gtk.Button(_("Clear"))
+        button1 = Gtk.Button.new_with_label(_("Clear"))
         grid.attach_next_to(button1, checkbutton, Gtk.PositionType.RIGHT, 1, 1)
         button1.connect("clicked", lambda w: self.clear_log())
 
         # Button: debug mask
-        button2 = Gtk.Button(_("Debug mask"))
+        button2 = Gtk.Button.new_with_label(_("Debug mask"))
         grid.attach_next_to(button2, button1, Gtk.PositionType.RIGHT, 1, 1)
         button2.connect("clicked", lambda w: self.select_debug_mask())
 
@@ -818,14 +818,14 @@ class LogWindow (Gtk.Window):
         current_mask = self.mirage_context.get_debug_mask()
 
         # Create dialog
-        dialog = Gtk.Dialog()
+        dialog = Gtk.Dialog.new()
         dialog.set_title(_("Debug mask"))
         dialog.set_modal(True)
         dialog.set_transient_for(self)
         dialog.add_buttons(_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT)
 
         # Create the mask widgets
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(2)
         grid.set_orientation(Gtk.Orientation.VERTICAL)
 
@@ -834,7 +834,7 @@ class LogWindow (Gtk.Window):
 
         widget_list = []
         for i in range(0, len(valid_masks)):
-            checkbutton = Gtk.CheckButton(valid_masks[i].name)
+            checkbutton = Gtk.CheckButton.new_with_label(valid_masks[i].name)
             checkbutton.set_active(current_mask & valid_masks[i].value)
             grid.add(checkbutton)
             widget_list.append(checkbutton)
@@ -870,13 +870,13 @@ class OpenImageDialog (Gtk.FileChooserDialog):
         self.set_local_only(False)
 
         # "All files" filter
-        filter_all = Gtk.FileFilter()
+        filter_all = Gtk.FileFilter.new()
         filter_all.set_name(_("All files"))
         filter_all.add_pattern("*")
         self.add_filter(filter_all)
 
         # "All images" filter
-        filter_all = Gtk.FileFilter()
+        filter_all = Gtk.FileFilter.new()
         filter_all.set_name(_("All images"))
         self.add_filter(filter_all)
 
@@ -884,7 +884,7 @@ class OpenImageDialog (Gtk.FileChooserDialog):
         for parser in Mirage.get_parsers_info()[1]:
             for description, mime_type in zip(parser.description, parser.mime_type):
                 # Create a parser-specific filter
-                file_filter = Gtk.FileFilter()
+                file_filter = Gtk.FileFilter.new()
                 file_filter.set_name(description)
                 file_filter.add_mime_type(mime_type)
                 self.add_filter(file_filter)
@@ -896,7 +896,7 @@ class OpenImageDialog (Gtk.FileChooserDialog):
         for stream in Mirage.get_filter_streams_info()[1]:
             for description, mime_type in zip(stream.description, stream.mime_type):
                 # Create a stream-specific filter
-                file_filter = Gtk.FileFilter()
+                file_filter = Gtk.FileFilter.new()
                 file_filter.set_name(description)
                 file_filter.add_mime_type(mime_type)
                 self.add_filter(file_filter)
@@ -914,13 +914,13 @@ class OpenDumpDialog (Gtk.FileChooserDialog):
         self.set_local_only(False)
 
         # "XML files" filter
-        file_filter = Gtk.FileFilter()
+        file_filter = Gtk.FileFilter.new()
         file_filter.set_name(_("XML files"))
         file_filter.add_pattern("*.xml")
         self.add_filter(file_filter)
 
         # "All files" filter
-        filter_all = Gtk.FileFilter()
+        filter_all = Gtk.FileFilter.new()
         filter_all.set_name(_("All files"))
         filter_all.add_pattern("*")
         self.add_filter(filter_all)
@@ -936,13 +936,13 @@ class SaveDumpDialog (Gtk.FileChooserDialog):
         self.set_do_overwrite_confirmation(True)
 
         # "XML files" filter
-        file_filter = Gtk.FileFilter()
+        file_filter = Gtk.FileFilter.new()
         file_filter.set_name(_("XML files"))
         file_filter.add_pattern("*.xml")
         self.add_filter(file_filter)
 
         # "All files" filter
-        filter_all = Gtk.FileFilter()
+        filter_all = Gtk.FileFilter.new()
         filter_all.set_name(_("All files"))
         filter_all.add_pattern("*")
         self.add_filter(filter_all)
@@ -959,17 +959,17 @@ class ImageWriterDialog (Gtk.Dialog):
         frame = Gtk.Frame.new(_("Output image"))
         self.get_content_area().add(frame)
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
         frame.add(grid)
 
         # Filename
-        label = Gtk.Label(_("Filename: "))
+        label = Gtk.Label.new(_("Filename: "))
         grid.attach(label, 0, 0, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_filename = entry
@@ -979,10 +979,10 @@ class ImageWriterDialog (Gtk.Dialog):
         button.connect("clicked", lambda w: self.select_file())
 
         # Writer
-        label = Gtk.Label(_("Writer: "))
+        label = Gtk.Label.new(_("Writer: "))
         grid.attach(label, 0, 1, 1, 1)
 
-        combo_box = Gtk.ComboBoxText()
+        combo_box = Gtk.ComboBoxText.new()
         combo_box.connect("changed", lambda w: self.change_writer())
         grid.attach_next_to(combo_box, label, Gtk.PositionType.RIGHT, 2, 1)
         self.combo_box_writer = combo_box
@@ -1042,7 +1042,7 @@ class ImageWriterDialog (Gtk.Dialog):
         writer = Mirage.create_writer(writer_id)
 
         # Build writer options GUI
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
@@ -1056,7 +1056,7 @@ class ImageWriterDialog (Gtk.Dialog):
             needs_label = True
             if info.enum_values is not None:
                 # Enum; create a combo box
-                widget = Gtk.ComboBoxText()
+                widget = Gtk.ComboBoxText.new()
 
                 # Fill values
                 for entry in info.enum_values:
@@ -1066,14 +1066,14 @@ class ImageWriterDialog (Gtk.Dialog):
                 default_idx = info.enum_values.unpack().index(info.default_value.unpack())
                 widget.set_active(default_idx)
             elif info.default_value.is_of_type(GLib.VariantType("s")):
-                widget = Gtk.Entry()
+                widget = Gtk.Entry.new()
                 widget.set_text(info.default_value.unpack())
             elif info.default_value.is_of_type(GLib.VariantType("b")):
                 widget = Gtk.CheckButton.new_with_label(info.name)
                 widget.set_active(info.default_value.unpack())
                 needs_label = False
             elif info.default_value.is_of_type(GLib.VariantType("i")):
-                widget = Gtk.SpinButton.new_with_range(GObject.G_MININT32, GObject.G_MAXINT32)
+                widget = Gtk.SpinButton.new_with_range(GLib.MININT32, GLib.MAXINT32)
                 widget.set_digits(0)
                 widget.set_value(info.default_value.unpack())
             else:
@@ -1081,7 +1081,7 @@ class ImageWriterDialog (Gtk.Dialog):
 
             # Attach widget, adding label if necessary
             if needs_label:
-                label = Gtk.Label(info.name)
+                label = Gtk.Label.new(info.name)
                 label.set_tooltip_text(info.description)
                 grid.attach(label, 0, row, 1, 1)
 
@@ -1975,27 +1975,27 @@ class MainWindow (Gtk.ApplicationWindow):
         self.set_default_size(300, 400)
         self.set_border_width(5)
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(5)
         grid.set_orientation(Gtk.Orientation.VERTICAL)
         self.add(grid)
 
-        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window = Gtk.ScrolledWindow.new()
         scrolled_window.set_hexpand(True)
         scrolled_window.set_vexpand(True)
         grid.add(scrolled_window)
 
         self.disc_tree = DiscTreeStore()
 
-        tree_view = Gtk.TreeView()
+        tree_view = Gtk.TreeView.new()
         tree_view.set_headers_visible(False)
         tree_view.set_model(self.disc_tree)
         scrolled_window.add(tree_view)
 
-        column = Gtk.TreeViewColumn()
+        column = Gtk.TreeViewColumn.new()
         tree_view.append_column(column)
 
-        renderer = Gtk.CellRendererText()
+        renderer = Gtk.CellRendererText.new()
         column.pack_start(renderer, True)
         column.add_attribute(renderer, "text", 0)
 
@@ -2313,7 +2313,7 @@ class MainWindow (Gtk.ApplicationWindow):
         writer.set_context(self.mirage_context)
 
         # Create progress dialog
-        progress_bar = Gtk.ProgressBar()
+        progress_bar = Gtk.ProgressBar.new()
         progress_bar.set_show_text(True)
         progress_bar.set_text(_("Converting..."))
 
@@ -2321,8 +2321,7 @@ class MainWindow (Gtk.ApplicationWindow):
             _("Image conversion progress"),
             parent=self,
             flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-            buttons=(_("Cancel"), Gtk.ResponseType.CANCEL)
-            )
+            buttons=(_("Cancel"), Gtk.ResponseType.CANCEL))
         progress_dialog.connect("delete-event", lambda w, e: w.hide() or True) # Needed because we don't "run" the dialog
         progress_dialog.set_border_width(5)
         progress_dialog.get_content_area().add(progress_bar)
@@ -2372,23 +2371,23 @@ class MainWindow (Gtk.ApplicationWindow):
         dialog.set_default_response(Gtk.ResponseType.ACCEPT)
 
         # Grid
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         dialog.get_content_area().add(grid)
 
         # Message
-        label = Gtk.Label(_("The image you are trying to load is encrypted."))
+        label = Gtk.Label.new(_("The image you are trying to load is encrypted."))
         label.set_hexpand(True)
         label.set_vexpand(True)
         grid.attach(label, 0, 0, 2, 1)
 
         # Label
-        label = Gtk.Label(_("Password: "))
+        label = Gtk.Label.new(_("Password: "))
         grid.attach(label, 0, 1, 1, 1)
 
         # Entry
-        entry = Gtk.Entry();
+        entry = Gtk.Entry.new();
         entry.set_hexpand(True)
         entry.set_visibility(False)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
