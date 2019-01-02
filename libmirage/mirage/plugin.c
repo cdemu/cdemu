@@ -45,8 +45,6 @@
 /**********************************************************************\
  *                         Private structure                          *
 \**********************************************************************/
-#define MIRAGE_PLUGIN_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PLUGIN, MiragePluginPrivate))
-
 struct _MiragePluginPrivate
 {
     gchar *filename;
@@ -161,12 +159,12 @@ static void mirage_plugin_unload_module (GTypeModule *_self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MiragePlugin, mirage_plugin, G_TYPE_TYPE_MODULE);
+G_DEFINE_TYPE_WITH_PRIVATE(MiragePlugin, mirage_plugin, G_TYPE_TYPE_MODULE)
 
 
 static void mirage_plugin_init (MiragePlugin *self)
 {
-    self->priv = MIRAGE_PLUGIN_GET_PRIVATE(self);
+    self->priv = mirage_plugin_get_instance_private(self);
 
     self->priv->filename = NULL;
     self->priv->library = NULL;
@@ -229,9 +227,6 @@ static void mirage_plugin_class_init (MiragePluginClass *klass)
 
     gmodule_class->load = mirage_plugin_load_module;
     gmodule_class->unload = mirage_plugin_unload_module;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MiragePluginPrivate));
 
     /* Install properties */
     g_object_class_install_property(gobject_class, PROPERTY_FILENAME, g_param_spec_string ("filename", "Filename", "The filename of the module", NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));

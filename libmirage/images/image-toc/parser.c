@@ -25,8 +25,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_TOC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_TOC, MirageParserTocPrivate))
-
 struct _MirageParserTocPrivate
 {
     MirageDisc *disc;
@@ -1327,7 +1325,11 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserToc, mirage_parser_toc, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserToc,
+                               mirage_parser_toc,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserToc))
 
 void mirage_parser_toc_type_register (GTypeModule *type_module)
 {
@@ -1337,7 +1339,7 @@ void mirage_parser_toc_type_register (GTypeModule *type_module)
 
 static void mirage_parser_toc_init (MirageParserToc *self)
 {
-    self->priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+    self->priv = mirage_parser_toc_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-TOC",
@@ -1368,9 +1370,6 @@ static void mirage_parser_toc_class_init (MirageParserTocClass *klass)
     gobject_class->finalize = mirage_parser_toc_finalize;
 
     parser_class->load_image = mirage_parser_toc_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserTocPrivate));
 }
 
 static void mirage_parser_toc_class_finalize (MirageParserTocClass *klass G_GNUC_UNUSED)

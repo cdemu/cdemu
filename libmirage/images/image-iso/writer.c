@@ -30,8 +30,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_WRITER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_WRITER_ISO, MirageWriterIsoPrivate))
-
 struct _MirageWriterIsoPrivate
 {
     gchar *image_file_basename;
@@ -304,7 +302,11 @@ static gboolean mirage_writer_iso_finalize_image (MirageWriter *_self, MirageDis
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageWriterIso, mirage_writer_iso, MIRAGE_TYPE_WRITER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageWriterIso,
+                               mirage_writer_iso,
+                               MIRAGE_TYPE_WRITER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageWriterIso))
 
 void mirage_writer_iso_type_register (GTypeModule *type_module)
 {
@@ -313,7 +315,7 @@ void mirage_writer_iso_type_register (GTypeModule *type_module)
 
 static void mirage_writer_iso_init (MirageWriterIso *self)
 {
-    self->priv = MIRAGE_WRITER_ISO_GET_PRIVATE(self);
+    self->priv = mirage_writer_iso_get_instance_private(self);
 
     mirage_writer_generate_info(MIRAGE_WRITER(self),
         "WRITER-ISO",
@@ -384,9 +386,6 @@ static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
     writer_class->open_image = mirage_writer_iso_open_image;
     writer_class->create_fragment = mirage_writer_iso_create_fragment;
     writer_class->finalize_image = mirage_writer_iso_finalize_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageWriterIsoPrivate));
 }
 
 static void mirage_writer_iso_class_finalize (MirageWriterIsoClass *klass G_GNUC_UNUSED)

@@ -25,8 +25,6 @@
 /**********************************************************************\
  *                           Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_XCDROAST_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParserXcdroastPrivate))
-
 struct _MirageParserXcdroastPrivate
 {
     MirageDisc *disc;
@@ -889,7 +887,11 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, Mirag
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserXcdroast, mirage_parser_xcdroast, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserXcdroast,
+                               mirage_parser_xcdroast,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserXcdroast))
 
 void mirage_parser_xcdroast_type_register (GTypeModule *type_module)
 {
@@ -899,7 +901,7 @@ void mirage_parser_xcdroast_type_register (GTypeModule *type_module)
 
 static void mirage_parser_xcdroast_init (MirageParserXcdroast *self)
 {
-    self->priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    self->priv = mirage_parser_xcdroast_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-XCDROAST",
@@ -947,9 +949,6 @@ static void mirage_parser_xcdroast_class_init (MirageParserXcdroastClass *klass)
     gobject_class->finalize = mirage_parser_xcdroast_finalize;
 
     parser_class->load_image = mirage_parser_xcdroast_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserXcdroastPrivate));
 }
 
 static void mirage_parser_xcdroast_class_finalize (MirageParserXcdroastClass *klass G_GNUC_UNUSED)

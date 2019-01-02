@@ -33,8 +33,6 @@ static const guint8 b6t_footer[16]    = { 'B', 'W', 'T', '5', ' ', 'S', 'T', 'R'
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_B6T_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_B6T, MirageParserB6tPrivate))
-
 struct _MirageParserB6tPrivate
 {
     MirageDisc *disc;
@@ -1315,7 +1313,11 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserB6t, mirage_parser_b6t, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserB6t,
+                               mirage_parser_b6t,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserB6t))
 
 void mirage_parser_b6t_type_register (GTypeModule *type_module)
 {
@@ -1325,7 +1327,7 @@ void mirage_parser_b6t_type_register (GTypeModule *type_module)
 
 static void mirage_parser_b6t_init (MirageParserB6t *self)
 {
-    self->priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
+    self->priv = mirage_parser_b6t_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-B6T",
@@ -1368,9 +1370,6 @@ static void mirage_parser_b6t_class_init (MirageParserB6tClass *klass)
     gobject_class->finalize = mirage_parser_b6t_finalize;
 
     parser_class->load_image = mirage_parser_b6t_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserB6tPrivate));
 }
 
 static void mirage_parser_b6t_class_finalize (MirageParserB6tClass *klass G_GNUC_UNUSED)

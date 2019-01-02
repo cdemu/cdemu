@@ -40,8 +40,6 @@ static const guint8 ecm_signature[4] = { 'E', 'C', 'M', 0x00 };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_ECM_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_ECM, MirageFilterStreamEcmPrivate))
-
 struct _MirageFilterStreamEcmPrivate
 {
     /* Part list */
@@ -502,7 +500,11 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamEcm, mirage_filter_stream_ecm, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamEcm,
+                               mirage_filter_stream_ecm,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamEcm))
 
 void mirage_filter_stream_ecm_type_register (GTypeModule *type_module)
 {
@@ -512,7 +514,7 @@ void mirage_filter_stream_ecm_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_ecm_init (MirageFilterStreamEcm *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_ECM_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_ecm_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-ECM",
@@ -550,9 +552,6 @@ static void mirage_filter_stream_ecm_class_init (MirageFilterStreamEcmClass *kla
     filter_stream_class->open = mirage_filter_stream_ecm_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_ecm_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamEcmPrivate));
 }
 
 static void mirage_filter_stream_ecm_class_finalize (MirageFilterStreamEcmClass *klass G_GNUC_UNUSED)

@@ -28,8 +28,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_SNDFILE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_SNDFILE, MirageFilterStreamSndfilePrivate))
-
 struct _MirageFilterStreamSndfilePrivate
 {
     SNDFILE *sndfile;
@@ -371,7 +369,11 @@ static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_s
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamSndfile, mirage_filter_stream_sndfile, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamSndfile,
+                               mirage_filter_stream_sndfile,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamSndfile))
 
 void mirage_filter_stream_sndfile_type_register (GTypeModule *type_module)
 {
@@ -381,7 +383,7 @@ void mirage_filter_stream_sndfile_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_sndfile_init (MirageFilterStreamSndfile *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_SNDFILE_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_sndfile_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-SNDFILE",
@@ -451,9 +453,6 @@ static void mirage_filter_stream_sndfile_class_init (MirageFilterStreamSndfileCl
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_sndfile_partial_read;
     filter_stream_class->simplified_partial_write = mirage_filter_stream_sndfile_partial_write;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamSndfilePrivate));
 }
 
 static void mirage_filter_stream_sndfile_class_finalize (MirageFilterStreamSndfileClass *klass G_GNUC_UNUSED)

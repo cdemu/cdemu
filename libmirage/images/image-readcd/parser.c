@@ -25,8 +25,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_READCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_READCD, MirageParserReadcdPrivate))
-
 struct _MirageParserReadcdPrivate {
     MirageDisc *disc;
 
@@ -468,7 +466,11 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, MirageS
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserReadcd, mirage_parser_readcd, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserReadcd,
+                               mirage_parser_readcd,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserReadcd))
 
 void mirage_parser_readcd_type_register (GTypeModule *type_module)
 {
@@ -478,7 +480,7 @@ void mirage_parser_readcd_type_register (GTypeModule *type_module)
 
 static void mirage_parser_readcd_init (MirageParserReadcd *self)
 {
-    self->priv = MIRAGE_PARSER_READCD_GET_PRIVATE(self);
+    self->priv = mirage_parser_readcd_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-READCD",
@@ -523,9 +525,6 @@ static void mirage_parser_readcd_class_init (MirageParserReadcdClass *klass)
     gobject_class->finalize = mirage_parser_readcd_finalize;
 
     parser_class->load_image = mirage_parser_readcd_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserReadcdPrivate));
 }
 
 static void mirage_parser_readcd_class_finalize (MirageParserReadcdClass *klass G_GNUC_UNUSED)

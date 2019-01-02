@@ -53,8 +53,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FRAGMENT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT, MirageFragmentPrivate))
-
 struct _MirageFragmentPrivate
 {
     gint address; /* Address (relative to track start) */
@@ -899,12 +897,12 @@ gboolean mirage_fragment_is_writable (MirageFragment *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageFragment, mirage_fragment, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageFragment, mirage_fragment, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_fragment_init (MirageFragment *self)
 {
-    self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
+    self->priv = mirage_fragment_get_instance_private(self);
 
     self->priv->main_stream = NULL;
     self->priv->main_size = 0;
@@ -940,9 +938,6 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = mirage_fragment_dispose;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFragmentPrivate));
 
     /* Signals */
     /**

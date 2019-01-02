@@ -30,8 +30,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_WRITER_TOC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_WRITER_TOC, MirageWriterTocPrivate))
-
 struct _MirageWriterTocPrivate
 {
     gchar *image_file_basename;
@@ -595,7 +593,11 @@ static gboolean mirage_writer_toc_finalize_image (MirageWriter *_self, MirageDis
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageWriterToc, mirage_writer_toc, MIRAGE_TYPE_WRITER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageWriterToc,
+                               mirage_writer_toc,
+                               MIRAGE_TYPE_WRITER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageWriterToc))
 
 void mirage_writer_toc_type_register (GTypeModule *type_module)
 {
@@ -604,7 +606,7 @@ void mirage_writer_toc_type_register (GTypeModule *type_module)
 
 static void mirage_writer_toc_init (MirageWriterToc *self)
 {
-    self->priv = MIRAGE_WRITER_TOC_GET_PRIVATE(self);
+    self->priv = mirage_writer_toc_get_instance_private(self);
 
     mirage_writer_generate_info(MIRAGE_WRITER(self),
         "WRITER-TOC",
@@ -668,9 +670,6 @@ static void mirage_writer_toc_class_init (MirageWriterTocClass *klass)
     writer_class->open_image = mirage_writer_toc_open_image;
     writer_class->create_fragment = mirage_writer_toc_create_fragment;
     writer_class->finalize_image = mirage_writer_toc_finalize_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageWriterTocPrivate));
 }
 
 static void mirage_writer_toc_class_finalize (MirageWriterTocClass *klass G_GNUC_UNUSED)

@@ -44,8 +44,6 @@ static const guint8 gzip_signature[2] = { 0x1F, 0x8B };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_GZIP_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_GZIP, MirageFilterStreamGzipPrivate))
-
 struct _MirageFilterStreamGzipPrivate
 {
     /* I/O buffer */
@@ -473,7 +471,11 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamGzip, mirage_filter_stream_gzip, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamGzip,
+                               mirage_filter_stream_gzip,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamGzip))
 
 void mirage_filter_stream_gzip_type_register (GTypeModule *type_module)
 {
@@ -483,7 +485,7 @@ void mirage_filter_stream_gzip_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_gzip_init (MirageFilterStreamGzip *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_GZIP_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_gzip_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-GZIP",
@@ -530,9 +532,6 @@ static void mirage_filter_stream_gzip_class_init (MirageFilterStreamGzipClass *k
     filter_stream_class->open = mirage_filter_stream_gzip_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_gzip_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamGzipPrivate));
 }
 
 static void mirage_filter_stream_gzip_class_finalize (MirageFilterStreamGzipClass *klass G_GNUC_UNUSED)

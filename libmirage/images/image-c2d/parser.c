@@ -29,8 +29,6 @@ static guint8 c2d_signature2[] = { 'R', 'o', 'x', 'i', 'o', ' ', 'I', 'm', 'a', 
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_C2D_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_C2D, MirageParserC2dPrivate))
-
 struct _MirageParserC2dPrivate
 {
     MirageDisc *disc;
@@ -604,7 +602,11 @@ end:
 /******************************************************************************\
  *                                Object init                                 *
 \******************************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserC2d, mirage_parser_c2d, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserC2d,
+                               mirage_parser_c2d,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserC2d))
 
 void mirage_parser_c2d_type_register (GTypeModule *type_module)
 {
@@ -613,7 +615,7 @@ void mirage_parser_c2d_type_register (GTypeModule *type_module)
 
 static void mirage_parser_c2d_init (MirageParserC2d *self)
 {
-    self->priv = MIRAGE_PARSER_C2D_GET_PRIVATE(self);
+    self->priv = mirage_parser_c2d_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-C2D",
@@ -658,9 +660,6 @@ static void mirage_parser_c2d_class_init (MirageParserC2dClass *klass)
     gobject_class->finalize = mirage_parser_c2d_finalize;
 
     parser_class->load_image = mirage_parser_c2d_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserC2dPrivate));
 }
 
 static void mirage_parser_c2d_class_finalize (MirageParserC2dClass *klass G_GNUC_UNUSED)

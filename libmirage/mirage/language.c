@@ -43,8 +43,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_LANGUAGE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_LANGUAGE, MirageLanguagePrivate))
-
 typedef struct
 {
     gboolean set;
@@ -205,12 +203,12 @@ gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePack
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageLanguage, mirage_language, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageLanguage, mirage_language, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_language_init (MirageLanguage *self)
 {
-    self->priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
+    self->priv = mirage_language_get_instance_private(self);
 
     /* Allocate fields */
     self->priv->packs_number = 16; /* Currently, we have 16 pack types */
@@ -237,7 +235,4 @@ static void mirage_language_class_init (MirageLanguageClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->finalize = mirage_language_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageLanguagePrivate));
 }

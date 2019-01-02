@@ -41,8 +41,6 @@ const gchar gbi_part_signature[16] = "GBI VOL";
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_DAA, MirageFilterStreamDaaPrivate))
-
 typedef enum {
     COMPRESSION_NONE = 0x00,
     COMPRESSION_ZLIB = 0x10,
@@ -1418,7 +1416,11 @@ static gssize mirage_filter_stream_daa_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamDaa, mirage_filter_stream_daa, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamDaa,
+                               mirage_filter_stream_daa,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamDaa))
 
 void mirage_filter_stream_daa_type_register (GTypeModule *type_module)
 {
@@ -1428,7 +1430,7 @@ void mirage_filter_stream_daa_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_daa_init (MirageFilterStreamDaa *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_DAA_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_daa_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-DAA",
@@ -1487,9 +1489,6 @@ static void mirage_filter_stream_daa_class_init (MirageFilterStreamDaaClass *kla
     filter_stream_class->open = mirage_filter_stream_daa_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_daa_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamDaaPrivate));
 }
 
 static void mirage_filter_stream_daa_class_finalize (MirageFilterStreamDaaClass *klass G_GNUC_UNUSED)

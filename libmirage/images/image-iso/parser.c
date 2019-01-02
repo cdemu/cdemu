@@ -42,8 +42,6 @@ static const guint8 pattern_nintendo_wii_iso[4] = { 0x5D, 0x1C, 0x9E, 0xA3 };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MirageParserIsoPrivate))
-
 struct _MirageParserIsoPrivate
 {
     MirageDisc *disc;
@@ -465,7 +463,11 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserIso, mirage_parser_iso, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserIso,
+                               mirage_parser_iso,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserIso))
 
 void mirage_parser_iso_type_register (GTypeModule *type_module)
 {
@@ -475,7 +477,7 @@ void mirage_parser_iso_type_register (GTypeModule *type_module)
 
 static void mirage_parser_iso_init (MirageParserIso *self)
 {
-    self->priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
+    self->priv = mirage_parser_iso_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
@@ -493,9 +495,6 @@ static void mirage_parser_iso_class_init (MirageParserIsoClass *klass)
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     parser_class->load_image = mirage_parser_iso_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserIsoPrivate));
 }
 
 static void mirage_parser_iso_class_finalize (MirageParserIsoClass *klass G_GNUC_UNUSED)

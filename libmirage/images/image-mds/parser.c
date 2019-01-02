@@ -30,8 +30,6 @@ static const guint8 mds_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E'
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_MDS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDS, MirageParserMdsPrivate))
-
 struct _MirageParserMdsPrivate
 {
     MirageDisc *disc;
@@ -873,7 +871,11 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserMds, mirage_parser_mds, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserMds,
+                               mirage_parser_mds,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserMds))
 
 void mirage_parser_mds_type_register (GTypeModule *type_module)
 {
@@ -883,7 +885,7 @@ void mirage_parser_mds_type_register (GTypeModule *type_module)
 
 static void mirage_parser_mds_init (MirageParserMds *self)
 {
-    self->priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
+    self->priv = mirage_parser_mds_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDS",
@@ -915,9 +917,6 @@ static void mirage_parser_mds_class_init (MirageParserMdsClass *klass)
     gobject_class->finalize = mirage_parser_mds_finalize;
 
     parser_class->load_image = mirage_parser_mds_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserMdsPrivate));
 }
 
 static void mirage_parser_mds_class_finalize (MirageParserMdsClass *klass G_GNUC_UNUSED)

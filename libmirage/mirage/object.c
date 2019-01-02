@@ -43,8 +43,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_OBJECT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_OBJECT, MirageObjectPrivate))
-
 struct _MirageObjectPrivate
 {
     gpointer parent; /* Soft-reference (= no ref) to parent */
@@ -164,11 +162,12 @@ static void mirage_object_contextual_init (MirageContextualInterface *iface);
 G_DEFINE_TYPE_WITH_CODE(MirageObject,
                         mirage_object,
                         G_TYPE_OBJECT,
-                        G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init));
+                        G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init)
+                        G_ADD_PRIVATE(MirageObject))
 
 static void mirage_object_init (MirageObject *self)
 {
-    self->priv = MIRAGE_OBJECT_GET_PRIVATE(self);
+    self->priv = mirage_object_get_instance_private(self);
 
     self->priv->parent = NULL;
     self->priv->context = NULL;
@@ -200,9 +199,6 @@ static void mirage_object_class_init (MirageObjectClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = mirage_object_dispose;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageObjectPrivate));
 
     /* Signals */
     /**

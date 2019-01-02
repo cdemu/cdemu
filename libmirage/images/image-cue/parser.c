@@ -25,8 +25,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_CUE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CUE, MirageParserCuePrivate))
-
 struct _MirageParserCuePrivate
 {
     MirageDisc *disc;
@@ -982,7 +980,11 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserCue, mirage_parser_cue, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserCue,
+                               mirage_parser_cue,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserCue))
 
 void mirage_parser_cue_type_register (GTypeModule *type_module)
 {
@@ -992,7 +994,7 @@ void mirage_parser_cue_type_register (GTypeModule *type_module)
 
 static void mirage_parser_cue_init (MirageParserCue *self)
 {
-    self->priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+    self->priv = mirage_parser_cue_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CUE",
@@ -1030,9 +1032,6 @@ static void mirage_parser_cue_class_init (MirageParserCueClass *klass)
     gobject_class->finalize = mirage_parser_cue_finalize;
 
     parser_class->load_image = mirage_parser_cue_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserCuePrivate));
 }
 
 static void mirage_parser_cue_class_finalize (MirageParserCueClass *klass G_GNUC_UNUSED)

@@ -42,8 +42,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_SECTOR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SECTOR, MirageSectorPrivate))
-
 struct _MirageSectorPrivate
 {
     MirageSectorType type;
@@ -1690,21 +1688,19 @@ void mirage_sector_scramble (MirageSector *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageSector, mirage_sector, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageSector, mirage_sector, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_sector_init (MirageSector *self)
 {
-    self->priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+    self->priv = mirage_sector_get_instance_private(self);
 
     /* Un-initialize sector type */
     self->priv->type = 0xDEADBEEF;
 }
 
-static void mirage_sector_class_init (MirageSectorClass *klass)
+static void mirage_sector_class_init (MirageSectorClass *klass G_GNUC_UNUSED)
 {
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageSectorPrivate));
 }
 
 

@@ -61,8 +61,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM, MirageFilterStreamPrivate))
-
 struct _MirageFilterStreamPrivate
 {
     MirageFilterStreamInfo info;
@@ -483,12 +481,13 @@ static void mirage_filter_stream_stream_init (MirageStreamInterface *iface);
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE(MirageFilterStream,
                                  mirage_filter_stream,
                                  MIRAGE_TYPE_OBJECT,
-                                 G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_filter_stream_stream_init));
+                                 G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_filter_stream_stream_init)
+                                 G_ADD_PRIVATE(MirageFilterStream))
 
 
 static void mirage_filter_stream_init (MirageFilterStream *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_get_instance_private(self);
 
     /* Make sure all fields are empty */
     memset(&self->priv->info, 0, sizeof(self->priv->info));
@@ -537,9 +536,6 @@ static void mirage_filter_stream_class_init (MirageFilterStreamClass *klass)
     klass->write = mirage_filter_stream_write_impl;
     klass->tell = mirage_filter_stream_tell_impl;
     klass->seek = mirage_filter_stream_seek_impl;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamPrivate));
 }
 
 static void mirage_filter_stream_stream_init (MirageStreamInterface *iface)

@@ -100,8 +100,6 @@ typedef struct
 /**********************************************************************\
  *                          Private structure                         *
 \***********************************************************************/
-#define MIRAGE_CDTEXT_CODER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_CDTEXT_CODER, MirageCdTextCoderPrivate))
-
 typedef struct
 {
     gint code; /* Language code */
@@ -734,12 +732,12 @@ gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, Mi
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageCdTextCoder, mirage_cdtext_coder, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageCdTextCoder, mirage_cdtext_coder, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_cdtext_coder_init (MirageCdTextCoder *self)
 {
-    self->priv = MIRAGE_CDTEXT_CODER_GET_PRIVATE(self);
+    self->priv = mirage_cdtext_coder_get_instance_private(self);
 
     /* Specs say there can be 8 blocks max... */
     self->priv->num_blocks = 8;
@@ -765,7 +763,4 @@ static void mirage_cdtext_coder_class_init (MirageCdTextCoderClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->finalize = mirage_cdtext_coder_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageCdTextCoderPrivate));
 }

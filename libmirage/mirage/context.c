@@ -52,8 +52,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_CONTEXT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_CONTEXT, MirageContextPrivate))
-
 struct _MirageContextPrivate
 {
     /* Debugging */
@@ -613,12 +611,12 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageContext, mirage_context, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageContext, mirage_context, G_TYPE_OBJECT)
 
 
 static void mirage_context_init (MirageContext *self)
 {
-    self->priv = MIRAGE_CONTEXT_GET_PRIVATE(self);
+    self->priv = mirage_context_get_instance_private(self);
 
     self->priv->domain = NULL;
     self->priv->name = NULL;
@@ -663,7 +661,4 @@ static void mirage_context_class_init (MirageContextClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->finalize = mirage_context_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageContextPrivate));
 }

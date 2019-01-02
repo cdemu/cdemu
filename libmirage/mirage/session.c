@@ -44,8 +44,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_SESSION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SESSION, MirageSessionPrivate))
-
 struct _MirageSessionPrivate
 {
     /* MCN */
@@ -1504,14 +1502,14 @@ MirageSession *mirage_session_get_next (MirageSession *self, GError **error)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageSession, mirage_session, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageSession, mirage_session, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_session_init (MirageSession *self)
 {
     MirageTrack *track;
 
-    self->priv = MIRAGE_SESSION_GET_PRIVATE(self);
+    self->priv = mirage_session_get_instance_private(self);
 
     self->priv->mcn = NULL;
     self->priv->mcn_fixed = FALSE;
@@ -1585,9 +1583,6 @@ static void mirage_session_class_init (MirageSessionClass *klass)
 
     gobject_class->dispose = mirage_session_dispose;
     gobject_class->finalize = mirage_session_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageSessionPrivate));
 
     /* Signals */
     /**

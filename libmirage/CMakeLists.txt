@@ -41,7 +41,7 @@ find_package (PkgConfig 0.16 REQUIRED)
 find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
 
-pkg_check_modules (GLIB REQUIRED glib-2.0>=2.28 gobject-2.0>=2.28 gmodule-2.0>=2.28 gio-2.0>=2.28)
+pkg_check_modules (GLIB REQUIRED glib-2.0>=2.38 gobject-2.0>=2.38 gmodule-2.0>=2.38 gio-2.0>=2.38)
 
 if (INTROSPECTION_ENABLED)
     pkg_check_modules (INTROSPECTION gobject-introspection-1.0>=1.30.0)

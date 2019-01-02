@@ -35,8 +35,6 @@ typedef struct {
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_MACBINARY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_MACBINARY, MirageFilterStreamMacBinaryPrivate))
-
 struct _MirageFilterStreamMacBinaryPrivate
 {
     /* macbinary header */
@@ -553,7 +551,11 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamMacBinary, mirage_filter_stream_macbinary, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamMacBinary,
+                               mirage_filter_stream_macbinary,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamMacBinary))
 
 void mirage_filter_stream_macbinary_type_register (GTypeModule *type_module)
 {
@@ -563,7 +565,7 @@ void mirage_filter_stream_macbinary_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_macbinary_init (MirageFilterStreamMacBinary *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_MACBINARY_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_macbinary_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-MACBINARY",
@@ -619,9 +621,6 @@ static void mirage_filter_stream_macbinary_class_init (MirageFilterStreamMacBina
     filter_stream_class->open = mirage_filter_stream_macbinary_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_macbinary_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamMacBinaryPrivate));
 }
 
 static void mirage_filter_stream_macbinary_class_finalize (MirageFilterStreamMacBinaryClass *klass G_GNUC_UNUSED)

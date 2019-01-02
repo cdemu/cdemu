@@ -31,8 +31,6 @@ static const guint8 disc_signature[4] = { 'd', 'i', 's', 'c' };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_CIF_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CIF, MirageParserCifPrivate))
-
 struct _MirageParserCifPrivate
 {
     MirageDisc *disc;
@@ -738,7 +736,11 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserCif, mirage_parser_cif, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserCif,
+                               mirage_parser_cif,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserCif))
 
 void mirage_parser_cif_type_register (GTypeModule *type_module)
 {
@@ -748,7 +750,7 @@ void mirage_parser_cif_type_register (GTypeModule *type_module)
 
 static void mirage_parser_cif_init (MirageParserCif *self)
 {
-    self->priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self);
+    self->priv = mirage_parser_cif_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CIF",
@@ -794,9 +796,6 @@ static void mirage_parser_cif_class_init (MirageParserCifClass *klass)
     gobject_class->finalize = mirage_parser_cif_finalize;
 
     parser_class->load_image = mirage_parser_cif_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserCifPrivate));
 }
 
 static void mirage_parser_cif_class_finalize (MirageParserCifClass *klass G_GNUC_UNUSED)

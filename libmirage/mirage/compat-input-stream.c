@@ -30,8 +30,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_COMPAT_INPUT_STREAM_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_COMPAT_INPUT_STREAM, MirageCompatInputStreamPrivate))
-
 struct _MirageCompatInputStreamPrivate
 {
     MirageStream *stream;
@@ -51,7 +49,7 @@ static gssize mirage_compat_input_stream_read (GInputStream *_self, void *buffer
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageCompatInputStream, mirage_compat_input_stream, G_TYPE_INPUT_STREAM);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageCompatInputStream, mirage_compat_input_stream, G_TYPE_INPUT_STREAM)
 
 enum {
     PROP_0,
@@ -65,7 +63,7 @@ static GParamSpec *mirage_compat_input_stream_properties[N_PROPERTIES] = { NULL,
 
 static void mirage_compat_input_stream_init (MirageCompatInputStream *self)
 {
-    self->priv = MIRAGE_COMPAT_INPUT_STREAM_GET_PRIVATE(self);
+    self->priv = mirage_compat_input_stream_get_instance_private(self);
 
     /* Make sure all fields are empty */
     self->priv->stream = NULL;
@@ -119,7 +117,4 @@ static void mirage_compat_input_stream_class_init (MirageCompatInputStreamClass 
         G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE);
 
     g_object_class_install_properties(gobject_class, N_PROPERTIES, mirage_compat_input_stream_properties);
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageCompatInputStreamPrivate));
 }

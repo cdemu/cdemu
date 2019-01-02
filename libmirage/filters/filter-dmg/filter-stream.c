@@ -39,8 +39,6 @@ typedef struct {
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_DMG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_DMG, MirageFilterStreamDmgPrivate))
-
 struct _MirageFilterStreamDmgPrivate
 {
     /* koly blocks */
@@ -971,7 +969,11 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamDmg, mirage_filter_stream_dmg, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamDmg,
+                               mirage_filter_stream_dmg,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamDmg))
 
 void mirage_filter_stream_dmg_type_register (GTypeModule *type_module)
 {
@@ -981,7 +983,7 @@ void mirage_filter_stream_dmg_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_dmg_init (MirageFilterStreamDmg *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_DMG_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_dmg_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-DMG",
@@ -1042,9 +1044,6 @@ static void mirage_filter_stream_dmg_class_init (MirageFilterStreamDmgClass *kla
     filter_stream_class->open = mirage_filter_stream_dmg_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_dmg_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamDmgPrivate));
 }
 
 static void mirage_filter_stream_dmg_class_finalize (MirageFilterStreamDmgClass *klass G_GNUC_UNUSED)

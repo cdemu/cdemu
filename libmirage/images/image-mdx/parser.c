@@ -28,8 +28,6 @@ static const guint8 mdx_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E'
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_MDX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDX, MirageParserMdxPrivate))
-
 struct _MirageParserMdxPrivate
 {
     MirageDisc *disc;
@@ -373,7 +371,11 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserMdx, mirage_parser_mdx, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserMdx,
+                               mirage_parser_mdx,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserMdx))
 
 void mirage_parser_mdx_type_register (GTypeModule *type_module)
 {
@@ -383,7 +385,7 @@ void mirage_parser_mdx_type_register (GTypeModule *type_module)
 
 static void mirage_parser_mdx_init (MirageParserMdx *self)
 {
-    self->priv = MIRAGE_PARSER_MDX_GET_PRIVATE(self);
+    self->priv = mirage_parser_mdx_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDX",
@@ -416,9 +418,6 @@ static void mirage_parser_mdx_class_init (MirageParserMdxClass *klass)
     gobject_class->dispose = mirage_parser_mdx_dispose;
 
     parser_class->load_image = mirage_parser_mdx_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserMdxPrivate));
 }
 
 static void mirage_parser_mdx_class_finalize (MirageParserMdxClass *klass G_GNUC_UNUSED)

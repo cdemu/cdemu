@@ -31,8 +31,6 @@ static const guint8 ner5_signature[4] = { 'N', 'E', 'R', '5' };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_NRG, MirageParserNrgPrivate))
-
 struct _MirageParserNrgPrivate
 {
     MirageDisc *disc;
@@ -1077,7 +1075,11 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserNrg, mirage_parser_nrg, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserNrg,
+                               mirage_parser_nrg,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserNrg))
 
 void mirage_parser_nrg_type_register (GTypeModule *type_module)
 {
@@ -1087,7 +1089,7 @@ void mirage_parser_nrg_type_register (GTypeModule *type_module)
 
 static void mirage_parser_nrg_init (MirageParserNrg *self)
 {
-    self->priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    self->priv = mirage_parser_nrg_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-NRG",
@@ -1133,9 +1135,6 @@ static void mirage_parser_nrg_class_init (MirageParserNrgClass *klass)
     gobject_class->finalize = mirage_parser_nrg_finalize;
 
     parser_class->load_image = mirage_parser_nrg_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserNrgPrivate));
 }
 
 static void mirage_parser_nrg_class_finalize (MirageParserNrgClass *klass G_GNUC_UNUSED)

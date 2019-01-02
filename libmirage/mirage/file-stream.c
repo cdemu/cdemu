@@ -46,8 +46,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_STREAM_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_STREAM, MirageFileStreamPrivate))
-
 struct _MirageFileStreamPrivate
 {
     /* These two are just convenience pointers */
@@ -281,11 +279,12 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
 static void mirage_file_stream_stream_init (MirageStreamInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE(MirageFileStream, mirage_file_stream, MIRAGE_TYPE_OBJECT,
-    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_file_stream_stream_init));
+    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_file_stream_stream_init)
+    G_ADD_PRIVATE(MirageFileStream))
 
 static void mirage_file_stream_init (MirageFileStream *self)
 {
-    self->priv = MIRAGE_FILE_STREAM_GET_PRIVATE(self);
+    self->priv = mirage_file_stream_get_instance_private(self);
 
     /* Make sure all fields are empty */
     self->priv->input_stream = NULL;
@@ -328,9 +327,6 @@ static void mirage_file_stream_class_init (MirageFileStreamClass *klass)
 
     gobject_class->dispose = mirage_file_stream_dispose;
     gobject_class->finalize = mirage_file_stream_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFileStreamPrivate));
 }
 
 static void mirage_file_stream_stream_init (MirageStreamInterface *iface)

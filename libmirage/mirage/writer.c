@@ -70,8 +70,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_WRITER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_WRITER, MirageWriterPrivate))
-
 struct _MirageWriterPrivate
 {
     MirageWriterInfo info;
@@ -794,12 +792,12 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_ABSTRACT_TYPE(MirageWriter, mirage_writer, MIRAGE_TYPE_OBJECT);
+G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(MirageWriter, mirage_writer, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_writer_init (MirageWriter *self)
 {
-    self->priv = MIRAGE_WRITER_GET_PRIVATE(self);
+    self->priv = mirage_writer_get_instance_private(self);
 
     /* Make sure all fields are empty */
     memset(&self->priv->info, 0, sizeof(self->priv->info));
@@ -855,9 +853,6 @@ static void mirage_writer_class_init (MirageWriterClass *klass)
     klass->open_image = NULL;
     klass->create_fragment = NULL;
     klass->finalize_image = NULL;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageWriterPrivate));
 
     /* Signals */
     /**

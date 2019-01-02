@@ -31,8 +31,6 @@ static const guint8 xz_signature[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_XZ_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_XZ, MirageFilterStreamXzPrivate))
-
 struct _MirageFilterStreamXzPrivate
 {
     /* I/O buffer */
@@ -401,7 +399,11 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamXz, mirage_filter_stream_xz, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamXz,
+                               mirage_filter_stream_xz,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamXz))
 
 void mirage_filter_stream_xz_type_register (GTypeModule *type_module)
 {
@@ -411,7 +413,7 @@ void mirage_filter_stream_xz_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_xz_init (MirageFilterStreamXz *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_XZ_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_xz_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-XZ",
@@ -452,9 +454,6 @@ static void mirage_filter_stream_xz_class_init (MirageFilterStreamXzClass *klass
     filter_stream_class->open = mirage_filter_stream_xz_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_xz_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamXzPrivate));
 }
 
 static void mirage_filter_stream_xz_class_finalize (MirageFilterStreamXzClass *klass G_GNUC_UNUSED)

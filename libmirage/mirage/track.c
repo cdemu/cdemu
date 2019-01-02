@@ -44,8 +44,6 @@
 /**********************************************************************\
  *                         Private structure                          *
 \**********************************************************************/
-#define MIRAGE_TRACK_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_TRACK, MirageTrackPrivate))
-
 struct _MirageTrackPrivate
 {
     /* Layout settings */
@@ -1575,12 +1573,12 @@ MirageTrack *mirage_track_get_next (MirageTrack *self, GError **error)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageTrack, mirage_track, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageTrack, mirage_track, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_track_init (MirageTrack *self)
 {
-    self->priv = MIRAGE_TRACK_GET_PRIVATE(self);
+    self->priv = mirage_track_get_instance_private(self);
 
     self->priv->fragments_list = NULL;
     self->priv->indices_list = NULL;
@@ -1653,9 +1651,6 @@ static void mirage_track_class_init (MirageTrackClass *klass)
 
     gobject_class->dispose = mirage_track_dispose;
     gobject_class->finalize = mirage_track_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageTrackPrivate));
 
     /* Signals */
     /**

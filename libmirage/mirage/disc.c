@@ -49,8 +49,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_DISC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC, MirageDiscPrivate))
-
 struct _MirageDiscPrivate
 {
     gchar **filenames;
@@ -1566,12 +1564,12 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageDisc, mirage_disc, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageDisc, mirage_disc, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_disc_init (MirageDisc *self)
 {
-    self->priv = MIRAGE_DISC_GET_PRIVATE(self);
+    self->priv = mirage_disc_get_instance_private(self);
 
     self->priv->sessions_list = NULL;
 
@@ -1634,10 +1632,6 @@ static void mirage_disc_class_init (MirageDiscClass *klass)
 
     gobject_class->dispose = mirage_disc_dispose;
     gobject_class->finalize = mirage_disc_finalize;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageDiscPrivate));
-
 
     /* Signals */
     /**

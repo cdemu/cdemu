@@ -34,8 +34,6 @@ static const guint8 ciso_signature[4] = { 'C', 'I', 'S', 'O' };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILTER_STREAM_CSO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_CSO, MirageFilterStreamCsoPrivate))
-
 struct _MirageFilterStreamCsoPrivate
 {
     ciso_header_t header;
@@ -319,7 +317,11 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamCso, mirage_filter_stream_cso, MIRAGE_TYPE_FILTER_STREAM);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamCso,
+                               mirage_filter_stream_cso,
+                               MIRAGE_TYPE_FILTER_STREAM,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamCso))
 
 void mirage_filter_stream_cso_type_register (GTypeModule *type_module)
 {
@@ -329,7 +331,7 @@ void mirage_filter_stream_cso_type_register (GTypeModule *type_module)
 
 static void mirage_filter_stream_cso_init (MirageFilterStreamCso *self)
 {
-    self->priv = MIRAGE_FILTER_STREAM_CSO_GET_PRIVATE(self);
+    self->priv = mirage_filter_stream_cso_get_instance_private(self);
 
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-CSO",
@@ -371,9 +373,6 @@ static void mirage_filter_stream_cso_class_init (MirageFilterStreamCsoClass *kla
     filter_stream_class->open = mirage_filter_stream_cso_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_cso_partial_read;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFilterStreamCsoPrivate));
 }
 
 static void mirage_filter_stream_cso_class_finalize (MirageFilterStreamCsoClass *klass G_GNUC_UNUSED)

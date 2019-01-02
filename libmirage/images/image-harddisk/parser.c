@@ -25,8 +25,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_HD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_HD, MirageParserHdPrivate))
-
 struct _MirageParserHdPrivate
 {
     MirageDisc *disc;
@@ -370,7 +368,11 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParserHd, mirage_parser_hd, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserHd,
+                               mirage_parser_hd,
+                               MIRAGE_TYPE_PARSER,
+                               0,
+                               G_ADD_PRIVATE_DYNAMIC(MirageParserHd))
 
 void mirage_parser_hd_type_register (GTypeModule *type_module)
 {
@@ -380,7 +382,7 @@ void mirage_parser_hd_type_register (GTypeModule *type_module)
 
 static void mirage_parser_hd_init (MirageParserHd *self)
 {
-    self->priv = MIRAGE_PARSER_HD_GET_PRIVATE(self);
+    self->priv = mirage_parser_hd_get_instance_private(self);
 
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-HD",
@@ -399,9 +401,6 @@ static void mirage_parser_hd_class_init (MirageParserHdClass *klass)
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     parser_class->load_image = mirage_parser_hd_load_image;
-
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParserHdPrivate));
 }
 
 static void mirage_parser_hd_class_finalize (MirageParserHdClass *klass G_GNUC_UNUSED)

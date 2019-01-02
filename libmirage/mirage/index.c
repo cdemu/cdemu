@@ -41,8 +41,6 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_INDEX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_INDEX, MirageIndexPrivate))
-
 struct _MirageIndexPrivate
 {
     gint number;  /* Index' number */
@@ -112,19 +110,17 @@ gint mirage_index_get_address (MirageIndex *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageIndex, mirage_index, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(MirageIndex, mirage_index, MIRAGE_TYPE_OBJECT)
 
 
 static void mirage_index_init (MirageIndex *self)
 {
-    self->priv = MIRAGE_INDEX_GET_PRIVATE(self);
+    self->priv = mirage_index_get_instance_private(self);
 
     self->priv->number = 0;
     self->priv->address = 0;
 }
 
-static void mirage_index_class_init (MirageIndexClass *klass)
+static void mirage_index_class_init (MirageIndexClass *klass G_GNUC_UNUSED)
 {
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageIndexPrivate));
 }
