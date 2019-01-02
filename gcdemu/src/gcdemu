@@ -653,7 +653,7 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         frame.set_border_width(2)
         self.add(frame)
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
@@ -661,21 +661,21 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         frame.add(grid)
 
         # Loaded
-        label = Gtk.Label(label=_("Loaded: "))
+        label = Gtk.Label.new(_("Loaded: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 0, 1, 1)
 
-        label2 = Gtk.Label()
+        label2 = Gtk.Label.new()
         label2.set_hexpand(True)
         grid.attach_next_to(label2, label, Gtk.PositionType.RIGHT, 1, 1)
         self.label_loaded = label2
 
         # Filename(s)
-        label = Gtk.Label(label=_("File name(s): "))
+        label = Gtk.Label.new(_("File name(s): "))
         label.set_hexpand(True)
         grid.attach(label, 0, 1, 1, 1)
 
-        label2 = Gtk.Label()
+        label2 = Gtk.Label.new()
         label2.set_justify(Gtk.Justification.CENTER)
         label2.set_hexpand(True)
         grid.attach_next_to(label2, label, Gtk.PositionType.RIGHT, 1, 1)
@@ -687,13 +687,13 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         grid.attach(separator, 0, 2, 2, 1)
 
         # Load/create blank buttons
-        button = Gtk.Button(_("Load"))
+        button = Gtk.Button.new_with_label(_("Load"))
         button.set_hexpand(True)
         grid.attach(button, 0, 3, 1, 1)
         button.connect("clicked", lambda b: self.emit("load-unload-device"))
         self.button_load = button
 
-        button = Gtk.Button(_("Create blank"))
+        button = Gtk.Button.new_with_label(_("Create blank"))
         button.set_hexpand(True)
         grid.attach_next_to(button, self.button_load, Gtk.PositionType.RIGHT, 1, 1)
         button.connect("clicked", lambda b: self.emit("create-blank-disc"))
@@ -705,28 +705,28 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         frame.set_border_width(2)
         self.add(frame)
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         frame.add(grid)
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(2)
 
         # SCSI CD-ROM device
-        label = Gtk.Label(label=_("SCSI CD-ROM device: "))
+        label = Gtk.Label.new(_("SCSI CD-ROM device: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 0, 1, 1)
 
-        label2 = Gtk.Label()
+        label2 = Gtk.Label.new()
         label2.set_hexpand(True)
         grid.attach_next_to(label2, label, Gtk.PositionType.RIGHT, 1, 1)
         self.label_dev_sr = label2
 
         # SCSI generic device
-        label = Gtk.Label(label=_("SCSI generic device: "))
+        label = Gtk.Label.new(_("SCSI generic device: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 1, 1, 1)
 
-        label2 = Gtk.Label()
+        label2 = Gtk.Label.new()
         grid.attach_next_to(label2, label, Gtk.PositionType.RIGHT, 1, 1)
         self.label_dev_sg = label2
 
@@ -737,7 +737,7 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         align.set_vexpand(True)
         self.add(align)
 
-        button = Gtk.Button(_("Remove device"))
+        button = Gtk.Button.new_with_label(_("Remove device"))
         align.add(button)
         button.connect("clicked", lambda b: self.emit("remove-device"))
         self.button_remove = button
@@ -799,7 +799,7 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
         frame.set_border_width(2)
         self.add(frame)
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
@@ -807,44 +807,44 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
         frame.add(grid)
 
         # Vendor ID
-        label = Gtk.Label(label=_("Vendor ID: "))
+        label = Gtk.Label.new(_("Vendor ID: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 0, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_max_length(8)
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_vendor_id = entry
 
         # Product ID
-        label = Gtk.Label(label=_("Product ID: "))
+        label = Gtk.Label.new(_("Product ID: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 1, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_max_length(16)
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_product_id = entry
 
         # Revision
-        label = Gtk.Label(label=_("Revision: "))
+        label = Gtk.Label.new(_("Revision: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 2, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_max_length(4)
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_revision = entry
 
         # Vendor-specific
-        label = Gtk.Label(label=_("Vendor-specific: "))
+        label = Gtk.Label.new(_("Vendor-specific: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 3, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_max_length(20)
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
@@ -855,31 +855,31 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
         grid.attach(separator, 0, 4, 2, 1)
 
         # Button
-        button = Gtk.Button(_("Set device ID"))
+        button = Gtk.Button.new_with_label(_("Set device ID"))
         button.set_hexpand(True)
         grid.attach(button, 0, 5, 2, 1)
         button.connect("clicked", self.on_set_device_id_clicked)
 
         # *** DPM emulation ***
-        checkbutton = Gtk.CheckButton(_("DPM emulation"), False)
+        checkbutton = Gtk.CheckButton.new_with_label(_("DPM emulation"))
         checkbutton.connect("toggled", lambda t: self.emit("dpm-emulation-changed", t.get_active()))
         self.add(checkbutton)
         self.checkbutton_dpm = checkbutton
 
         # *** Transfer rate emulation ***
-        checkbutton = Gtk.CheckButton(_("Transfer rate emulation"), False)
+        checkbutton = Gtk.CheckButton.new_with_label(_("Transfer rate emulation"))
         checkbutton.connect("toggled", lambda t: self.emit("tr-emulation-changed", t.get_active()))
         self.add(checkbutton)
         self.checkbutton_tr = checkbutton
 
         # *** Bad sector emulation ***
-        checkbutton = Gtk.CheckButton(_("Bad sector emulation"), False)
+        checkbutton = Gtk.CheckButton.new_with_label(_("Bad sector emulation"))
         checkbutton.connect("toggled", lambda t: self.emit("bad-sector-emulation-changed", t.get_active()))
         self.add(checkbutton)
         self.checkbutton_bad_sector = checkbutton
 
         # *** DVD report CSS ***
-        checkbutton = Gtk.CheckButton(_("DVD report CSS/CPPM"), False)
+        checkbutton = Gtk.CheckButton.new_with_label(_("DVD report CSS/CPPM"))
         checkbutton.connect("toggled", lambda t: self.emit("dvd-report-css-changed", t.get_active()))
         self.add(checkbutton)
         self.checkbutton_dvd_report_css = checkbutton
@@ -946,7 +946,7 @@ class gCDEmuDeviceDebugMaskPage (Gtk.Frame):
         self.set_label(name)
         self.entries = []
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_orientation(Gtk.Orientation.VERTICAL)
         grid.set_border_width(5)
         grid.set_row_spacing(2)
@@ -954,7 +954,7 @@ class gCDEmuDeviceDebugMaskPage (Gtk.Frame):
 
         # Create checkboxes
         for mask in masks_list:
-            checkbutton = Gtk.CheckButton(mask[0], False)
+            checkbutton = Gtk.CheckButton.new_with_label(mask[0])
             checkbutton.weight = mask[1]
             checkbutton.set_hexpand(True)
             grid.add(checkbutton)
@@ -969,7 +969,7 @@ class gCDEmuDeviceDebugMaskPage (Gtk.Frame):
         grid.add(separator)
 
         # Button
-        button = Gtk.Button(_("Set debug mask"))
+        button = Gtk.Button.new_with_label(_("Set debug mask"))
         button.set_hexpand(True)
         grid.add(button)
         button.connect("clicked", self.on_set_debug_mask_clicked)
@@ -1001,24 +1001,25 @@ GObject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
 ########################################################################
 class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
     def __init__ (self, parsers, filter_streams):
-        Gtk.FileChooserDialog.__init__(self, _("Open file"), None, Gtk.FileChooserAction.OPEN, (_("Cancel"), Gtk.ResponseType.CANCEL, _("Open"), Gtk.ResponseType.ACCEPT))
+        Gtk.FileChooserDialog.__init__(self, title=_("Open file"), action=Gtk.FileChooserAction.OPEN)
+        self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("Open"), Gtk.ResponseType.ACCEPT)
 
         self.set_select_multiple(True)
         self.set_local_only(False)
 
         # Set filters based on supported parser information
-        filter_entry = Gtk.FileFilter()
+        filter_entry = Gtk.FileFilter.new()
         filter_entry.set_name(_("All files"))
         filter_entry.add_pattern("*")
         self.add_filter(filter_entry)
 
-        all_images = Gtk.FileFilter()
+        all_images = Gtk.FileFilter.new()
         all_images.set_name(_("All image files"))
         self.add_filter(all_images)
 
         for info in parsers:
             for description, mime_type in info[2]:
-                filter_entry = Gtk.FileFilter()
+                filter_entry = Gtk.FileFilter.new()
 
                 filter_entry.set_name(description)
                 filter_entry.add_mime_type(mime_type)
@@ -1029,7 +1030,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 
         for info in filter_streams:
             for description, mime_type in info[3]:
-                filter_entry = Gtk.FileFilter()
+                filter_entry = Gtk.FileFilter.new()
 
                 filter_entry.set_name(description)
                 filter_entry.add_mime_type(mime_type)
@@ -1068,17 +1069,16 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 
     def create_extra_options_widget (self):
         # Expander with grid
-        expander = Gtk.Expander()
-        expander.set_label(_("Extra Options"))
+        expander = Gtk.Expander.new(_("Extra Options"))
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
         expander.add(grid)
 
         # *** Encoding ***
         # Label
-        label = Gtk.Label(label=_("Encoding: "))
+        label = Gtk.Label.new(_("Encoding: "))
         grid.attach(label, 0, 0, 1, 1)
 
         # Combo box
@@ -1089,7 +1089,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         self.combobox_encoding = combobox
 
         # Autocompletion
-        completion = Gtk.EntryCompletion()
+        completion = Gtk.EntryCompletion.new()
         completion.set_model(liststore)
         completion.set_text_column(0)
         combobox.get_child().set_completion(completion)
@@ -1097,11 +1097,11 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 
         # *** Password ***
         # Label
-        label = Gtk.Label(label=_("Password: "))
+        label = Gtk.Label.new(_("Password: "))
         grid.attach(label, 0, 1, 1, 1)
 
         # Entry
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_visibility(False)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_password = entry
@@ -1129,7 +1129,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
             pass
 
         # Create ListStore
-        liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
+        liststore = Gtk.ListStore.new([ GObject.TYPE_STRING, GObject.TYPE_STRING ])
         liststore.append( ("Autodetect", "") )
         for encoding in encodings:
             liststore.append( (encoding, encoding) )
@@ -1142,27 +1142,28 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 #               gCDEMuPasswordDialog: password dialog                  #
 ########################################################################
 class gCDEMuPasswordDialog (Gtk.Dialog):
-    def __init__ (self):
-        Gtk.Dialog.__init__(self, _("Enter password"), None, 0, (_("OK"), Gtk.ResponseType.OK, _("Cancel"), Gtk.ResponseType.REJECT))
-
+    def __init__ (self, *args, **kwargs):
+        Gtk.Dialog.__init__(self, *args, **kwargs)
+        self.set_title(_("Enter password"))
+        self.add_buttons(_("OK"), Gtk.ResponseType.OK, _("Cancel"), Gtk.ResponseType.REJECT)
         self.set_default_response(Gtk.ResponseType.OK)
 
         # Grid
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
         # Label
-        label = Gtk.Label(label=_("The image you are trying to load is encrypted."))
+        label = Gtk.Label.new(_("The image you are trying to load is encrypted."))
         grid.attach(label, 0, 0, 2, 1)
 
         # Label & text entry
-        label = Gtk.Label(_("Password: "))
+        label = Gtk.Label.new(_("Password: "))
         grid.attach(label, 0, 1, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         entry.connect("activate", lambda w: self.response(Gtk.ResponseType.OK)) # Allow the user to press enter to do OK
@@ -1189,7 +1190,9 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
     class ValidationError (Exception): pass
 
     def __init__ (self, writers):
-        Gtk.Dialog.__init__(self, _("Create blank disc image"), None, 0, (_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT))
+        Gtk.Dialog.__init__(self)
+        self.set_title(_("Create blank disc image"))
+        self.add_buttons(_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT)
 
         self.writers = writers
 
@@ -1199,30 +1202,30 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         frame.set_border_width(2)
         self.vbox.add(frame)
 
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
         frame.add(grid)
 
         # Filename
-        label = Gtk.Label(label=_("Filename: "))
+        label = Gtk.Label.new(_("Filename: "))
         grid.attach(label, 0, 0, 1, 1)
 
-        entry = Gtk.Entry()
+        entry = Gtk.Entry.new()
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_filename = entry
 
-        button = Gtk.Button(_("Choose"))
+        button = Gtk.Button.new_with_label(_("Choose"))
         grid.attach_next_to(button, entry, Gtk.PositionType.RIGHT, 1, 1)
         button.connect("clicked", lambda b: self.choose_file())
 
         # Medium type
-        label = Gtk.Label(label=_("Medium type: "))
+        label = Gtk.Label.new(_("Medium type: "))
         grid.attach(label, 0, 1, 1, 1)
 
-        liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
+        liststore = Gtk.ListStore.new([ GObject.TYPE_STRING, GObject.TYPE_STRING ])
         liststore.append( ("CD-R 74 min (650 MB)", "cdr74") )
         liststore.append( ("CD-R 80 min (700 MB)", "cdr80") )
         liststore.append( ("CD-R 90 min (800 MB)", "cdr90") )
@@ -1237,16 +1240,16 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         grid.attach_next_to(combobox, label, Gtk.PositionType.RIGHT, 2, 1)
         self.combobox_medium = combobox
 
-        completion = Gtk.EntryCompletion()
+        completion = Gtk.EntryCompletion.new()
         completion.set_model(liststore)
         completion.set_text_column(0)
         combobox.get_child().set_completion(completion)
 
         # Writer
-        label = Gtk.Label(label=_("Writer: "))
+        label = Gtk.Label.new(_("Writer: "))
         grid.attach(label, 0, 2, 1, 1)
 
-        liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
+        liststore = Gtk.ListStore.new([ GObject.TYPE_STRING, GObject.TYPE_INT ])
         for i in range(0, len(self.writers)):
             liststore.append( (self.writers[i][0], i) )
 
@@ -1257,7 +1260,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         combobox.connect("changed", lambda c: self.build_writer_options())
         self.combobox_writer = combobox
 
-        completion = Gtk.EntryCompletion()
+        completion = Gtk.EntryCompletion.new()
         completion.set_model(liststore)
         completion.set_text_column(0)
         combobox.get_child().set_completion(completion)
@@ -1277,7 +1280,11 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         self.frame_writer.hide()
 
     def choose_file (self):
-        dialog = Gtk.FileChooserDialog(_("Choose file"), self, Gtk.FileChooserAction.SAVE, (_("Cancel"), Gtk.ResponseType.CANCEL, _("Choose"), Gtk.ResponseType.ACCEPT))
+        dialog = Gtk.FileChooserDialog(
+            title=_("Choose file"),
+            parent=self,
+            action=Gtk.FileChooserAction.SAVE)
+        dialog.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("Choose"), Gtk.ResponseType.ACCEPT)
         dialog.set_local_only(False)
         dialog.set_do_overwrite_confirmation(True)
 
@@ -1308,7 +1315,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         parameter_sheet = writer[2]
 
         # Create GUI
-        grid = Gtk.Grid()
+        grid = Gtk.Grid.new()
         grid.set_border_width(5)
         grid.set_column_spacing(5)
         grid.set_row_spacing(5)
@@ -1331,7 +1338,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
             if len(parameter_enum):
                 # Enum; create a combo box
                 # Store
-                liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
+                liststore = Gtk.ListStore.new([ GObject.TYPE_STRING, GObject.TYPE_STRING ])
                 for enum_value in parameter_enum:
                     liststore.append( (enum_value, enum_value) )
 
@@ -1339,7 +1346,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
                 widget = Gtk.ComboBox.new_with_model_and_entry(liststore)
                 widget.set_entry_text_column(0)
 
-                completion = Gtk.EntryCompletion()
+                completion = Gtk.EntryCompletion.new()
                 completion.set_model(liststore)
                 completion.set_text_column(0)
                 widget.get_child().set_completion(completion)
@@ -1351,26 +1358,26 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
                         break
             elif isinstance(parameter_default, str):
                 # String; create a text entry
-                widget = Gtk.Entry()
+                widget = Gtk.Entry.new()
                 # Default value
                 widget.set_text(parameter_default)
             elif isinstance(parameter_default, bool):
-                # Boolean; create a heck button
-                widget = Gtk.CheckButton(parameter_name)
+                # Boolean; create a check button
+                widget = Gtk.CheckButton.new_with_label(parameter_name)
                 widget.set_tooltip_text(parameter_description)
                 needs_label = False
                 # Default value
                 widget.set_active(parameter_default)
             elif isinstance(parameter_default, int):
                 # Integer; create a pin button
-                widget = Gtk.SpinButton()
+                widget = Gtk.SpinButton.new()
                 # Default value
                 widget.set_value(parameter_default)
             else:
                 continue
 
             if needs_label:
-                label = Gtk.Label("%s: " % parameter_name)
+                label = Gtk.Label.new("%s: " % parameter_name)
                 label.set_tooltip_text(parameter_description)
                 grid.attach(label, 0, row, 1, 1)
 
@@ -1442,7 +1449,11 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
                     break
                 except self.ValidationError as e:
                     # Show error dialog
-                    message = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, e)
+                    message = Gtk.MessageDialog(
+                        parent=self,
+                        message_type=Gtk.MessageType.ERROR,
+                        buttons=Gtk.ButtonsType.CLOSE,
+                        text=e)
                     message.set_title(_("Invalid option"))
                     message.run()
                     message.destroy()
@@ -1486,7 +1497,9 @@ class gCDEmuDevice (GObject.GObject):
 
         # *** GUI ***
         # Create dialog
-        self.dialog = Gtk.Dialog(_("Device #%02d: properties") % d, None, 0, (_("Close"), Gtk.ResponseType.CLOSE))
+        self.dialog = Gtk.Dialog()
+        self.dialog.set_title(_("Device #%02d: properties") % d)
+        self.dialog.add_buttons(_("Close"), Gtk.ResponseType.CLOSE)
         self.dialog.set_border_width(5)
         self.dialog.vbox.set_border_width(5)
         # Hide the dialog when closed
@@ -1673,7 +1686,11 @@ class gCDEmuDevice (GObject.GObject):
 
     def show_error (self, text):
          # Show error dialog
-        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
+        message = Gtk.MessageDialog(
+            parent=None,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.CLOSE,
+            text=text)
         message.set_title(_("Device error"))
         message.run()
         message.destroy()
@@ -1778,7 +1795,7 @@ class gCDEmuTray (GObject.GObject):
         self.devices = []
 
         # *** Configuration ***
-        self.settings = Gio.Settings("net.sf.cdemu.gcdemu")
+        self.settings = Gio.Settings.new("net.sf.cdemu.gcdemu")
 
         # Watch over our settings
         self.settings.connect("changed", lambda s, k: self.on_settings_changed(k))
@@ -1951,7 +1968,11 @@ class gCDEmuTray (GObject.GObject):
 
     def show_error (self, title, text):
          # Show error dialog
-        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
+        message = Gtk.MessageDialog(
+            parent=None,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.CLOSE,
+            text=text)
         message.set_title(title)
         message.run()
         message.destroy()
@@ -2135,7 +2156,11 @@ class gCDEmuApplication (Gtk.Application):
         elif self.args.tray_mode == "indicator":
             # AppIndicator
             if not have_app_indicator:
-                message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, _("Failed to load AppIndicator library!"))
+                message = Gtk.MessageDialog(
+                    parent=None,
+                    message_type=Gtk.MessageType.ERROR,
+                    buttons=Gtk.ButtonsType.CLOSE,
+                    text=_("Failed to load AppIndicator library!"))
                 message.set_title(_("AppIndicator not available"))
                 message.run()
                 message.destroy()
