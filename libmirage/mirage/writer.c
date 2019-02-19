@@ -446,7 +446,7 @@ const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
  * mirage_writer_open_image:
  * @self: a #MirageWriter
  * @disc: (in): disc object for which the image will be created
- * @parameters: (in): writer parameters
+ * @parameters: (in) (element-type utf8 GLib.Variant): writer parameters
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Initializes the image writer to start the writing process for @disc.
@@ -558,7 +558,7 @@ void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step)
  * @self: a #MirageWriter
  * @filename: (in): filename of output image
  * @original_disc: (in): disc layout obtained from original image
- * @parameters: (in): writer parameters
+ * @parameters: (in) (element-type utf8 GLib.Variant): writer parameters
  * @cancellable: (in) (allow-none): optional %GCancellable object, NULL to ignore.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
