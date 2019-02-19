@@ -1121,12 +1121,16 @@ class ImageWriterDialog (Gtk.Dialog):
 
             if info.enum_values is not None:
                 value = widget.get_active_text()
+                value = GLib.Variant("s", value)
             elif info.default_value.is_of_type(GLib.VariantType("s")):
                 value = widget.get_text()
+                value = GLib.Variant("s", value)
             elif info.default_value.is_of_type(GLib.VariantType("b")):
                 value = widget.get_active()
+                value = GLib.Variant("b", value)
             elif info.default_value.is_of_type(GLib.VariantType("i")):
                 value = widget.get_value()
+                value = GLib.Variant("i", value)
             else:
                 continue
 
@@ -2338,7 +2342,7 @@ class MainWindow (Gtk.ApplicationWindow):
 
         # Convert
         try:
-            writer.convert_image(filename, self.disc, dict(), cancellable)
+            writer.convert_image(filename, self.disc, writer_parameters, cancellable)
 
             # Success message
             message_dialog = Gtk.MessageDialog(
