@@ -2325,8 +2325,8 @@ class MainWindow (Gtk.ApplicationWindow):
         progress_dialog = Gtk.Dialog(
             _("Image conversion progress"),
             parent=self,
-            modal=True, destroy_with_parent=True,
-            buttons=(_("Cancel"), Gtk.ResponseType.CANCEL))
+            modal=True, destroy_with_parent=True)
+        progress_dialog.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL)
         progress_dialog.connect("delete-event", lambda w, e: w.hide() or True) # Needed because we don't "run" the dialog
         progress_dialog.set_border_width(5)
         progress_dialog.get_content_area().add(progress_bar)
