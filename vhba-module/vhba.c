@@ -550,6 +550,11 @@ static ssize_t do_request (struct vhba_device *vdev, struct scsi_cmnd *cmd, char
             for (i = 0; i < scsi_sg_count(cmd); i++) {
                 size_t len = sg[i].length;
 
+                if (len > vdev->kbuf_size) {
+                    scmd_warn(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
+                    len = vdev->kbuf_size;
+                }
+
 #ifdef USE_SG_PAGE
                 kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
 #else
@@ -617,6 +622,11 @@ static ssize_t do_response (struct vhba_device *vdev, struct scsi_cmnd *cmd, con
 
             for (i = 0; i < scsi_sg_count(cmd); i++) {
                 size_t len = (sg[i].length < to_read) ? sg[i].length : to_read;
+
+                if (len > vdev->kbuf_size) {
+                    scmd_warn(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
+                    len = vdev->kbuf_size;
+                }
 
                 if (copy_from_user(vdev->kbuf, uaddr, len)) {
                     return -EFAULT;
