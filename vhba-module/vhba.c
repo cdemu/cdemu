@@ -507,6 +507,9 @@ static struct scsi_host_template vhba_template = {
     .cmd_per_lun = 1,
     .max_sectors = VHBA_MAX_SECTORS_PER_IO,
     .sg_tablesize = 256,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
+    .max_segment_size = VHBA_KBUF_SIZE,
+#endif
 };
 
 static ssize_t do_request (struct vhba_device *vdev, struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
