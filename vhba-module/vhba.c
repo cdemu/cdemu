@@ -74,6 +74,7 @@ MODULE_LICENSE("GPL");
 #define VHBA_MAX_ID 32
 #define VHBA_CAN_QUEUE 32
 #define VHBA_INVALID_ID VHBA_MAX_ID
+#define VHBA_KBUF_SIZE PAGE_SIZE
 
 #define DATA_TO_DEVICE(dir) ((dir) == DMA_TO_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
@@ -118,6 +119,9 @@ struct vhba_device {
     struct list_head cmd_list;
     wait_queue_head_t cmd_wq;
     atomic_t refcnt;
+
+    unsigned char *kbuf;
+    size_t kbuf_size;
 };
 
 struct vhba_host {
@@ -168,6 +172,9 @@ static struct vhba_device *vhba_device_alloc (void)
     INIT_LIST_HEAD(&vdev->cmd_list);
     init_waitqueue_head(&vdev->cmd_wq);
     atomic_set(&vdev->refcnt, 1);
+
+    vdev->kbuf = NULL;
+    vdev->kbuf_size = 0;
 
     return vdev;
 }
@@ -502,7 +509,7 @@ static struct scsi_host_template vhba_template = {
     .sg_tablesize = 256,
 };
 
-static ssize_t do_request (struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
+static ssize_t do_request (struct vhba_device *vdev, struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
 {
     struct vhba_request vreq;
     ssize_t ret;
@@ -534,18 +541,11 @@ static ssize_t do_request (struct scsi_cmnd *cmd, char __user *buf, size_t buf_l
         buf += sizeof(vreq);
 
         if (scsi_sg_count(cmd)) {
-            unsigned char buf_stack[64];
-            unsigned char *kaddr, *uaddr, *kbuf;
+            unsigned char *kaddr, *uaddr;
             struct scatterlist *sg = scsi_sglist(cmd);
             int i;
 
             uaddr = (unsigned char *) buf;
-
-            if (vreq.data_len > 64) {
-                kbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-            } else {
-                kbuf = buf_stack;
-            }
 
             for (i = 0; i < scsi_sg_count(cmd); i++) {
                 size_t len = sg[i].length;
@@ -555,20 +555,13 @@ static ssize_t do_request (struct scsi_cmnd *cmd, char __user *buf, size_t buf_l
 #else
                 kaddr = vhba_kmap_atomic(sg[i].page);
 #endif
-                memcpy(kbuf, kaddr + sg[i].offset, len);
+                memcpy(vdev->kbuf, kaddr + sg[i].offset, len);
                 vhba_kunmap_atomic(kaddr);
 
-                if (copy_to_user(uaddr, kbuf, len)) {
-                    if (kbuf != buf_stack) {
-                        kfree(kbuf);
-                    }
+                if (copy_to_user(uaddr, vdev->kbuf, len)) {
                     return -EFAULT;
                 }
                 uaddr += len;
-            }
-
-            if (kbuf != buf_stack) {
-                kfree(kbuf);
             }
         } else {
             if (copy_to_user(buf, scsi_sglist(cmd), vreq.data_len)) {
@@ -580,7 +573,7 @@ static ssize_t do_request (struct scsi_cmnd *cmd, char __user *buf, size_t buf_l
     return ret;
 }
 
-static ssize_t do_response (struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
+static ssize_t do_response (struct vhba_device *vdev, struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
 {
     ssize_t ret = 0;
 
@@ -616,26 +609,16 @@ static ssize_t do_response (struct scsi_cmnd *cmd, const char __user *buf, size_
         to_read = res->data_len;
 
         if (scsi_sg_count(cmd)) {
-            unsigned char buf_stack[64];
-            unsigned char *kaddr, *uaddr, *kbuf;
+            unsigned char *kaddr, *uaddr;
             struct scatterlist *sg = scsi_sglist(cmd);
             int i;
 
             uaddr = (unsigned char *)buf;
 
-            if (res->data_len > 64) {
-                kbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-            } else {
-                kbuf = buf_stack;
-            }
-
             for (i = 0; i < scsi_sg_count(cmd); i++) {
                 size_t len = (sg[i].length < to_read) ? sg[i].length : to_read;
 
-                if (copy_from_user(kbuf, uaddr, len)) {
-                    if (kbuf != buf_stack) {
-                        kfree(kbuf);
-                    }
+                if (copy_from_user(vdev->kbuf, uaddr, len)) {
                     return -EFAULT;
                 }
                 uaddr += len;
@@ -645,17 +628,13 @@ static ssize_t do_response (struct scsi_cmnd *cmd, const char __user *buf, size_
 #else
                 kaddr = vhba_kmap_atomic(sg[i].page);
 #endif
-                memcpy(kaddr + sg[i].offset, kbuf, len);
+                memcpy(kaddr + sg[i].offset, vdev->kbuf, len);
                 vhba_kunmap_atomic(kaddr);
 
                 to_read -= len;
                 if (to_read == 0) {
                     break;
                 }
-            }
-
-            if (kbuf != buf_stack) {
-                kfree(kbuf);
             }
         } else {
             if (copy_from_user(scsi_sglist(cmd), buf, res->data_len)) {
@@ -764,7 +743,7 @@ static ssize_t vhba_ctl_read (struct file *file, char __user *buf, size_t buf_le
         }
     }
 
-    ret = do_request(vcmd->cmd, buf, buf_len);
+    ret = do_request(vdev, vcmd->cmd, buf, buf_len);
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
@@ -807,7 +786,7 @@ static ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t
     vcmd->status = VHBA_REQ_WRITING;
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
-    ret = do_response(vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
+    ret = do_response(vdev, vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
@@ -905,6 +884,12 @@ static int vhba_ctl_open (struct inode *inode, struct file *file)
         return -ENOMEM;
     }
 
+    vdev->kbuf_size = VHBA_KBUF_SIZE;
+    vdev->kbuf = kmalloc(vdev->kbuf_size, GFP_KERNEL);
+    if (!vdev->kbuf) {
+        return -ENOMEM;
+    }
+
     if (!(retval = vhba_add_device(vdev))) {
         file->private_data = vdev;
     }
@@ -939,6 +924,9 @@ static int vhba_ctl_release (struct inode *inode, struct file *file)
     }
     INIT_LIST_HEAD(&vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
+
+    kfree(vdev->kbuf);
+    vdev->kbuf = NULL;
 
     vhba_device_put(vdev);
 
