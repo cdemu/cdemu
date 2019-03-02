@@ -57,7 +57,7 @@ except:
 
 # *** Globals ***
 app_name = "gcdemu"
-app_version = "3.2.0"
+app_version = "3.2.1"
 supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
