@@ -1544,8 +1544,13 @@ class DiscDump:
                 continue
 
             # Convert the data to printable format
-            replchars = re.compile('([^' + re.escape(string.printable) + '])')
-            pack_str = replchars.sub(lambda m: r'\x{0:02x}'.format(ord(m.group())), pack_data[1])
+            if sys.version_info[0] < 3:
+                printables = string.printable
+                pack_str = [ '%c' % (x) if x in printables else '\\x{0:02x}'.format(ord(x)) for x in pack_data[1] ]
+            else:
+                printables = bytes(string.printable, 'ascii')
+                pack_str = [ '%c' % (x) if x in printables else '\\x{0:02x}'.format(x) for x in pack_data[1] ]
+            pack_str = ''.join(pack_str)
 
             data_node = self.add_node(language_node, node_name, pack_str)
             data_node.attrib["length"] = "%s" % (len(pack_data[1]))
