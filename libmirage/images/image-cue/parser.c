@@ -52,12 +52,40 @@ struct _MirageParserCuePrivate
 
     /* Regex engine */
     GList *regex_rules;
+
+    /* CD-TEXT data */
+    gint cdtext_length;
+    guint8 *cdtext_data;
 };
 
 
 /**********************************************************************\
  *                     Parser private functions                       *
 \**********************************************************************/
+static gboolean mirage_parser_cue_restore_cdtext_for_current_session (MirageParserCue *self)
+{
+    if (!self->priv->cdtext_data) {
+        return FALSE;
+    }
+
+    gint session_number = mirage_session_layout_get_session_number(self->priv->cur_session);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD-TEXT data (%d bytes) into session #%i\n", __debug__, self->priv->cdtext_length, session_number);
+
+    GError *local_error = NULL;
+    if (!mirage_session_set_cdtext_data(self->priv->cur_session, self->priv->cdtext_data, self->priv->cdtext_length, &local_error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CD-TEXT for session #%i: %s\n!", __debug__, session_number, local_error->message);
+        g_error_free(local_error);
+    }
+
+    /* Clear CD-TEXT data */
+    g_free(self->priv->cdtext_data);
+    self->priv->cdtext_data = NULL;
+    self->priv->cdtext_length = 0;
+
+    return TRUE;
+}
+
 static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GError **error)
 {
     MirageFragment *fragment;
@@ -430,6 +458,9 @@ static void mirage_parser_cue_add_session (MirageParserCue *self, gint number)
     }
     mirage_session_set_leadout_length(self->priv->cur_session, leadout_length);
 
+    /* Set the CD-TEXT data, if available */
+    mirage_parser_cue_restore_cdtext_for_current_session(self);
+
     /* UltraISO/IsoBuster store leadout data in the binary file. We'll need to
        account for this when we're setting fragment length, which we calculate
        from index addresses... (150 sectors are added to account for pregap,
@@ -538,6 +569,75 @@ static gboolean mirage_parser_cue_callback_cdtext (MirageParserCue *self, GMatch
 
     g_free(filename);
     g_free(filename_raw);
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_cue_callback_cdtextfile (MirageParserCue *self, GMatchInfo *match_info, GError **error)
+{
+    gchar *filename_raw, *filename;
+
+    filename_raw = g_match_info_fetch_named(match_info, "filename");
+    filename = strip_quotes(filename_raw);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CDTEXTFILE: %s\n", __debug__, filename);
+
+    /* Find the CDT file */
+    gchar *cdt_fullpath = mirage_helper_find_data_file(filename, self->priv->cue_filename);
+
+    g_free(filename);
+    g_free(filename_raw);
+
+    if (!cdt_fullpath) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find CDT file!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to find CDT file!"));
+        return FALSE;
+    }
+
+    /* Read the CD-TEXT data */
+    MirageStream *stream;
+    guint64 cdt_length, read_length;
+    guint8 *cdt_data;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found CDT file: '%s'\n", __debug__, cdt_fullpath);
+
+    /* Open CDT file */
+    stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), cdt_fullpath, error);
+    g_free(cdt_fullpath);
+
+    if (!stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on CDT file!\n", __debug__);
+        return FALSE;
+    }
+
+    /* Read whole CDT file */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading CDTEXT data...\n", __debug__);
+
+    mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
+    cdt_length = mirage_stream_tell(stream);
+
+    cdt_data = g_malloc(cdt_length);
+
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+    read_length = mirage_stream_read(stream, cdt_data, cdt_length, NULL);
+
+    g_object_unref(stream);
+
+    if (read_length != cdt_length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole CDT file!\n", __debug__);
+        g_free(cdt_data);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to read whole CDT file!"));
+        return FALSE;
+    }
+
+    /* Store the data to parser; we can only apply it once all tracks
+       are created! */
+    g_free(self->priv->cdtext_data); /* Free any data we may already be holding */
+
+    self->priv->cdtext_length = cdt_length;
+    self->priv->cdtext_data = cdt_data;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: read %d bytes of CDTEXT data\n", __debug__, self->priv->cdtext_length);
 
     return TRUE;
 }
@@ -785,6 +885,7 @@ static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
     append_regex_rule(&self->priv->regex_rules, "REM\\s+(?<comment>.+)$", mirage_parser_cue_callback_comment);
 
     append_regex_rule(&self->priv->regex_rules, "CDTEXMAIN\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtext);
+    append_regex_rule(&self->priv->regex_rules, "CDTEXTFILE\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtextfile);
 
     append_regex_rule(&self->priv->regex_rules, "CATALOG\\s+(?<catalog>\\d{13})$", mirage_parser_cue_callback_catalog);
 
@@ -947,6 +1048,9 @@ static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, MirageStre
         goto end;
     }
 
+    /* Set the CD-TEXT data, if available */
+    mirage_parser_cue_restore_cdtext_for_current_session(self);
+
     /* Finish last track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track in the layout\n", __debug__);
@@ -957,6 +1061,7 @@ static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, MirageStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
+
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(self->priv->disc, medium_type);
@@ -1007,6 +1112,9 @@ static void mirage_parser_cue_init (MirageParserCue *self)
 
     self->priv->cur_data_filename = NULL;
     self->priv->cur_data_type = NULL;
+
+    self->priv->cdtext_length = 0;
+    self->priv->cdtext_data = NULL;
 }
 
 static void mirage_parser_cue_finalize (GObject *gobject)
@@ -1016,6 +1124,8 @@ static void mirage_parser_cue_finalize (GObject *gobject)
     /* Free elements of private structure */
     g_free(self->priv->cur_data_filename);
     g_free(self->priv->cur_data_type);
+
+    g_free(self->priv->cdtext_data);
 
     /* Cleanup regex parser engine */
     mirage_parser_cue_cleanup_regex_parser(self);
