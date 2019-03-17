@@ -880,28 +880,28 @@ static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
 
     /* "Extensions" that are embedded in the comments must appear before general
        comment rule */
-    append_regex_rule(&self->priv->regex_rules, "REM\\s+SESSION\\s+(?<number>\\d+)$", mirage_parser_cue_callback_session);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*REM\\s+SESSION\\s+(?<number>\\d+)$", mirage_parser_cue_callback_session);
 
-    append_regex_rule(&self->priv->regex_rules, "REM\\s+(?<comment>.+)$", mirage_parser_cue_callback_comment);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*REM\\s+(?<comment>.+)$", mirage_parser_cue_callback_comment);
 
-    append_regex_rule(&self->priv->regex_rules, "CDTEXMAIN\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtext);
-    append_regex_rule(&self->priv->regex_rules, "CDTEXTFILE\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtextfile);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*CDTEXMAIN\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtext);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*CDTEXTFILE\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtextfile);
 
-    append_regex_rule(&self->priv->regex_rules, "CATALOG\\s+(?<catalog>\\d{13})$", mirage_parser_cue_callback_catalog);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*CATALOG\\s+(?<catalog>\\d{13})$", mirage_parser_cue_callback_catalog);
 
-    append_regex_rule(&self->priv->regex_rules, "TITLE\\s+(?<title>.+)$", mirage_parser_cue_callback_title);
-    append_regex_rule(&self->priv->regex_rules, "PERFORMER\\s+(?<performer>.+)$", mirage_parser_cue_callback_performer);
-    append_regex_rule(&self->priv->regex_rules, "SONGWRITER\\s+(?<songwriter>.+)$", mirage_parser_cue_callback_songwriter);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*TITLE\\s+(?<title>.+)$", mirage_parser_cue_callback_title);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*PERFORMER\\s+(?<performer>.+)$", mirage_parser_cue_callback_performer);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*SONGWRITER\\s+(?<songwriter>.+)$", mirage_parser_cue_callback_songwriter);
 
-    append_regex_rule(&self->priv->regex_rules, "FILE\\s+(?<filename>.+)\\s+(?<type>\\S+)$", mirage_parser_cue_callback_file);
-    append_regex_rule(&self->priv->regex_rules, "TRACK\\s+(?<number>\\d+)\\s+(?<type>\\S+)$", mirage_parser_cue_callback_track);
-    append_regex_rule(&self->priv->regex_rules, "ISRC\\s+(?<isrc>\\w{12})$", mirage_parser_cue_callback_isrc);
-    append_regex_rule(&self->priv->regex_rules, "INDEX\\s+(?<index>\\d+)\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_index);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*FILE\\s+(?<filename>.+)\\s+(?<type>\\S+)$", mirage_parser_cue_callback_file);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*TRACK\\s+(?<number>\\d+)\\s+(?<type>\\S+)$", mirage_parser_cue_callback_track);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*ISRC\\s+(?<isrc>\\w{12})$", mirage_parser_cue_callback_isrc);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*INDEX\\s+(?<index>\\d+)\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_index);
 
-    append_regex_rule(&self->priv->regex_rules, "PREGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_pregap);
-    append_regex_rule(&self->priv->regex_rules, "POSTGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_postgap);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*PREGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_pregap);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*POSTGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_postgap);
 
-    append_regex_rule(&self->priv->regex_rules, "FLAGS\\+(((?<dcp>DCP)|(?<fourch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", mirage_parser_cue_callback_flags);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*FLAGS\\+(((?<dcp>DCP)|(?<fourch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", mirage_parser_cue_callback_flags);
 
     return;
 }
