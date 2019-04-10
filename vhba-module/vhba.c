@@ -109,6 +109,7 @@ enum vhba_req_state {
 
 struct vhba_command {
     struct scsi_cmnd *cmd;
+    unsigned long serial_number;
     int status;
     struct list_head entry;
 };
@@ -122,6 +123,8 @@ struct vhba_device {
 
     unsigned char *kbuf;
     size_t kbuf_size;
+
+    unsigned long cmd_count;
 };
 
 struct vhba_host {
@@ -176,6 +179,8 @@ static struct vhba_device *vhba_device_alloc (void)
     vdev->kbuf = NULL;
     vdev->kbuf_size = 0;
 
+    vdev->cmd_count = 0;
+
     return vdev;
 }
 
@@ -206,6 +211,7 @@ static int vhba_device_queue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
     vcmd->cmd = cmd;
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
+    vcmd->serial_number = vdev->cmd_count++;
     list_add_tail(&vcmd->entry, &vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
@@ -452,7 +458,7 @@ static int vhba_queuecommand_lck (struct scsi_cmnd *cmd, void (*done)(struct scs
     struct vhba_device *vdev;
     int retval;
 
-    scmd_dbg(cmd, "queue %lu\n", cmd->serial_number);
+    scmd_dbg(cmd, "queue %p\n", cmd);
 
     vdev = vhba_lookup_device(cmd->device->id);
     if (!vdev) {
@@ -483,7 +489,7 @@ static int vhba_abort (struct scsi_cmnd *cmd)
     struct vhba_device *vdev;
     int retval = SUCCESS;
 
-    scmd_warn(cmd, "abort %lu\n", cmd->serial_number);
+    scmd_warn(cmd, "abort %p\n", cmd);
 
     vdev = vhba_lookup_device(cmd->device->id);
     if (vdev) {
@@ -512,13 +518,13 @@ static struct scsi_host_template vhba_template = {
 #endif
 };
 
-static ssize_t do_request (struct vhba_device *vdev, struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
+static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_number, struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
 {
     struct vhba_request vreq;
     ssize_t ret;
 
-    scmd_dbg(cmd, "request %lu, cdb 0x%x, bufflen %d, use_sg %d\n",
-        cmd->serial_number, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
+    scmd_dbg(cmd, "request %lu (%p), cdb 0x%x, bufflen %d, use_sg %d\n",
+        cmd_serial_number, cmd, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
 
     ret = sizeof(vreq);
     if (DATA_TO_DEVICE(cmd->sc_data_direction)) {
@@ -530,7 +536,7 @@ static ssize_t do_request (struct vhba_device *vdev, struct scsi_cmnd *cmd, char
         return -EIO;
     }
 
-    vreq.tag = cmd->serial_number;
+    vreq.tag = cmd_serial_number;
     vreq.lun = cmd->device->lun;
     memcpy(vreq.cdb, cmd->cmnd, MAX_COMMAND_SIZE);
     vreq.cdb_len = cmd->cmd_len;
@@ -581,12 +587,12 @@ static ssize_t do_request (struct vhba_device *vdev, struct scsi_cmnd *cmd, char
     return ret;
 }
 
-static ssize_t do_response (struct vhba_device *vdev, struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
+static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_number, struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
 {
     ssize_t ret = 0;
 
-    scmd_dbg(cmd, "response %lu, status %x, data len %d, use_sg %d\n",
-         cmd->serial_number, res->status, res->data_len, scsi_sg_count(cmd));
+    scmd_dbg(cmd, "response %lu (%p), status %x, data len %d, use_sg %d\n",
+         cmd_serial_number, cmd, res->status, res->data_len, scsi_sg_count(cmd));
 
     if (res->status) {
         unsigned char sense_stack[SCSI_SENSE_BUFFERSIZE];
@@ -687,7 +693,7 @@ static inline struct vhba_command *match_command (struct vhba_device *vdev, u32 
     struct vhba_command *vcmd;
 
     list_for_each_entry(vcmd, &vdev->cmd_list, entry) {
-        if (vcmd->cmd->serial_number == tag) {
+        if (vcmd->serial_number == tag) {
             break;
         }
     }
@@ -756,7 +762,7 @@ static ssize_t vhba_ctl_read (struct file *file, char __user *buf, size_t buf_le
         }
     }
 
-    ret = do_request(vdev, vcmd->cmd, buf, buf_len);
+    ret = do_request(vdev, vcmd->serial_number, vcmd->cmd, buf, buf_len);
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
@@ -799,7 +805,7 @@ static ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t
     vcmd->status = VHBA_REQ_WRITING;
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
-    ret = do_response(vdev, vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
+    ret = do_response(vdev, vcmd->serial_number, vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
@@ -929,7 +935,7 @@ static int vhba_ctl_release (struct inode *inode, struct file *file)
     list_for_each_entry(vcmd, &vdev->cmd_list, entry) {
         WARN_ON(vcmd->status == VHBA_REQ_READING || vcmd->status == VHBA_REQ_WRITING);
 
-        scmd_warn(vcmd->cmd, "device released with command %lu\n", vcmd->cmd->serial_number);
+        scmd_warn(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->serial_number, vcmd->cmd);
         vcmd->cmd->result = DID_NO_CONNECT << 16;
         vcmd->cmd->scsi_done(vcmd->cmd);
 
