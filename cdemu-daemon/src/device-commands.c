@@ -561,6 +561,63 @@ static gboolean command_get_performance (CdemuDevice *self, const guint8 *raw_cd
 }
 
 /* INQUIRY*/
+static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB *cdb)
+{
+    switch (cdb->page_code) {
+        case 0x00: {
+            /* Supported VPD pages */
+            struct INQUIRY_VPD_Header *ret_header = (struct INQUIRY_VPD_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct INQUIRY_VPD_Header);
+            ret_header->per_dev = 0x05; /* CD-ROM device */
+            ret_header->page_code = 0; /* Page 0x00: Supported VPD pages */
+            ret_header->page_length = 0;
+
+            /* List the pages */
+            gint num_pages = 0;
+            guint8 *ret_list = (guint8 *)(ret_header + 1);
+
+            ret_list[num_pages++] = 0x00; /* Supported VPD pages (mandatory) */
+            ret_list[num_pages++] = 0x80; /* Unit serial number (optional) */
+            /*ret_list[num_pages++] = 0x83;*/ /* Device identification (mandatory) */
+
+            /* Modify reported length */
+            self->priv->buffer_size += num_pages;
+            ret_header->page_length = num_pages;
+
+            break;
+        }
+        case 0x80: {
+            /* Serial number */
+            struct INQUIRY_VPD_Header *ret_header = (struct INQUIRY_VPD_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct INQUIRY_VPD_Header);
+            ret_header->per_dev = 0x05; /* CD-ROM device */
+            ret_header->page_code = 0x80; /* Page 0x80: Serial number */
+            ret_header->page_length = 0;
+
+            /* Serial number */
+            gchar *ret_serial = (gchar *)(ret_header + 1);
+            gint serial_len = g_sprintf(ret_serial, "CDEMU%03d", self->priv->number);
+
+            /* Modify reported length */
+            self->priv->buffer_size += serial_len;
+            ret_header->page_length += serial_len;
+            break;
+        }
+        default: {
+            /* Unsupported; as stated in SPC, return CHECK CONDITION,
+               ILLEGAL REQUEST and INVALID FIELD IN CDB */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: VPD page %02Xh not implemented!\n", __debug__, cdb->page_code);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            return FALSE;
+        }
+    }
+
+    /* Write data */
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+
+    return TRUE;
+}
+
 static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct INQUIRY_CDB *cdb = (struct INQUIRY_CDB *)raw_cdb;
@@ -568,12 +625,18 @@ static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
     struct INQUIRY_Data *ret_data = (struct INQUIRY_Data *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct INQUIRY_Data);
 
-    if (cdb->evpd || cdb->page_code) {
-        /* We don't support either; so as stated in SPC, return CHECK CONDITION,
-           ILLEGAL REQUEST and INVALID FIELD IN CDB */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid field in CDB\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: INQUIRY: EVPD=%d, PAGE CODE=02%Xh)\n", __debug__, cdb->evpd, cdb->page_code);
+
+    /* Non-zero page code and zero EVPD is illegal as per SPC */
+    if (!cdb->evpd && cdb->page_code) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid field in CDB (EVPD=0 and non-zero PAGE CODE is illegal)\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
+    }
+
+    /* Vital product data */
+    if (cdb->evpd) {
+        return command_inquiry_vpd(self, cdb);
     }
 
     /* Values here are more or less what my DVD-ROM drive gives me

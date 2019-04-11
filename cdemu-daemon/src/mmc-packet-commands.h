@@ -576,6 +576,21 @@ struct INQUIRY_Data
     guint8 reserved11[22];
 };
 
+struct INQUIRY_VPD_Header
+{
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 per_qual : 3;
+        guint8 per_dev  : 5;
+    #else
+        guint8 per_dev  : 3;
+        guint8 per_qual : 5;
+    #endif
+
+    guint8 page_code;
+    guint8 reserved;
+    guint8 page_length;
+};
+
 
 /**********************************************************************\
  *                         LOAD/UNLOAD MEDIUM                         *
