@@ -620,7 +620,7 @@ class DiscTopologyWindow (Gtk.Window):
         axes = figure.add_subplot(111)
 
         axes.plot(sector_address, sector_density, color='red', linewidth=2.0)
-        axes.set_axis_bgcolor('#ffffc7')
+        axes.set_facecolor('#ffffc7')
 
         axes.grid(b=True, which='both', color='black',linestyle=':')
         axes.set_xlim(sector_address[0], sector_address[-1])
