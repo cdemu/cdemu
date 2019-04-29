@@ -35,6 +35,8 @@ struct _MirageWriterIsoPrivate
     gchar *image_file_basename;
 
     GList *image_file_streams;
+
+    gboolean is_cd_rom;
 };
 
 static const gchar *audio_filter_chain[] = {
@@ -162,12 +164,27 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *_self, MirageDisc *d
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: swap raw audio data: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA));
 
+    /* Disable raw mode and subchannel for non-CD media */
+    self->priv->is_cd_rom = mirage_disc_get_medium_type(disc) == MIRAGE_MEDIUM_CD;
+    if (!self->priv->is_cd_rom) {
+        if (mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: raw write mode is not supported for non-CD media and will be ignored!\n", __debug__);
+        }
+
+        if (mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: subchannel write mode is not supported for non-CD media and will be ignored!\n", __debug__);
+        }
+    }
+
     return TRUE;
 }
 
 static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, MirageTrack *track, MirageFragmentRole role, GError **error)
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(_self);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: creating new fragment with role %d for track (%d, sector type %d)!\n", __debug__,
+        role, mirage_track_layout_get_track_number(track), mirage_track_get_sector_type(track));
 
     MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
     gchar *filename;
@@ -184,8 +201,8 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
     const gchar *extension;
     const gchar **filter_chain = NULL;
 
-    if (write_subchannel || write_raw) {
-        /* Raw mode (also implied by subchannel) */
+    if (self->priv->is_cd_rom && (write_subchannel || write_raw)) {
+        /* Raw mode (also implied by subchannel) - only for CD-ROM media */
         extension = "bin";
         mirage_fragment_main_data_set_size(fragment, 2352);
 
@@ -234,7 +251,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
     }
 
     /* Subchannel; only internal PW96 interleaved is supported */
-    if (write_subchannel) {
+    if (self->priv->is_cd_rom && write_subchannel) {
         mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL);
         mirage_fragment_subchannel_data_set_size(fragment, 96);
     }
