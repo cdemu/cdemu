@@ -439,6 +439,13 @@ static gboolean mirage_writer_toc_open_image (MirageWriter *_self, MirageDisc *d
 {
     MirageWriterToc *self = MIRAGE_WRITER_TOC(_self);
 
+    /* This writer supports only CD-ROM medium */
+    if (mirage_disc_get_medium_type(disc) != MIRAGE_MEDIUM_CD) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: TOC image writer supports only CD-ROM medium format!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, Q_("Unsupported medium format!"));
+        return FALSE;
+    }
+
     /* Determine image file basename */
     const gchar *filename = mirage_disc_get_filenames(disc)[0];
     const gchar *suffix = mirage_helper_get_suffix(filename);
