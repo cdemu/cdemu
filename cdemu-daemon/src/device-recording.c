@@ -346,7 +346,7 @@ static gboolean cdemu_device_tao_recording_write_sector (CdemuDevice *self, Mira
 
     /* If there is no opened track, open one */
     if (!self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no track opened; opening one!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no track opened; opening one (sector type: %d)!\n", __debug__, mirage_sector_get_sector_type(sector));
 
         if (!cdemu_device_tao_recording_open_track(self, mirage_sector_get_sector_type(sector))) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new track!\n", __debug__);
@@ -366,7 +366,16 @@ static gboolean cdemu_device_tao_recording_write_sector (CdemuDevice *self, Mira
 static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-    const struct RECORDING_DataFormat *format = &recording_data_formats[p_0x05->data_block_type]; /* FIXME: we should force validity of this with mode page validation! */
+    gboolean is_cd_rom = mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_CD;
+
+    const struct RECORDING_DataFormat *format;
+    if (is_cd_rom) {
+        format = &recording_data_formats[p_0x05->data_block_type]; /* FIXME: we should force validity of this with mode page validation! */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (data block type %d as per mode page 0x05)\n", __debug__, num_sectors, start_address, format->sector_type, p_0x05->data_block_type);
+    } else {
+        format = &recording_data_formats[8]; /* Force format 8: 2048 bytes - Mode 1 user data */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (forcing data block type 8 due to medium type)\n", __debug__, num_sectors, start_address, format->sector_type);
+    }
     gint sector_type = format->sector_type;
 
     MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
@@ -397,7 +406,7 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
 
         /* If data type is 10 or 12, we need to copy subheader from
            write parameters page */
-        if (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12) {
+        if (is_cd_rom && (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12)) {
             mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
         }
 
