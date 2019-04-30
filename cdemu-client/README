@@ -98,6 +98,12 @@ Enumerating supported library debug masks:
 Setting daemon debug mask for the first device:
  cdemu daemon-debug-mask 0 0x01
 
+Setting daemon debug mask for the first device (composite):
+ cdemu daemon-debug-mask 0 "0x01|0x02"
+
+Setting daemon debug mask for the first device (composite, by name):
+ cdemu daemon-debug-mask 0 "DAEMON_DEBUG_DEVICE|DAEMON_DEBUG_MMC"
+
 Obtaining library debug mask for the first device:
  cdemu library-debug-mask 0
 

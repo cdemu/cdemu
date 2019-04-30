@@ -95,18 +95,24 @@ Displays device mapping information
 .B daemon-debug-mask <device> [new-value]
 Displays/sets daemon debug mask; \fBdevice\fR is the number of the desired
 device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this
-argument is omitted, current debug mask is displayed. A list of supported
-debug mask values can be obtained with
+argument is omitted, current debug mask is displayed. The list of supported
+debug mask identifiers and values can be obtained with
 .B enum-daemon-debug-masks
-command.
+command. The \fBnew-value\fR can be either a single numeric value (e.g,
+0x03), a string of numeric values separated by pipe character (e.g.,
+"0x01|0x02"), or a string of identifiers separated by pipe character
+(e.g., "DAEMON_DEBUG_DEVICE|DAEMON_DEBUG_MMC").
 .TP
 .B library-debug-mask <device> [new-value]
 Displays/sets library debug mask; \fBdevice\fR is the number of the desired
 device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this
-argument is omitted, current debug mask is displayed. A list of supported
-debug mask values can be obtained with
+argument is omitted, current debug mask is displayed. The list of supported
+debug mask identifiers and values can be obtained with
 .B enum-library-debug-masks
-command.
+command. The \fBnew-value\fR can be either a single numeric value (e.g,
+0x03), a string of numeric values separated by pipe character (e.g.,
+"0x01|0x02"), or a string of identifiers separated by pipe character
+(e.g., "MIRAGE_DEBUG_PARSER|MIRAGE_DEBUG_DISC").
 .TP
 .B dpm-emulation <device> [new-value]
 Displays/sets DPM emulation flag. \fBdevice\fR is the number of the desired
@@ -204,6 +210,12 @@ cdemu device-mapping
 .TP
 .B Setting daemon debug mask for the first device:
 cdemu daemon-debug-mask 0 0x01
+.TP
+.B Setting daemon debug mask for the first device (composite):
+cdemu daemon-debug-mask 0 "0x01|0x02"
+.TP
+.B Setting daemon debug mask for the first device (composite, by name):
+cdemu daemon-debug-mask 0 "DAEMON_DEBUG_DEVICE|DAEMON_DEBUG_MMC"
 .TP
 .B Obtaining library debug mask for the first device:
 cdemu library-debug-mask 0

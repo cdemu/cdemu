@@ -21,6 +21,7 @@
 from __future__ import print_function
 
 import argparse
+import collections
 import datetime
 import sys
 import os.path
@@ -456,13 +457,15 @@ class cmd_daemon_debug_mask (object):
         parser.set_defaults(command_function=self)
 
     def __call__ (self, proxy, arguments):
+        # Retrieve list of valid masks (for encoding/decoding)
+        mask_mapping = self.__get_debug_mask_mapping(proxy)
+
         # Set daemon debug mask
         if hasattr(arguments, "new_value"):
-            try:
-                mask = int(arguments.new_value, 0)
-            except ValueError:
-                raise CDEmuError(_("String '%s' is not a number") % (arguments.new_value))
+            # Convert the input value to mask
+            mask = self.__convert_input_to_mask(arguments.new_value, mask_mapping)
 
+            # Set the mask
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
@@ -498,7 +501,7 @@ class cmd_daemon_debug_mask (object):
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' daemon debug masks:"))
-                print("%-5s %-10s" % (_("DEV"), _("DEBUG MASK")))
+                print("%-5s %-10s   %s" % (_("DEV"), _("DEBUG MASK"), _("MEANING")))
 
                 for device in range(num_devices):
                     try:
@@ -507,7 +510,9 @@ class cmd_daemon_debug_mask (object):
                         print_warning(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
                         continue
 
-                    print("%-5s 0x%08X" % (device, mask))
+                    mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+
+                    print("%-5s 0x%08X   %s" % (device, mask, mask_meaning))
             else:
                 try:
                     device = int(arguments.device, 0)
@@ -517,7 +522,50 @@ class cmd_daemon_debug_mask (object):
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
-                print(_("Daemon debug mask of device %i: 0x%X") % (device, mask))
+                mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+
+                print(_("Daemon debug mask of device %i: 0x%X (%s)") % (device, mask, mask_meaning))
+
+    def __convert_input_to_mask (self, input_str, mapping):
+        output_mask = 0
+
+        # Split input string on pipe (|)
+        tokens = input_str.split("|")
+        for token in tokens:
+            token = token.strip()
+
+            try:
+                if token in mapping:
+                    val = mapping[token]
+                else:
+                    val = int(token, 0)
+            except ValueError:
+                raise CDEmuError(_("String '%s' is not a number nor was it found in the list of valid debug mask identifiers") % (token))
+
+            output_mask |= val
+
+        return output_mask
+
+    def __convert_mask_to_string (self, value, mapping):
+        output_list = []
+
+        for mask_name, mask_value in mapping.items():
+            if value & mask_value:
+                output_list.append(mask_name)
+
+        return "|".join(output_list)
+
+    def __get_debug_mask_mapping (self, proxy):
+        mapping = collections.OrderedDict()
+
+        try:
+            debug_masks = proxy.EnumDaemonDebugMasks()
+            for debug_mask in debug_masks:
+                mapping[debug_mask[0]] = debug_mask[1]
+        except GLib.Error as e:
+            print_warning(_("Failed to enumerate supported daemon debug masks: %s") % (e))
+
+        return mapping
 
 
 ########################################################################
@@ -536,13 +584,15 @@ class cmd_library_debug_mask (object):
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
 
     def __call__ (self, proxy, arguments):
+        # Retrieve list of valid masks (for encoding/decoding)
+        mask_mapping = self.__get_debug_mask_mapping(proxy)
+
         # Set debug mask
         if hasattr(arguments, "new_value"):
-            try:
-                mask = int(arguments.new_value, 0)
-            except ValueError:
-                raise CDEmuError(_("String '%s' is not a number") % (arguments.new_value))
+            # Convert the input value to mask
+            mask = self.__convert_input_to_mask(arguments.new_value, mask_mapping)
 
+            # Set the mask
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
@@ -578,7 +628,7 @@ class cmd_library_debug_mask (object):
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' library debug masks:"))
-                print("%-5s %-10s" % (_("DEV"), _("DEBUG MASK")))
+                print("%-5s %-10s   %s" % (_("DEV"), _("DEBUG MASK"), _("MEANING")))
 
                 for device in range(num_devices):
                     try:
@@ -586,7 +636,9 @@ class cmd_library_debug_mask (object):
                     except GLib.Error as e:
                         print_warning(_("Failed to get library debug mask of device %i: %s") % (device, e))
 
-                    print("%-5s 0x%08X" % (device, mask))
+                    mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+
+                    print("%-5s 0x%08X   %s" % (device, mask, mask_meaning))
             else:
                 try:
                     device = int(arguments.device, 0)
@@ -596,7 +648,50 @@ class cmd_library_debug_mask (object):
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (mask))
 
-                print(_("Library debug mask of device %i: 0x%X") % (device, mask))
+                mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+
+                print(_("Library debug mask of device %i: 0x%X (%s)") % (device, mask, mask_meaning))
+
+    def __convert_input_to_mask (self, input_str, mapping):
+        output_mask = 0
+
+        # Split input string on pipe (|)
+        tokens = input_str.split("|")
+        for token in tokens:
+            token = token.strip()
+
+            try:
+                if token in mapping:
+                    val = mapping[token]
+                else:
+                    val = int(token, 0)
+            except ValueError:
+                raise CDEmuError(_("String '%s' is not a number nor was it found in the list of valid debug mask identifiers") % (token))
+
+            output_mask |= val
+
+        return output_mask
+
+    def __convert_mask_to_string (self, value, mapping):
+        output_list = []
+
+        for mask_name, mask_value in mapping.items():
+            if value & mask_value:
+                output_list.append(mask_name)
+
+        return "|".join(output_list)
+
+    def __get_debug_mask_mapping (self, proxy):
+        mapping = collections.OrderedDict()
+
+        try:
+            debug_masks = proxy.EnumLibraryDebugMasks()
+            for debug_mask in debug_masks:
+                mapping[debug_mask[0]] = debug_mask[1]
+        except GLib.Error as e:
+            print_warning(_("Failed to enumerate supported library debug masks: %s") % (e))
+
+        return mapping
 
 
 ########################################################################
