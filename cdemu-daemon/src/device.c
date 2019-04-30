@@ -45,7 +45,7 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
 /**********************************************************************\
  *                            Device init                             *
 \**********************************************************************/
-gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver)
+gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver, guint cdemu_debug_mask, guint mirage_debug_mask)
 {
     MirageContext *context;
     GSource *source;
@@ -79,6 +79,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_name(context, self->priv->device_name);
     mirage_context_set_debug_domain(context, "CDEMU");
+    mirage_context_set_debug_mask(context, cdemu_debug_mask);
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
     g_object_unref(context);
 
@@ -110,6 +111,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     self->priv->mirage_context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_name(self->priv->mirage_context, self->priv->device_name);
     mirage_context_set_debug_domain(self->priv->mirage_context, "libMirage");
+    mirage_context_set_debug_mask(self->priv->mirage_context, mirage_debug_mask);
 
     /* Set up default device ID */
     cdemu_device_set_device_id(self, "CDEmu   ", "Virt. CD/DVD-ROM", "1.10", "    cdemu.sf.net    ");

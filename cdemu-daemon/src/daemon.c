@@ -91,13 +91,16 @@ static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *se
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus)
+gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, guint cdemu_debug_mask, guint mirage_debug_mask)
 {
     MirageContext *context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
 
     self->priv->ctl_device = g_strdup(ctl_device);
     self->priv->audio_driver = g_strdup(audio_driver);
+
+    self->priv->cdemu_debug_mask = cdemu_debug_mask;
+    self->priv->mirage_debug_mask = mirage_debug_mask;
 
     /* Create a MirageContext and use it as debug context */
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
@@ -160,7 +163,7 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
 
     /* Create and initialize device object */
     device = g_object_new(CDEMU_TYPE_DEVICE, NULL);
-    if (!cdemu_device_initialize(device, device_number, self->priv->audio_driver)) {
+    if (!cdemu_device_initialize(device, device_number, self->priv->audio_driver, self->priv->cdemu_debug_mask, self->priv->mirage_debug_mask)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device #%i\n", __debug__, device_number);
         g_object_unref(device);
         return FALSE;
@@ -235,6 +238,9 @@ static void cdemu_daemon_init (CdemuDaemon *self)
     self->priv->devices = NULL;
     self->priv->ctl_device = NULL;
     self->priv->audio_driver = NULL;
+
+    self->priv->cdemu_debug_mask = 0;
+    self->priv->mirage_debug_mask = 0;
 
     /* Set version string */
     self->priv->version = g_strdup(CDEMU_DAEMON_VERSION);

@@ -54,7 +54,7 @@ struct _CdemuDeviceClass
 GType cdemu_device_get_type (void);
 
 /* Public API */
-gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver);
+gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver, guint cdemu_debug_mask, guint mirage_debug_mask);
 
 gint cdemu_device_get_device_number (CdemuDevice *self);
 

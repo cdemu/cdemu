@@ -30,6 +30,9 @@ struct _CdemuDaemonPrivate
     gchar *ctl_device;
     gchar *audio_driver;
 
+    guint cdemu_debug_mask; /* Default debug mask for CDEmu devices */
+    guint mirage_debug_mask; /* Default debug mask for underlying libMirage context */
+
     /* Devices */
     GList *devices;
 

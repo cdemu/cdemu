@@ -28,6 +28,8 @@ static gchar *ctl_device = "/dev/vhba_ctl";
 static gchar *audio_driver = "null";
 static gchar *bus = "session";
 static gchar *log_filename = NULL;
+static guint cdemu_debug_mask = 0;
+static guint mirage_debug_mask = 0;
 
 static GOptionEntry option_entries[] = {
     { "num-devices", 'n', 0, G_OPTION_ARG_INT, &num_devices, N_("Number of devices"), N_("N") },
@@ -35,6 +37,8 @@ static GOptionEntry option_entries[] = {
     { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, N_("Audio driver"), N_("driver") },
     { "bus", 'b', 0, G_OPTION_ARG_STRING, &bus, N_("Bus type to use"), N_("bus_type") },
     { "logfile", 'l', 0, G_OPTION_ARG_STRING, &log_filename, N_("Logfile"), N_("logfile") },
+    { "default-cdemu-debug-mask", 0, 0, G_OPTION_ARG_INT, &cdemu_debug_mask, N_("Default debug mask for CDEmu devices"), N_("mask") },
+    { "default-mirage-debug-mask", 0, 0, G_OPTION_ARG_INT, &mirage_debug_mask, N_("Default debug mask for underlying libMirage"), N_("mask") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
@@ -137,6 +141,8 @@ int main (int argc, char **argv)
     g_message(Q_(" - control device: %s\n"), ctl_device);
     g_message(Q_(" - audio driver: %s\n"), audio_driver);
     g_message(Q_(" - bus type: %s\n"), bus);
+    g_message(Q_(" - default CDEmu debug mask: 0x%X\n"), cdemu_debug_mask);
+    g_message(Q_(" - default libMirage debug mask: 0x%X\n"), mirage_debug_mask);
     g_message("\n");
 
     /* Decipher bus type */
@@ -162,7 +168,7 @@ int main (int argc, char **argv)
     setup_signal_trap();
 
     /* Initialize and start daemon */
-    if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus)) {
+    if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus, cdemu_debug_mask, mirage_debug_mask)) {
         /* Printed when daemon stops */
         g_message(Q_("Stopping daemon.\n"));
     } else {
