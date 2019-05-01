@@ -181,7 +181,7 @@ function(gobject_introspection)
     ###########################################################################
     # Add the custom commands
     ###########################################################################
-    set(ENV{CFLAGS} ${GIR_REAL_CFLAGS})
+    set(ENV{CFLAGS} "${GIR_REAL_CFLAGS}")
     add_custom_command(
         OUTPUT ${GIR_FILENAME}
         COMMAND ${GIR_SCANNER} ${GIR_SCANNER_ARGS}
