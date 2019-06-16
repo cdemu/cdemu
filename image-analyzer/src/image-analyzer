@@ -465,7 +465,7 @@ class SectorAnalysisWindow (Gtk.Window):
 
         # Go over sessions
         num_sessions = disc.get_number_of_sessions()
-        for i in range(0, num_sessions):
+        for i in range(num_sessions):
             # Get session and its properties
             session = disc.get_session_by_index(i)
             session_number = session.layout_get_session_number()
@@ -478,7 +478,7 @@ class SectorAnalysisWindow (Gtk.Window):
             text_buffer.insert(text_buffer.get_end_iter(), "n\n")
 
             # Go over tracks
-            for j in range(0, num_tracks):
+            for j in range(num_tracks):
                 # Get track and its properties
                 track = session.get_track_by_index(j)
                 track_number = track.layout_get_track_number()
@@ -833,9 +833,9 @@ class LogWindow (Gtk.Window):
         content_area.add(grid)
 
         widget_list = []
-        for i in range(0, len(valid_masks)):
-            checkbutton = Gtk.CheckButton.new_with_label(valid_masks[i].name)
-            checkbutton.set_active(current_mask & valid_masks[i].value)
+        for vmask in valid_masks:
+            checkbutton = Gtk.CheckButton.new_with_label(vmask.name)
+            checkbutton.set_active(current_mask & vmask.value)
             grid.add(checkbutton)
             widget_list.append(checkbutton)
 
@@ -846,8 +846,8 @@ class LogWindow (Gtk.Window):
             mask = 0
 
             # Gather the mask value
-            for i in range(0, len(widget_list)):
-                mask |= widget_list[i].get_active() * valid_masks[i].value
+            for widget, vmask in zip(widget_list, valid_masks):
+                mask |= widget.get_active() * vmask.value
 
             # Set debug mask
             self.mirage_context.set_debug_mask(mask)

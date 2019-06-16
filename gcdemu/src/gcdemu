@@ -346,7 +346,7 @@ class CDEmu (GObject.GObject):
         num_devices = self.daemon_proxy.GetNumberOfDevices()
 
         # Create devices
-        for i in range(0, num_devices):
+        for i in range(num_devices):
             self.devices.append(CDEmuDevice(i, self.daemon_proxy))
 
         # Emit signal
@@ -1250,8 +1250,8 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         grid.attach(label, 0, 2, 1, 1)
 
         liststore = Gtk.ListStore.new([ GObject.TYPE_STRING, GObject.TYPE_INT ])
-        for i in range(0, len(self.writers)):
-            liststore.append( (self.writers[i][0], i) )
+        for i, writer in enumerate(self.writers):
+            liststore.append( (writer[0], i) )
 
         combobox = Gtk.ComboBox.new_with_model_and_entry(liststore)
         combobox.set_entry_text_column(0)
@@ -1777,8 +1777,8 @@ class gCDEmuTray (GObject.GObject):
 
         # Remove devices
         num_devices = len(self.devices)
-        for i in range(num_devices, 0, -1):
-            self.remove_device(i-1)
+        for i in reversed(range(num_devices)):
+            self.remove_device(i)
 
     def connect_to_daemon (self):
         # Cleanup
@@ -1944,7 +1944,7 @@ class gCDEmuTray (GObject.GObject):
         self.item_new_device.set_sensitive(True)
 
         # Create devices GUI
-        for i in range(0, num_devices):
+        for i in range(num_devices):
             # Add device
             self.add_device(i)
 
