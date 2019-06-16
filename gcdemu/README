@@ -18,7 +18,7 @@ Table of Contents:
 ~~~~~~~~~~~~~~~
 
 This is gCDEmu, a Gtk3-based GUI for controlling CDEmu daemon. It is part of the
-userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
+cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
 
 It provides a graphic interface that allows performing the key tasks related to
 controlling the CDEmu daemon, such as loading and unloading devices, displaying

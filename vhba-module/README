@@ -16,7 +16,7 @@ Table of Contents:
 This is VHBA (Virtual SCSI Host Bus adapter), a Linux kernel module which
 acts as a low-level SCSI driver and which provides the SCSI layer with a
 virtual SCSI adapter which can have multiple virtual devices. It is part of
-the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
+the cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
 It is written in C.
 
 Its typical use in the CDEmu software suite is to provide virtual devices

@@ -5,13 +5,13 @@ cdemud \- The CDEmu daemon
 .B cdemu-daemon
 [options]
 .SH DESCRIPTION
-This is CDEmu daemon, the userspace daemon part of the userspace-cdemu suite, a
+This is CDEmu daemon, the userspace part of the cdemu suite, a
 free, GPL CD/DVD-ROM device emulator for linux.
 
 It receives SCSI commands from kernel module and processes them, passing the
 requested data back to the kernel. Daemon implements the actual virtual device;
 one instance per each device registered by kernel module. It uses libMirage, an
-image access library that is part of userspace-cdemu suite, for the image access
+image access library that is part of the cdemu suite, for the image access
 (e.g. sector reading).
 
 The daemon registers itself on D-BUS' system or session bus (depending on the

@@ -17,7 +17,7 @@ Table of Contents:
 ~~~~~~~~~~~~~~~
 
 This is libMirage library, a CD-ROM image access library, and part of the
-userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux. It is
+cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux. It is
 written in C and based on GLib.
 
 The aim of libMirage is to provide uniform access to the data stored in

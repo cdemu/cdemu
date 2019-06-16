@@ -12,5 +12,5 @@ Architecture: all
 Depends: build-essential, ${misc:Depends}
 Description: VHBA virtual host bus adapter module
  VHBA kernel module, a virtual SCSI host bus adapter used by CDEmu daemon from
- userspace-cdemu suite.
+ the cdemu suite.
 
