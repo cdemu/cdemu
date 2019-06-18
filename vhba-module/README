@@ -28,7 +28,7 @@ is just a copy of the information stored on an actual disc.
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
- - Kernel development headers >= 2.6.20
+ - Kernel development headers >= 3.16
 
 
 3. Installation:

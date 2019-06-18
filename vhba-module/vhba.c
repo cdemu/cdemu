@@ -33,6 +33,7 @@
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
 #include <linux/slab.h>
+#include <linux/scatterlist.h>
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
 #endif
@@ -42,11 +43,6 @@
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_device.h>
 
-/* scatterlist.page_link and sg_page() were introduced in 2.6.24 */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24)
-#define USE_SG_PAGE
-#include <linux/scatterlist.h>
-#endif
 
 MODULE_AUTHOR("Chia-I Wu");
 MODULE_VERSION(VHBA_VERSION);
@@ -59,17 +55,6 @@ MODULE_LICENSE("GPL");
 #define DPRINTK(fmt, args...)
 #endif
 
-/* scmd_dbg was introduced in 3.15 */
-#ifndef scmd_dbg
-#define scmd_dbg(scmd, fmt, a...)       \
-    dev_dbg(&(scmd)->device->sdev_gendev, fmt, ##a)
-#endif
-
-#ifndef scmd_warn
-#define scmd_warn(scmd, fmt, a...)      \
-    dev_warn(&(scmd)->device->sdev_gendev, fmt, ##a)
-#endif
-
 #define VHBA_MAX_SECTORS_PER_IO 256
 #define VHBA_MAX_ID 32
 #define VHBA_CAN_QUEUE 32
@@ -78,25 +63,6 @@ MODULE_LICENSE("GPL");
 
 #define DATA_TO_DEVICE(dir) ((dir) == DMA_TO_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
-
-
-/* SCSI macros were introduced in 2.6.23 */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
-#define scsi_sg_count(cmd) ((cmd)->use_sg)
-#define scsi_sglist(cmd) ((cmd)->request_buffer)
-#define scsi_bufflen(cmd) ((cmd)->request_bufflen)
-#define scsi_set_resid(cmd, to_read) {(cmd)->resid = (to_read);}
-#endif
-
-/* 1-argument form of k[un]map_atomic was introduced in 2.6.37-rc1;
-   2-argument form was deprecated in 3.4-rc1 */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
-#define vhba_kmap_atomic kmap_atomic
-#define vhba_kunmap_atomic kunmap_atomic
-#else
-#define vhba_kmap_atomic(page) kmap_atomic(page, KM_USER0)
-#define vhba_kunmap_atomic(page) kunmap_atomic(page, KM_USER0)
-#endif
 
 
 enum vhba_req_state {
@@ -489,7 +455,7 @@ static int vhba_abort (struct scsi_cmnd *cmd)
     struct vhba_device *vdev;
     int retval = SUCCESS;
 
-    scmd_warn(cmd, "abort %p\n", cmd);
+    scmd_dbg(cmd, "abort %p\n", cmd);
 
     vdev = vhba_lookup_device(cmd->device->id);
     if (vdev) {
@@ -523,7 +489,7 @@ static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_nu
     struct vhba_request vreq;
     ssize_t ret;
 
-    scmd_dbg(cmd, "request %lu (%p), cdb 0x%x, bufflen %d, use_sg %d\n",
+    scmd_dbg(cmd, "request %lu (%p), cdb 0x%x, bufflen %d, sg count %d\n",
         cmd_serial_number, cmd, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
 
     ret = sizeof(vreq);
@@ -532,7 +498,7 @@ static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_nu
     }
 
     if (ret > buf_len) {
-        scmd_warn(cmd, "buffer too small (%zd < %zd) for a request\n", buf_len, ret);
+        scmd_dbg(cmd, "buffer too small (%zd < %zd) for a request\n", buf_len, ret);
         return -EIO;
     }
 
@@ -560,17 +526,13 @@ static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_nu
                 size_t len = sg[i].length;
 
                 if (len > vdev->kbuf_size) {
-                    scmd_warn(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
+                    scmd_dbg(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
                     len = vdev->kbuf_size;
                 }
 
-#ifdef USE_SG_PAGE
-                kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
-#else
-                kaddr = vhba_kmap_atomic(sg[i].page);
-#endif
+                kaddr = kmap_atomic(sg_page(&sg[i]));
                 memcpy(vdev->kbuf, kaddr + sg[i].offset, len);
-                vhba_kunmap_atomic(kaddr);
+                kunmap_atomic(kaddr);
 
                 if (copy_to_user(uaddr, vdev->kbuf, len)) {
                     return -EFAULT;
@@ -591,14 +553,14 @@ static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_n
 {
     ssize_t ret = 0;
 
-    scmd_dbg(cmd, "response %lu (%p), status %x, data len %d, use_sg %d\n",
+    scmd_dbg(cmd, "response %lu (%p), status %x, data len %d, sg count %d\n",
          cmd_serial_number, cmd, res->status, res->data_len, scsi_sg_count(cmd));
 
     if (res->status) {
         unsigned char sense_stack[SCSI_SENSE_BUFFERSIZE];
 
         if (res->data_len > SCSI_SENSE_BUFFERSIZE) {
-            scmd_warn(cmd, "truncate sense (%d < %d)", SCSI_SENSE_BUFFERSIZE, res->data_len);
+            scmd_dbg(cmd, "truncate sense (%d < %d)", SCSI_SENSE_BUFFERSIZE, res->data_len);
             res->data_len = SCSI_SENSE_BUFFERSIZE;
         }
 
@@ -616,7 +578,7 @@ static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_n
         size_t to_read;
 
         if (res->data_len > scsi_bufflen(cmd)) {
-            scmd_warn(cmd, "truncate data (%d < %d)\n", scsi_bufflen(cmd), res->data_len);
+            scmd_dbg(cmd, "truncate data (%d < %d)\n", scsi_bufflen(cmd), res->data_len);
             res->data_len = scsi_bufflen(cmd);
         }
 
@@ -633,7 +595,7 @@ static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_n
                 size_t len = (sg[i].length < to_read) ? sg[i].length : to_read;
 
                 if (len > vdev->kbuf_size) {
-                    scmd_warn(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
+                    scmd_dbg(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
                     len = vdev->kbuf_size;
                 }
 
@@ -642,13 +604,9 @@ static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_n
                 }
                 uaddr += len;
 
-#ifdef USE_SG_PAGE
-                kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
-#else
-                kaddr = vhba_kmap_atomic(sg[i].page);
-#endif
+                kaddr = kmap_atomic(sg_page(&sg[i]));
                 memcpy(kaddr + sg[i].offset, vdev->kbuf, len);
-                vhba_kunmap_atomic(kaddr);
+                kunmap_atomic(kaddr);
 
                 to_read -= len;
                 if (to_read == 0) {
@@ -935,7 +893,7 @@ static int vhba_ctl_release (struct inode *inode, struct file *file)
     list_for_each_entry(vcmd, &vdev->cmd_list, entry) {
         WARN_ON(vcmd->status == VHBA_REQ_READING || vcmd->status == VHBA_REQ_WRITING);
 
-        scmd_warn(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->serial_number, vcmd->cmd);
+        scmd_dbg(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->serial_number, vcmd->cmd);
         vcmd->cmd->result = DID_NO_CONNECT << 16;
         vcmd->cmd->scsi_done(vcmd->cmd);
 
