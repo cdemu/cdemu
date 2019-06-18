@@ -19,10 +19,11 @@ case "$1" in
 	configure)
 		# try to load the module
 		if test -d "/sys/module/vhba"; then
-			modprobe -r "vhba" || mywarning "Failed to unload running module."
-		fi
+			mywarning "Reboot required to load new vhba module."
 
-		modprobe "vhba" || mywarning "Unable to load module."
+		else
+		    modprobe "vhba" || mywarning "Unable to load module."
+        fi
 
 		# and make sure it's there after next reboot
 		if test -f "/etc/modules-load.d/vhba.conf"; then
