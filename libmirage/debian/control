@@ -6,8 +6,8 @@ Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
 Build-Depends: pkg-config (>= 0.14), libglib2.0-dev (>= 2.28), libsndfile1-dev,
  libsamplerate0-dev, zlib1g-dev, libbz2-dev, liblzma-dev, gtk-doc-tools,
  gobject-introspection, libgirepository1.0-dev, debhelper (>= 9), intltool,
- cmake (>= 2.8.5)
-Standards-Version: 3.9.7
+ cmake (>= 2.8.5), ninja-build
+Standards-Version: 4.3.0
 
 
 Package: libmirage11
@@ -30,8 +30,8 @@ Description: CD-ROM image access library
 Package: gir1.2-mirage-3.2
 Section: introspection
 Architecture: any
-Conflicts: gir1.2-mirage-3.0, gir1.2-mirage-3.1
-Replaces: gir1.2-mirage-3.0, gir1.2-mirage-3.1
+Conflicts: gir1.2-mirage-3.1
+Replaces: gir1.2-mirage-3.1
 Depends: libmirage11 (= ${binary:Version}), ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (typelib files)
  This package provides typelib files.
@@ -39,7 +39,7 @@ Description: CD-ROM image access library (typelib files)
 
 Package: libmirage11-dbg
 Section: debug
-Priority: extra
+Priority: optional
 Architecture: any
 Depends: libmirage11 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (debugging symbols)
@@ -50,7 +50,8 @@ Package: libmirage11-dev
 Section: libdevel
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
-Depends: libmirage11 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage11 (= ${binary:Version}), gir1.2-mirage-3.2 (= ${binary:Version}),
+ ${shlibs:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (development files)
  This package contains files needed to develop with libMirage.
 

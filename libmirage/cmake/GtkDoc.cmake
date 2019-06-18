@@ -106,7 +106,7 @@ function (gtk_doc)
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/html.stamp
         COMMAND mkdir -p html
-        COMMAND cd html && gtkdoc-mkhtml ${GTKDOC_MODULE} ../${GTKDOC_MAIN_SGML_FILE}
+        COMMAND cd html && gtkdoc-mkhtml ${GTKDOC_MODULE} ../${GTKDOC_MAIN_SGML_FILE} && cd ..
         COMMAND gtkdoc-fixxref --module=${GTKDOC_MODULE} --module-dir=html
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp

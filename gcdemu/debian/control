@@ -4,9 +4,9 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
 Build-Depends: debhelper (>= 9)
-Build-Depends-Indep: python3 (>= 3.4.0), libglib2.0-bin, intltool, cmake (>= 2.8.5), dh-python
+Build-Depends-Indep: python3 (>= 3.4.0), libglib2.0-bin, intltool, cmake (>= 2.8.5), ninja-build, dh-python
 X-Python3-Version: >= 3.4.0
-Standards-Version: 3.9.7
+Standards-Version: 4.3.0
 
 
 Package: gcdemu
