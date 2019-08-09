@@ -1,2 +1,1 @@
 KERNEL=="vhba_ctl", SUBSYSTEM=="misc", TAG+="uaccess"
-KERNEL=="sr*", SUBSYSTEM=="block", DRIVERS=="vhba", SYMLINK+="vhba/%m"
