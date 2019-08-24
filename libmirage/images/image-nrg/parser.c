@@ -988,6 +988,14 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, MirageStre
        is a MTYP block provided */
     mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
 
+    /* Validate data length */
+    if (self->priv->nrg_data_length == 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: nrg_data_length must be greater than 0!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("nrg_data_length must be greater than 0!"));
+        succeeded = FALSE;
+        goto end;
+    }
+
     /* Read descriptor data */
     self->priv->nrg_data = g_malloc(self->priv->nrg_data_length);
     mirage_stream_seek(self->priv->nrg_stream, trailer_offset, G_SEEK_SET, NULL);
