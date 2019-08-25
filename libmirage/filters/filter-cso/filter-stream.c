@@ -70,12 +70,17 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index\n", __debug__);
 
+    if (header->total_bytes % header->block_size) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: original stream size (%" G_GUINT64_FORMAT ") is not a multiple of block size (%d)!\n", __debug__, header->total_bytes, header->block_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid CSO file!"));
+        return FALSE;
+    }
+
     self->priv->num_parts = header->total_bytes / header->block_size;
     self->priv->num_indices = self->priv->num_parts + 1; /* Contains EOF offset */
-    g_assert(header->total_bytes % header->block_size == 0);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %" G_GINT64_MODIFIER "d\n", __debug__, header->total_bytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: 0x%" G_GINT64_MODIFIER "X (%" G_GUINT64_FORMAT ")\n", __debug__, header->total_bytes, header->total_bytes);
 
     /* At least one part must be present */
     if (!self->priv->num_parts) {
