@@ -120,6 +120,14 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
             CSO_Part *prev_part = &self->priv->parts[i-1];
 
             prev_part->comp_size = cur_part->offset - prev_part->offset;
+
+            /* Part size must be either smaller than header->block_size
+               (compressed block ) or equal to it (raw block) */
+            if (prev_part->comp_size > header->block_size) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part/index entry: part data length (%" G_GINT64_MODIFIER "d) exceeds declared block size (%d)!\n", __debug__, prev_part->comp_size, header->block_size);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid CSO file!"));
+                return FALSE;
+            }
         }
     }
 
