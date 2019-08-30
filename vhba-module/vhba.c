@@ -546,21 +546,22 @@ static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_nu
 
         if (scsi_sg_count(cmd)) {
             unsigned char *kaddr, *uaddr;
-            struct scatterlist *sg = scsi_sglist(cmd);
+            struct scatterlist *sglist = scsi_sglist(cmd);
+            struct scatterlist *sg;
             int i;
 
             uaddr = (unsigned char *) buf;
 
-            for (i = 0; i < scsi_sg_count(cmd); i++) {
-                size_t len = sg[i].length;
+            for_each_sg(sglist, sg, scsi_sg_count(cmd), i) {
+                size_t len = sg->length;
 
                 if (len > vdev->kbuf_size) {
                     scmd_dbg(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
                     len = vdev->kbuf_size;
                 }
 
-                kaddr = kmap_atomic(sg_page(&sg[i]));
-                memcpy(vdev->kbuf, kaddr + sg[i].offset, len);
+                kaddr = kmap_atomic(sg_page(sg));
+                memcpy(vdev->kbuf, kaddr + sg->offset, len);
                 kunmap_atomic(kaddr);
 
                 if (copy_to_user(uaddr, vdev->kbuf, len)) {
@@ -615,13 +616,14 @@ static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_n
 
         if (scsi_sg_count(cmd)) {
             unsigned char *kaddr, *uaddr;
-            struct scatterlist *sg = scsi_sglist(cmd);
+            struct scatterlist *sglist = scsi_sglist(cmd);
+            struct scatterlist *sg;
             int i;
 
             uaddr = (unsigned char *)buf;
 
-            for (i = 0; i < scsi_sg_count(cmd); i++) {
-                size_t len = (sg[i].length < to_read) ? sg[i].length : to_read;
+            for_each_sg(sglist, sg, scsi_sg_count(cmd), i) {
+                size_t len = (sg->length < to_read) ? sg->length : to_read;
 
                 if (len > vdev->kbuf_size) {
                     scmd_dbg(cmd, "segment size (%zu) exceeds kbuf size (%zu)!", len, vdev->kbuf_size);
@@ -633,8 +635,8 @@ static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_n
                 }
                 uaddr += len;
 
-                kaddr = kmap_atomic(sg_page(&sg[i]));
-                memcpy(kaddr + sg[i].offset, vdev->kbuf, len);
+                kaddr = kmap_atomic(sg_page(sg));
+                memcpy(kaddr + sg->offset, vdev->kbuf, len);
                 kunmap_atomic(kaddr);
 
                 to_read -= len;
