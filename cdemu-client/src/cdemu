@@ -1034,7 +1034,7 @@ class cmd_device_id (object):
         if hasattr(arguments, "new_id"):
             device_id = tuple(arguments.new_id)
 
-            if len(device_id) is not 4:
+            if len(device_id) != 4:
                 raise CDEmuError(_("New device ID must consist of exactly four strings!"))
 
             if arguments.device == "all":
