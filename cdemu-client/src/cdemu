@@ -42,7 +42,7 @@ import gettext
 
 # *** Globals ***
 app_name = "cdemu"
-app_version = "3.2.2"
+app_version = "3.2.3"
 supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
