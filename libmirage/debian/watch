@@ -1,4 +1,4 @@
 version=3
 
-http://sf.net/cdemu/ libmirage-(.+)\.tar\.bz2
+http://sf.net/cdemu/ @PACKAGE@@ANY_VERSION@@ARCHIVE_EXT@
 
