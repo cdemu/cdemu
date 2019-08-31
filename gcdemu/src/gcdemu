@@ -101,7 +101,7 @@ class CDEmuDaemonProxy (GObject.GObject):
 
     def cleanup (self):
         # Cancel watcher
-        if self.watcher_id is not -1:
+        if self.watcher_id != -1:
             Gio.bus_unwatch_name(self.watcher_id)
             self.watcher_id = -1
 
