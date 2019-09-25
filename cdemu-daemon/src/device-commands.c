@@ -2639,7 +2639,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         PacketCommand cmd;
         gchar *debug_name;
         gboolean (*implementation)(CdemuDevice *, const guint8 *);
-        gboolean disturbs_audio_play;
+        gboolean interrupt_audio_play;
     } packet_commands[] = {
         { CLOSE_TRACK_SESSION,
           "CLOSE TRACK/SESSION",
@@ -2652,7 +2652,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { GET_CONFIGURATION,
           "GET CONFIGURATION",
           command_get_configuration,
-          TRUE, },
+          FALSE, },
         { GET_PERFORMANCE,
           "GET PERFORMANCE",
           command_get_performance,
@@ -2664,19 +2664,19 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { MODE_SELECT_6,
           "MODE SELECT (6)",
           command_mode_select,
-          TRUE },
+          FALSE },
         { MODE_SELECT_10,
           "MODE SELECT (10)",
           command_mode_select,
-          TRUE },
+          FALSE },
         { MODE_SENSE_6,
           "MODE SENSE (6)",
           command_mode_sense,
-          TRUE },
+          FALSE },
         { MODE_SENSE_10,
           "MODE SENSE (10)",
           command_mode_sense,
-          TRUE },
+          FALSE },
         { PAUSE_RESUME,
           "PAUSE/RESUME",
           command_pause_resume,
@@ -2696,7 +2696,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { PREVENT_ALLOW_MEDIUM_REMOVAL,
           "PREVENT/ALLOW MEDIUM REMOVAL",
           command_prevent_allow_medium_removal,
-          TRUE },
+          FALSE },
         { READ_10,
           "READ (10)",
           command_read,
@@ -2716,11 +2716,11 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { READ_CD,
           "READ CD",
           command_read_cd,
-          TRUE },
+          FALSE },
         { READ_CD_MSF,
           "READ CD MSF",
           command_read_cd,
-          TRUE },
+          FALSE },
         { READ_DISC_INFORMATION,
           "READ DISC INFORMATION",
           command_read_disc_information,
@@ -2732,7 +2732,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { READ_TOC_PMA_ATIP,
           "READ TOC/PMA/ATIP",
           command_read_toc_pma_atip,
-          TRUE },
+          FALSE },
         { READ_TRACK_INFORMATION,
           "READ TRACK INFORMATION",
           command_read_track_information,
@@ -2756,7 +2756,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { SEEK_10,
           "SEEK (10)",
           command_seek,
-          FALSE },
+          TRUE },
         { SEND_CUE_SHEET,
           "SEND CUE SHEET",
           command_send_cue_sheet,
@@ -2776,7 +2776,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { SYNCHRONIZE_CACHE,
           "SYNCHRONIZE CACHE",
           command_synchronize_cache,
-          TRUE },
+          FALSE },
         { TEST_UNIT_READY,
           "TEST UNIT READY",
           command_test_unit_ready,
@@ -2804,8 +2804,8 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
             /* FIXME: If there is deferred error sense available, return CHECK CONDITION
                with that sense. We do not execute requested command. */
 
-            /* Stop audio play if command disturbs it */
-            if (packet_commands[i].disturbs_audio_play) {
+            /* Stop audio play if command interrupts it */
+            if (packet_commands[i].interrupt_audio_play) {
                 gint audio_status = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
                 if (audio_status == AUDIO_STATUS_PLAYING || audio_status == AUDIO_STATUS_PAUSED) {
                     cdemu_audio_stop(CDEMU_AUDIO(self->priv->audio_play));
