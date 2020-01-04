@@ -851,6 +851,13 @@ static long vhba_ctl_ioctl (struct file *file, unsigned int cmd, unsigned long a
                 return -ENODEV;
             }
         }
+        case 0xBEEF002: {
+            int device_number = vdev->num;
+            if (copy_to_user((void *)arg, &device_number, sizeof(device_number))) {
+                return -EFAULT;
+            }
+            return 0;
+        }
     }
 
     return -ENOTTY;
