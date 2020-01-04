@@ -57,6 +57,10 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     self->priv->number = number;
     self->priv->device_name = g_strdup_printf("cdemu%i", number);
 
+    /* NOTE: self->priv->device_serial is generated in cdemu_device_start(),
+       once the control device is opened and global device number is
+       obtained from it */
+
     /* Init device mutex */
 #if !GLIB_CHECK_VERSION(2, 32, 0)
     self->priv->device_mutex = g_mutex_new();
@@ -334,6 +338,8 @@ static void cdemu_device_init (CdemuDevice *self)
     self->priv->io_watch = NULL;
 
     self->priv->device_name = NULL;
+    self->priv->device_serial = NULL;
+
     self->priv->device_mutex = NULL;
 
     self->priv->kernel_io_buffer = NULL;
@@ -430,6 +436,9 @@ static void cdemu_device_finalize (GObject *gobject)
 
     /* Free device name */
     g_free(self->priv->device_name);
+
+    /* Free device serial */
+    g_free(self->priv->device_serial);
 
     /* Free device ID */
     g_free(self->priv->id_vendor_id);

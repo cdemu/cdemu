@@ -596,7 +596,7 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
 
             /* Serial number */
             gchar *ret_serial = (gchar *)(ret_header + 1);
-            gint serial_len = g_sprintf(ret_serial, "CDEMU%03d", self->priv->number);
+            gint serial_len = g_strlcpy(ret_serial, self->priv->device_serial, self->priv->buffer_capacity - sizeof(struct INQUIRY_VPD_Header));
 
             /* Modify reported length */
             self->priv->buffer_size += serial_len;

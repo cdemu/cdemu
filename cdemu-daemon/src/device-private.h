@@ -43,6 +43,8 @@ struct _CdemuDevicePrivate
     gint number;
     gchar *device_name;
 
+    gchar *device_serial;
+
     /* Device mutex */
     GMutex *device_mutex;
 

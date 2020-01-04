@@ -248,6 +248,24 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
         g_error_free(local_error);
     }
 
+    /* Generate device serial number based on the global device number
+       obtained from the kernel */
+    if (TRUE) {
+        gint ioctl_ret;
+        gint32 device_number = self->priv->number; /* Use local device number as fallback */
+
+        /* Perform IOCTL */
+        ioctl_ret = ioctl(g_io_channel_unix_get_fd(self->priv->io_channel), 0xBEEF002, &device_number);
+
+        if (ioctl_ret < 0) {
+            /* Other errors */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl 0x%X (%d); device serial number will be generated using local device number!\n", __debug__, 0xBEEF002, ioctl_ret);
+        }
+
+        /* Generate serial number */
+        self->priv->device_serial = g_strdup_printf("CDEMU%03d", device_number);
+    }
+
     /* Create I/O watch */
     self->priv->io_watch = g_io_create_watch(self->priv->io_channel, G_IO_IN);
     g_source_set_callback(self->priv->io_watch, (GSourceFunc)cdemu_device_io_handler, self, NULL);
