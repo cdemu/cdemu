@@ -86,8 +86,8 @@ struct _CdemuDevicePrivate
     GList *features_list;
 
     /* Delay emulation */
-    GTimeVal delay_begin;
-    gint delay_amount;
+    gint64 delay_begin;
+    gint64 delay_amount;
     gdouble current_angle;
 
     gboolean dpm_emulation;

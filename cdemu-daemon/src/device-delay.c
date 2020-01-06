@@ -119,7 +119,7 @@ void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors
 {
     /* Simply get current time here; we'll need it to compensate for processing
        time when performing actual delay */
-    g_get_current_time(&self->priv->delay_begin);
+    self->priv->delay_begin = g_get_monotonic_time();
 
     /* Reset delay */
     self->priv->delay_amount = 0;
@@ -130,11 +130,6 @@ void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors
 
 void cdemu_device_delay_finalize (CdemuDevice *self)
 {
-    GTimeVal delay_now;
-    GTimeVal delay_diff;
-
-    gint delay;
-
     /* If there's no delay to perform, don't bother doing anything... */
     if (!self->priv->delay_amount) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: no delay to perform\n", __debug__);
@@ -142,18 +137,17 @@ void cdemu_device_delay_finalize (CdemuDevice *self)
     }
 
     /* Get current time */
-    g_get_current_time(&delay_now);
+    gint64 delay_now = g_get_monotonic_time();
 
     /* Calculate time difference */
-    delay_diff.tv_sec = delay_now.tv_sec - self->priv->delay_begin.tv_sec;
-    delay_diff.tv_usec = delay_now.tv_usec - self->priv->delay_begin.tv_usec;
+    gint64 delay_diff = delay_now - self->priv->delay_begin;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: calculated delay: %i microseconds\n", __debug__, self->priv->delay_amount);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %li seconds, %li microseconds\n", __debug__, delay_diff.tv_sec, delay_diff.tv_usec);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: calculated delay: %" G_GINT64_FORMAT " microseconds\n", __debug__, self->priv->delay_amount);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %" G_GINT64_FORMAT " microseconds\n", __debug__, delay_diff);
 
     /* Compensate for the processing time */
-    delay = self->priv->delay_amount - (delay_diff.tv_sec * G_USEC_PER_SEC + delay_diff.tv_usec);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: actual delay: %i microseconds\n", __debug__, delay);
+    gint64 delay = self->priv->delay_amount - delay_diff;
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: actual delay: %" G_GINT64_FORMAT " microseconds\n", __debug__, delay);
 
     if (delay < 0) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: spent too much time processing, bailing out!\n", __debug__);
