@@ -592,6 +592,33 @@ struct INQUIRY_VPD_Header
 };
 
 
+struct INQUIRY_VPD_IdentificationDescriptorHeader
+{
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 protocol_id : 3;
+        guint8 code_set    : 5;
+    #else
+        guint8 code_set    : 3;
+        guint8 protocol_id : 5;
+    #endif
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 piv             : 1;
+        guint8 reserved1       : 1;
+        guint8 association     : 2;
+        guint8 identifier_type : 4;
+    #else
+        guint8 identifier_type : 4;
+        guint8 association     : 2;
+        guint8 reserved1       : 1;
+        guint8 piv             : 1;
+    #endif
+
+    guint8 reserved2;
+    guint8 identifier_length;
+};
+
+
 /**********************************************************************\
  *                         LOAD/UNLOAD MEDIUM                         *
 \**********************************************************************/

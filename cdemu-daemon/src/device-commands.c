@@ -578,7 +578,7 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
 
             ret_list[num_pages++] = 0x00; /* Supported VPD pages (mandatory) */
             ret_list[num_pages++] = 0x80; /* Unit serial number (optional) */
-            /*ret_list[num_pages++] = 0x83;*/ /* Device identification (mandatory) */
+            ret_list[num_pages++] = 0x83; /* Device identification (mandatory) */
 
             /* Modify reported length */
             self->priv->buffer_size += num_pages;
@@ -595,12 +595,65 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
             ret_header->page_length = 0;
 
             /* Serial number */
+            /* NOTE: g_strlcpy() should add a trailing NULL to destination.
+               This is not a problem, because a) it is not counted in the
+               return value, and b) because we are writing directly to
+               cache buffer, and hence this additional NULL is effectively
+               discarded from the response. */
             gchar *ret_serial = (gchar *)(ret_header + 1);
-            gint serial_len = g_strlcpy(ret_serial, self->priv->device_serial, self->priv->buffer_capacity - sizeof(struct INQUIRY_VPD_Header));
+            gint serial_len = g_strlcpy(ret_serial, self->priv->device_serial, self->priv->buffer_capacity - self->priv->buffer_size);
 
             /* Modify reported length */
             self->priv->buffer_size += serial_len;
             ret_header->page_length += serial_len;
+            break;
+        }
+        case 0x83: {
+            /* Device identification */
+            struct INQUIRY_VPD_Header *ret_header = (struct INQUIRY_VPD_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct INQUIRY_VPD_Header);
+            ret_header->per_dev = 0x05; /* CD-ROM device */
+            ret_header->page_code = 0x83; /* Page 0x80: Serial number */
+            ret_header->page_length = 0;
+
+            /* Identifier header */
+            struct INQUIRY_VPD_IdentificationDescriptorHeader *id_header = (struct INQUIRY_VPD_IdentificationDescriptorHeader *)(self->priv->buffer + self->priv->buffer_size);
+            self->priv->buffer_size += sizeof(struct INQUIRY_VPD_IdentificationDescriptorHeader);
+            ret_header->page_length += sizeof(struct INQUIRY_VPD_IdentificationDescriptorHeader);
+
+            id_header->protocol_id = 8; /* ATA/ATAPI */
+            id_header->code_set = 2; /* ASCII */
+
+            id_header->association = 0; /* Logical unit*/
+            id_header->identifier_type = 1; /* T-10 vendor ID based */
+
+            id_header->identifier_length = 0;
+
+            /* T10 vendor identification (8-byte) */
+            gchar *vendor_id = (gchar *)(self->priv->buffer + self->priv->buffer_size);
+
+            /* Fill with spaces and copy the vendor string; the lenght
+               of the latter is guaranteed not to exceed 8 characters
+               (see comment in command_inquiry()) */
+            memset(vendor_id, 32, 8);
+            memcpy(vendor_id, self->priv->id_vendor_id, strlen(self->priv->id_vendor_id));
+
+            self->priv->buffer_size += 8;
+            ret_header->page_length += 8;
+            id_header->identifier_length += 8;
+
+            /* Vendor-specific identifier */
+            /* SPC: "A recommended method of constructing a unique
+               IDENTIFIER field is to concatenate the PRODUCT IDENTIFICATION
+               field from the standard INQUIRY data and the PRODUCT SERIAL
+               NUMBER field from the Unit Serial Number VPD page */
+            gchar *id_string = (gchar *)(self->priv->buffer + self->priv->buffer_size);
+            gint id_len = g_snprintf(id_string, self->priv->buffer_capacity - self->priv->buffer_size, "%s %s", self->priv->id_product_id, self->priv->device_serial);
+
+            self->priv->buffer_size += id_len;
+            ret_header->page_length += id_len;
+            id_header->identifier_length += id_len;
+
             break;
         }
         default: {

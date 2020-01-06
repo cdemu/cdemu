@@ -263,7 +263,7 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
         }
 
         /* Generate serial number */
-        self->priv->device_serial = g_strdup_printf("CDEMU%03d", device_number);
+        self->priv->device_serial = g_strdup_printf("%03d", device_number);
     }
 
     /* Create I/O watch */
