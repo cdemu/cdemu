@@ -938,11 +938,7 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, MirageS
         gsize line_length;
 
         /* Read line */
-#if GLIB_CHECK_VERSION(2, 30, 0)
         line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
-#else
-        line_string = g_data_input_stream_read_line(data_stream, &line_length, NULL, &local_error);
-#endif
 
         /* Handle error */
         if (!line_string) {

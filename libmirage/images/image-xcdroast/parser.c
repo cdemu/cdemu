@@ -585,11 +585,7 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
         gsize line_length;
 
         /* Read line */
-#if GLIB_CHECK_VERSION(2, 30, 0)
         line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
-#else
-        line_string = g_data_input_stream_read_line(data_stream, &line_length, NULL, &local_error);
-#endif
 
         /* Handle error */
         if (!line_string) {
@@ -672,11 +668,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
         gsize line_length;
 
         /* Read line */
-#if GLIB_CHECK_VERSION(2, 30, 0)
         line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
-#else
-        line_string = g_data_input_stream_read_line(data_stream, &line_length, NULL, &local_error);
-#endif
 
         /* Handle error */
         if (!line_string) {
@@ -772,11 +764,7 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
         GMatchInfo *match_info = NULL;
 
         /* Read line */
-#if GLIB_CHECK_VERSION(2, 30, 0)
         line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
-#else
-        line_string = g_data_input_stream_read_line(data_stream, &line_length, NULL, &local_error);
-#endif
 
         /* Handle error */
         if (!line_string) {
