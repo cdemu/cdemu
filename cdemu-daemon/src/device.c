@@ -114,7 +114,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     mirage_context_set_debug_mask(self->priv->mirage_context, mirage_debug_mask);
 
     /* Set up default device ID */
-    cdemu_device_set_device_id(self, "CDEmu   ", "Virt. CD/DVD-ROM", "1.10", "    cdemu.sf.net    ");
+    cdemu_device_set_device_id(self, "CDEmu", "CD-ROM", "1.0", "cdemu.sf.net");
 
     /* Initialize mode pages and features and set profile */
     cdemu_device_mode_pages_init(self);

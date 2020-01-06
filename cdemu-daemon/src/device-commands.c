@@ -647,10 +647,23 @@ static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
     ret_data->atapi_version = 3; /* Should be 3 according to INF8090 */
     ret_data->response_fmt = 0x02; /* Should be 2 according to INF8090 */
     ret_data->length = sizeof(struct INQUIRY_Data) - 5;
-    memcpy(ret_data->vendor_id, self->priv->id_vendor_id, 8);
-    memcpy(ret_data->product_id, self->priv->id_product_id, 16);
-    memcpy(ret_data->product_rev, self->priv->id_revision, 4);
-    memcpy(ret_data->vendor_spec1, self->priv->id_vendor_specific, 20);
+
+    /* NOTE: the length of source strings is guaranteed to not exceed
+       the corresponding buffer size due to limits imposed during
+       storing procedure in cdemu_device_set_device_id()  */
+    /* First, fill all bytes with whitespace, then copy the string
+       without terminating NULL */
+    memset(ret_data->vendor_id, 32, 8);
+    memcpy(ret_data->vendor_id, self->priv->id_vendor_id, strlen(self->priv->id_vendor_id));
+
+    memset(ret_data->product_id, 32, 16);
+    memcpy(ret_data->product_id, self->priv->id_product_id, strlen(self->priv->id_product_id));
+
+    memset(ret_data->product_rev, 32, 4);
+    memcpy(ret_data->product_rev, self->priv->id_revision, strlen(self->priv->id_revision));
+
+    memset(ret_data->vendor_spec1, 32, 20);
+    memcpy(ret_data->vendor_spec1, self->priv->id_vendor_specific, strlen(self->priv->id_vendor_specific));
 
     ret_data->ver_desc1 = GUINT16_TO_BE(0x02A0); /* We'll try to pass as MMC-3 device */
 
