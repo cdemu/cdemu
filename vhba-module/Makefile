@@ -1,4 +1,4 @@
-VHBA_VERSION := 20190831
+VHBA_VERSION := 20200106
 
 KERNELRELEASE ?= $(shell uname -r)
 KDIR ?= /lib/modules/$(KERNELRELEASE)/build
