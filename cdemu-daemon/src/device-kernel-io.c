@@ -272,11 +272,7 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
     g_source_attach(self->priv->io_watch, self->priv->main_context);
 
     /* Start I/O thread */
-#if !GLIB_CHECK_VERSION(2, 32, 0)
-    self->priv->io_thread = g_thread_create((GThreadFunc)cdemu_device_io_thread, self, TRUE, &local_error);
-#else
     self->priv->io_thread = g_thread_try_new("I/O thread", (GThreadFunc)cdemu_device_io_thread, self, &local_error);
-#endif
 
     if (!self->priv->io_thread) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start I/O thread: %s\n", __debug__, local_error->message);

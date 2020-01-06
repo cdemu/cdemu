@@ -89,15 +89,6 @@ int main (int argc, char **argv)
     bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
     textdomain(GETTEXT_PACKAGE);
 
-    /* Glib type system and threading system initialization; needed
-       only in older glib versions */
-#if !GLIB_CHECK_VERSION(2, 36, 0)
-    g_type_init();
-#endif
-#if !GLIB_CHECK_VERSION(2, 32, 0)
-    g_thread_init(NULL);
-#endif
-
     /* Default log handler is local */
     g_log_set_default_handler(log_handler_stdout, NULL);
 
