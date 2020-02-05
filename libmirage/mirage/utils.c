@@ -510,8 +510,8 @@ gboolean mirage_helper_validate_isrc (const gchar *isrc)
 {
     if (!isrc) return FALSE;
 
-    if (g_ascii_isalpha(isrc[ 0]) &&
-        g_ascii_isalpha(isrc[ 1]) &&
+    if (g_ascii_isalnum(isrc[ 0]) &&
+        g_ascii_isalnum(isrc[ 1]) &&
 
         g_ascii_isalnum(isrc[ 2]) &&
         g_ascii_isalnum(isrc[ 3]) &&
