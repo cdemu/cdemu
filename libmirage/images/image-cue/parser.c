@@ -379,6 +379,7 @@ static gboolean mirage_parser_cue_set_isrc (MirageParserCue *self, const gchar *
     }
 
     if (!mirage_helper_validate_isrc(isrc)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to validate ISRC: <%s>!"), isrc);
         return FALSE;
     }
 
