@@ -313,6 +313,8 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             if (mirage_helper_validate_isrc(ccd_cur_entry->ISRC)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC to %.12s\n", __debug__, ccd_cur_entry->ISRC);
                 mirage_track_set_isrc(track, ccd_cur_entry->ISRC);
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, ccd_cur_entry->ISRC);
             }
 
             /* Pregap of current track; note that first track in the session does

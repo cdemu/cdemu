@@ -304,6 +304,8 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         /* Validate and set ISRC */
         if (mirage_helper_validate_isrc(track_entry->isrc)) {
             mirage_track_set_isrc(cur_track, track_entry->isrc);
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, track_entry->isrc);
         }
 
         /* Pregap fragment at the beginning of track */

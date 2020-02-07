@@ -378,12 +378,12 @@ static gboolean mirage_parser_cue_set_isrc (MirageParserCue *self, const gchar *
         return FALSE;
     }
 
-    if (!mirage_helper_validate_isrc(isrc)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to validate ISRC: <%s>!"), isrc);
-        return FALSE;
+    if (mirage_helper_validate_isrc(isrc)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC: <%s>\n", __debug__, isrc);
+        mirage_track_set_isrc(self->priv->cur_track, isrc);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, isrc);
     }
-
-    mirage_track_set_isrc(self->priv->cur_track, isrc);
 
     return TRUE;
 }

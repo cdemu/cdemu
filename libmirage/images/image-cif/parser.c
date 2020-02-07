@@ -270,6 +270,8 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
         /* Validate and set ISRC */
         if (mirage_helper_validate_isrc(audio_descriptor->isrc)) {
             mirage_track_set_isrc(track, audio_descriptor->isrc);
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, audio_descriptor->isrc);
         }
     } else {
         mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
