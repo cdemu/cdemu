@@ -51,14 +51,10 @@ _contains ()
 _cdemu_load ()
 {
     local flag_options="-h --help --dvd-report-css"
-    local argument_options="--password --encoding"
+    local argument_options="--encoding"
 
     # Is previous word an option?
     case "${prev}" in
-        "--password")
-            # User must enter password; no completion
-            return 0
-            ;;
         "--encoding")
             local encodings=$(iconv --list | sed -e 's/\/\/$//')
             COMPREPLY=( $(compgen -W "${encodings}" -- ${cur}) )

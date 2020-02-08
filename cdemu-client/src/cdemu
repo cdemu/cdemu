@@ -24,8 +24,10 @@ import argparse
 import collections
 import datetime
 import sys
-import os.path
+import os
 import getpass
+import shlex
+import subprocess
 
 import gi
 from gi.repository import GLib
@@ -120,7 +122,6 @@ class cmd_load (object):
 
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("image_file", type=str, nargs="+", help=_("image file(s)"))
-        parser.add_argument("--password", type=str, help=_("password for encrypted images"))
         parser.add_argument("--encoding", type=str, help=_("encoding for text-based images"))
 
     def __call__ (self, proxy, arguments):
@@ -131,8 +132,6 @@ class cmd_load (object):
         parser_params = {}
         if hasattr(arguments, "encoding"):
             parser_params["encoding"] = GLib.Variant("s", arguments.encoding)
-        if hasattr(arguments, "password"):
-            parser_params["password"] = GLib.Variant("s", arguments.password)
 
         # Particular device vs. any device
         if arguments.device == "any":
@@ -174,10 +173,27 @@ class cmd_load (object):
         except GLib.Error as e:
             if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
                 # We need password
-                print(_("The image you are trying to load is encrypted."))
-                password = getpass.getpass(_("Password: ")) # Append password to params
+                if "CDEMU_ASKPASS" in os.environ:
+                    proc = subprocess.Popen(shlex.split(os.environ["CDEMU_ASKPASS"]), text=True, stdout=subprocess.PIPE)
+                    (pout, perr) = proc.communicate()
+                    pret = proc.wait()
+                    password = pout
+                else:
+                    if sys.stdout.isatty():
+                        print(_("The image you are trying to load is encrypted."))
+                        password = getpass.getpass(_("Password: ")) 
+                    else:
+                        if "SSH_ASKPASS" in os.environ:
+                            proc = subprocess.Popen(shlex.split(os.environ["SSH_ASKPASS"]), text=True, stdout=subprocess.PIPE)
+                            (pout, perr) = proc.communicate()
+                            pret = proc.wait()
+                            password = pout
+                        else:
+                            raise CDEmuError(_("No password agent was supplied."))
+
+                # Append password to params
                 params["password"] = GLib.Variant("s", password)
-                return load_device(device, filenames, params)
+                return self.load_device(proxy, device, filenames, params)
             else:
                 raise CDEmuError(_("Failed to load image: %s") % (e))
 

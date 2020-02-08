@@ -23,12 +23,10 @@ read README file. The default can be overridden using
 option.
 .SH ENCRYPTED IMAGES SUPPORT
 CDEmu daemon offers support for encrypted images. When password
-is required to load an image (and it hasn't been provided via commandline using
---password), cdemu-client will prompt for it and then send it to daemon.
+is required to load an image, cdemu-client will prompt for it and then send it to daemon.
 .PP
 NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
-ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
-SUCH IMAGES.
+ANY PROTECTION.
 .SH OPTIONS
 .TP
 .B -h --help
@@ -52,11 +50,6 @@ the image filename. For multi-file images, multiple filenames can be provided.
 The following optional parser parameters can be passed when trying to load the
 image (whether they are supported by a particular parser or not depends on the
 parser implementation):
-
-.B --password <string>
-Allows a password for an encrypted image to be specified via commandline; however,
-if an image requires password and it hasn't been specified via commandline, then
-the client will prompt for it using standard input without echo.
 
 .B --encoding <string>
 Allows an encoding for text-based image format (such as CUE) to be specified. This
@@ -179,9 +172,6 @@ cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
 .TP
 .B Loading a text-based image in non-ASCII/non-Unicode encoding:
  cdemu load 0 ~/image.cue --encoding=windows-1250
-.TP
-.B Loading an encrypted image with password provided as an argument:
- cdemu load 0 ~/image.daa --password=seeninplain
 .TP
 .B Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
  cdemu load 0 ~/image.iso

@@ -58,11 +58,18 @@ Loading multiple-file image to first device:
 Loading a text-based image in non-ASCII/non-Unicode encoding:
  cdemu load 0 ~/image.cue --encoding=windows-1250
 
-Loading an encrypted image with password provided as an argument:
- cdemu load 0 ~/image.daa --password=seeninplain
+Loading an encrypted image:
  cdemu load 0 ~/image.daa
-(in the latter case, if image is actually encrypted, the client will prompt for
-the password using standard input without echo)
+
+if image is actually encrypted, the client will query the user for the password. 
+If started on a terminal it will use that, else it will use the program specified 
+by the environment variable SSH_ASKPASS. On most systems this variable will 
+already have been configured. It is possible to override this for
+non-interactive setups by using the environment variable CDEMU_ASKPASS.
+
+ CDEMU_ASKPASS="/bin/echo -n plainpassword" cdemu load 0 ~/cdimage.daa
+
+NOTE THAT THIS WILL LEAK YOUR PASSWORD AND IS THEREFORE STRONGLY DISCOURAGED.
 
 Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
  cdemu load 0 ~/image.iso
