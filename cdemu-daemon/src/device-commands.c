@@ -1274,17 +1274,17 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
             return FALSE;
         }
 
-#if 0
-        /* Break if mode (sector type) has changed */
-        /* NOTE: if we're going to be doing this, we need to account for the
-           fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
-        if (prev_sector_type != sector_type) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, sector_type);
-            g_object_unref(sector);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
-            return FALSE;
+        if (FALSE) {
+            /* Break if mode (sector type) has changed */
+            /* NOTE: if we're going to be doing this, we need to account for the
+               fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
+            if (prev_sector_type != sector_type) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, sector_type);
+                g_object_unref(sector);
+                cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
+                return FALSE;
+            }
         }
-#endif
 
         /* Here we do the emulation of "bad sectors"... if we're dealing with
            a bad sector, then its EDC/ECC won't correspond to actual data. So
