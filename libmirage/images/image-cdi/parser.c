@@ -57,9 +57,8 @@ struct _MirageParserCdiPrivate
 */
 
 /* Self-explanatory */
-#define WHINE_ON_UNEXPECTED
+const gboolean WHINE_ON_UNEXPECTED = TRUE;
 
-#ifdef WHINE_ON_UNEXPECTED
 typedef struct
 {
     gint offset;
@@ -74,8 +73,6 @@ static void mirage_parser_cdi_whine_on_unexpected (MirageParserCdi *self, guint8
         }
     }
 }
-#endif
-
 
 static void mirage_parser_cdi_decode_medium_type (MirageParserCdi *self, gint medium_type)
 {
@@ -203,31 +200,32 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
         - filename of variable length
         - 29 bytes with fixed values
         - 2 bytes that form up medium type */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0xFF },
-        {  1, 0xFF },
-        {  2, 0x00 },
-        {  3, 0x00 },
-        {  4, 0x01 },
-        {  5, 0x00 },
-        {  6, 0x00 },
-        {  7, 0x00 },
-        {  8, 0xFF },
-        {  9, 0xFF },
-        { 10, 0xFF },
-        { 11, 0xFF },
-        /* The following values vary; the last one is positively number of all
-           tracks on the disc */
-        /*{ 12, 0x64 },
-        { 13, 0x05 },
-        { 14, 0x2A },
-        { 15, 0x06 }*/
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Pre-filename fields");
+
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0xFF },
+            {  1, 0xFF },
+            {  2, 0x00 },
+            {  3, 0x00 },
+            {  4, 0x01 },
+            {  5, 0x00 },
+            {  6, 0x00 },
+            {  7, 0x00 },
+            {  8, 0xFF },
+            {  9, 0xFF },
+            { 10, 0xFF },
+            { 11, 0xFF },
+            /* The following values vary; the last one is positively number of all
+               tracks on the disc */
+            /*{ 12, 0x64 },
+            { 13, 0x05 },
+            { 14, 0x2A },
+            { 15, 0x06 }*/
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Pre-filename fields");
     }
-#endif
+
     num_all_tracks = MIRAGE_CAST_DATA(self->priv->cur_ptr, 15, guint8);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of all tracks: %d\n\n", __debug__, num_all_tracks);
     self->priv->cur_ptr += 16;
@@ -245,43 +243,44 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
     self->priv->cur_ptr += filename_length;
 
     /* 31 bytes after filename aren't deciphered yet */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        {  1, 0x00 },
-        {  2, 0x00 },
-        {  3, 0x00 },
-        {  4, 0x00 },
-        {  5, 0x00 },
-        {  6, 0x00 },
-        {  7, 0x00 },
-        {  8, 0x00 },
-        {  9, 0x00 },
-        { 10, 0x00 },
-        { 11, 0x02 },
-        { 12, 0x00 },
-        { 13, 0x00 },
-        { 14, 0x00 },
-        { 15, 0x00 },
-        { 16, 0x00 },
-        { 17, 0x00 },
-        { 18, 0x00 },
-        { 19, 0x00 },
-        { 20, 0x00 },
-        { 21, 0x00 },
-        { 22, 0x80 },
-        /* Following fields almost positively represent disc capacity */
-        /*{ 23, 0x40 },
-        { 24, 0x7E },
-        { 25, 0x05 },
-        { 26, 0x00 },*/
-        { 27, 0x00 },
-        { 28, 0x00 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Post-filename fields");
+
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            {  1, 0x00 },
+            {  2, 0x00 },
+            {  3, 0x00 },
+            {  4, 0x00 },
+            {  5, 0x00 },
+            {  6, 0x00 },
+            {  7, 0x00 },
+            {  8, 0x00 },
+            {  9, 0x00 },
+            { 10, 0x00 },
+            { 11, 0x02 },
+            { 12, 0x00 },
+            { 13, 0x00 },
+            { 14, 0x00 },
+            { 15, 0x00 },
+            { 16, 0x00 },
+            { 17, 0x00 },
+            { 18, 0x00 },
+            { 19, 0x00 },
+            { 20, 0x00 },
+            { 21, 0x00 },
+            { 22, 0x80 },
+            /* Following fields almost positively represent disc capacity */
+            /*{ 23, 0x40 },
+            { 24, 0x7E },
+            { 25, 0x05 },
+            { 26, 0x00 },*/
+            { 27, 0x00 },
+            { 28, 0x00 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Post-filename fields");
     }
-#endif
+
     disc_capacity = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 23, guint32));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc capacity: 0x%X\n", __debug__, disc_capacity);
     self->priv->cur_ptr += 29;
@@ -367,15 +366,16 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* 2 bytes after indices are undeciphered yet */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        { 0, 0x00 },
-        { 1, 0x00 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "2 bytes after CD-TEXT");
+
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            { 0, 0x00 },
+            { 1, 0x00 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "2 bytes after CD-TEXT");
     }
-#endif
+
     self->priv->cur_ptr += 2;
 
 
@@ -385,17 +385,18 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %i\n", __debug__, track_mode);
 
     /* 4 bytes follow that have not been deciphered yet */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        {  1, 0x00 },
-        {  2, 0x00 },
-        {  3, 0x00 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "4 bytes after track mode");
+
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            {  1, 0x00 },
+            {  2, 0x00 },
+            {  3, 0x00 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "4 bytes after track mode");
     }
-#endif
+
     self->priv->cur_ptr += 4;
 
 
@@ -421,29 +422,30 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
 
     /* 16 undeciphered bytes */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        {  1, 0x00 },
-        {  2, 0x00 },
-        {  3, 0x00 },
-        {  4, 0x00 },
-        {  5, 0x00 },
-        {  6, 0x00 },
-        {  7, 0x00 },
-        {  8, 0x00 },
-        {  9, 0x00 },
-        { 10, 0x00 },
-        { 11, 0x00 },
-        { 12, 0x00 },
-        { 13, 0x00 },
-        { 14, 0x00 },
-        { 15, 0x00 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "16 bytes after track length");
+
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            {  1, 0x00 },
+            {  2, 0x00 },
+            {  3, 0x00 },
+            {  4, 0x00 },
+            {  5, 0x00 },
+            {  6, 0x00 },
+            {  7, 0x00 },
+            {  8, 0x00 },
+            {  9, 0x00 },
+            { 10, 0x00 },
+            { 11, 0x00 },
+            { 12, 0x00 },
+            { 13, 0x00 },
+            { 14, 0x00 },
+            { 15, 0x00 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "16 bytes after track length");
     }
-#endif
+
     self->priv->cur_ptr += 16;
 
 
@@ -460,24 +462,24 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
 
     /* 9 undeciphered bytes */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        /* These seem to be a repeated track length */
-        {  1, (track_length & 0x000000FF) >>  0 },
-        {  2, (track_length & 0x0000FF00) >>  8 },
-        {  3, (track_length & 0x00FF0000) >> 16 },
-        {  4, (track_length & 0xFF000000) >> 24 },
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            /* These seem to be a repeated track length */
+            {  1, (track_length & 0x000000FF) >>  0 },
+            {  2, (track_length & 0x0000FF00) >>  8 },
+            {  3, (track_length & 0x00FF0000) >> 16 },
+            {  4, (track_length & 0xFF000000) >> 24 },
 
-        {  5, 0x00 },
-        {  6, 0x00 },
-        {  7, 0x00 },
-        {  8, 0x00 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "9 bytes after track CTL");
+            {  5, 0x00 },
+            {  6, 0x00 },
+            {  7, 0x00 },
+            {  8, 0x00 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "9 bytes after track CTL");
     }
-#endif
+
     self->priv->cur_ptr += 9;
 
 
@@ -494,116 +496,116 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
 
     /* Remaining 99 undeciphered bytes */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        {  1, 0xFF },
-        {  2, 0xFF },
-        {  3, 0xFF },
-        {  4, 0xFF },
-        {  5, 0xFF },
-        {  6, 0xFF },
-        {  7, 0xFF },
-        {  8, 0xFF },
-        {  9, 0x01 },
-        { 10, 0x00 },
-        { 11, 0x00 },
-        { 12, 0x00 },
-        { 13, 0x80 },
-        { 14, 0x00 },
-        { 15, 0x00 },
-        { 16, 0x00 },
-        { 17, 0x02 },
-        { 18, 0x00 },
-        { 19, 0x00 },
-        { 20, 0x00 },
-        { 21, 0x10 },
-        { 22, 0x00 },
-        { 23, 0x00 },
-        { 24, 0x00 },
-        { 25, 0x44 },
-        { 26, 0xAC },
-        { 27, 0x00 },
-        { 28, 0x00 },
-        { 29, 0x00 },
-        { 30, 0x00 },
-        { 31, 0x00 },
-        { 32, 0x00 },
-        { 33, 0x00 },
-        { 34, 0x00 },
-        { 35, 0x00 },
-        { 36, 0x00 },
-        { 37, 0x00 },
-        { 38, 0x00 },
-        { 39, 0x00 },
-        { 40, 0x00 },
-        { 41, 0x00 },
-        { 42, 0x00 },
-        { 43, 0x00 },
-        { 44, 0x00 },
-        { 45, 0x00 },
-        { 46, 0x00 },
-        { 47, 0x00 },
-        { 48, 0x00 },
-        { 49, 0x00 },
-        { 50, 0x00 },
-        { 51, 0x00 },
-        { 52, 0x00 },
-        { 53, 0x00 },
-        { 54, 0x00 },
-        { 55, 0x00 },
-        { 56, 0x00 },
-        { 57, 0x00 },
-        { 58, 0x00 },
-        { 59, 0x00 },
-        { 60, 0x00 },
-        { 61, 0x00 },
-        { 62, 0x00 },
-        { 63, 0x00 },
-        { 64, 0x00 },
-        { 65, 0x00 },
-        { 66, 0x00 },
-        { 67, 0x00 },
-        { 68, 0x00 },
-        { 69, 0x00 },
-        { 70, 0x00 },
-        { 71, 0xFF },
-        { 72, 0xFF },
-        { 73, 0xFF },
-        { 74, 0xFF },
-        { 75, 0x00 },
-        { 76, 0x00 },
-        { 77, 0x00 },
-        { 78, 0x00 },
-        { 79, 0x00 },
-        { 80, 0x00 },
-        { 81, 0x00 },
-        { 82, 0x00 },
-        { 83, 0x00 },
-        { 84, 0x00 },
-        { 85, 0x00 },
-        { 86, 0x00 },
-        /* Session type, in case it's last track of a session */
-        /*{ 87, 0x00 },*/
-        { 88, 0x00 },
-        { 89, 0x00 },
-        { 90, 0x00 },
-        { 91, 0x00 },
-        { 92, 0x00 },
-        /* This one's set to 0 in last track for any session; otherwise it's 1 */
-        /*{ 93, 0x01 },*/
-        { 94, 0x00 },
-        /* These seem to be some sort of an address for last track of a session...
-           otherwise, they're set to 00 00 FF FF */
-        /*{ 95, 0x00 },
-        { 96, 0x00 },
-        { 97, 0xFF },
-        { 98, 0xFF },*/
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "99 bytes at the end");
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            {  1, 0xFF },
+            {  2, 0xFF },
+            {  3, 0xFF },
+            {  4, 0xFF },
+            {  5, 0xFF },
+            {  6, 0xFF },
+            {  7, 0xFF },
+            {  8, 0xFF },
+            {  9, 0x01 },
+            { 10, 0x00 },
+            { 11, 0x00 },
+            { 12, 0x00 },
+            { 13, 0x80 },
+            { 14, 0x00 },
+            { 15, 0x00 },
+            { 16, 0x00 },
+            { 17, 0x02 },
+            { 18, 0x00 },
+            { 19, 0x00 },
+            { 20, 0x00 },
+            { 21, 0x10 },
+            { 22, 0x00 },
+            { 23, 0x00 },
+            { 24, 0x00 },
+            { 25, 0x44 },
+            { 26, 0xAC },
+            { 27, 0x00 },
+            { 28, 0x00 },
+            { 29, 0x00 },
+            { 30, 0x00 },
+            { 31, 0x00 },
+            { 32, 0x00 },
+            { 33, 0x00 },
+            { 34, 0x00 },
+            { 35, 0x00 },
+            { 36, 0x00 },
+            { 37, 0x00 },
+            { 38, 0x00 },
+            { 39, 0x00 },
+            { 40, 0x00 },
+            { 41, 0x00 },
+            { 42, 0x00 },
+            { 43, 0x00 },
+            { 44, 0x00 },
+            { 45, 0x00 },
+            { 46, 0x00 },
+            { 47, 0x00 },
+            { 48, 0x00 },
+            { 49, 0x00 },
+            { 50, 0x00 },
+            { 51, 0x00 },
+            { 52, 0x00 },
+            { 53, 0x00 },
+            { 54, 0x00 },
+            { 55, 0x00 },
+            { 56, 0x00 },
+            { 57, 0x00 },
+            { 58, 0x00 },
+            { 59, 0x00 },
+            { 60, 0x00 },
+            { 61, 0x00 },
+            { 62, 0x00 },
+            { 63, 0x00 },
+            { 64, 0x00 },
+            { 65, 0x00 },
+            { 66, 0x00 },
+            { 67, 0x00 },
+            { 68, 0x00 },
+            { 69, 0x00 },
+            { 70, 0x00 },
+            { 71, 0xFF },
+            { 72, 0xFF },
+            { 73, 0xFF },
+            { 74, 0xFF },
+            { 75, 0x00 },
+            { 76, 0x00 },
+            { 77, 0x00 },
+            { 78, 0x00 },
+            { 79, 0x00 },
+            { 80, 0x00 },
+            { 81, 0x00 },
+            { 82, 0x00 },
+            { 83, 0x00 },
+            { 84, 0x00 },
+            { 85, 0x00 },
+            { 86, 0x00 },
+            /* Session type, in case it's last track of a session */
+            /*{ 87, 0x00 },*/
+            { 88, 0x00 },
+            { 89, 0x00 },
+            { 90, 0x00 },
+            { 91, 0x00 },
+            { 92, 0x00 },
+            /* This one's set to 0 in last track for any session; otherwise it's 1 */
+            /*{ 93, 0x01 },*/
+            { 94, 0x00 },
+            /* These seem to be some sort of an address for last track of a session...
+               otherwise, they're set to 00 00 FF FF */
+            /*{ 95, 0x00 },
+            { 96, 0x00 },
+            { 97, 0xFF },
+            { 98, 0xFF },*/
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "99 bytes at the end");
     }
-#endif
+
     session_type = MIRAGE_CAST_DATA(self->priv->cur_ptr, 87, guint8);
     not_last_track = MIRAGE_CAST_DATA(self->priv->cur_ptr, 93, guint8);
     address_at_the_end = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 95, guint32));
@@ -728,28 +730,27 @@ static gboolean mirage_parser_cdi_load_session (MirageParserCdi *self, GError **
     num_tracks = MIRAGE_CAST_DATA(self->priv->cur_ptr, 1, guint8);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of tracks: %d\n", __debug__, num_tracks);
 
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        /* 1: Known */
-        {  2, 0x00 },
-        {  3, 0x00 },
-        {  4, 0x00 },
-        {  5, 0x00 },
-        {  6, 0x00 },
-        {  7, 0x00 },
-        {  8, 0x00 },
-        {  9, 0x01 },
-        { 10, 0x00 },
-        { 11, 0x00 },
-        { 12, 0x00 },
-        { 13, 0xFF },
-        { 14, 0xFF },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Session fields");
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            /* 1: Known */
+            {  2, 0x00 },
+            {  3, 0x00 },
+            {  4, 0x00 },
+            {  5, 0x00 },
+            {  6, 0x00 },
+            {  7, 0x00 },
+            {  8, 0x00 },
+            {  9, 0x01 },
+            { 10, 0x00 },
+            { 11, 0x00 },
+            { 12, 0x00 },
+            { 13, 0xFF },
+            { 14, 0xFF },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Session fields");
     }
-#endif
 
     self->priv->cur_ptr += 15;
 
@@ -838,22 +839,22 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
 
 
     /* 14 undeciphered bytes */
-#ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        { 0, 0x00 },
-        { 1, 0x01 },
-        { 2, 0x00 },
-        { 3, 0x00 },
-        { 4, 0x00 },
-        { 5, 0x01 },
-        { 6, 0x00 },
-        { 7, 0x00 },
-        { 8, 0x00 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "9 bytes after volume ID");
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            { 0, 0x00 },
+            { 1, 0x01 },
+            { 2, 0x00 },
+            { 3, 0x00 },
+            { 4, 0x00 },
+            { 5, 0x01 },
+            { 6, 0x00 },
+            { 7, 0x00 },
+            { 8, 0x00 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "9 bytes after volume ID");
     }
-#endif
+
     self->priv->cur_ptr += 9;
 
     /* MCN and MCN valid */
@@ -887,25 +888,25 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
 
 
     /* Last 12 bytes are undeciphered as well */
-    #ifdef WHINE_ON_UNEXPECTED
-    {
-    ExpectedField fields[] = {
-        {  0, 0x00 },
-        {  1, 0x00 },
-        {  2, 0x00 },
-        {  3, 0x00 },
-        {  4, 0x00 },
-        {  5, 0x00 },
-        {  6, 0x00 },
-        {  7, 0x00 },
-        {  8, 0x06 },
-        {  9, 0x00 },
-        { 10, 0x00 },
-        { 11, 0x80 },
-    };
-    mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Last 12 bytes");
+    if (WHINE_ON_UNEXPECTED) {
+        ExpectedField fields[] = {
+            {  0, 0x00 },
+            {  1, 0x00 },
+            {  2, 0x00 },
+            {  3, 0x00 },
+            {  4, 0x00 },
+            {  5, 0x00 },
+            {  6, 0x00 },
+            {  7, 0x00 },
+            {  8, 0x06 },
+            {  9, 0x00 },
+            { 10, 0x00 },
+            { 11, 0x80 },
+        };
+
+        mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Last 12 bytes");
     }
-#endif
+
     self->priv->cur_ptr += 12;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: done parsing disc block\n\n", __debug__);

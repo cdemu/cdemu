@@ -740,31 +740,31 @@ guint32 mirage_helper_calculate_crc32_fast (const guint8 *data, guint length, co
 
         /* Process eight bytes at once */
         while (length >= 8) {
-            #if G_BYTE_ORDER == G_LITTLE_ENDIAN
-            guint32 one = *current++ ^ crc;
-            guint32 two = *current++;
-            crc = CRC32_LUT(0, (two >> 24)       ) ^
-                  CRC32_LUT(1, (two >> 16) & 0xFF) ^
-                  CRC32_LUT(2, (two >> 8 ) & 0xFF) ^
-                  CRC32_LUT(3, (two      ) & 0xFF) ^
-                  CRC32_LUT(4, (one >> 24)       ) ^
-                  CRC32_LUT(5, (one >> 16) & 0xFF) ^
-                  CRC32_LUT(6, (one >> 8 ) & 0xFF) ^
-                  CRC32_LUT(7, (one      ) & 0xFF);
-            #elif G_BYTE_ORDER == G_BIG_ENDIAN
-            guint32 one = *current++ ^ GUINT32_SWAP_LE_BE(crc);
-            guint32 two = *current++;
-            crc = CRC32_LUT(0, (two      ) & 0xFF) ^
-                  CRC32_LUT(1, (two >> 8 ) & 0xFF) ^
-                  CRC32_LUT(2, (two >> 16) & 0xFF) ^
-                  CRC32_LUT(3, (two >> 24)       ) ^
-                  CRC32_LUT(4, (one      ) & 0xFF) ^
-                  CRC32_LUT(5, (one >> 8 ) & 0xFF) ^
-                  CRC32_LUT(6, (one >> 16) & 0xFF) ^
-                  CRC32_LUT(7, (one >> 24)       );
-            #else
-            g_assert_not_reached();
-            #endif
+            if (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+                guint32 one = *current++ ^ crc;
+                guint32 two = *current++;
+                crc = CRC32_LUT(0, (two >> 24)       ) ^
+                      CRC32_LUT(1, (two >> 16) & 0xFF) ^
+                      CRC32_LUT(2, (two >> 8 ) & 0xFF) ^
+                      CRC32_LUT(3, (two      ) & 0xFF) ^
+                      CRC32_LUT(4, (one >> 24)       ) ^
+                      CRC32_LUT(5, (one >> 16) & 0xFF) ^
+                      CRC32_LUT(6, (one >> 8 ) & 0xFF) ^
+                      CRC32_LUT(7, (one      ) & 0xFF);
+            } else if (G_BYTE_ORDER == G_BIG_ENDIAN) {
+                guint32 one = *current++ ^ GUINT32_SWAP_LE_BE(crc);
+                guint32 two = *current++;
+                crc = CRC32_LUT(0, (two      ) & 0xFF) ^
+                      CRC32_LUT(1, (two >> 8 ) & 0xFF) ^
+                      CRC32_LUT(2, (two >> 16) & 0xFF) ^
+                      CRC32_LUT(3, (two >> 24)       ) ^
+                      CRC32_LUT(4, (one      ) & 0xFF) ^
+                      CRC32_LUT(5, (one >> 8 ) & 0xFF) ^
+                      CRC32_LUT(6, (one >> 16) & 0xFF) ^
+                      CRC32_LUT(7, (one >> 24)       );
+            } else {
+                g_assert_not_reached();
+            }
             length -= 8;
         }
 

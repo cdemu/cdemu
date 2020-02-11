@@ -217,6 +217,8 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
     guint16 calculated_crc = 0;
 
+    const gboolean trust_unreliable_v1_check = FALSE;
+
     /* Read MacBinary header */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, header, sizeof(macbinary_header_t), NULL) != sizeof(macbinary_header_t)) {
@@ -242,11 +244,11 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
     /* Valid CRC indicates v2.0 */
     if (calculated_crc != header->crc16) {
         /* Do we have v1.0 then? Hard to say for sure... */
-        #ifndef TRUST_UNRELIABLE_V1_CHECK
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!"));
-        return FALSE;
-        #endif
+        if (!trust_unreliable_v1_check) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!"));
+            return FALSE;
+        }
     }
 
     /* Print some info */

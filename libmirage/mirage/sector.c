@@ -525,7 +525,8 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
 
                     break;
                 }
-#if 0
+
+                #if FALSE
                 /* This one yields same size as subheader + data + EDC/ECC,
                    which is actually used, while this one most likely isn't. */
                 case 2336: {
@@ -539,7 +540,8 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
 
                     break;
                 }
-#endif
+                #endif
+
                 case 2348: {
                     /* Sync + header + subheader + data */
                     *data_offset = 0; /* Offset: 0 */
