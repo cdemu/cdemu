@@ -55,9 +55,8 @@ MODULE_LICENSE("GPL");
 #define DPRINTK(fmt, args...)
 #endif
 
-/* scmd_dbg was introduced in 3.15 */
-#ifndef scmd_dbg
-#define scmd_dbg(scmd, fmt, a...)       \
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
+#define scmd_dbg(scmd, fmt, a...) \
     dev_dbg(&(scmd)->device->sdev_gendev, fmt, ##a)
 #endif
 
@@ -479,11 +478,7 @@ static int vhba_queuecommand_lck (struct scsi_cmnd *cmd, void (*done)(struct scs
     return retval;
 }
 
-#ifdef DEF_SCSI_QCMD
 DEF_SCSI_QCMD(vhba_queuecommand)
-#else
-#define vhba_queuecommand vhba_queuecommand_lck
-#endif
 
 static int vhba_abort (struct scsi_cmnd *cmd)
 {
