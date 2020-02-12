@@ -179,7 +179,7 @@ class cmd_load (object):
                     pret = proc.wait()
                     password = pout
                 else:
-                    if sys.stdout.isatty():
+                    if sys.stdin.isatty():
                         print(_("The image you are trying to load is encrypted."))
                         password = getpass.getpass(_("Password: ")) 
                     else:
