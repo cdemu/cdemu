@@ -65,12 +65,11 @@ MODULE_LICENSE("GPL");
 #define VHBA_MAX_ID 16 /* Usually 8 or 16 */
 #define VHBA_MAX_DEVICES (VHBA_MAX_BUS * (VHBA_MAX_ID-1))
 #define VHBA_CAN_QUEUE 32
-#define VHBA_INVALID_BUS -1
-#define VHBA_INVALID_ID -1
 #define VHBA_KBUF_SIZE PAGE_SIZE
 
 #define DATA_TO_DEVICE(dir) ((dir) == DMA_TO_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
+
 
 
 enum vhba_req_state {
@@ -89,9 +88,7 @@ struct vhba_command {
 };
 
 struct vhba_device {
-    int bus; /* aka. channel */
-    int id;
-    int num;
+    unsigned int num;
     spinlock_t cmd_lock;
     struct list_head cmd_list;
     wait_queue_head_t cmd_wq;
@@ -132,10 +129,27 @@ struct vhba_response {
     __u32 data_len;
 };
 
+
+
 static struct vhba_command *vhba_alloc_command (void);
 static void vhba_free_command (struct vhba_command *vcmd);
 
 static struct platform_device vhba_platform_device;
+
+
+
+/* These functions define a symmetric 1:1 mapping between device numbers and
+   the bus and id. We have reserved the last id per bus for the host itself. */
+static void devnum_to_bus_and_id(unsigned int devnum, unsigned int *bus, unsigned int *id)
+{
+    *bus = devnum / (VHBA_MAX_ID-1);
+    *id  = devnum % (VHBA_MAX_ID-1);
+}
+
+static unsigned int bus_and_id_to_devnum(unsigned int bus, unsigned int id)
+{
+    return (bus * (VHBA_MAX_ID-1)) + id;
+}
 
 static struct vhba_device *vhba_device_alloc (void)
 {
@@ -146,8 +160,6 @@ static struct vhba_device *vhba_device_alloc (void)
         return NULL;
     }
 
-    vdev->bus = VHBA_INVALID_BUS;
-    vdev->id = VHBA_INVALID_ID;
     spin_lock_init(&vdev->cmd_lock);
     INIT_LIST_HEAD(&vdev->cmd_list);
     init_waitqueue_head(&vdev->cmd_wq);
@@ -159,20 +171,6 @@ static struct vhba_device *vhba_device_alloc (void)
     vdev->cmd_count = 0;
 
     return vdev;
-}
-
-static void devnum_to_bus_and_id(int devnum, int *bus, int *id)
-{
-    int a = devnum / (VHBA_MAX_ID-1);
-    int b = devnum % (VHBA_MAX_ID-1);
-
-    *bus = a;
-    *id  = b + 1;
-}
-
-static int bus_and_id_to_devnum(int bus, int id)
-{
-    return (bus * (VHBA_MAX_ID-1)) + id - 1;
 }
 
 static void vhba_device_put (struct vhba_device *vdev)
@@ -277,8 +275,9 @@ static void vhba_scan_devices (struct work_struct *work)
 {
     struct vhba_host *vhost = container_of(work, struct vhba_host, scan_devices);
     unsigned long flags;
-    int devnum, change, exists;
-    int bus, id;
+    int change, exists;
+    unsigned int devnum;
+    unsigned int bus, id;
 
     while (1) {
         spin_lock_irqsave(&vhost->dev_lock, flags);
@@ -323,9 +322,8 @@ static void vhba_scan_devices (struct work_struct *work)
 static int vhba_add_device (struct vhba_device *vdev)
 {
     struct vhba_host *vhost;
-    int i;
+    unsigned int devnum;
     unsigned long flags;
-    int bus, id;
 
     vhost = platform_get_drvdata(&vhba_platform_device);
 
@@ -338,17 +336,13 @@ static int vhba_add_device (struct vhba_device *vdev)
         return -EBUSY;
     }
 
-    for (i = 0; i < VHBA_MAX_DEVICES; i++) {
-        devnum_to_bus_and_id(i, &bus, &id);
-
-        if (vhost->devices[i] == NULL) {
-            vdev->bus = bus;
-            vdev->id  = id;
-            vdev->num = i;
-            vhost->devices[i] = vdev;
+    for (devnum = 0; devnum < VHBA_MAX_DEVICES; devnum++) {
+        if (vhost->devices[devnum] == NULL) {
+            vdev->num = devnum;
+            vhost->devices[devnum] = vdev;
             vhost->num_devices++;
-            set_bit(i, vhost->chgmap);
-            vhost->chgtype[i]++;
+            set_bit(devnum, vhost->chgmap);
+            vhost->chgtype[devnum]++;
             break;
         }
     }
@@ -371,8 +365,6 @@ static int vhba_remove_device (struct vhba_device *vdev)
     vhost->chgtype[vdev->num]--;
     vhost->devices[vdev->num] = NULL;
     vhost->num_devices--;
-    vdev->bus = VHBA_INVALID_BUS;
-    vdev->id = VHBA_INVALID_ID;
     spin_unlock_irqrestore(&vhost->dev_lock, flags);
 
     vhba_device_put(vdev);
@@ -457,10 +449,12 @@ static int vhba_queuecommand_lck (struct scsi_cmnd *cmd, void (*done)(struct scs
 {
     struct vhba_device *vdev;
     int retval;
+    unsigned int devnum;
 
     scmd_dbg(cmd, "queue %p\n", cmd);
 
-    vdev = vhba_lookup_device(bus_and_id_to_devnum(cmd->device->channel, cmd->device->id));
+    devnum = bus_and_id_to_devnum(cmd->device->channel, cmd->device->id);
+    vdev = vhba_lookup_device(devnum);
     if (!vdev) {
         scmd_dbg(cmd, "no such device\n");
 
@@ -484,10 +478,12 @@ static int vhba_abort (struct scsi_cmnd *cmd)
 {
     struct vhba_device *vdev;
     int retval = SUCCESS;
+    unsigned int devnum;
 
     scmd_dbg(cmd, "abort %p\n", cmd);
 
-    vdev = vhba_lookup_device(bus_and_id_to_devnum(cmd->device->channel, cmd->device->id));
+    devnum = bus_and_id_to_devnum(cmd->device->channel, cmd->device->id);
+    vdev = vhba_lookup_device(devnum);
     if (vdev) {
         retval = vhba_device_dequeue(vdev, cmd);
         vhba_device_put(vdev);
@@ -819,38 +815,29 @@ static ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t
 static long vhba_ctl_ioctl (struct file *file, unsigned int cmd, unsigned long arg)
 {
     struct vhba_device *vdev = file->private_data;
-    struct vhba_host *vhost;
-    struct scsi_device *sdev;
+    struct vhba_host *vhost = platform_get_drvdata(&vhba_platform_device);
 
     switch (cmd) {
         case 0xBEEF001: {
-            vhost = platform_get_drvdata(&vhba_platform_device);
-            sdev = scsi_device_lookup(vhost->shost, vdev->bus, vdev->id, 0);
+            unsigned int ident[4]; /* host, channel, id, lun */
 
-            if (sdev) {
-                int id[4] = {
-                    sdev->host->host_no,
-                    sdev->channel,
-                    sdev->id,
-                    sdev->lun
-                };
+            ident[0] = vhost->shost->host_no;
+            devnum_to_bus_and_id(vdev->num, &ident[1], &ident[2]);
+            ident[3] = 0; /* lun */
 
-                scsi_device_put(sdev);
-
-                if (copy_to_user((void *)arg, id, sizeof(id))) {
-                    return -EFAULT;
-                }
-
-                return 0;
-            } else {
-                return -ENODEV;
-            }
-        }
-        case 0xBEEF002: {
-            int device_number = vdev->num;
-            if (copy_to_user((void *)arg, &device_number, sizeof(device_number))) {
+            if (copy_to_user((void *) arg, ident, sizeof(ident))) {
                 return -EFAULT;
             }
+
+            return 0;
+        }
+        case 0xBEEF002: {
+            unsigned int devnum = vdev->num;
+
+            if (copy_to_user((void *) arg, &devnum, sizeof(devnum))) {
+                return -EFAULT;
+            }
+
             return 0;
         }
     }
@@ -901,7 +888,7 @@ static int vhba_ctl_open (struct inode *inode, struct file *file)
     }
 
     vdev->kbuf_size = VHBA_KBUF_SIZE;
-    vdev->kbuf = kmalloc(vdev->kbuf_size, GFP_KERNEL);
+    vdev->kbuf = kzalloc(vdev->kbuf_size, GFP_KERNEL);
     if (!vdev->kbuf) {
         return -ENOMEM;
     }
