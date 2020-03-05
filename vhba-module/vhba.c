@@ -445,7 +445,7 @@ static void vhba_free_command (struct vhba_command *vcmd)
     spin_unlock_irqrestore(&vhost->cmd_lock, flags);
 }
 
-static int vhba_queuecommand_lck (struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *))
+static int vhba_queuecommand (struct Scsi_Host *shost, struct scsi_cmnd *cmd)
 {
     struct vhba_device *vdev;
     int retval;
@@ -459,20 +459,17 @@ static int vhba_queuecommand_lck (struct scsi_cmnd *cmd, void (*done)(struct scs
         scmd_dbg(cmd, "no such device\n");
 
         cmd->result = DID_NO_CONNECT << 16;
-        done(cmd);
+        cmd->scsi_done(cmd);
 
         return 0;
     }
 
-    cmd->scsi_done = done;
     retval = vhba_device_queue(vdev, cmd);
 
     vhba_device_put(vdev);
 
     return retval;
 }
-
-DEF_SCSI_QCMD(vhba_queuecommand)
 
 static int vhba_abort (struct scsi_cmnd *cmd)
 {
