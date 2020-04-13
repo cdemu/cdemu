@@ -79,7 +79,7 @@ enum vhba_req_state {
 
 struct vhba_command {
     struct scsi_cmnd *cmd;
-    unsigned long serial_number;
+    unsigned long tag;
     int status;
     struct list_head entry;
 };
@@ -93,14 +93,13 @@ struct vhba_device {
 
     unsigned char *kbuf;
     size_t kbuf_size;
-
-    unsigned long cmd_count;
 };
 
 struct vhba_host {
     struct Scsi_Host *shost;
     spinlock_t cmd_lock;
     int cmd_next;
+    unsigned long cmd_count;
     struct vhba_command commands[VHBA_CAN_QUEUE];
     spinlock_t dev_lock;
     struct vhba_device *devices[VHBA_MAX_DEVICES];
@@ -165,8 +164,6 @@ static struct vhba_device *vhba_device_alloc (void)
     vdev->kbuf = NULL;
     vdev->kbuf_size = 0;
 
-    vdev->cmd_count = 0;
-
     return vdev;
 }
 
@@ -197,7 +194,6 @@ static int vhba_device_queue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
     vcmd->cmd = cmd;
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
-    vcmd->serial_number = vdev->cmd_count++;
     list_add_tail(&vcmd->entry, &vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
@@ -276,7 +272,7 @@ static void vhba_scan_devices (struct work_struct *work)
     unsigned int devnum;
     unsigned int bus, id;
 
-    while (1) {
+    for (;;) {
         spin_lock_irqsave(&vhost->dev_lock, flags);
 
         devnum = find_first_bit(vhost->chgmap, VHBA_MAX_DEVICES);
@@ -405,7 +401,7 @@ static struct vhba_command *vhba_alloc_command (void)
 
     vcmd = vhost->commands + vhost->cmd_next++;
     if (vcmd->status != VHBA_REQ_FREE) {
-        for (i = 0; i < vhost->shost->can_queue; i++) {
+        for (i = 0; i < VHBA_CAN_QUEUE; i++) {
             vcmd = vhost->commands + i;
 
             if (vcmd->status == VHBA_REQ_FREE) {
@@ -414,16 +410,17 @@ static struct vhba_command *vhba_alloc_command (void)
             }
         }
 
-        if (i == vhost->shost->can_queue) {
+        if (i == VHBA_CAN_QUEUE) {
             vcmd = NULL;
         }
     }
 
     if (vcmd) {
         vcmd->status = VHBA_REQ_PENDING;
+        vcmd->tag = vhost->cmd_count++;
     }
 
-    vhost->cmd_next %= vhost->shost->can_queue;
+    vhost->cmd_next %= VHBA_CAN_QUEUE;
 
     spin_unlock_irqrestore(&vhost->cmd_lock, flags);
 
@@ -504,13 +501,13 @@ static struct scsi_host_template vhba_template = {
 #endif
 };
 
-static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_number, struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
+static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_tag, struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
 {
     struct vhba_request vreq;
     ssize_t ret;
 
     scmd_dbg(cmd, "request %lu (%p), cdb 0x%x, bufflen %d, sg count %d\n",
-        cmd_serial_number, cmd, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
+        cmd_tag, cmd, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
 
     ret = sizeof(vreq);
     if (DATA_TO_DEVICE(cmd->sc_data_direction)) {
@@ -522,7 +519,7 @@ static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_nu
         return -EIO;
     }
 
-    vreq.tag = cmd_serial_number;
+    vreq.tag = cmd_tag;
     vreq.lun = cmd->device->lun;
     memcpy(vreq.cdb, cmd->cmnd, MAX_COMMAND_SIZE);
     vreq.cdb_len = cmd->cmd_len;
@@ -570,12 +567,12 @@ static ssize_t do_request (struct vhba_device *vdev, unsigned long cmd_serial_nu
     return ret;
 }
 
-static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_serial_number, struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
+static ssize_t do_response (struct vhba_device *vdev, unsigned long cmd_tag, struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
 {
     ssize_t ret = 0;
 
     scmd_dbg(cmd, "response %lu (%p), status %x, data len %d, sg count %d\n",
-         cmd_serial_number, cmd, res->status, res->data_len, scsi_sg_count(cmd));
+         cmd_tag, cmd, res->status, res->data_len, scsi_sg_count(cmd));
 
     if (res->status) {
         if (res->data_len > SCSI_SENSE_BUFFERSIZE) {
@@ -668,7 +665,7 @@ static inline struct vhba_command *match_command (struct vhba_device *vdev, u32 
     struct vhba_command *vcmd;
 
     list_for_each_entry(vcmd, &vdev->cmd_list, entry) {
-        if (vcmd->serial_number == tag) {
+        if (vcmd->tag == tag) {
             break;
         }
     }
@@ -737,7 +734,7 @@ static ssize_t vhba_ctl_read (struct file *file, char __user *buf, size_t buf_le
         }
     }
 
-    ret = do_request(vdev, vcmd->serial_number, vcmd->cmd, buf, buf_len);
+    ret = do_request(vdev, vcmd->tag, vcmd->cmd, buf, buf_len);
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
@@ -780,7 +777,7 @@ static ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t
     vcmd->status = VHBA_REQ_WRITING;
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
-    ret = do_response(vdev, vcmd->serial_number, vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
+    ret = do_response(vdev, vcmd->tag, vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
@@ -908,7 +905,7 @@ static int vhba_ctl_release (struct inode *inode, struct file *file)
     list_for_each_entry(vcmd, &vdev->cmd_list, entry) {
         WARN_ON(vcmd->status == VHBA_REQ_READING || vcmd->status == VHBA_REQ_WRITING);
 
-        scmd_dbg(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->serial_number, vcmd->cmd);
+        scmd_dbg(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->tag, vcmd->cmd);
         vcmd->cmd->result = DID_NO_CONNECT << 16;
         vcmd->cmd->scsi_done(vcmd->cmd);
 
@@ -969,8 +966,9 @@ static int vhba_probe (struct platform_device *pdev)
     spin_lock_init(&vhost->dev_lock);
     spin_lock_init(&vhost->cmd_lock);
     INIT_WORK(&vhost->scan_devices, vhba_scan_devices);
+    vhost->cmd_count = 0;
     vhost->cmd_next = 0;
-    for (i = 0; i < vhost->shost->can_queue; i++) {
+    for (i = 0; i < VHBA_CAN_QUEUE; i++) {
         vhost->commands[i].status = VHBA_REQ_FREE;
     }
 
