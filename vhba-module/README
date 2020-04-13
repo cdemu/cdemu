@@ -63,14 +63,15 @@ $ echo -n "module vhba +pflmt" > /sys/kernel/debug/dynamic_debug/control
 Once dynamic debug is enabled you may try to provoke a crash or go about your
 normal routine. You can then inspect the debug information like so:
 
-$ dmesg | grep vhba
+$ dmesg
 
 You can collect this information into a text file with:
 
-$ dmesg | grep vhba > vhba-dmesg.log
+$ dmesg > dmesg.log
 
 Which you can attach to any bugreport you send the developers. For more
 information consult "The Linux kernel user’s and administrator’s guide".
+It should be included in the Linux kernel Documentation package.
 
 
 5. Contact information:

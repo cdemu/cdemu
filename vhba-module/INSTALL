@@ -63,9 +63,14 @@ In the above example, the user needs to be part of 'cdrom' group.
 Automatic Module Loading
 ========================
 
-At the moment, automatic module loading can be enabled in a distribution-specific way.
+Automatic module loading can be enabled in a distribution-specific way.
 
-On debian- and ubuntu-based systems, 'vhba' should be added to the /etc/modules file.
+On Linux distributions which use SystemD, such as Fedora, Debian and most others,
+the procedure is as follows:
 
-On fedora-based systems, a file called vhba.conf and containing a line 'vhba'
-should be created in /etc/modules-load.d directory.
+1. Enter the directory '/etc/modules-load.d/'.
+2. Create a file called 'vhba.conf' containing the line 'vhba'.
+
+On Linux distributions which does not use SystemD, you can append the line 'vhba' to the
+file '/etc/modules'.
+

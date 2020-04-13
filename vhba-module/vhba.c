@@ -1,7 +1,7 @@
 /*
  * vhba.c
  *
- * Copyright (C) 2007-2012 Chia-I Wu <b90201047 AT ntu DOT edu DOT tw>
+ * Copyright (C) 2007-2012 Chia-I Wu <olvaffe AT gmail DOT com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+#define pr_fmt(fmt) "vhba: " fmt
 
 #include <linux/version.h>
 
@@ -49,11 +51,6 @@ MODULE_VERSION(VHBA_VERSION);
 MODULE_DESCRIPTION("Virtual SCSI HBA");
 MODULE_LICENSE("GPL");
 
-#ifdef DEBUG
-#define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __FUNCTION__, ## args)
-#else
-#define DPRINTK(fmt, args...)
-#endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
 #define scmd_dbg(scmd, fmt, a...) \
@@ -777,7 +774,7 @@ static ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t
     vcmd = match_command(vdev, res.tag);
     if (!vcmd || vcmd->status != VHBA_REQ_SENT) {
         spin_unlock_irqrestore(&vdev->cmd_lock, flags);
-        DPRINTK("not expecting response\n");
+        pr_debug("ctl dev #%u not expecting response\n", vdev->num);
         return -EIO;
     }
     vcmd->status = VHBA_REQ_WRITING;
@@ -867,7 +864,7 @@ static int vhba_ctl_open (struct inode *inode, struct file *file)
     struct vhba_device *vdev;
     int retval;
 
-    DPRINTK("open\n");
+    pr_debug("ctl dev open\n");
 
     /* check if vhba is probed */
     if (!platform_get_drvdata(&vhba_platform_device)) {
@@ -900,9 +897,9 @@ static int vhba_ctl_release (struct inode *inode, struct file *file)
     struct vhba_command *vcmd;
     unsigned long flags;
 
-    DPRINTK("release\n");
-
     vdev = file->private_data;
+
+    pr_debug("ctl dev release\n");
 
     vhba_device_get(vdev);
     vhba_remove_device(vdev);
