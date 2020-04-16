@@ -44,6 +44,7 @@
 #include <scsi/scsi_host.h>
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_device.h>
+#include <scsi/scsi_tcq.h>
 
 
 MODULE_AUTHOR("Chia-I Wu");
@@ -198,14 +199,8 @@ static int vhba_device_queue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
     vcmd->cmd = cmd;
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
-    /* kernel 3.17 added per-host tags with the new MQ midlayer.
-       kernel 4.4  added per-host tags for the old non-MQ midlayer.
-       kernel 5.0  removed the old non-MQ midlayer. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
-    if (shost_use_blk_mq(vhost->shost))
-#endif
-        vcmd->metatag = vcmd->cmd->tag;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
+    vcmd->metatag = vcmd->cmd->tag;
 #endif
     list_add_tail(&vcmd->entry, &vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
@@ -430,7 +425,7 @@ static struct vhba_command *vhba_alloc_command (void)
 
     if (vcmd) {
         vcmd->status = VHBA_REQ_PENDING;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
         vcmd->metatag = vcmd - vhost->commands;
 #endif
     }
@@ -511,6 +506,9 @@ static struct scsi_host_template vhba_template = {
     .cmd_per_lun = 1,
     .max_sectors = VHBA_MAX_SECTORS_PER_IO,
     .sg_tablesize = 256,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
+    .use_blk_tags = 1,
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
     .max_segment_size = VHBA_KBUF_SIZE,
 #endif
@@ -987,6 +985,11 @@ static int vhba_probe (struct platform_device *pdev)
     }
 
     platform_set_drvdata(pdev, vhost);
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
+    i = scsi_init_shared_tag_map(shost, VHBA_CAN_QUEUE);
+    if (i) return i;
+#endif
 
     if (scsi_add_host(shost, &pdev->dev)) {
         scsi_host_put(shost);
