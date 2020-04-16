@@ -79,7 +79,8 @@ enum vhba_req_state {
 
 struct vhba_command {
     struct scsi_cmnd *cmd;
-    /* metatags are per-host. not to be confused with queue tags that are usually per-lun */
+    /* metatags are per-host. not to be confused with
+       queue tags that are usually per-lun */
     unsigned long metatag;
     int status;
     struct list_head entry;
@@ -197,14 +198,14 @@ static int vhba_device_queue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
     vcmd->cmd = cmd;
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
+    /* kernel 3.17 added per-host tags with the new MQ midlayer.
+       kernel 4.4  added per-host tags for the old non-MQ midlayer.
+       kernel 5.0  removed the old non-MQ midlayer. */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
-    if (shost_use_blk_mq(vhost->shost)) {
-#else
-    if (true) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
+    if (shost_use_blk_mq(vhost->shost))
 #endif
-        vcmd->metatag = vcmd->cmd->tag; /* per-host queue tags are only available with blk-mq */
-    }
+        vcmd->metatag = vcmd->cmd->tag;
 #endif
     list_add_tail(&vcmd->entry, &vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
@@ -429,7 +430,9 @@ static struct vhba_command *vhba_alloc_command (void)
 
     if (vcmd) {
         vcmd->status = VHBA_REQ_PENDING;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
         vcmd->metatag = vcmd - vhost->commands;
+#endif
     }
 
     vhost->cmd_next %= VHBA_CAN_QUEUE;
