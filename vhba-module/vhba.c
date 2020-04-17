@@ -202,7 +202,7 @@ static int vhba_device_queue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
-    vcmd->metatag = vcmd->cmd->tag;
+    vcmd->metatag = vcmd->cmd->request->tag;
 #endif
     list_add_tail(&vcmd->entry, &vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
@@ -504,9 +504,9 @@ static struct scsi_host_template vhba_template = {
     .queuecommand = vhba_queuecommand,
     .eh_abort_handler = vhba_abort,
     .this_id = -1,
-    .cmd_per_lun = 1,
     .max_sectors = VHBA_MAX_SECTORS_PER_IO,
     .sg_tablesize = 256,
+    .tag_alloc_policy = BLK_TAG_ALLOC_RR,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
     .use_blk_tags = 1,
 #endif
@@ -961,6 +961,8 @@ static int vhba_probe (struct platform_device *pdev)
     struct vhba_host *vhost;
     int i;
 
+    vhba_can_queue %= 256;
+
     shost = scsi_host_alloc(&vhba_template, sizeof(struct vhba_host));
     if (!shost) {
         return -ENOMEM;
@@ -972,6 +974,7 @@ static int vhba_probe (struct platform_device *pdev)
     shost->max_lun = 1;
     shost->max_cmd_len = MAX_COMMAND_SIZE;
     shost->can_queue = vhba_can_queue;
+    shost->cmd_per_lun = vhba_can_queue;
 
     vhost = (struct vhba_host *)shost->hostdata;
     memset(vhost, 0, sizeof(struct vhba_host));
