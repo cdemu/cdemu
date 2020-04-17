@@ -5,7 +5,7 @@ KDIR ?= /lib/modules/$(KERNELRELEASE)/build
 PWD ?= $(shell pwd)
 
 obj-m := vhba.o
-ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -Werror
+ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -std=gnu99 -Werror
 
 default: modules
 install: modules_install

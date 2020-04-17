@@ -60,14 +60,16 @@ MODULE_LICENSE("GPL");
 
 #define VHBA_MAX_SECTORS_PER_IO 256
 #define VHBA_MAX_BUS 16
-#define VHBA_MAX_ID 16 /* Usually 8 or 16 */
+#define VHBA_MAX_ID 16
 #define VHBA_MAX_DEVICES (VHBA_MAX_BUS * (VHBA_MAX_ID-1))
-#define VHBA_CAN_QUEUE 32
 #define VHBA_KBUF_SIZE PAGE_SIZE
 
 #define DATA_TO_DEVICE(dir) ((dir) == DMA_TO_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 
+
+static unsigned int vhba_can_queue = 32;
+module_param_named(can_queue, vhba_can_queue, int, 0);
 
 
 enum vhba_req_state {
@@ -102,7 +104,7 @@ struct vhba_host {
     struct Scsi_Host *shost;
     spinlock_t cmd_lock;
     int cmd_next;
-    struct vhba_command commands[VHBA_CAN_QUEUE];
+    struct vhba_command *commands;
     spinlock_t dev_lock;
     struct vhba_device *devices[VHBA_MAX_DEVICES];
     int num_devices;
@@ -409,7 +411,7 @@ static struct vhba_command *vhba_alloc_command (void)
 
     vcmd = vhost->commands + vhost->cmd_next++;
     if (vcmd->status != VHBA_REQ_FREE) {
-        for (i = 0; i < VHBA_CAN_QUEUE; i++) {
+        for (i = 0; i < vhba_can_queue; i++) {
             vcmd = vhost->commands + i;
 
             if (vcmd->status == VHBA_REQ_FREE) {
@@ -418,7 +420,7 @@ static struct vhba_command *vhba_alloc_command (void)
             }
         }
 
-        if (i == VHBA_CAN_QUEUE) {
+        if (i == vhba_can_queue) {
             vcmd = NULL;
         }
     }
@@ -430,7 +432,7 @@ static struct vhba_command *vhba_alloc_command (void)
 #endif
     }
 
-    vhost->cmd_next %= VHBA_CAN_QUEUE;
+    vhost->cmd_next %= vhba_can_queue;
 
     spin_unlock_irqrestore(&vhost->cmd_lock, flags);
 
@@ -501,7 +503,6 @@ static struct scsi_host_template vhba_template = {
     .proc_name = "vhba",
     .queuecommand = vhba_queuecommand,
     .eh_abort_handler = vhba_abort,
-    .can_queue = VHBA_CAN_QUEUE,
     .this_id = -1,
     .cmd_per_lun = 1,
     .max_sectors = VHBA_MAX_SECTORS_PER_IO,
@@ -673,7 +674,7 @@ static inline struct vhba_command *next_command (struct vhba_device *vdev)
     return vcmd;
 }
 
-static inline struct vhba_command *match_command (struct vhba_device *vdev, u32 metatag)
+static inline struct vhba_command *match_command (struct vhba_device *vdev, __u32 metatag)
 {
     struct vhba_command *vcmd;
 
@@ -970,6 +971,7 @@ static int vhba_probe (struct platform_device *pdev)
     /* we don't support lun > 0 */
     shost->max_lun = 1;
     shost->max_cmd_len = MAX_COMMAND_SIZE;
+    shost->can_queue = vhba_can_queue;
 
     vhost = (struct vhba_host *)shost->hostdata;
     memset(vhost, 0, sizeof(struct vhba_host));
@@ -980,14 +982,19 @@ static int vhba_probe (struct platform_device *pdev)
     spin_lock_init(&vhost->cmd_lock);
     INIT_WORK(&vhost->scan_devices, vhba_scan_devices);
     vhost->cmd_next = 0;
-    for (i = 0; i < VHBA_CAN_QUEUE; i++) {
+    vhost->commands = kzalloc(vhba_can_queue * sizeof(struct vhba_command), GFP_KERNEL);
+    if (!vhost->commands) {
+        return -ENOMEM;
+    }
+
+    for (i = 0; i < vhba_can_queue; i++) {
         vhost->commands[i].status = VHBA_REQ_FREE;
     }
 
     platform_set_drvdata(pdev, vhost);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
-    i = scsi_init_shared_tag_map(shost, VHBA_CAN_QUEUE);
+    i = scsi_init_shared_tag_map(shost, vhba_can_queue);
     if (i) return i;
 #endif
 
@@ -1009,6 +1016,8 @@ static int vhba_remove (struct platform_device *pdev)
 
     scsi_remove_host(shost);
     scsi_host_put(shost);
+
+    kfree(vhost->commands);
 
     return 0;
 }
