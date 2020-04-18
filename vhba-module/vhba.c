@@ -457,7 +457,7 @@ static int vhba_queuecommand (struct Scsi_Host *shost, struct scsi_cmnd *cmd)
     int retval;
     unsigned int devnum;
 
-    scmd_dbg(cmd, "queue %p qtag %i\n", cmd, cmd->tag);
+    scmd_dbg(cmd, "queue %p qtag %i\n", cmd, cmd->request->tag);
 
     devnum = bus_and_id_to_devnum(cmd->device->channel, cmd->device->id);
     vdev = vhba_lookup_device(devnum);
@@ -506,9 +506,8 @@ static struct scsi_host_template vhba_template = {
     .this_id = -1,
     .max_sectors = VHBA_MAX_SECTORS_PER_IO,
     .sg_tablesize = 256,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
     .tag_alloc_policy = BLK_TAG_ALLOC_RR,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
-    .use_blk_tags = 1,
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
     .max_segment_size = VHBA_KBUF_SIZE,
