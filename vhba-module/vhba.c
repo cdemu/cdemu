@@ -68,7 +68,7 @@ MODULE_LICENSE("GPL");
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 
 
-static unsigned int vhba_can_queue = 32;
+static int vhba_can_queue = 32;
 module_param_named(can_queue, vhba_can_queue, int, 0);
 
 
@@ -201,9 +201,7 @@ static int vhba_device_queue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
     vcmd->cmd = cmd;
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
     vcmd->metatag = vcmd->cmd->request->tag;
-#endif
     list_add_tail(&vcmd->entry, &vdev->cmd_list);
     spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
@@ -247,6 +245,25 @@ static int vhba_device_dequeue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
 
     return retval;
 }
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
+static int vhba_slave_alloc(struct scsi_device *sdev)
+{
+    struct Scsi_Host *shost = sdev->host;
+
+    pr_debug("enabling tagging (queue depth: %i).\n", sdev->queue_depth);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
+    if (!shost_use_blk_mq(shost) && shost->bqt) {
+#else
+    if (shost->bqt) {
+#endif
+        blk_queue_init_tags(sdev->request_queue, sdev->queue_depth, shost->bqt);
+    }
+    scsi_adjust_queue_depth(sdev, 0, sdev->queue_depth);
+
+    return 0;
+}
+#endif
 
 static inline void vhba_scan_devices_add (struct vhba_host *vhost, int bus, int id)
 {
@@ -427,9 +444,6 @@ static struct vhba_command *vhba_alloc_command (void)
 
     if (vcmd) {
         vcmd->status = VHBA_REQ_PENDING;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
-        vcmd->metatag = vcmd - vhost->commands;
-#endif
     }
 
     vhost->cmd_next %= vhba_can_queue;
@@ -506,8 +520,14 @@ static struct scsi_host_template vhba_template = {
     .this_id = -1,
     .max_sectors = VHBA_MAX_SECTORS_PER_IO,
     .sg_tablesize = 256,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
+    .slave_alloc = vhba_slave_alloc,
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
     .tag_alloc_policy = BLK_TAG_ALLOC_RR,
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 0)
+    .use_blk_tags = 1,
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
     .max_segment_size = VHBA_KBUF_SIZE,
@@ -960,7 +980,7 @@ static int vhba_probe (struct platform_device *pdev)
     struct vhba_host *vhost;
     int i;
 
-    vhba_can_queue %= 256;
+    vhba_can_queue = clamp(vhba_can_queue, 1, 256);
 
     shost = scsi_host_alloc(&vhba_template, sizeof(struct vhba_host));
     if (!shost) {
