@@ -1043,14 +1043,14 @@ class cmd_device_id (object):
         parser.set_defaults(command_function=self)
 
         parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_id", nargs='*', type=str, help=_("new device ID: vendor ID, product ID, revision, drive serial and vendor-specific string"))
+        parser.add_argument("new_id", nargs='*', type=str, help=_("new device ID: vendor ID, product ID, revision and vendor-specific string"))
 
     def __call__ (self, proxy, arguments):
         # Set device ID
         if hasattr(arguments, "new_id"):
             device_id = tuple(arguments.new_id)
 
-            if len(device_id) != 5:
+            if len(device_id) != 4:
                 raise CDEmuError(_("New device ID must consist of exactly four strings!"))
 
             if arguments.device == "all":
@@ -1062,7 +1062,7 @@ class cmd_device_id (object):
                 print(_("Setting device ID of all devices to %s.") % (device_id))
                 for device in range(num_devices):
                     try:
-                        proxy.DeviceSetOption(device, "device-id", GLib.Variant("(sssss)", device_id))
+                        proxy.DeviceSetOption(device, "device-id", GLib.Variant("(ssss)", device_id))
                     except GLib.Error as e:
                         print_warning(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
                         continue
@@ -1074,7 +1074,7 @@ class cmd_device_id (object):
 
                 print(_("Setting device ID of device %i to %s.") % (device, device_id))
                 try:
-                    proxy.DeviceSetOption(device, "device-id", GLib.Variant("(sssss)", device_id))
+                    proxy.DeviceSetOption(device, "device-id", GLib.Variant("(ssss)", device_id))
                 except GLib.Error as e:
                     raise CDEmuError(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
 

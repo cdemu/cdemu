@@ -534,7 +534,7 @@ class CDEmuDevice (GObject.GObject):
             return
 
         try:
-            self.proxy.DeviceSetOption(self.number, "device-id", GLib.Variant('(sssss)', value))
+            self.proxy.DeviceSetOption(self.number, "device-id", GLib.Variant('(ssss)', value))
         except GLib.Error as e:
             self.emit("error", _("Failed to set device ID for device #%02d to %s:\n%s") % (self.number, value, e))
 
@@ -839,36 +839,25 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_revision = entry
 
-        # Drive Serial
-        label = Gtk.Label.new(_("Drive Serial: "))
+        # Vendor-specific
+        label = Gtk.Label.new(_("Vendor-specific: "))
         label.set_hexpand(True)
         grid.attach(label, 0, 3, 1, 1)
 
         entry = Gtk.Entry.new()
-        entry.set_max_length(8)
-        entry.set_hexpand(True)
-        grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
-        self.entry_drive_serial = entry
-
-        # Vendor-specific
-        label = Gtk.Label.new(_("Vendor-specific: "))
-        label.set_hexpand(True)
-        grid.attach(label, 0, 4, 1, 1)
-
-        entry = Gtk.Entry.new()
-        entry.set_max_length(12)
+        entry.set_max_length(20)
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
         self.entry_vendor_specific = entry
 
         # Separator
         separator = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
-        grid.attach(separator, 0, 5, 2, 1)
+        grid.attach(separator, 0, 4, 2, 1)
 
         # Button
         button = Gtk.Button.new_with_label(_("Set device ID"))
         button.set_hexpand(True)
-        grid.attach(button, 0, 6, 2, 1)
+        grid.attach(button, 0, 5, 2, 1)
         button.connect("clicked", self.on_set_device_id_clicked)
 
         # *** DPM emulation ***
@@ -902,14 +891,12 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
         self.entry_vendor_id.set_text(device_id[0])
         self.entry_product_id.set_text(device_id[1])
         self.entry_revision.set_text(device_id[2])
-        self.entry_drive_serial.set_text(device_id[3])
-        self.entry_vendor_specific.set_text(device_id[4])
+        self.entry_vendor_specific.set_text(device_id[3])
 
     def on_set_device_id_clicked (self, button):
         identity = ( self.entry_vendor_id.get_text(),
                self.entry_product_id.get_text(),
                self.entry_revision.get_text(),
-               self.entry_drive_serial.get_text(),
                self.entry_vendor_specific.get_text() )
         self.emit("device-id-changed", identity)
 
@@ -1624,7 +1611,7 @@ class gCDEmuDevice (GObject.GObject):
     def update_device_id (self, notify = False):
         self.page_options.set_device_id(self.device.device_id)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its device ID changed:\n  Vendor ID: '%s'\n  Product ID: '%s'\n  Revision: '%s'\n  Drive Serial: '%s'\n  Vendor-specific: '%s'") % (self.device.number, self.device.device_id[0], self.device.device_id[1], self.device.device_id[2], self.device.device_id[3], self.device.device_id[4]))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its device ID changed:\n  Vendor ID: '%s'\n  Product ID: '%s'\n  Revision: '%s'\n  Vendor-specific: '%s'") % (self.device.number, self.device.device_id[0], self.device.device_id[1], self.device.device_id[2], self.device.device_id[3]))
 
     def update_dpm_emulation (self, notify = False):
         self.page_options.set_dpm_emulation(self.device.dpm_emulation)

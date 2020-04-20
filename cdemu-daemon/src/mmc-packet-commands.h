@@ -473,8 +473,8 @@ struct INQUIRY_Data
         guint8 per_qual : 3;
         guint8 per_dev  : 5;
     #else
-        guint8 per_dev  : 5;
-        guint8 per_qual : 3;
+        guint8 per_dev  : 3;
+        guint8 per_qual : 5;
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
@@ -488,17 +488,11 @@ struct INQUIRY_Data
     guint8  version;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 aerc          : 1;
-        guint8 trmtsk        : 1;
-        guint8 normaca       : 1;
-        guint8 hisupport     : 1;
+        guint8 atapi_version : 4;
         guint8 response_fmt  : 4;
     #else
         guint8 response_fmt  : 4;
-        guint8 hisupport     : 1;
-        guint8 normaca       : 1;
-        guint8 trmtsk        : 1;
-        guint8 aerc          : 1;
+        guint8 atapi_version : 4;
     #endif
 
     guint8  length;
@@ -514,51 +508,50 @@ struct INQUIRY_Data
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 bque      : 1;
         guint8 encserv   : 1;
-        guint8 vendor1   : 1;
+        guint8 reserved3 : 1;
         guint8 multip    : 1;
         guint8 mchngr    : 1;
-        guint8 ackreqq   : 1;
-        guint8 addr32    : 1;
+        guint8 reserved4 : 1;
+        guint8 reserved5 : 1;
         guint8 addr16    : 1;
     #else
         guint8 addr16    : 1;
-        guint8 addr32    : 1;
-        guint8 ackreqq   : 1;
+        guint8 reserved5 : 1;
+        guint8 reserved4 : 1;
         guint8 mchngr    : 1;
         guint8 multip    : 1;
-        guint8 vendor1   : 1;
+        guint8 reserved3 : 1;
         guint8 encserv   : 1;
         guint8 bque      : 1;
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reladr    : 1;
-        guint8 wbus32    : 1;
+        guint8 reserved6 : 1;
         guint8 wbus16    : 1;
         guint8 sync      : 1;
         guint8 linked    : 1;
-        guint8 trndis    : 1;
+        guint8 reserved7 : 1;
         guint8 cmdque    : 1;
-        guint8 softreset : 1;
+        guint8 reserved8 : 1;
     #else
-        guint8 softreset : 1;
+        guint8 reserved8 : 1;
         guint8 cmdque    : 1;
-        guint8 trndis    : 1;
+        guint8 reserved7 : 1;
         guint8 linked    : 1;
         guint8 sync      : 1;
         guint8 wbus16    : 1;
-        guint8 wbus32    : 1;
+        guint8 reserved6 : 1;
         guint8 reladr    : 1;
     #endif
 
     gchar vendor_id[8];
     gchar product_id[16];
     gchar product_rev[4];
-    gchar drive_serial[8];
-    gchar vendor_spec1[12];
+    gchar vendor_spec1[20];
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 reserved3 : 4;
+        guint8 reserved9 : 4;
         guint8 clocking  : 2;
         guint8 qas       : 1;
         guint8 ius       : 1;
@@ -566,14 +559,21 @@ struct INQUIRY_Data
         guint8 ius       : 1;
         guint8 qas       : 1;
         guint8 clocking  : 2;
-        guint8 reserved3 : 4;
+        guint8 reserved9 : 4;
     #endif
 
-    guint8 reserved4;
+    guint8 reserved10;
 
-    guint16 ver_desc[8];
+    guint16 ver_desc1;
+    guint16 ver_desc2;
+    guint16 ver_desc3;
+    guint16 ver_desc4;
+    guint16 ver_desc5;
+    guint16 ver_desc6;
+    guint16 ver_desc7;
+    guint16 ver_desc8;
 
-    guint8 reserved5[22];
+    guint8 reserved11[22];
 };
 
 struct INQUIRY_VPD_Header
