@@ -26,7 +26,7 @@
 /**********************************************************************\
  *                              Device ID                             *
 \**********************************************************************/
-static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_id, const gchar *product_id, const gchar *revision, const gchar *vendor_specific)
+static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_id, const gchar *product_id, const gchar *revision, const gchar *drive_serial, const gchar *vendor_specific)
 {
     g_free(self->priv->id_vendor_id);
     self->priv->id_vendor_id = g_strndup(vendor_id, 8);
@@ -37,8 +37,11 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
     g_free(self->priv->id_revision);
     self->priv->id_revision = g_strndup(revision, 4);
 
+    g_free(self->priv->id_drive_serial);
+    self->priv->id_drive_serial = g_strndup(drive_serial, 8);
+
     g_free(self->priv->id_vendor_specific);
-    self->priv->id_vendor_specific = g_strndup(vendor_specific, 20);
+    self->priv->id_vendor_specific = g_strndup(vendor_specific, 12);
 }
 
 
@@ -114,7 +117,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     mirage_context_set_debug_mask(self->priv->mirage_context, mirage_debug_mask);
 
     /* Set up default device ID */
-    cdemu_device_set_device_id(self, "CDEmu", "CD-ROM", "1.0", "cdemu.sf.net");
+    cdemu_device_set_device_id(self, "CDEmu", "CD-ROM", "1.0", self->priv->device_name + 5, "cdemu.sf.net");
 
     /* Initialize mode pages and features and set profile */
     cdemu_device_mode_pages_init(self);
@@ -194,7 +197,7 @@ GVariant *cdemu_device_get_option (CdemuDevice *self, gchar *option_name, GError
         option_value = g_variant_new("b", self->priv->dvd_report_css);
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */
-        option_value = g_variant_new("(ssss)", self->priv->id_vendor_id, self->priv->id_product_id, self->priv->id_revision, self->priv->id_vendor_specific);
+        option_value = g_variant_new("(sssss)", self->priv->id_vendor_id, self->priv->id_product_id, self->priv->id_revision, self->priv->id_drive_serial, self->priv->id_vendor_specific);
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
         /* *** daemon-debug-mask *** */
         MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
@@ -261,18 +264,19 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
         }
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */
-        if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("(ssss)"))) {
+        if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("(sssss)"))) {
             g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid argument type for option '%s'!"), option_name);
             succeeded = FALSE;
         } else {
-            gchar *vendor_id, *product_id, *revision, *vendor_specific;
-            g_variant_get(option_value, "(ssss)", &vendor_id, &product_id, &revision, &vendor_specific);
+            gchar *vendor_id, *product_id, *revision, *drive_serial, *vendor_specific;
+            g_variant_get(option_value, "(sssss)", &vendor_id, &product_id, &revision, &drive_serial, &vendor_specific);
 
-            cdemu_device_set_device_id(self, vendor_id, product_id, revision, vendor_specific);
+            cdemu_device_set_device_id(self, vendor_id, product_id, revision, drive_serial, vendor_specific);
 
             g_free(vendor_id);
             g_free(product_id);
             g_free(revision);
+            g_free(drive_serial);
             g_free(vendor_specific);
         }
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
@@ -353,6 +357,7 @@ static void cdemu_device_init (CdemuDevice *self)
     self->priv->id_vendor_id = NULL;
     self->priv->id_product_id = NULL;
     self->priv->id_revision = NULL;
+    self->priv->id_drive_serial = NULL;
     self->priv->id_vendor_specific = NULL;
 
     self->priv->device_sg = NULL;
@@ -440,6 +445,7 @@ static void cdemu_device_finalize (GObject *gobject)
     g_free(self->priv->id_vendor_id);
     g_free(self->priv->id_product_id);
     g_free(self->priv->id_revision);
+    g_free(self->priv->id_drive_serial);
     g_free(self->priv->id_vendor_specific);
 
     /* Free mutex */

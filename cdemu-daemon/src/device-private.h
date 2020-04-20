@@ -100,6 +100,7 @@ struct _CdemuDevicePrivate
     gchar *id_vendor_id;
     gchar *id_product_id;
     gchar *id_revision;
+    gchar *id_drive_serial;
     gchar *id_vendor_specific;
 
     /* Device mapping */

@@ -692,14 +692,21 @@ static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
         return command_inquiry_vpd(self, cdb);
     }
 
-    /* Values here are more or less what my DVD-ROM drive gives me
-       (and in accord with INF8090) */
-    ret_data->per_dev = 0x05; /* CD-ROM device */
+    /* Values here should be in accord with INF8090 and SCSI-3 */
+    ret_data->per_qual = 0x00; /* Device of specified type connected to LUN */
+    ret_data->per_dev = 0x05; /* CD/DVD-ROM device */
     ret_data->rmb = 1; /* Removable medium */
-    ret_data->version = 0x0; /* Should be 0 according to INF8090 */
-    ret_data->atapi_version = 3; /* Should be 3 according to INF8090 */
-    ret_data->response_fmt = 0x02; /* Should be 2 according to INF8090 */
+    ret_data->version = 0x04; /* Conforming to ANSI INCITS 351-2001 (SPC-2) */
+    ret_data->normaca = 1; /* Normal ACA */
+    ret_data->hisupport = 1; /* Hierarchical support */
+    ret_data->response_fmt = 0x02; /* Conforming to SCSI-2 or better */
     ret_data->length = sizeof(struct INQUIRY_Data) - 5;
+    ret_data->bque = 0; /* Needs to be disabled for TCQ */
+    ret_data->addr32 = 1; /* 32-bit address bus support */
+    ret_data->addr16 = 1;
+    ret_data->wbus32 = 1; /* 32-bit data bus support */
+    ret_data->wbus16 = 1;
+    ret_data->cmdque = 1; /* Enable command queueing */
 
     /* NOTE: the length of source strings is guaranteed to not exceed
        the corresponding buffer size due to limits imposed during
@@ -715,10 +722,13 @@ static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
     memset(ret_data->product_rev, 32, 4);
     memcpy(ret_data->product_rev, self->priv->id_revision, strlen(self->priv->id_revision));
 
-    memset(ret_data->vendor_spec1, 32, 20);
+    memset(ret_data->drive_serial, 32, 8);
+    memcpy(ret_data->drive_serial, self->priv->id_drive_serial, strlen(self->priv->id_drive_serial));
+
+    memset(ret_data->vendor_spec1, 32, 12);
     memcpy(ret_data->vendor_spec1, self->priv->id_vendor_specific, strlen(self->priv->id_vendor_specific));
 
-    ret_data->ver_desc1 = GUINT16_TO_BE(0x02A0); /* We'll try to pass as MMC-3 device */
+    ret_data->ver_desc[0] = GUINT16_TO_BE(0x02A0); /* We'll try to pass as MMC-3 device */
 
     /* Write data */
     cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
