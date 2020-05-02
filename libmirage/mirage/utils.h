@@ -83,8 +83,8 @@ gchar mirage_helper_isrc2ascii (guint8 c);
 gboolean mirage_helper_validate_isrc (const gchar *isrc);
 
 /* CRC utility functions */
-guint16 *crc16_1021_lut;
-guint32 *crc32_d8018001_lut;
+extern guint16 *crc16_1021_lut;
+extern guint32 *crc32_d8018001_lut;
 
 guint16 *mirage_helper_init_crc16_lut (guint16 genpoly);
 guint32 *mirage_helper_init_crc32_lut (guint32 genpoly, guint slices);
@@ -139,7 +139,7 @@ const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer);
 
 
 /* ECMA-130 Annex B sector data scrambler */
-guint8 *ecma_130_scrambler_lut;
+extern guint8 *ecma_130_scrambler_lut;
 
 guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void);
 
