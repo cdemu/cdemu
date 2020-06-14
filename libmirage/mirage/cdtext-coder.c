@@ -586,7 +586,7 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
 
     /* Now decode... go over all blocks and decode valid ones */
     for (gint block = 0; block < 8; block++) {
-        gchar tmp_buffer[255];
+        gchar tmp_buffer[256 * 12];
         memset(tmp_buffer, 0xFF, sizeof(tmp_buffer));
         gchar *ptr = tmp_buffer;
         gint tmp_len = 0;
