@@ -543,7 +543,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
     mirage_disc_add_session_by_index(self->priv->disc, -1, session);
 
     /* Set MCN */
-    if (strlen(self->priv->dao_header->mcn)) {
+    if (self->priv->dao_header->mcn[0]) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __debug__, self->priv->dao_header->mcn);
         mirage_session_set_mcn(session, self->priv->dao_header->mcn);
     }
@@ -665,7 +665,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
         }
 
         /* Validate and set ISRC */
-        if (strlen(dao_block->isrc)) {
+        if (dao_block->isrc[0]) {
             if (mirage_helper_validate_isrc(dao_block->isrc)){
                 mirage_track_set_isrc(track, dao_block->isrc);
             } else {
