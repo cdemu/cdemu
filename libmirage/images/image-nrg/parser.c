@@ -665,10 +665,12 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
         }
 
         /* Validate and set ISRC */
-        if (mirage_helper_validate_isrc(dao_block->isrc)){
-            mirage_track_set_isrc(track, dao_block->isrc);
-        } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, dao_block->isrc);
+        if (strlen(dao_block->isrc)) {
+            if (mirage_helper_validate_isrc(dao_block->isrc)){
+                mirage_track_set_isrc(track, dao_block->isrc);
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, dao_block->isrc);
+            }
         }
 
         g_object_unref(track);
