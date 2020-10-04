@@ -31,6 +31,7 @@ include (GNUInstallDirs)
 # Options
 option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
 option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
+option (VAPI_ENABLED "Generate the Vala API file" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # Plugin directory
@@ -53,6 +54,23 @@ if (INTROSPECTION_ENABLED)
     endif ()
 else ()
     set (INTROSPECTION_STATUS "OFF (disabled)")
+endif ()
+
+if (VAPI_ENABLED)
+    if (NOT (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND))
+        set (VAPI_STATUS "OFF (introspection disabled)")
+    else ()
+        find_program(VALAC valac DOC "the Vala compiler")
+        find_program(VAPIGEN vapigen DOC "tool to generate the Vala API")
+        if (VALAC AND VAPIGEN)
+            include (GObjectIntrospection)
+            set (VAPI_STATUS "ON")
+        else ()
+            set (VAPI_STATUS "OFF (not found)")
+        endif ()
+    endif ()
+else ()
+    set (VAPI_STATUS "OFF (disabled)")
 endif ()
 
 if (GTKDOC_ENABLED)
@@ -194,12 +212,39 @@ if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
         QUIET
-        SCANNER_ARGS --add-include-path=${PROJECT_SOURCE_DIR} --warn-all
+        SCANNER_ARGS --add-include-path=${PROJECT_SOURCE_DIR} --c-include=mirage.h --warn-all
         COMPILER_ARGS --includedir=${PROJECT_SOURCE_DIR}
         SYMBOL_PREFIXES mirage
         IDENTIFIER_PREFIXES Mirage
         SOURCES ${libmirage_SOURCES} ${libmirage_HEADERS}
     )
+endif ()
+
+# *** Vala API ***
+if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND AND VALAC AND VAPIGEN)
+    add_custom_target (vala ALL)
+    set (gir_fullname ${CMAKE_BINARY_DIR}/Mirage-${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.gir)
+    set (vapi_file ${CMAKE_CURRENT_BINARY_DIR}/libmirage.vapi)
+
+    add_custom_command (OUTPUT ${vapi_file}
+        COMMAND ${VAPIGEN}
+            --vapidir=${CMAKE_CURRENT_SOURCE_DIR}
+            --vapidir=${CMAKE_CURRENT_BINARY_DIR}
+            --girdir=${CMAKE_BINARY_DIR}/src/libmirage
+            --pkg gio-2.0
+            --library libmirage
+            --metadatadir=${CMAKE_CURRENT_SOURCE_DIR}
+            --metadatadir=${CMAKE_CURRENT_BINARY_DIR}
+            ${gir_fullname}
+        DEPENDS
+            ${gir_fullname}
+    )
+
+    add_custom_target (valafile DEPENDS ${vapi_file})
+
+    add_dependencies (vala valafile)
+
+    install (FILES ${vapi_file} DESTINATION ${CMAKE_INSTALL_DATADIR}/vala/vapi)
 endif ()
 
 # *** Documentation ***
@@ -276,5 +321,6 @@ message(STATUS " disabled: ${IMAGE_FORMATS_DISABLED}")
 message(STATUS "Options:")
 message(STATUS " build gtk-doc documentation: " ${GTKDOC_STATUS})
 message(STATUS " build gobject-introspection bindings: " ${INTROSPECTION_STATUS})
+message(STATUS " build Vala bindings: " ${VAPI_STATUS})
 message(STATUS " run post-install hooks: " ${POST_INSTALL_HOOKS})
 message(STATUS "")
