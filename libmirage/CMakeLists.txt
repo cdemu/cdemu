@@ -212,7 +212,7 @@ if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
         QUIET
-        SCANNER_ARGS --add-include-path=${PROJECT_SOURCE_DIR} --c-include=mirage.h --warn-all
+        SCANNER_ARGS --add-include-path=${PROJECT_SOURCE_DIR} --c-include=mirage/mirage.h --warn-all
         COMPILER_ARGS --includedir=${PROJECT_SOURCE_DIR}
         SYMBOL_PREFIXES mirage
         IDENTIFIER_PREFIXES Mirage
