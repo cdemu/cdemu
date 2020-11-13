@@ -113,7 +113,7 @@ struct _MirageWriter
 /**
  * MirageWriterClass:
  * @parent_class: the parent class
- * @open_image: initializes writer on specified image
+ * @open_image_impl: initializes writer on specified image
  * @create_fragment: creates a fragment of specified role for the given track
  * @finalize_image: finalizes image
  *
@@ -124,7 +124,7 @@ struct _MirageWriterClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    gboolean (*open_image) (MirageWriter *self, MirageDisc *disc, GError **error);
+    gboolean (*open_image_impl) (MirageWriter *self, MirageDisc *disc, GError **error);
     MirageFragment *(*create_fragment) (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
     gboolean (*finalize_image) (MirageWriter *self, MirageDisc *disc, GError **error);
 };

@@ -475,7 +475,7 @@ gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTa
     }
 
     /* Provided by implementation */
-    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, error);
+    return MIRAGE_WRITER_GET_CLASS(self)->open_image_impl(self, disc, error);
 }
 
 /**
@@ -850,7 +850,7 @@ static void mirage_writer_class_init (MirageWriterClass *klass)
     gobject_class->dispose = mirage_writer_dispose;
     gobject_class->finalize = mirage_writer_finalize;
 
-    klass->open_image = NULL;
+    klass->open_image_impl = NULL;
     klass->create_fragment = NULL;
     klass->finalize_image = NULL;
 

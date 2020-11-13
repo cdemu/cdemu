@@ -435,7 +435,7 @@ static gboolean mirage_writer_toc_create_toc_files (MirageWriterToc *self, Mirag
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
 \**********************************************************************/
-static gboolean mirage_writer_toc_open_image (MirageWriter *_self, MirageDisc *disc, GError **error G_GNUC_UNUSED)
+static gboolean mirage_writer_toc_open_image_impl (MirageWriter *_self, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
     MirageWriterToc *self = MIRAGE_WRITER_TOC(_self);
 
@@ -674,7 +674,7 @@ static void mirage_writer_toc_class_init (MirageWriterTocClass *klass)
     gobject_class->dispose = mirage_writer_toc_dispose;
     gobject_class->finalize = mirage_writer_toc_finalize;
 
-    writer_class->open_image = mirage_writer_toc_open_image;
+    writer_class->open_image_impl = mirage_writer_toc_open_image_impl;
     writer_class->create_fragment = mirage_writer_toc_create_fragment;
     writer_class->finalize_image = mirage_writer_toc_finalize_image;
 }
