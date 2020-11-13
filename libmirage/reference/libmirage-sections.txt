@@ -601,8 +601,11 @@ mirage_helper_get_suffix
 mirage_helper_has_suffix
 mirage_helper_hex2bcd
 mirage_helper_init_crc16_lut
+crc16_1021_lut
 mirage_helper_init_crc32_lut
+crc32_d8018001_lut
 mirage_helper_init_ecma_130b_scrambler_lut
+ecma_130_scrambler_lut
 mirage_helper_isrc2ascii
 mirage_helper_lba2msf
 mirage_helper_lba2msf_str
@@ -644,4 +647,3 @@ mirage_version_minor
 mirage_version_long
 mirage_version_short
 </SECTION>
-
