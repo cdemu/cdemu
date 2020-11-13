@@ -394,7 +394,7 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
  * @data_len: (in): data length
  *
  * Adds data to the encoder. @code is language code of the block the data
- * should be added to. @type denotes pack type and should be one of #MirageLanguagePackTypes.
+ * should be added to. @type denotes pack type and should be one of #MirageLanguagePackType.
  * @track is track number the data belongs to, or 0 if data is global (belongs to disc/session).
  * @data is buffer containing data to be added, and @data_len is length of data in the buffer.
  *

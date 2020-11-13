@@ -178,7 +178,7 @@ MirageDisc *mirage_parser_load_image (MirageParser *self, MirageStream **streams
  * need to do it via mirage_disc_set_medium_type(). It is meant to be used in
  * simple parsers whose image files don't provide medium type information.
  *
- * Returns: a value from #MirageMediumTypes, according to the guessed medium type.
+ * Returns: a value from #MirageMediumType, according to the guessed medium type.
  */
 gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc)
 {

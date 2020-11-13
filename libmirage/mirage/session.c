@@ -287,7 +287,7 @@ static gint sort_tracks_by_number (MirageTrack *track1, MirageTrack *track2)
  * @self: a #MirageSession
  * @type: (in): session type
  *
- * Sets session type. @type must be one of #MirageSessionTypes.
+ * Sets session type. @type must be one of #MirageSessionType.
  */
 void mirage_session_set_session_type (MirageSession *self, MirageSessionType type)
 {

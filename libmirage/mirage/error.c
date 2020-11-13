@@ -28,7 +28,7 @@
  * parameter. If @error is not %NULL, in case that such function should
  * fail, a #GError error is set into it using g_set_error().
  * Unless coming from underlying GLib's systems, the returned error
- * code is one of #MirageErrorCodes.
+ * code is one of #MirageErrorCode.
  */
 
 #ifdef HAVE_CONFIG_H
