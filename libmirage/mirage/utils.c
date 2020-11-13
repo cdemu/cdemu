@@ -537,7 +537,18 @@ gboolean mirage_helper_validate_isrc (const gchar *isrc)
  *               Cyclic Redundancy Check (CRC) routines               *
 \**********************************************************************/
 
-/* The lookup table was generated from the polynomial given as:
+/**
+ * crc16_1021_lut:
+ *
+ * Global look-up table for computing CRC16 with generator polygon value
+ * 0x1021, used for computing CRC in Q sub-channel in
+ * mirage_helper_subchannel_q_calculate_crc().
+ *
+ * The look-up table buffer is allocated and initialized by
+ * mirage_initialize(), using mirage_helper_init_crc16_lut(). It is
+ * freed and cleared by mirage_shutdown().
+ *
+ * The lookup table is generated from the polynomial given as:
  * P(x) = x^16 + x^12 + x^5 + x^0 =
  * x^16 + x^12 + x^5 + 1
  * Where only the 16 lowest bits are used:
@@ -545,7 +556,18 @@ gboolean mirage_helper_validate_isrc (const gchar *isrc)
  */
 guint16 *crc16_1021_lut = NULL;
 
-/* The lookup table was generated from the polynomial given as:
+/**
+ * crc32_d8018001_lut:
+ *
+ * Global look-up table for computing CRC32 with generator polygon value
+ * 0xD8018001, used for computing CRC (EDC) over sector data in
+ * mirage_helper_sector_edc_ecc_compute_edc_block().
+ *
+ * The look-up table buffer is allocated and initialized by
+ * mirage_initialize(), using mirage_helper_init_crc32_lut(). It is
+ * freed and cleared by mirage_shutdown().
+ *
+ * The lookup table is generated from the polynomial given as:
  * P(x) = (x^16 + x^15 + x^2 + x^0) * (x^16 + x^2 + x^1 + x^0) =
  * x^32 + x^31 + x^16 + x^15 + x^4 + x^3 + x + 1
  * Where only the 32 lowest bits are used:
@@ -1220,6 +1242,16 @@ const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer)
 /**********************************************************************\
  *               ECMA-130 Annex B sector data scrambler               *
 \**********************************************************************/
+/**
+ * ecma_130_scrambler_lut:
+ *
+ * Global look-up table for scrambling/de-scrambling sector data as
+ * per ECMA-130, Annex B. Used by mirage_sector_scramble().
+ *
+ * The look-up table buffer is allocated and initialized by
+ * mirage_initialize(), using mirage_helper_init_ecma_130b_scrambler_lut().
+ * It is freed and cleared by mirage_shutdown().
+ */
 guint8 *ecma_130_scrambler_lut = NULL;
 
 /**
