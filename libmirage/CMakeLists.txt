@@ -120,10 +120,6 @@ if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wno-cast-function-type)
 endif ()
 
-# Definitions needed for localization
-add_definitions (-DGETTEXT_PACKAGE="${PROJECT_NAME}")
-add_definitions (-DLOCALEDIR="${CMAKE_INSTALL_FULL_DATADIR}/locale")
-
 # Global include directories
 include_directories (${PROJECT_SOURCE_DIR})
 include_directories (${PROJECT_BINARY_DIR})

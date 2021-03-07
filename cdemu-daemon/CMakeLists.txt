@@ -56,10 +56,6 @@ if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wno-cast-function-type)
 endif ()
 
-# Definitions needed for localization
-add_definitions (-DGETTEXT_PACKAGE="cdemu-daemon")
-add_definitions (-DLOCALEDIR="${CMAKE_INSTALL_FULL_DATADIR}/locale")
-
 # Include directories
 include_directories (${PROJECT_BINARY_DIR})
 

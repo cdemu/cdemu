@@ -3,5 +3,7 @@
 #define __CONFIG_H__
 
 #define MIRAGE_PLUGIN_DIR "@MIRAGE_PLUGIN_DIR@"
+#define GETTEXT_PACKAGE "@PROJECT_NAME@"
+#define LOCALEDIR "@CMAKE_INSTALL_FULL_DATADIR@/locale"
 
 #endif /* __CONFIG_H__ */
