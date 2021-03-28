@@ -117,7 +117,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         /* Play sector */
         mirage_sector_get_data(sector, &tmp_buffer, &tmp_len, NULL);
         if (ao_play(self->priv->device, (gchar *)tmp_buffer, tmp_len) == 0) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: playback error!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: playback error!\n", __debug__);
             self->priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
             break;
         }

@@ -851,7 +851,7 @@ static gboolean command_mode_sense (CdemuDevice *self, const guint8 *raw_cdb)
                     break;
                 }
                 default: {
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: PC value is 0x%X and it shouldn't be!\n", __debug__, pc);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: PC value is 0x%X and it shouldn't be!\n", __debug__, pc);
                     break;
                 }
             }
