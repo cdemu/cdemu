@@ -144,9 +144,23 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
     return NULL;
 }
 
+static void cdemu_audio_join_thread(CdemuAudio *self) {
+    if (!self->priv->playback_thread)
+        return;
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish\n", __debug__);
+    g_thread_join(self->priv->playback_thread);
+    self->priv->playback_thread = NULL;
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished\n", __debug__);
+}
+
 static void cdemu_audio_start_playing (CdemuAudio *self)
 {
     GError *local_error = NULL;
+
+    /* Wait for an old thread to finish before starting a new one; Otherwise we get
+       a race between audio setup and teardown. */
+    cdemu_audio_join_thread(self);
 
     /* Set the status */
     self->priv->status = AUDIO_STATUS_PLAYING;
@@ -166,14 +180,7 @@ static void cdemu_audio_stop_playing (CdemuAudio *self, gint status)
     /* We can't tell whether we're stopped or paused, so the upper layer needs
        to provide us appropriate status */
     self->priv->status = status;
-
-    /* Wait for the thread to finish */
-    if (self->priv->playback_thread) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish\n", __debug__);
-        g_thread_join(self->priv->playback_thread);
-        self->priv->playback_thread = NULL;
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished\n", __debug__);
-    }
+    cdemu_audio_join_thread(self);
 }
 
 
@@ -295,6 +302,11 @@ gboolean cdemu_audio_stop (CdemuAudio *self)
 
 gint cdemu_audio_get_status (CdemuAudio *self)
 {
+    /* Check if there is an old playback thread and reap it */
+    if (self->priv->status == AUDIO_STATUS_COMPLETED || self->priv->status == AUDIO_STATUS_ERROR) {
+        cdemu_audio_join_thread(self);
+    }
+
     /* Return status */
     return self->priv->status;
 }
