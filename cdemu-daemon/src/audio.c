@@ -187,6 +187,8 @@ static void cdemu_audio_stop_playing (CdemuAudio *self, gint status)
 /**********************************************************************\
  *                                 Public API                         *
 \**********************************************************************/
+/* NOTE: these functions are called from packet-command implementations,
+   and therefore with device_mutex held! */
 void cdemu_audio_initialize (CdemuAudio *self, const gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr)
 {
     self->priv->cur_sector_ptr = cur_sector_ptr;
@@ -219,9 +221,6 @@ gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *
 {
     gboolean succeeded = TRUE;
 
-    /* Lock */
-   // g_static_mutex_lock(&self->priv->mutex);
-
     /* Play is valid only if we're not playing already or paused */
     if (self->priv->status != AUDIO_STATUS_PLAYING && self->priv->status != AUDIO_STATUS_PAUSED) {
         /* Set start and end sector, and disc... We should have been stopped properly
@@ -237,18 +236,12 @@ gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *
         succeeded = FALSE;
     }
 
-    /* Unlock */
-  //  g_static_mutex_unlock(&self->priv->mutex);
-
     return succeeded;
 }
 
 gboolean cdemu_audio_resume (CdemuAudio *self)
 {
     gboolean succeeded = TRUE;
-
-    /* Lock */
-   // g_static_mutex_lock(&self->priv->mutex);
 
     /* Resume is valid only if we're paused */
     if (self->priv->status == AUDIO_STATUS_PAUSED) {
@@ -258,9 +251,6 @@ gboolean cdemu_audio_resume (CdemuAudio *self)
         CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resume called when not paused!\n", __debug__);
         succeeded = FALSE;
     }
-
-    /* Unlock */
-   // g_static_mutex_unlock(&self->priv->mutex);
 
     return succeeded;
 }
