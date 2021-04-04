@@ -36,7 +36,7 @@ static GOptionEntry option_entries[] = {
     { "ctl-device", 'c', 0, G_OPTION_ARG_STRING, &ctl_device, N_("Control device"), N_("path") },
     { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, N_("Audio driver"), N_("driver") },
     { "bus", 'b', 0, G_OPTION_ARG_STRING, &bus, N_("Bus type to use"), N_("bus_type") },
-    { "logfile", 'l', 0, G_OPTION_ARG_STRING, &log_filename, N_("Logfile"), N_("logfile") },
+    { "logfile", 'l', 0, G_OPTION_ARG_FILENAME, &log_filename, N_("Logfile"), N_("logfile") },
     { "default-cdemu-debug-mask", 0, 0, G_OPTION_ARG_INT, &cdemu_debug_mask, N_("Default debug mask for CDEmu devices"), N_("mask") },
     { "default-mirage-debug-mask", 0, 0, G_OPTION_ARG_INT, &mirage_debug_mask, N_("Default debug mask for underlying libMirage"), N_("mask") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
@@ -111,7 +111,7 @@ int main (int argc, char **argv)
 
     /* Set up logfile handler, if necessary */
     if (log_filename) {
-        logfile = fopen(log_filename, "w"); /* Overwrite log file */
+        logfile = g_fopen(log_filename, "w"); /* Overwrite log file */
         if (!logfile) {
             g_warning(Q_("Failed to open log file %s for writing!\n"), log_filename);
             return -1;
