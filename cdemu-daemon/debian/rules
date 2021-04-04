@@ -11,5 +11,5 @@ override_dh_strip:
 	dh_strip --dbg-package="cdemu-daemon-dbg"
 
 %:
-	dh $@
+	dh $@ --with systemd
 
