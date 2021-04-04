@@ -33,6 +33,8 @@ static gchar *log_filename = NULL;
 static gint cdemu_debug_mask = -1;
 static gint mirage_debug_mask = -1;
 
+static gboolean config_file_exists = FALSE;
+
 static GOptionEntry option_entries[] = {
     { "config-file", 0, 0, G_OPTION_ARG_FILENAME, &config_filename, N_("Config file"), N_("filename") },
     { "num-devices", 'n', 0, G_OPTION_ARG_INT, &num_devices, N_("Number of devices"), N_("N") },
@@ -123,13 +125,16 @@ static gboolean setup_program_options (GError **error)
     /* Try loading the key/value file */
     GKeyFile *config_file = NULL;
     if (config_filename) {
-        /* Create empty GKeyFile and load it from given file */
-        config_file = g_key_file_new();
-        gboolean succeeded = g_key_file_load_from_file(config_file, config_filename, G_KEY_FILE_NONE, error);
-        if (!succeeded) {
-            g_prefix_error(error, "Failed to load config file '%s': ", config_filename);
-            g_key_file_free(config_file);
-            return FALSE;
+        config_file_exists = g_file_test(config_filename, G_FILE_TEST_IS_REGULAR);
+        if (config_file_exists) {
+            /* Create empty GKeyFile and load it from given file */
+            config_file = g_key_file_new();
+            gboolean succeeded = g_key_file_load_from_file(config_file, config_filename, G_KEY_FILE_NONE, error);
+            if (!succeeded) {
+                g_prefix_error(error, "Failed to load config file '%s': ", config_filename);
+                g_key_file_free(config_file);
+                return FALSE;
+            }
         }
     }
 
@@ -270,6 +275,7 @@ int main (int argc, char **argv)
 
     /* Display status */
     g_message(Q_("Starting CDEmu daemon with following parameters:\n"));
+    g_message(Q_(" - config file: %s (exists: %d)\n"), config_filename, config_file_exists);
     g_message(Q_(" - num devices: %i\n"), num_devices);
     g_message(Q_(" - control device: %s\n"), ctl_device);
     g_message(Q_(" - audio driver: %s\n"), audio_driver);
