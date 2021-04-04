@@ -1,5 +1,0 @@
-[D-BUS Service]
-Name=net.sf.cdemu.CdemuDaemon
-Exec=@CMAKE_INSTALL_FULL_LIBEXECDIR@/cdemu-daemon-system.sh
-User=root
-

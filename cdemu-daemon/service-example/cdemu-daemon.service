@@ -1,0 +1,8 @@
+[Unit]
+Description=CDEmu daemon
+
+[Service]
+Type=dbus
+BusName=net.sf.cdemu.CDEmuDaemon
+ExecStart=/usr/bin/cdemu-daemon --config-file "%h/.config/cdemu-daemon"
+Restart=no

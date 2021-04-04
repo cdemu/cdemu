@@ -14,15 +14,6 @@ set (CDEMU_DAEMON_INTERFACE_VERSION_MINOR 0)
 # CMake modules
 include (GNUInstallDirs)
 
-# Options
-option (SYSTEM_BUS_SERVICE "Install CDEmu daemon as D-Bus system bus service" off)
-option (SESSION_BUS_SERVICE "Install CDEmu daemon as D-Bus session bus service" on)
-
-# If install prefix is /usr, override the sysconf dir to be /etc instead of /usr/etc
-if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
-    set(CMAKE_INSTALL_SYSCONFDIR "/etc" CACHE PATH "read-only single-machine data (/etc)" FORCE)
-endif()
-
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
 find_package (IntlTool 0.21 REQUIRED)
@@ -36,14 +27,6 @@ pkg_check_modules (AO REQUIRED ao>=0.8.0)
 configure_file (
     ${PROJECT_SOURCE_DIR}/config.h.in
     ${PROJECT_BINARY_DIR}/config.h
-)
-configure_file (
-    ${PROJECT_SOURCE_DIR}/session/net.sf.cdemu.CDEmuDaemon.service.in
-    ${PROJECT_BINARY_DIR}/session/net.sf.cdemu.CDEmuDaemon.service
-)
-configure_file (
-    ${PROJECT_SOURCE_DIR}/system/net.sf.cdemu.CDEmuDaemon.service.in
-    ${PROJECT_BINARY_DIR}/system/net.sf.cdemu.CDEmuDaemon.service
 )
 
 # Global definitions
@@ -102,32 +85,6 @@ install (
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man8
 )
 
-if (SESSION_BUS_SERVICE)
-    install (
-        PROGRAMS session/cdemu-daemon-session.sh
-        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}
-    )
-    install (
-        FILES ${PROJECT_BINARY_DIR}/session/net.sf.cdemu.CDEmuDaemon.service
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/services
-    )
-endif ()
-
-if (SYSTEM_BUS_SERVICE)
-    install (
-        PROGRAMS system/cdemu-daemon-system.sh
-        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}
-    )
-    install (
-        FILES ${PROJECT_BINARY_DIR}/system/net.sf.cdemu.CDEmuDaemon.service
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/system-services/
-    )
-    install (
-        FILES system/cdemu-daemon-dbus.conf
-        DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/dbus-1/system.d
-    )
-endif ()
-
 # Translations; we use the version provided by our FindIntlTool.cmake
 # instead of the gettext version... Note: first two arguments are mandatory,
 # the rest is an optional list of languages to process. If no languages
@@ -144,7 +101,4 @@ message(STATUS " C flags (Debug): " ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG})
 message(STATUS " build type: " ${CMAKE_BUILD_TYPE})
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
-message(STATUS "Options:")
-message(STATUS " system bus service: " ${SYSTEM_BUS_SERVICE})
-message(STATUS " session bus service: " ${SESSION_BUS_SERVICE})
 message(STATUS "")
