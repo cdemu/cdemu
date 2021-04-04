@@ -23,15 +23,18 @@
 CdemuDaemon *daemon_obj;
 FILE *logfile;
 
-static gint num_devices = 1;
-static gchar *ctl_device = "/dev/vhba_ctl";
-static gchar *audio_driver = "null";
-static gchar *bus = "session";
+/* NULL for pointers and -1 for numeric values means un-specified */
+static gchar *config_filename = NULL;
+static gint num_devices = -1;
+static gchar *ctl_device = NULL;
+static gchar *audio_driver = NULL;
+static gchar *bus = NULL;
 static gchar *log_filename = NULL;
-static guint cdemu_debug_mask = 0;
-static guint mirage_debug_mask = 0;
+static gint cdemu_debug_mask = -1;
+static gint mirage_debug_mask = -1;
 
 static GOptionEntry option_entries[] = {
+    { "config-file", 0, 0, G_OPTION_ARG_FILENAME, &config_filename, N_("Config file"), N_("filename") },
     { "num-devices", 'n', 0, G_OPTION_ARG_INT, &num_devices, N_("Number of devices"), N_("N") },
     { "ctl-device", 'c', 0, G_OPTION_ARG_STRING, &ctl_device, N_("Control device"), N_("path") },
     { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, N_("Audio driver"), N_("driver") },
@@ -66,15 +69,146 @@ static gboolean signal_handler (gpointer user_data)
 static void setup_signal_trap ()
 {
     if (g_unix_signal_add(SIGTERM, signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
+        g_warning(Q_("Failed to add signal handler for SIGTERM!\n"));
     }
     if (g_unix_signal_add(SIGINT, signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGINT!"));
+        g_warning(Q_("Failed to add signal handler for SIGINT!\n"));
     }
     /* SIGQUIT not supported by g_unix_signal_source_new: */
     if (g_unix_signal_add(SIGHUP, signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGHUP!"));
+        g_warning(Q_("Failed to add signal handler for SIGHUP!\n"));
     }
+}
+
+static gint get_config_int (GKeyFile *config, const gchar *group, const gchar *key)
+{
+    if (config) {
+        GError *error = NULL;
+        gint value = g_key_file_get_integer(config, group, key, &error);
+        if (!error) {
+            return value;
+        }
+
+        if (!g_error_matches(error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND)) {
+            g_warning(Q_("Failed to read integer (%s:%s) from config: %s\n"), group, key, error->message);
+        }
+        g_error_free(error);
+    }
+    return -1; /* Not available */
+}
+
+static gchar *get_config_str (GKeyFile *config, const gchar *group, const gchar *key)
+{
+    if (config) {
+        GError *error = NULL;
+        gchar *value = g_key_file_get_string(config, group, key, &error);
+        if (!error) {
+            return value;
+        }
+
+        if (!g_error_matches(error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND)) {
+            g_warning(Q_("Failed to read string (%s:%s) from config: %s\n"), group, key, error->message);
+        }
+        g_error_free(error);
+    }
+    return NULL; /* Not available */
+}
+
+static gboolean setup_program_options (GError **error)
+{
+    /* For options that can be specified both in config file and on
+       command-line, the latter takes precedence. If the option is not
+       specified in either way, fall back to default value. */
+
+    /* Try loading the key/value file */
+    GKeyFile *config_file = NULL;
+    if (config_filename) {
+        /* Create empty GKeyFile and load it from given file */
+        config_file = g_key_file_new();
+        gboolean succeeded = g_key_file_load_from_file(config_file, config_filename, G_KEY_FILE_NONE, error);
+        if (!succeeded) {
+            g_prefix_error(error, "Failed to load config file '%s': ", config_filename);
+            g_key_file_free(config_file);
+            return FALSE;
+        }
+    }
+
+    /* Number of devices */
+    if (num_devices < 0) {
+        gint value = get_config_int(config_file, "settings", "num-devices");
+        if (value < 0) {
+            num_devices = 1; /* Default */
+        } else {
+            num_devices = value;
+        }
+    }
+
+    /* Control device */
+    if (ctl_device == NULL) {
+        gchar *value = get_config_str(config_file, "settings", "ctl-device");
+        if (value == NULL) {
+            ctl_device = g_strdup("/dev/vhba_ctl"); /* Default */
+        } else {
+            ctl_device = value;
+        }
+    }
+
+    /* Audio driver */
+    if (audio_driver == NULL) {
+        gchar *value = get_config_str(config_file, "settings", "audio-driver");
+        if (value == NULL) {
+            audio_driver = g_strdup("null"); /* Default */
+        } else {
+            audio_driver = value;
+        }
+    }
+
+    /* Bus */
+    if (bus == NULL) {
+        gchar *value = get_config_str(config_file, "settings", "bus");
+        if (value == NULL) {
+            bus = g_strdup("session"); /* Default */
+        } else {
+            bus = value;
+        }
+    }
+
+    /* Log filename */
+    if (log_filename == NULL) {
+        gchar *value = get_config_str(config_file, "settings", "logfile");
+        if (value == NULL) {
+            log_filename = NULL; /* Default */
+        } else {
+            log_filename = value;
+        }
+    }
+
+    /* CDEmu debug mask */
+    if (cdemu_debug_mask == -1) {
+        gint value = get_config_int(config_file, "settings", "default-cdemu-debug-mask");
+        if (value < 0) {
+            cdemu_debug_mask = 0; /* Default */
+        } else {
+            cdemu_debug_mask = value;
+        }
+    }
+
+    /* libMirage debug mask */
+    if (mirage_debug_mask == -1) {
+        gint value = get_config_int(config_file, "settings", "default-mirage-debug-mask");
+        if (value < 0) {
+            mirage_debug_mask = 0; /* Default */
+        } else {
+            mirage_debug_mask = value;
+        }
+    }
+
+    /* Free the config file */
+    if (config_file) {
+        g_key_file_free(config_file);
+    }
+
+    return TRUE;
 }
 
 
@@ -105,6 +239,14 @@ int main (int argc, char **argv)
 
     if (!succeeded) {
         g_warning(Q_("Failed to parse options: %s\n"), error->message);
+        g_error_free(error);
+        return -1;
+    }
+
+    /* Setup program options (merge config file and command-line options) */
+    succeeded = setup_program_options(&error);
+    if (!succeeded) {
+        g_warning(Q_("Failed to setup program options: %s\n"), error->message);
         g_error_free(error);
         return -1;
     }
@@ -177,6 +319,13 @@ int main (int argc, char **argv)
     if (log_filename) {
         fclose(logfile);
     }
+
+    /* Clean-up string config variables */
+    g_free(config_filename);
+    g_free(ctl_device);
+    g_free(audio_driver);
+    g_free(bus);
+    g_free(log_filename);
 
     return succeeded ? 0 : -1;
 }
