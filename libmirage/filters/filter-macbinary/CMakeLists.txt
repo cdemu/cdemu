@@ -1,10 +1,10 @@
 set(filter_short "macbinary")
 set(filter_name "filter-${filter_short}")
 
-project(${filter_name} C)
+project(${filter_name} LANGUAGES C)
 
 # Build
-if (TRUE)
+if(TRUE)
     # Filter
     add_library(${filter_name} MODULE
         filter-stream.c
@@ -12,12 +12,7 @@ if (TRUE)
         ../filter-dmg/resource-fork.c
         ../filter-dmg/adc.c
     )
-    target_link_libraries(${filter_name} ${GLIB_LIBRARIES})
-
-    # On OS X, we need to explicitly enable dynamic resolving of undefined symbols
-    if(APPLE)
-        target_link_libraries(${filter_name} "-undefined dynamic_lookup")
-    endif()
+    target_link_libraries(${filter_name} mirage)
 
     # Disable library prefix
     set_target_properties(${filter_name} PROPERTIES PREFIX "")
@@ -28,8 +23,8 @@ if (TRUE)
     # Add to list of enabled filters
     list(APPEND FILTERS_ENABLED ${filter_short})
     set(FILTERS_ENABLED ${FILTERS_ENABLED} PARENT_SCOPE)
-else ()
+else()
     # Add to list of disabled filters
     list(APPEND FILTERS_DISABLED ${filter_short})
     set(FILTERS_DISABLED ${FILTERS_DISABLED} PARENT_SCOPE)
-endif ()
+endif()

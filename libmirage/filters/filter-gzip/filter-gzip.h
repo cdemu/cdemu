@@ -20,14 +20,11 @@
 #ifndef __FILTER_GZIP_H__
 #define __FILTER_GZIP_H__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <zlib.h>
-
+#include "mirage/config.h"
 #include <mirage/mirage.h>
+
 #include <glib/gi18n-lib.h>
+#include <zlib.h>
 
 #include "filter-stream.h"
 

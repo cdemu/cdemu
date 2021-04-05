@@ -30,7 +30,7 @@ and manipulation, with following functionality:
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - CMake >= 2.8.5
+ - CMake >= 3.7.0
  - IntlTool >= 0.21
  - GetText >= 0.15
 

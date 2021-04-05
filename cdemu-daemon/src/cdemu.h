@@ -21,9 +21,7 @@
 #ifndef __CDEMU_H__
 #define __CDEMU_H__
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -20,14 +20,11 @@
 #ifndef __IMAGE_XCDROAST_H__
 #define __IMAGE_XCDROAST_H__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <stdlib.h>
-
+#include "mirage/config.h"
 #include <mirage/mirage.h>
+
 #include <glib/gi18n-lib.h>
+#include <stdlib.h>
 
 #include "parser.h"
 

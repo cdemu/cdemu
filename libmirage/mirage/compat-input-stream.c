@@ -17,12 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "compat-input-stream.h"
-#include "stream.h"
+#include "mirage/config.h"
+#include "mirage/compat-input-stream.h"
+#include "mirage/stream.h"
 
 #include <glib/gi18n-lib.h>
 

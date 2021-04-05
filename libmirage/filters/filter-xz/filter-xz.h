@@ -20,14 +20,11 @@
 #ifndef __FILTER_XZ_H__
 #define __FILTER_XZ_H__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <lzma.h>
-
+#include "mirage/config.h"
 #include <mirage/mirage.h>
+
 #include <glib/gi18n-lib.h>
+#include <lzma.h>
 
 #include "filter-stream.h"
 

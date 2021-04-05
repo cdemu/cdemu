@@ -106,6 +106,8 @@ function(gobject_introspection)
     if(NOT GIR_CFLAGS)
         get_directory_property(GIR_CFLAGS INCLUDE_DIRECTORIES)
         _gir_list_prefix(GIR_REAL_CFLAGS GIR_CFLAGS "-I")
+    else()
+        set(GIR_REAL_CFLAGS ${GIR_CFLAGS})
     endif(NOT GIR_CFLAGS)
 
     ###########################################################################

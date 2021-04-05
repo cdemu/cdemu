@@ -27,7 +27,7 @@ retrieving/setting devices' debug masks.
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - CMake >= 2.8.5
+ - CMake >= 3.7.0
  - IntlTool >= 0.21
  - GetText >= 0.15
 
@@ -61,9 +61,9 @@ Loading a text-based image in non-ASCII/non-Unicode encoding:
 Loading an encrypted image:
  cdemu load 0 ~/image.daa
 
-if image is actually encrypted, the client will query the user for the password. 
-If started on a terminal it will use that, else it will use the program specified 
-by the environment variable SSH_ASKPASS. On most systems this variable will 
+if image is actually encrypted, the client will query the user for the password.
+If started on a terminal it will use that, else it will use the program specified
+by the environment variable SSH_ASKPASS. On most systems this variable will
 already have been configured. It is possible to override this for
 non-interactive setups by using the environment variable CDEMU_ASKPASS.
 

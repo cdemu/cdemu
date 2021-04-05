@@ -1,6 +1,6 @@
 /* config.h - configuration file */
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __MIRAGE_CONFIG_H__
+#define __MIRAGE_CONFIG_H__
 
 #define MIRAGE_PLUGIN_DIR "@MIRAGE_PLUGIN_DIR@"
 #define GETTEXT_PACKAGE "@PROJECT_NAME@"

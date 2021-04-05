@@ -43,7 +43,7 @@ extern const gchar *mirage_version_short;
  * library linked against at application run time.
  * </para>
  **/
-#define MIRAGE_VERSION_MAJOR @MIRAGE_VERSION_MAJOR@
+#define MIRAGE_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 
 /**
  * MIRAGE_VERSION_MINOR:
@@ -54,7 +54,7 @@ extern const gchar *mirage_version_short;
  * library linked against at application run time.
  * </para>
  **/
-#define MIRAGE_VERSION_MINOR @MIRAGE_VERSION_MINOR@
+#define MIRAGE_VERSION_MINOR @PROJECT_VERSION_MINOR@
 
 /**
  * MIRAGE_VERSION_MICRO:
@@ -65,7 +65,7 @@ extern const gchar *mirage_version_short;
  * library linked against at application run time.
  * </para>
  **/
-#define MIRAGE_VERSION_MICRO @MIRAGE_VERSION_MICRO@
+#define MIRAGE_VERSION_MICRO @PROJECT_VERSION_PATCH@
 
 
 /**
@@ -77,7 +77,7 @@ extern const gchar *mirage_version_short;
  * library linked against at application run time.
  * </para>
  **/
-#define MIRAGE_VERSION_LONG "@MIRAGE_VERSION_LONG@"
+#define MIRAGE_VERSION_LONG "@PROJECT_VERSION@"
 
 /**
  * MIRAGE_VERSION_SHORT:
@@ -88,7 +88,7 @@ extern const gchar *mirage_version_short;
  * library linked against at application run time.
  * </para>
  **/
-#define MIRAGE_VERSION_SHORT "@MIRAGE_VERSION_SHORT@"
+#define MIRAGE_VERSION_SHORT "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@"
 
 
 /**

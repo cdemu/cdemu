@@ -1,59 +1,41 @@
-cmake_minimum_required (VERSION 2.8.5)
+cmake_minimum_required(VERSION 3.7)
+project(cdemu-daemon VERSION 3.2.4 LANGUAGES C)
 
-# Project name
-project (cdemu-daemon C)
-
-# Additional CMake modules.
-list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+# Additional CMake modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Versioning
-set (CDEMU_DAEMON_VERSION 3.2.4)
-set (CDEMU_DAEMON_INTERFACE_VERSION_MAJOR 7)
-set (CDEMU_DAEMON_INTERFACE_VERSION_MINOR 0)
+set(CDEMU_DAEMON_INTERFACE_VERSION_MAJOR 7)
+set(CDEMU_DAEMON_INTERFACE_VERSION_MINOR 0)
 
 # CMake modules
-include (GNUInstallDirs)
+include(GNUInstallDirs)
 
 # Dependencies
-find_package (PkgConfig 0.16 REQUIRED)
-find_package (IntlTool 0.21 REQUIRED)
-find_package (Gettext 0.15 REQUIRED)
+find_package(PkgConfig 0.16 REQUIRED)
+find_package(IntlTool 0.21 REQUIRED)
+find_package(Gettext 0.15 REQUIRED)
 
-pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=3.2.0)
-pkg_check_modules (GLIB REQUIRED glib-2.0>=2.38 gobject-2.0>=2.38 gmodule-2.0>=2.38 gthread-2.0>=2.38 gio-2.0>=2.38)
-pkg_check_modules (AO REQUIRED ao>=0.8.0)
-
-# Auto-generated files
-configure_file (
-    ${PROJECT_SOURCE_DIR}/config.h.in
-    ${PROJECT_BINARY_DIR}/config.h
-)
+pkg_check_modules(LIBMIRAGE REQUIRED libmirage>=3.2.0 IMPORTED_TARGET)
+pkg_check_modules(GLIB REQUIRED glib-2.0>=2.38 gobject-2.0>=2.38 gthread-2.0>=2.38 gio-2.0>=2.38 IMPORTED_TARGET)
+pkg_check_modules(AO REQUIRED ao>=0.8.0 IMPORTED_TARGET)
 
 # Global definitions
-add_definitions (-std=c99) # We're compiling using C99
-add_definitions (-D_POSIX_C_SOURCE) # Enable POSIX extensions, which we need for signal handling
-add_definitions (-DHAVE_CONFIG_H)
+set(CMAKE_C_STANDARD 99) # Enable C99
 
-if (CMAKE_COMPILER_IS_GNUCC)
-    add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    add_definitions (-Wno-cast-function-type)
-endif ()
+if(CMAKE_COMPILER_IS_GNUCC)
+    # Enable additional warnings
+    add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    add_definitions(-Wno-cast-function-type)
+endif()
 
-# Include directories
-include_directories (${PROJECT_BINARY_DIR})
+# Config file
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_BINARY_DIR}/config.h)
 
-include_directories (SYSTEM ${LIBMIRAGE_INCLUDE_DIRS})
-include_directories (SYSTEM ${GLIB_INCLUDE_DIRS})
-include_directories (SYSTEM ${AO_INCLUDE_DIRS})
-
-# Link directories
-link_directories (SYSTEM ${LIBMIRAGE_LIBRARY_DIRS})
-link_directories (SYSTEM ${GLIB_LIBRARY_DIRS})
-link_directories (SYSTEM ${AO_LIBRARY_DIRS})
-
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 # *** cdemu-daemon ***
-set (cdemu-daemon_SOURCES
+set(cdemu-daemon_SOURCES
     src/audio.c
     src/daemon.c
     src/daemon-dbus.c
@@ -71,19 +53,15 @@ set (cdemu-daemon_SOURCES
     src/main.c
 )
 
-add_executable (cdemu-daemon ${cdemu-daemon_SOURCES})
-target_link_libraries (cdemu-daemon ${LIBMIRAGE_LIBRARIES} ${GLIB_LIBRARIES} ${AO_LIBRARIES})
+add_executable(cdemu-daemon ${cdemu-daemon_SOURCES})
+
+target_link_libraries(cdemu-daemon PRIVATE PkgConfig::GLIB)
+target_link_libraries(cdemu-daemon PRIVATE PkgConfig::LIBMIRAGE)
+target_link_libraries(cdemu-daemon PRIVATE PkgConfig::AO)
 
 # Installation
-install (
-    TARGETS cdemu-daemon
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-install (
-    FILES man/cdemu-daemon.8
-    DESTINATION ${CMAKE_INSTALL_MANDIR}/man8
-)
+install(TARGETS cdemu-daemon DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES man/cdemu-daemon.8 DESTINATION ${CMAKE_INSTALL_MANDIR}/man8)
 
 # Translations; we use the version provided by our FindIntlTool.cmake
 # instead of the gettext version... Note: first two arguments are mandatory,
@@ -93,7 +71,7 @@ intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 
 # *** Configuration summary ***
 message(STATUS "")
-message(STATUS "*** CDEmu daemon v.${CDEMU_DAEMON_VERSION} configuration summary ***")
+message(STATUS "*** CDEmu daemon v.${PROJECT_VERSION} configuration summary ***")
 message(STATUS "Compiler and build info:")
 message(STATUS " C compiler: " ${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_ARG1})
 message(STATUS " C flags (Release): " ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE})

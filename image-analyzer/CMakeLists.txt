@@ -1,46 +1,34 @@
-cmake_minimum_required (VERSION 2.8.5)
+cmake_minimum_required(VERSION 3.7)
+project(image-analyzer VERSION 3.2.4 LANGUAGES NONE)
 
-# Project name
-project (image-analyzer NONE)
+# Additional CMake modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-# Additional CMake modules.
-list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-include (GNUInstallDirs)
+# CMake modules
+include(GNUInstallDirs)
 
 # Options
-option (POST_INSTALL_HOOKS "Run post-install hooks" on)
+option(POST_INSTALL_HOOKS "Run post-install hooks" ON)
 
 # Dependencies
-find_package (IntlTool 0.21 REQUIRED)
-find_package (Gettext 0.15 REQUIRED)
+find_package(IntlTool 0.21 REQUIRED)
+find_package(Gettext 0.15 REQUIRED)
 
-if (POST_INSTALL_HOOKS)
-    find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
-    mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
+if(POST_INSTALL_HOOKS)
+    find_program(UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
+    mark_as_advanced(UPDATE_DESKTOP_DATABASE_EXECUTABLE)
 endif ()
 
 # Installation
-install (
-    PROGRAMS src/image-analyzer
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+install(PROGRAMS src/image-analyzer DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-intltool_merge ("-d" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop.in image-analyzer.desktop)
-install (
-    FILES ${PROJECT_BINARY_DIR}/image-analyzer.desktop
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
-)
-if (POST_INSTALL_HOOKS)
-    install (CODE
-        "execute_process (COMMAND ${UPDATE_DESKTOP_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/applications)"
-    )
-endif ()
+intltool_merge("-d" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop.in image-analyzer.desktop)
+install(FILES ${PROJECT_BINARY_DIR}/image-analyzer.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+if(POST_INSTALL_HOOKS)
+    install(CODE "execute_process (COMMAND ${UPDATE_DESKTOP_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/applications)")
+endif()
 
-install (
-    FILES data/image-analyzer.svg
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
-)
+install(FILES data/image-analyzer.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps)
 
 # Translations; we use the version provided by our FindIntlTool.cmake
 # instead of the gettext version... Note: first two arguments are mandatory,

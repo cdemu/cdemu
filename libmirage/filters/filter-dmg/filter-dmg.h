@@ -20,15 +20,12 @@
 #ifndef __FILTER_DMG_H__
 #define __FILTER_DMG_H__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "mirage/config.h"
+#include <mirage/mirage.h>
 
+#include <glib/gi18n-lib.h>
 #include <zlib.h>
 #include <bzlib.h>
-
-#include <mirage/mirage.h>
-#include <glib/gi18n-lib.h>
 
 #include "adc.h"
 #include "resource-fork.h"

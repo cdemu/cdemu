@@ -74,6 +74,7 @@ function (gtk_doc)
     # scan header files and introspect gobjects
     to_list_spaces (GTKDOC_CFLAGS GTKDOC_S_CFLAGS)
     to_list_spaces (GTKDOC_LDFLAGS GTKDOC_S_LDFLAGS)
+    to_list_spaces (GTKDOC_IGNORE_HFILES GTKDOC_S_IGNORE_HFILES)
     file (
         WRITE ${PROJECT_BINARY_DIR}/run-scangobj
         "#!/bin/sh\n"
@@ -84,7 +85,7 @@ function (gtk_doc)
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} ${GTKDOC_SOURCE_DIR_LIST}
-            --ignore-headers=${GTKDOC_IGNORE_HFILES}
+            --ignore-headers=${GTKDOC_S_IGNORE_HFILES}
         COMMAND sh ${PROJECT_BINARY_DIR}/run-scangobj
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}

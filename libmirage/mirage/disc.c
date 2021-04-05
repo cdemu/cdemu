@@ -35,11 +35,8 @@
  * using #MirageContext and its mirage_context_load_image() function.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "mirage.h"
+#include "mirage/config.h"
+#include "mirage/mirage.h"
 
 #include <glib/gi18n-lib.h>
 
