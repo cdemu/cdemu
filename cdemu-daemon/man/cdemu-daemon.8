@@ -1,4 +1,4 @@
-.TH CDEMU-DAEMON 8 "Sep 25, 2012"
+.TH CDEMU-DAEMON 8 "Apr 5, 2021"
 .SH NAME
 cdemud \- The CDEmu daemon
 .SH SYNOPSIS
@@ -18,6 +18,9 @@ The daemon registers itself on D-BUS' system or session bus (depending on the
 options passed to it) where it exposes an interface that can be used by clients
 to control it.
 .SH OPTIONS
+.TP
+.B --config-file=filename
+Configuration file to load. See \fBConfiguration file\fR section for details.
 .TP
 .B -n --num-devices=N
 Number of devices. Specifies the number of virtual devices the daemon instance should
@@ -45,6 +48,14 @@ deprecated and is discouraged for security reasons).
 Log file to write logging output into. By default, use of log file is disabled and messages
 are written to stdout.
 .TP
+.B --default-cdemu-debug-mask=mask
+Default debug mask for CDEmu devices (at CDEmu daemon implementation level).
+Default value is 0.
+.TP
+.B --default-mirage-debug-mask=mask
+Default debug mask for CDEmu devices (at libMirage implementation level).
+Default value is 0.
+.TP
 .B -? --help
 Display the help message.
 .SH EXAMPLES
@@ -54,7 +65,35 @@ cdemu-daemon --num-devices=4 --audio-driver=pulse
 .TP
 .B Running daemon on system bus with 2 virtual devices and logging redirected to a file:
 cdemu-daemon --num-devices=2 --bus=system --logfile=/tmp/cdemu-daemon.log
-.TP
+.SH CONFIGURATION FILE
+The daemon's settings can be collected in a configuration file, which
+is passed to the daemon via \fB--config-file\fR option. Configuration
+file contains \fBkey=value\fR pairs that are contained in a single
+\fB[settings]\fR section. The keys in configuration file correspond to
+the long names of command-line switches.
+
+If an option is specified in both configuration file and on command-line,
+the latter takes precedence.
+
+If the specified configuration file does not exist, it is silently ignored.
+If the specified configuration file is invalid (e.g., has invalid syntax,
+or does not contain a section), an error is raised.
+
+.B Example
+
+Saving the following configuration to a file and passing it to the daemon
+via \fB--config-file\fR is equivalent to passing \fB--num-devices=2
+--audio-driver=pulse\fR directly to the daemon:
+
+.RS\fB
+[settings]
+.br
+num-devices=2
+.br
+audio-driver=pulse
+\fR
+.RE
+
 .SH AUTHORS
 .PP
 Rok Mandeljc <rok.mandeljc@gmail.com>
