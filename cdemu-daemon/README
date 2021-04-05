@@ -18,8 +18,9 @@ Table of Contents:
 10. Encrypted images and password supplying
 11. System bus vs. session bus
 12. Deprecation of running on system bus
-13. CDEmu as D-BUS on-demand service (the daemon autostart)
-14. Contact information
+13. Configuration file
+14. CDEmu as D-BUS on-demand service (the daemon autostart)
+15. Contact information
 
 
 1. Introduction
@@ -147,8 +148,9 @@ it installed at this point.
 
 By default, the daemon registers its interface on session D-BUS' bus
 (it is also possible to use system bus instead, but as explained in
-Section 12, this is discouraged). We provide an option to install the
-daemon as a D-BUS on-demand service. For more information, see Section 13.
+Section 12, this is discouraged). We provide example service files for
+deploying the daemon as D-BUS activated systemd service; for details, see
+Section 14.
 
 We use a single libao backend to support CD-audio playback. This allows you to
 select from a number of available audio drivers. Valid choices are the driver
@@ -672,47 +674,54 @@ backend. The other example would be GVFS, which might provide the user access to
 filesystems (e.g. via CIFS or SSH).
 
 
-13. CDEmu as D-BUS on-demand service (the daemon autostart)
+13. Configuration file
+~~~~~~~~~~~~~~~~~~~~~~
+
+The command-line arguments that are passed to daemon (e.g., --num-devices, --audio-driver; for full list,
+see the manual page or run the daemon with --help option) can be optionally collected into a configuration
+file that is passed to the daemon via the --config-file option.
+
+The configuration file must adhere to the syntax used by glib's GKeyFile parser. The file must contain
+a section called [settings], in which the options are specified as key=value pairs, with keys corresponding
+to long names of the command-line arguments. For example, passing the following configuration file via
+--config-file=example.config is equivalent to passing --num-devices=2 --audio-driver=pulse directly to the
+daemon:
+
+# example.config
+[settings]
+num-devices=2
+audio-driver=pulse
+
+If  an  option  is specified in both configuration file and on command-line, the latter takes precedence.
+This allows the configuration file to be used as a preset base, which is further tweaked/overridden via
+command-line.
+
+If the specified configuration file does not exist, it is silently  ignored. If  the specified configuration
+file is invalid (e.g., has invalid syntax, or does not contain a section), an error is raised. This allows
+start up script to use pre-determined paths to optional user-provided configuration files without having
+to check for their existence.
+
+
+14. CDEmu as D-BUS on-demand service (the daemon autostart)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 D-BUS offers on-demand startup of services; when a client attempts to contact a service that is not running,
-D-BUS can launch that service.
+D-BUS can launch that service. The service itself can be deployed either as a regular executable or shell
+script, or as a SystemD-controlled service.
 
-In order to do so, a .service describing the service needs to be placed either into /usr/share/dbus-1/services
-(for session bus service autostart) or /usr/share/dbus-1/system-services (for system bus service autostart).
+CDEmu daemon provides example service files for deploying the daemon as D-BUS activated SystemD user service.
+These service files are *not* installed automatically by CMake; instead, they need to be deployed manually
+by the user or packaged at packager's discretion (which also allows the use of different startup mechanism).
 
-CDEmu daemon provides the .service files for both system and session bus service autostart.
-The daemon is launched via wrapper scripts that allow setting of the following parameters: number of devices,
-audio driver and log file.
+The example service files are located in the "service-example" directory, along with a README.md file
+containing deployment instructions.
 
-Session bus service autostart:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Session bus service autostart installs the cdemu-daemon-session.service file and the cdemu-daemon-session.sh
-wrapper script. The default parameters (2 devices, PulseAudio as audio driver and ~/.cdemu-daemon.log as logfile)
-can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in ~/.cdemu-daemon config file.
-
-Installation of session bus service autostart can be controlled via SESSION_BUS_SERVICE option in daemon's CMake
-script (e.g., by passing -DSESSION_BUS_SERVICE=ON/OFF on command-line). By default, installation is enabled.
-
-System bus service autostart:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-System bus service autostart installs the cdemu-daemon-system.service file and the cdemu-daemon-system.sh
-wrapper script. The default parameters (2 devices, no audio driver and /tmp/cdemu-daemon.log as logfile)
-can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in /etc/sysconfig/cdemu-daemon
-config file.
-
-In addition to service file and wrapper script, the D-BUS config file is also installed.
-
-Installation of system bus service autostart can be controlled via SYSTEM_BUS_SERVICE option in daemon's CMake
-script (e.g., by passing -DSYSTEM_BUS_SERVICE=ON/OFF on command-line). By default, installation is disabled.
-
-NOTE: if system bus service autostart installation is disabled, the D-BUS config file for running on system
-bus is also not installed.
+NOTE: the service files are provided as an example. Alternative deployments that do not involve SystemD are
+also possible; for example, earlier versions of CDEmu daemon used D-BUS service with launcher shell script
+instead.
 
 
-14. Contact information
+15. Contact information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
