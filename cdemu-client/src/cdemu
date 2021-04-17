@@ -44,7 +44,7 @@ import gettext
 
 # *** Globals ***
 app_name = "cdemu"
-app_version = "3.2.4"
+app_version = "3.2.5"
 supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
@@ -181,7 +181,7 @@ class cmd_load (object):
                 else:
                     if sys.stdin.isatty():
                         print(_("The image you are trying to load is encrypted."))
-                        password = getpass.getpass(_("Password: ")) 
+                        password = getpass.getpass(_("Password: "))
                     else:
                         if "SSH_ASKPASS" in os.environ:
                             proc = subprocess.Popen(shlex.split(os.environ["SSH_ASKPASS"]), text=True, stdout=subprocess.PIPE)

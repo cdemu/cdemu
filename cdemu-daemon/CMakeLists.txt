@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(cdemu-daemon VERSION 3.2.4 LANGUAGES C)
+project(cdemu-daemon VERSION 3.2.5 LANGUAGES C)
 
 # Additional CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
