@@ -12,7 +12,7 @@ Standards-Version: 4.3.0
 Package: gcdemu
 Architecture: all
 Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0,
- gir1.2-gtk-3.0, gir1.2-appindicator3-0.1, gir1.2-notify-0.7,
+ gir1.2-gtk-3.0, gir1.2-appindicator3-0.1 | gir1.2-ayatanaappindicator3-0.1, gir1.2-notify-0.7,
  cdemu-daemon (>= 3.0.0), librsvg2-2, ${python3:Depends}, ${misc:Depends}
 Recommends: cdemu-client (>= 3.0.0)
 Description: GNOME application to control CDEmu daemon
