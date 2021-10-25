@@ -489,7 +489,7 @@ int vhba_queuecommand (struct Scsi_Host *shost, struct scsi_cmnd *cmd)
         scmd_dbg(cmd, "no such device\n");
 
         cmd->result = DID_NO_CONNECT << 16;
-        cmd->scsi_done(cmd);
+        scsi_done(cmd);
 
         return 0;
     }
@@ -824,7 +824,7 @@ ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t buf_le
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
-        vcmd->cmd->scsi_done(vcmd->cmd);
+        scsi_done(vcmd->cmd);
         ret += sizeof(res);
 
         /* don't compete with vhba_device_dequeue */
@@ -950,7 +950,7 @@ int vhba_ctl_release (struct inode *inode, struct file *file)
 
         scmd_dbg(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->metatag, vcmd->cmd);
         vcmd->cmd->result = DID_NO_CONNECT << 16;
-        vcmd->cmd->scsi_done(vcmd->cmd);
+        scsi_done(vcmd->cmd);
 
         vhba_free_command(vcmd);
     }
