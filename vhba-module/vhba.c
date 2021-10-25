@@ -492,7 +492,7 @@ int vhba_queuecommand (struct Scsi_Host *shost, struct scsi_cmnd *cmd)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
         scsi_done(cmd);
 #else
-	cmd->scsi_done(cmd);
+        cmd->scsi_done(cmd);
 #endif
 
         return 0;
@@ -831,7 +831,7 @@ ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t buf_le
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
         scsi_done(vcmd->cmd);
 #else
-	vcmd->cmd->scsi_done(vcmd->cmd);
+        vcmd->cmd->scsi_done(vcmd->cmd);
 #endif
         ret += sizeof(res);
 
@@ -961,7 +961,7 @@ int vhba_ctl_release (struct inode *inode, struct file *file)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
         scsi_done(vcmd->cmd);
 #else
-	vcmd->cmd->scsi_done(vcmd->cmd);
+        vcmd->cmd->scsi_done(vcmd->cmd);
 #endif
         vhba_free_command(vcmd);
     }
