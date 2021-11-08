@@ -828,7 +828,7 @@ ssize_t vhba_ctl_write (struct file *file, const char __user *buf, size_t buf_le
 
     spin_lock_irqsave(&vdev->cmd_lock, flags);
     if (ret >= 0) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0) && defined(LINUX_NEXT)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0) && defined(LINUX_NEXT)
         scsi_done(vcmd->cmd);
 #else
         vcmd->cmd->scsi_done(vcmd->cmd);
@@ -958,7 +958,7 @@ int vhba_ctl_release (struct inode *inode, struct file *file)
 
         scmd_dbg(vcmd->cmd, "device released with command %lu (%p)\n", vcmd->metatag, vcmd->cmd);
         vcmd->cmd->result = DID_NO_CONNECT << 16;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0) && defined(LINUX_NEXT)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0) && defined(LINUX_NEXT)
         scsi_done(vcmd->cmd);
 #else
         vcmd->cmd->scsi_done(vcmd->cmd);
