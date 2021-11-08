@@ -22,6 +22,8 @@ images/image-ccd/libmirage-ccd.xml.in
 images/image-ccd/parser.c
 images/image-cdi/libmirage-cdi.xml.in
 images/image-cdi/parser.c
+images/image-chd/libmirage-chd.xml.in
+images/image-chd/parser.c
 images/image-cif/libmirage-cif.xml.in
 images/image-cif/parser.c
 images/image-cue/parser.c
