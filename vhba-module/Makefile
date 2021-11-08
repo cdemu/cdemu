@@ -5,7 +5,12 @@ KDIR ?= /lib/modules/$(KERNELRELEASE)/build
 PWD ?= $(shell pwd)
 
 obj-m := vhba.o
+
+ifneq (,$(findstring next, $(KERNELRELEASE)))
+ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -Werror -DLINUX_NEXT=1
+else
 ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -Werror
+endif
 
 default: modules
 install: modules_install
