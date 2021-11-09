@@ -45,7 +45,6 @@ static gboolean mirage_parser_chd_is_file_valid (MirageParserChd *self, MirageSt
 
     /* Set filenames */
     self->priv->chd_filename = mirage_stream_get_filename(stream);
-    mirage_disc_set_filename(self->priv->disc, self->priv->chd_filename);
 
     /* File must have .chd suffix */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n%s\n", __debug__, self->priv->chd_filename);
@@ -116,6 +115,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
+    mirage_disc_set_filename(self->priv->disc, self->priv->chd_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD filename: %s\n", __debug__, self->priv->chd_filename);
 
