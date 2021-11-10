@@ -16,7 +16,8 @@ if(TRUE)
 
     # Dependencies
     pkg_check_modules(CHDR REQUIRED libchdr>=. IMPORTED_TARGET)
-    
+    target_link_libraries(${image_name} PUBLIC PkgConfig::CHDR)
+
     # Install
     install(TARGETS ${image_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
 
