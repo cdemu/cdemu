@@ -50,6 +50,7 @@ struct _MirageParserChdClass
 /* Used by MIRAGE_TYPE_PARSER_CHD */
 GType mirage_parser_chd_get_type (void);
 void mirage_parser_chd_type_register (GTypeModule *type_module);
+const char *_byte_array_to_hex_string(const UINT8 *pin, const UINT8 size);
 
 G_END_DECLS
 

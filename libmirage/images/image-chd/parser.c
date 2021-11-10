@@ -35,6 +35,17 @@ struct _MirageParserChdPrivate {
     MirageTrack *cur_track;
 };
 
+/* help display pretty hex without bashing the stack */
+const char *_byte_array_to_hex_string(const UINT8 *pin, const UINT8 size) {
+    static char str[41], *hex = "0123456789abcdef";
+    char *pout = str;
+    for (int i = 0; i < size; i++) {
+        *pout++ = hex[(*pin>>4)&15];
+        *pout++ = hex[(*pin++) &15];
+    }
+    *pout = 0;
+    return str;
+}
 
 static gboolean mirage_parser_chd_is_file_valid (MirageParserChd *self, MirageStream *stream, GError **error)
 {
@@ -47,7 +58,7 @@ static gboolean mirage_parser_chd_is_file_valid (MirageParserChd *self, MirageSt
     self->priv->chd_filename = mirage_stream_get_filename(stream);
 
     /* File must have .chd suffix */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n%s\n", __debug__, self->priv->chd_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(self->priv->chd_filename, ".chd")) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: invalid suffix (not a *.chd file!)!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid suffix!"));
@@ -55,11 +66,7 @@ static gboolean mirage_parser_chd_is_file_valid (MirageParserChd *self, MirageSt
     }
 
     /* Opening image file for reading */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: opening image file for reading... CHD_OPEN_READ=%d\n", __debug__, CHD_OPEN_READ);
-    
-    // Enter the abyss after this
-    return FALSE;
-    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: opening image file for reading...\n", __debug__);
     err = chd_open(self->priv->chd_filename, CHD_OPEN_READ, NULL, &file);
     if (err) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: chd_open() error: %s\n", __debug__, chd_error_string(err));
@@ -74,7 +81,22 @@ static gboolean mirage_parser_chd_is_file_valid (MirageParserChd *self, MirageSt
     mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
     file_size = mirage_stream_tell(stream);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file length:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: MAME Compressed Hunks of Data (CHD)\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Input file\t: %s\n", __debug__, self->priv->chd_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: File version\t: %d\n", __debug__, self->priv->header->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Logical size\t: %lu bytes\n", __debug__, self->priv->header->logicalbytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Hunk Size\t: %d bytes\n", __debug__, self->priv->header->hunkbytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Total Hunks\t: %d\n", __debug__, self->priv->header->totalhunks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Unit Size\t: %d bytes\n", __debug__, self->priv->header->unitbytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Total Units\t: %lu\n", __debug__, self->priv->header->unitcount);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Compression\t: %s\n", __debug__, chd_get_codec_name(self->priv->header->compression[0]));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: CHD size\t\t: %lu bytes\n", __debug__, file_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Ratio\t\t: %d\n", __debug__, self->priv->header->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: MD5\t\t: %s\n", __debug__, _byte_array_to_hex_string(self->priv->header->md5, CHD_MD5_BYTES));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: SHA1\t\t: %s\n", __debug__, _byte_array_to_hex_string(self->priv->header->sha1, CHD_SHA1_BYTES));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Data SHA1\t: %s\n", __debug__, _byte_array_to_hex_string(self->priv->header->rawsha1, CHD_SHA1_BYTES));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Metadata\t\t: %d\n", __debug__, self->priv->header->version);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  expected size (based on header): %d \n", __debug__, totalbytes);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  actual data file size: %" G_GINT64_MODIFIER "d\n", __debug__, file_size);
 
