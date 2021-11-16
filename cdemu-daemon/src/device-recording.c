@@ -199,7 +199,11 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
         /* This assumes that CD-TEXT packs are ordered, which is hopefully
            reasonable */
         if (ptr[2] >= self->priv->num_leadin_cdtext_packs) {
+#if GLIB_CHECK_VERSION(2, 68, 0)
+            self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup2(ptr, 18));
+#else
             self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup(ptr, 18));
+#endif
             self->priv->num_leadin_cdtext_packs++;
         }
 
