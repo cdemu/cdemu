@@ -149,7 +149,11 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
 
     /* Set pack data only if length is not 0; if it is, assume caller wants to clear pack data... */
     if (length) {
+#if GLIB_CHECK_VERSION(2, 68, 0)
+        pack->data = g_memdup2(pack_data, length);
+#else
         pack->data = g_memdup(pack_data, length);
+#endif
         pack->length = length;
         pack->set = TRUE;
     }

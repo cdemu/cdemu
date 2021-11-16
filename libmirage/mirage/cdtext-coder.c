@@ -413,7 +413,11 @@ void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint code, gint ty
     pack_data->block_number = block;
     pack_data->pack_type = type;
     pack_data->track_number = track;
+#if GLIB_CHECK_VERSION(2, 68, 0)
+    pack_data->data = g_memdup2(data, data_len);
+#else
     pack_data->data = g_memdup(data, data_len);
+#endif
     pack_data->data_len = data_len;
 
     /* Add internal representation to ordered list... */
@@ -626,7 +630,11 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
                 pack_data->block_number = block;
                 pack_data->pack_type = self->priv->cur_pack->pack_type;
                 pack_data->track_number = cur_track;
+#if GLIB_CHECK_VERSION(2, 68, 0)
+                pack_data->data = g_memdup2(tmp_buffer, tmp_len);
+#else
                 pack_data->data = g_memdup(tmp_buffer, tmp_len);
+#endif
                 pack_data->data_len = tmp_len;
 
                 self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);

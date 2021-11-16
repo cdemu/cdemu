@@ -259,7 +259,11 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
             /* Add the data to the ref */
             rsrc_ref->data_length = dest_str->len;
             if (dest_str->len > 0) {
+#if GLIB_CHECK_VERSION(2, 68, 0)
+                rsrc_ref->data = g_memdup2(dest_str->str, dest_str->len);
+#else
                 rsrc_ref->data = g_memdup(dest_str->str, dest_str->len);
+#endif
                 g_assert(rsrc_ref->data);
             } else {
                 rsrc_ref->data = NULL;
@@ -358,7 +362,11 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
     rsrc_fork = g_try_new0(rsrc_fork_t, 1);
     if (!rsrc_fork) return NULL;
 
+#if GLIB_CHECK_VERSION(2, 68, 0)
+    raw_data = g_memdup2(bin_data, bin_length);
+#else
     raw_data = g_memdup(bin_data, bin_length);
+#endif
     if (!raw_data) return NULL;
 
     /* Read and fixup header */
@@ -427,7 +435,11 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
             //g_message(" Attrs: 0x%02x Data length: %u offset: 0x%x", ref_list[r].attrs, *rsrc_data_length, rsrc_data_offset);
 
             if (*rsrc_data_length > 0) {
+#if GLIB_CHECK_VERSION(2, 68, 0)
+                ref_entry.data = g_memdup2(rsrc_data_ptr, *rsrc_data_length);
+#else
                 ref_entry.data = g_memdup(rsrc_data_ptr, *rsrc_data_length);
+#endif
                 if (!ref_entry.data) return NULL;
             } else {
                 ref_entry.data = NULL;
