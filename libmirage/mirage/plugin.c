@@ -98,6 +98,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
        in the plugin, we want the loading to fail immediately */
     self->priv->library = g_module_open(self->priv->filename, G_MODULE_BIND_LOCAL);
     if (!self->priv->library) {
+        g_warning("%s: plugin %s\n", __func__, g_module_error());
         return FALSE;
     }
 
@@ -126,9 +127,14 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
     }
 
     /* Make sure that the loaded library contains the required methods */
-    if (!g_module_symbol(self->priv->library, "mirage_plugin_load_plugin", (gpointer *)&self->priv->mirage_plugin_load_plugin) ||
-        !g_module_symbol(self->priv->library, "mirage_plugin_unload_plugin", (gpointer *)&self->priv->mirage_plugin_unload_plugin)) {
+    if (!g_module_symbol(self->priv->library, "mirage_plugin_load_plugin", (gpointer *)&self->priv->mirage_plugin_load_plugin)) {
+        g_warning("%s: plugin %s: does not implement 'mirage_plugin_load_plugin'!\n", __func__, self->priv->filename);
+        g_module_close(self->priv->library);
+        return FALSE;
+    }
 
+    if (!g_module_symbol(self->priv->library, "mirage_plugin_unload_plugin", (gpointer *)&self->priv->mirage_plugin_unload_plugin)) {
+        g_warning("%s: plugin %s: does not implement 'mirage_plugin_unload_plugin'!\n", __func__, self->priv->filename);
         g_module_close(self->priv->library);
         return FALSE;
     }
