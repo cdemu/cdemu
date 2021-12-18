@@ -13,14 +13,5 @@
         <magic priority="50">
             <match value="koly" type="string" offset="0"/>
         </magic>
-
-        <magic priority="20">
-            <match value="ER" type="string" offset="0"/>
-            <match value="PM" type="string" offset="512"/>
-
-            <match value="BD" type="string" offset="1024"/>
-            <match value="H+" type="string" offset="1024"/>
-            <match value="HX" type="string" offset="1024"/>
-        </magic>
     </mime-type>
 </mime-info>
