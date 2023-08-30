@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
-Build-Depends: debhelper (>= 9)
+Build-Depends: debhelper (>= 10)
 Build-Depends-Indep: python3 (>= 3.4.0), libglib2.0-bin, intltool, cmake (>= 3.7.0), dh-python
 X-Python3-Version: >= 3.4.0
 Standards-Version: 4.3.0

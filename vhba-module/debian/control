@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
-Build-Depends: debhelper (>= 9), dkms
+Build-Depends: debhelper (>= 10), dkms
 Standards-Version: 4.3.0
 
 
