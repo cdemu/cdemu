@@ -158,6 +158,18 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         self->priv->format.format |= SF_FORMAT_PCM_16; /* Minor format */
 
         open_mode = SFM_RDWR;
+    } else {
+        const gchar *filename = mirage_stream_get_filename(stream);
+        const gchar *suffix = mirage_helper_get_suffix(filename);
+
+        /* Prevent this filter stream from operating on .BIN files, as
+           those are most likely raw PCM data, but depending on the
+           initial pattern, could be mistaken for a different stream.
+           See: https://github.com/cdemu/cdemu/issues/26 */
+        if (!g_ascii_strcasecmp(suffix, ".bin")) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: .BIN files are not supported."));
+            return FALSE;
+        }
     }
 
     /* Seek to beginning */
