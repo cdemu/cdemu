@@ -279,26 +279,34 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
 
         if (self->priv->io_ratio == 1.0) {
             /* Seek to beginning of block */
-            sf_seek(self->priv->sndfile, block*NUM_FRAMES, SEEK_SET);
+            sf_count_t offset = block*NUM_FRAMES;
+            if (sf_seek(self->priv->sndfile, offset, SEEK_SET) < 0) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, offset);
+                return -1;
+            }
 
             /* Read frames */
             read_length = sf_readf_short(self->priv->sndfile, (short *)self->priv->buffer, NUM_FRAMES);
             if (!read_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?\n", __debug__);
-                return 0;
+                return -1;
             }
         } else {
             gint resampler_error;
+            sf_count_t offset = block*NUM_FRAMES*self->priv->io_ratio;
 
             /* Seek to beginning of block; this is in original,
                non-resampled, stream */
-            sf_seek(self->priv->sndfile, block*NUM_FRAMES*self->priv->io_ratio, SEEK_SET);
+            if (sf_seek(self->priv->sndfile, offset, SEEK_SET) < 0) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, offset);
+                return -1;
+            }
 
             /* Read read frames into resampler's input buffer */
             read_length = sf_readf_float(self->priv->sndfile, self->priv->resample_buffer_in, NUM_FRAMES*self->priv->io_ratio);
             if (!read_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?\n", __debug__);
-                return 0;
+                return -1;
             }
 
             /* Set fields in data structure; most are static and have
