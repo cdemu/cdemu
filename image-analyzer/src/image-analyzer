@@ -41,6 +41,7 @@ import xml.etree.ElementTree
 import xml.dom.minidom
 
 # Matplotlib
+import matplotlib  # For __version_info__
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
@@ -570,8 +571,14 @@ class DiscTopologyWindow (Gtk.Window):
         canvas.set_size_request(600,400)
         box.pack_start(canvas, True, True, 0)
 
-        # Matplotlib toolbar
-        toolbar = NavigationToolbar(canvas, self)
+        # Matplotlib toolbar - in versions < 3.6.0, NavigationToolbar
+        # accepted two arguments, canvas and window. In 3.6.0, the
+        # second argument was deprecated, and removed in 3.8.0.
+        mpl_version = getattr(matplotlib, '__version_info__', None)
+        if mpl_version is None or mpl_version < (3, 6):
+            toolbar = NavigationToolbar(canvas, self)
+        else:
+            toolbar = NavigationToolbar(canvas)
         box.pack_start(toolbar, False, True, 0)
 
         box.show_all()
