@@ -29,7 +29,7 @@ install(PROGRAMS src/gcdemu DESTINATION ${CMAKE_INSTALL_BINDIR})
 intltool_merge("-x --no-translations" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/net.sf.cdemu.gcdemu.gschema.xml.in net.sf.cdemu.gcdemu.gschema.xml)
 install(FILES ${PROJECT_BINARY_DIR}/net.sf.cdemu.gcdemu.gschema.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas)
 if(POST_INSTALL_HOOKS)
-    install(CODE"execute_process (COMMAND ${GLIB_COMPILE_SCHEMAS_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/glib-2.0/schemas)")
+    install(CODE "execute_process (COMMAND ${GLIB_COMPILE_SCHEMAS_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/glib-2.0/schemas)")
 endif()
 
 intltool_merge("-d" ${PROJECT_SOURCE_DIR}/po ${PROJECT_SOURCE_DIR}/data/gcdemu.desktop.in gcdemu.desktop)
