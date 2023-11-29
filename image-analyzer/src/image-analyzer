@@ -52,7 +52,7 @@ import gettext
 
 # *** Globals ***
 app_name = "image-analyzer"
-app_version = "3.2.5"
+app_version = "3.2.6"
 
 # I18n
 if sys.version_info[0] < 3:
