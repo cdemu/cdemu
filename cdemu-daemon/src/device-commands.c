@@ -2511,10 +2511,40 @@ static gboolean command_reserve_track (CdemuDevice *self, const guint8 *raw_cdb)
 
 
 /* SEEK (10)*/
-static gboolean command_seek (CdemuDevice *self, const guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_seek (CdemuDevice *self, const guint8 *raw_cdb)
 {
-    /*struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;*/
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: nothing to do here yet...\n", __debug__);
+    struct SEEK_10_CDB *cdb = (struct SEEK_10_CDB *)raw_cdb;
+    gint target_address = GUINT32_FROM_BE(cdb->lba);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: seeking to sector 0x%X\n", __debug__, target_address);
+
+    /* Check if we have medium loaded */
+    if (!self->priv->loaded) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        return FALSE;
+    }
+
+    /* Set up delay emulation (0 sectors since we're not actually reading data) */
+    cdemu_device_delay_begin(self, target_address, 0);
+
+    MirageDisc *disc = self->priv->disc;
+    GError *error = NULL;
+    MirageSector *sector = mirage_disc_get_sector(disc, target_address, &error);
+    if (!sector) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector: %s\n", __debug__, error->message);
+        g_error_free(error);
+        cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, LOGICAL_BLOCK_ADDRESS_OUT_OF_RANGE, 0, target_address);
+        return FALSE;
+    }
+
+    self->priv->current_address = target_address;
+
+    /* Release sector */
+    g_object_unref(sector);
+
+    /* Perform delay emulation */
+    cdemu_device_delay_finalize(self);
+
     return TRUE;
 }
 
