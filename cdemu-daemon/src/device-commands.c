@@ -1623,8 +1623,9 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                    We do the same, because at least 'grip' on linux seems to rely on
                    data returned by READ SUBCHANNEL being HEX... (and it seems MMC3
                    requires READ CD to return BCD data) */
-                gint correction = 1;
+                gint correction = 0;
                 while ((tmp_buf[0] & 0x0F) != 0x01) {
+                    correction++;
                     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_address+correction);
 
                     /* Read from next sector */
@@ -1632,26 +1633,39 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address+correction);
                         break;
                     }
-
-                    correction++;
                 }
 
                 /* In Q-subchannel, first MSF is relative, second absolute... in
                    data we return, it's the other way around */
-                gint relative_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(tmp_buf[3]), mirage_helper_bcd2hex(tmp_buf[4]), mirage_helper_bcd2hex(tmp_buf[5]), FALSE) - correction;
-                gint absolute_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(tmp_buf[7]), mirage_helper_bcd2hex(tmp_buf[8]), mirage_helper_bcd2hex(tmp_buf[9]), TRUE) - correction;
+                guint8 rmin = mirage_helper_bcd2hex(tmp_buf[3]);
+                guint8 rsec = mirage_helper_bcd2hex(tmp_buf[4]);
+                guint8 rframe = mirage_helper_bcd2hex(tmp_buf[5]);
+
+                guint8 amin = mirage_helper_bcd2hex(tmp_buf[7]);
+                guint8 asec = mirage_helper_bcd2hex(tmp_buf[8]);
+                guint8 aframe = mirage_helper_bcd2hex(tmp_buf[9]);
+
+                if (correction != 0) {
+                    gint relative_address = mirage_helper_msf2lba(rmin, rsec, rframe, FALSE) - correction;
+                    gint absolute_address = mirage_helper_msf2lba(amin, asec, aframe, TRUE) - correction;
+                    mirage_helper_lba2msf(relative_address, FALSE, &rmin, &rsec, &rframe);
+                    mirage_helper_lba2msf(absolute_address, TRUE, &amin, &asec, &aframe);
+                }
 
                 /* MSF vs. LBA */
                 if (cdb->time) {
                     guint8 *msf_ptr = (guint8 *)&ret_data->abs_addr;
-
-                    mirage_helper_lba2msf(absolute_address, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
+                    msf_ptr[1] = amin;
+                    msf_ptr[2] = asec;
+                    msf_ptr[3] = aframe;
 
                     msf_ptr = (guint8 *)&ret_data->rel_addr;
-                    mirage_helper_lba2msf(relative_address, FALSE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
+                    msf_ptr[1] = rmin;
+                    msf_ptr[2] = rsec;
+                    msf_ptr[3] = rframe;
                 } else {
-                    ret_data->abs_addr = GUINT32_TO_BE(absolute_address);
-                    ret_data->rel_addr = GUINT32_TO_BE(relative_address);
+                    ret_data->abs_addr = GUINT32_TO_BE(mirage_helper_msf2lba(amin, asec, aframe, TRUE));
+                    ret_data->rel_addr = GUINT32_TO_BE(mirage_helper_msf2lba(rmin, rsec, rframe, FALSE));
                 }
 
                 break;
@@ -1746,7 +1760,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
 
     /* Header */
     ret_header->audio_status = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play)); /* Audio status */
-    ret_header->length = GUINT32_TO_BE(self->priv->buffer_size - 4);
+    ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 4);
 
     /* Write data */
     cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
