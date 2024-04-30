@@ -1038,7 +1038,7 @@ static gboolean command_read (CdemuDevice *self, const guint8 *raw_cdb)
         if (!sector) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector: %s\n", __debug__, error->message);
             g_error_free(error);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, LOGICAL_BLOCK_ADDRESS_OUT_OF_RANGE, 0, address);
             return FALSE;
         }
 
@@ -1234,7 +1234,7 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
     if (!first_sector) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get start sector: %s\n", __debug__, error->message);
         g_error_free(error);
-        cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, start_address);
+        cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, LOGICAL_BLOCK_ADDRESS_OUT_OF_RANGE, 0, start_address);
         return FALSE;
     }
     prev_sector_type = mirage_sector_get_sector_type(first_sector);
@@ -1254,7 +1254,7 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
         if (!sector) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector: %s!\n", __debug__, error->message);
             g_error_free(error);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, LOGICAL_BLOCK_ADDRESS_OUT_OF_RANGE, 0, address);
             return FALSE;
         }
 
