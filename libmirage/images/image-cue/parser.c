@@ -468,6 +468,12 @@ static void mirage_parser_cue_add_session (MirageParserCue *self, gint number)
        which isn't indicated because only index 01 is used) */
     self->priv->leadout_correction = leadout_length + 150;
 
+    GError *local_error = NULL;
+    if (!mirage_parser_cue_finish_last_track(self, &local_error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to finish last track for session previous to #%i: %s\n!", __debug__, number, local_error->message);
+        g_error_free(local_error);
+    }
+
     /* Add new session, store the pointer but release the reference */
     self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
     mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->cur_session);
