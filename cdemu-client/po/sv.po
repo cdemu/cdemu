@@ -633,8 +633,8 @@ msgid "Device added successfully."
 msgstr "Enheten lades till."
 
 #: ../src/cdemu:1174
-msgid "removes the last virtual device"
-msgstr "tar bort den sista virtuella enheten"
+msgid "removes the virtual device"
+msgstr "tar bort den virtuella enheten"
 
 #: ../src/cdemu:1183
 #, c-format

@@ -356,7 +356,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         }
     } else if (!g_strcmp0(method_name, "RemoveDevice")) {
         /* *** RemoveDevice *** */
-        succeeded = cdemu_daemon_remove_device(self);
+        gint device_number;
+        g_variant_get(parameters, "(i)", &device_number);
+        succeeded = cdemu_daemon_remove_device(self, device_number);
         if (!succeeded) {
             g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, Q_("Failed to remove device!"));
         }
@@ -653,7 +655,9 @@ static const gchar introspection_xml[] =
 
     "        <!-- Device management methods -->"
     "        <method name='AddDevice' />"
-    "        <method name='RemoveDevice' />"
+    "        <method name='RemoveDevice'>"
+    "            <arg name='device_number' type='i' direction='in'/>"
+    "        </method>"
 
     "        <!-- Notification signals -->"
     "        <signal name='DeviceStatusChanged'>"

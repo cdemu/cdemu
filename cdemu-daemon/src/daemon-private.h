@@ -43,7 +43,7 @@ struct _CdemuDaemonPrivate
 
 /* Device management */
 gboolean cdemu_daemon_add_device (CdemuDaemon *self);
-gboolean cdemu_daemon_remove_device (CdemuDaemon *self);
+gboolean cdemu_daemon_remove_device (CdemuDaemon *self, gint device_number);
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
 
 /* Daemon's D-BUS API */

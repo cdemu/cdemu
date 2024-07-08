@@ -605,8 +605,8 @@ msgid "Device added successfully."
 msgstr "Dodajanje naprave je uspelo."
 
 #: ../src/cdemu:1174
-msgid "removes the last virtual device"
-msgstr "odstrani zadnjo navidezno napravo"
+msgid "removes the virtual device"
+msgstr "odstrani navidezno napravo"
 
 #: ../src/cdemu:1183
 #, c-format

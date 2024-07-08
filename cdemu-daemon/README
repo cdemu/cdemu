@@ -445,7 +445,7 @@ control the daemon:
     - Creates additional virtual device
 
 * RemoveDevice ()
-    - Removes the last-created virtual device
+    - Removes the virtual device
 
 6.3. Signals
 ~~~~~~~~~~~~

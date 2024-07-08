@@ -1371,16 +1371,34 @@ class cmd_remove_device (object):
     def __init__ (self, subparsers):
         name = "remove-device"
         description_msg = _("")
-        help_msg = _("removes the last virtual device")
+        help_msg = _("removes the virtual device")
 
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
+        parser.add_argument("device", type=str, help=_("device"))
+
     def __call__ (self, proxy, arguments):
-        try:
-            proxy.RemoveDevice()
-        except GLib.Error as e:
-            raise CDEmuError(_("Failed to remove device: %s") % (e))
+        if arguments.device == "all":
+            try:
+                num_devices = proxy.GetNumberOfDevices()
+            except GLib.Error as e:
+                raise CDEmuError(_("Failed to get number of devices: %s") % (e))
+
+            for device in range(num_devices):
+                try:
+                    proxy.RemoveDevice(device)
+                except GLib.Error as e:
+                    print_warning(_("Failed to remove device %i: %s") % (device, e))
+                    continue
+        else:
+            try:
+                device = int(arguments.device)
+                proxy.RemoveDevice(device)
+            except GLib.Error as e:
+                raise CDEmuError(_("Failed to remove device %i: %s") % (device, e))
+            except ValueError:
+                raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
         print(_("Device removed successfully."))
 
@@ -1521,8 +1539,8 @@ class CDEmuDaemonProxy ():
     def AddDevice (self):
         return self.proxy.AddDevice()
 
-    def RemoveDevice (self):
-        return self.proxy.RemoveDevice()
+    def RemoveDevice (self, device_number):
+        return self.proxy.RemoveDevice('(i)', device_number)
 
 
 ########################################################################

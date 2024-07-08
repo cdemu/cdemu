@@ -194,10 +194,10 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
     return TRUE;
 }
 
-gboolean cdemu_daemon_remove_device (CdemuDaemon *self)
+gboolean cdemu_daemon_remove_device (CdemuDaemon *self, gint device_number)
 {
     /* Get last device entry */
-    GList *entry = g_list_last(self->priv->devices);
+    GList *entry = g_list_nth(self->priv->devices, device_number);
     if (!entry) {
         return FALSE;
     }

@@ -608,8 +608,8 @@ msgid "Device added successfully."
 msgstr "Накопитель добавлен успешно."
 
 #: ../src/cdemu:1174
-msgid "removes the last virtual device"
-msgstr "удаляет последний виртуальный накопитель"
+msgid "removes the virtual device"
+msgstr "удаляет виртуальный накопитель"
 
 #: ../src/cdemu:1183
 #, c-format

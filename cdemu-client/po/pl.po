@@ -615,7 +615,7 @@ msgid "Device added successfully."
 msgstr ""
 
 #: ../src/cdemu:1174
-msgid "removes the last virtual device"
+msgid "removes the virtual device"
 msgstr ""
 
 #: ../src/cdemu:1183
