@@ -120,6 +120,56 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GErr
     return succeeded;
 }
 
+static gboolean mirage_parser_cue_finish_last_session (MirageParserCue *self, GError **error)
+{
+    gboolean has_audio = FALSE;
+    gboolean has_mode1 = FALSE;
+    gboolean has_mode2 = FALSE;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last session\n", __debug__);
+
+    /* Current session needs to be set at this point */
+    if (!self->priv->cur_session) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current session is not set!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Current session is not set!"));
+        return FALSE;
+    }
+
+    gint num_tracks = mirage_session_get_number_of_tracks(self->priv->cur_session);
+    for (gint i = 0; i < num_tracks; i++) {
+        MirageTrack *track = mirage_session_get_track_by_index(self->priv->cur_session, i, NULL);
+        gint sector_type = mirage_track_get_sector_type(track);
+
+        switch (sector_type) {
+            case MIRAGE_SECTOR_AUDIO: {
+                has_audio = TRUE;
+                break;
+            }
+            case MIRAGE_SECTOR_MODE1: {
+                has_mode1 = TRUE;
+                break;
+            }
+            case MIRAGE_SECTOR_MODE2:
+            case MIRAGE_SECTOR_MODE2_FORM1:
+            case MIRAGE_SECTOR_MODE2_FORM2:
+            case MIRAGE_SECTOR_MODE2_MIXED: {
+                has_mode2 = TRUE;
+                break;
+            }
+        }
+    }
+
+    /* this is how cdrdao's cue2toc determine's session type */
+    if (has_audio && !has_mode1 && !has_mode2) {
+        mirage_session_set_session_type(self->priv->cur_session, MIRAGE_SESSION_CDDA);
+    } else if ((has_audio && has_mode1 && !has_mode2) || (!has_audio && has_mode1 && !has_mode2)) {
+        mirage_session_set_session_type(self->priv->cur_session, MIRAGE_SESSION_CDROM);
+    } else if ((has_audio && !has_mode1 && has_mode2) || (!has_audio && !has_mode1 && has_mode2)) {
+        mirage_session_set_session_type(self->priv->cur_session, MIRAGE_SESSION_CDROM_XA);
+    }
+    return TRUE;
+}
+
 static gboolean mirage_parser_cue_set_new_file (MirageParserCue *self, const gchar *filename_string, const gchar *file_type, GError **error)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file: %s\n", __debug__, filename_string);
@@ -471,6 +521,10 @@ static void mirage_parser_cue_add_session (MirageParserCue *self, gint number)
     GError *local_error = NULL;
     if (!mirage_parser_cue_finish_last_track(self, &local_error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to finish last track for session previous to #%i: %s\n!", __debug__, number, local_error->message);
+        g_error_free(local_error);
+    }
+    if (!mirage_parser_cue_finish_last_session(self, &local_error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to finish session previous to #%i: %s\n!", __debug__, number, local_error->message);
         g_error_free(local_error);
     }
 
@@ -1058,6 +1112,14 @@ static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track in the layout\n", __debug__);
     if (!mirage_parser_cue_finish_last_track(self, error)) {
+        succeeded = FALSE;
+        goto end;
+    }
+
+    /* Finish last session */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last session in the layout\n", __debug__);
+    if (!mirage_parser_cue_finish_last_session(self, error)) {
         succeeded = FALSE;
         goto end;
     }
