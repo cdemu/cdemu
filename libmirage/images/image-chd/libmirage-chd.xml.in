@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-mame-chd">
+        <generic-icon name="application-x-executable"/>
+    
+        <_comment>MAME Compressed Hunk of Data</_comment>
+    
+        <glob pattern="*.chd"/>
+
+        <magic priority="50">
+            <match type="string" value="MComprHD" offset="0"/>
+        </magic>
+    </mime-type>
+</mime-info>
