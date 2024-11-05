@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<categories>
+		<category>Utility</category>
+	</categories>
+	<description>
+		<p>Image Analyzer is a Gtk3-based utility for CD/DVD image analysis and manipulation, with following functionality:</p>
+		<ul>
+			<li>disc image layout visualization</li>
+			<li>reading of sector data from image</li>
+			<li>analysis of error correction and detection codes in sector main and subchannel data</li>
+			<li>retrieval of disc (DVD) structures, if available</li>
+			<li>visualization of disc topology (DPM) data, if available</li>
+			<li>image format conversion</li>
+			<li>logging facilities for debugging</li>
+		</ul>
+	</description>
+	<developer id="net.sf.cdemu.mrok">
+		<name>Rok Mandeljc</name>
+	</developer>
+	<id>net.sf.cdemu.image_analyzer</id>
+	<keywords>
+		<keyword>CD</keyword>
+		<keyword>disc</keyword>
+		<keyword>DVD</keyword>
+		<keyword>image</keyword>
+	</keywords>
+	<launchable type="desktop-id">image-analyzer.desktop</launchable>
+	<metadata_license>CC0-1.0</metadata_license>
+	<name>Image analyzer</name>
+	<project_license>GPL-2.0+</project_license>
+	<provides>
+		<binary>image-analyzer</binary>
+	</provides>
+	<releases>
+		<release version="3.2.6" date="2023-11-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.6.tar.xz/download</url>
+		</release>
+		<release version="3.2.5" date="2021-04-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.5.tar.xz/download</url>
+		</release>
+		<release version="3.2.4" date="2020-01-06" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.4.tar.bz2/download</url>
+		</release>
+		<release version="3.2.3" date="2019-08-27" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.3.tar.bz2/download</url>
+		</release>
+		<release version="3.2.2" date="2019-03-17" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.2.tar.bz2/download</url>
+		</release>
+		<release version="3.2.1" date="2019-03-02" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.1.tar.bz2/download</url>
+		</release>
+		<release version="3.2.0" date="2018-07-08" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.2.0.tar.bz2/download</url>
+		</release>
+		<release version="3.1.0" date="2017-06-10" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.1.0.tar.bz2/download</url>
+		</release>
+		<release version="3.0.1" date="2016-10-09" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.0.1.tar.bz2/download</url>
+		</release>
+		<release version="3.0.0" date="2014-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-3.0.0.tar.bz2/download</url>
+		</release>
+		<release version="2.1.1" date="2013-09-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-2.1.1.tar.bz2/download</url>
+		</release>
+		<release version="2.1.0" date="2013-06-07" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-2.1.0.tar.bz2/download</url>
+		</release>
+		<release version="2.0.0" date="2012-12-22" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-2.0.0.tar.bz2/download</url>
+		</release>
+		<release version="1.5.0" date="2012-01-19" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-1.5.0.tar.bz2/download</url>
+		</release>
+		<release version="1.4.0" date="2011-09-15" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/image-analyzer/image-analyzer-1.4.0.tar.gz/download</url>
+		</release>
+	</releases>
+	<requires>
+		<id version="3.2.0" compare="ge">net.sf.cdemu.libmirage</id>
+	</requires>
+	<summary>Mirage Image Analyzer</summary>
+	<url type="bugtracker">https://sourceforge.net/p/cdemu/bugs/</url>
+	<url type="contact">https://cdemu.sourceforge.io/contact/</url>
+	<url type="homepage">https://cdemu.sourceforge.io/</url>
+	<url type="vcs-browser">https://sourceforge.net/p/cdemu/code/ci/master/tree/image-analyzer/</url>
+</component>

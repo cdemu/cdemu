@@ -1,3 +1,48 @@
-image-analyzer (3.2.6-1) debian; urgency=low
-  * Initial Release. Closes: #705409
- -- Henrik Stokseth <hstokset@users.sourceforge.net>  Sat, 05 Apr 2014 12:00:00 +0100
+image-analyzer (3.2.6-5) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.image_analyzer.metainfo.xml:
+    - Revert id to previous version, because AppStream documentation and
+      implementation are not on the same page. This format should work
+      for both.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 01 Jun 2024 10:41:13 +0200
+
+image-analyzer (3.2.6-4) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.image-analyzer.metainfo.xml:
+    - Change id to correct format.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Thu, 30 May 2024 22:11:18 +0200
+
+image-analyzer (3.2.6-3) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.image_analyzer.metainfo.xml:
+    - Add developer.
+  * debian/control:
+    - Bump Standards-Version to 4.7.0.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 25 May 2024 12:43:22 +0200
+
+image-analyzer (3.2.6-2) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.image_analyzer.metainfo.xml:
+    - Move description inside proper tag.
+    - Add keywords.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Wed, 01 May 2024 13:11:23 +0200
+
+image-analyzer (3.2.6-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Source-only upload to allow testing migration.
+  * debian/control: Do not hardcode dependency on libglib2.0-0. Such
+    dependency is already introduced by gir1.2-glib-2.0, and a hard
+    dependency will block the ongoing 64-bit time_t transition.
+
+ -- Boyuan Yang <byang@debian.org>  Fri, 26 Apr 2024 09:05:48 -0400
+
+image-analyzer (3.2.6-1) unstable; urgency=low
+
+  * Initial release, closes: #983454.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Wed, 27 Mar 2024 16:31:46 +0100

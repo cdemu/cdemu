@@ -1,17 +1,20 @@
 Source: image-analyzer
 Section: utils
 Priority: optional
-Homepage: http://cdemu.sourceforge.net/
-Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
-Build-Depends: debhelper (>= 10)
-Build-Depends-Indep: python3 (>= 3.4.0), intltool, cmake (>= 3.7.0), dh-python
-X-Python3-Version: >= 3.4.0
-Standards-Version: 4.3.0
+Homepage: https://cdemu.sourceforge.io/
+Maintainer: Matteo Bini <matteobin@tiepi.it>
+Build-Depends: debhelper-compat (= 13)
+Build-Depends-Indep: cmake (>= 3.7.0),
+                     dh-python,
+                     intltool,
+                     python3 (>= 3.4.0)
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
 
 
 Package: image-analyzer
 Architecture: all
-Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0, libglib2.0-0 (>= 2.42),
+Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0,
  gir1.2-gtk-3.0, gir1.2-pango-1.0, gir1.2-mirage-3.2 (>= 3.2.0), python3-matplotlib,
  ${python3:Depends}, ${misc:Depends}
 Conflicts: image-analyzer-dbg
@@ -27,4 +30,3 @@ Description: Mirage Image Analyzer
   - visualization of disc topology (DPM) data, if available
   - image format conversion
   - logging facilities for debugging
-

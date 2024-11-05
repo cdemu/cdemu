@@ -8,8 +8,5 @@
 override_dh_auto_configure:
 	dh_auto_configure -- -DPOST_INSTALL_HOOKS:BOOL=OFF
 
-override_dh_auto_test:
-
 %:
 	dh $@ --with python3
-
