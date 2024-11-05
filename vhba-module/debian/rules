@@ -1,34 +1,12 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-
 #export DH_VERBOSE=1
 
-# Get package version info.
-SOURCE_VERSION := $(shell head -1 debian/changelog | cut -d\( -f2 | cut -d\) -f1)
-UPSTREAM_VERSION := $(shell echo "$(SOURCE_VERSION)" | cut -d- -f1)
+include /usr/share/dpkg/pkg-info.mk
 
-# Installation directories
-PKGDIR := $(CURDIR)/debian/vhba-dkms
-DESTDIR := $(PKGDIR)/usr/src/vhba-$(UPSTREAM_VERSION)
-
-
-override_dh_auto_configure:
-
-override_dh_auto_build:
-
-override_dh_auto_test:
-
-override_dh_auto_clean:
-
-override_dh_auto_install:
-	install -d                                        $(DESTDIR)
-	install -m 644 -D $(CURDIR)/Makefile              $(DESTDIR)/
-	install -m 644 -D $(CURDIR)/*.c                   $(DESTDIR)/
-
-override_dh_dkms:
-	dh_dkms -V
+execute_after_dh_install:
+	dh_install -pvhba-dkms Makefile *.c usr/src/vhba-$(DEB_VERSION_UPSTREAM)/
 
 %:
-	dh $@ --with dkms
-
+	dh $@ --buildsystem=none

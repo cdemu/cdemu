@@ -1,37 +1,31 @@
-This package was debianized by Henrik Stokseth <hstokset@users.sourceforge.net> on
-Mon, 24 Des 2007 12:00:00 +0100.
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: VHBA module
+Upstream-Contact: https://cdemu.sourceforge.io/contact/
+Source: https://cdemu.sourceforge.io/
 
-It was downloaded from: http://cdemu.sourceforge.net/
+Files: *
+Copyright: © 2007-2012 Chia-I Wu <olvaffe AT gmail DOT com>
+License: GPL-2+
 
-Upstream Authors: 
+Files: debian/*
+Copyright: © 2007 Henrik Stokseth <hstokset@users.sourceforge.net>
+           © 2024 Matteo Bini <matteobin@tiepi.it>
+License: GPL-2+
 
-    Paweł Różański, Robert Penz, Chia-I Wu, Henrik Stokseth,
-    Marc Thoben, Mike Frysinger, Rok Mandeljc.
+Files: debian/appstream/net.sf.cdemu.vhba_module.metainfo.xml
+Copyright: © 2024 Matteo Bini <matteobin@tiepi.it>
+License: CC0-1.0
 
-Copyright: 
+Files: INSTALL
+Copyright: (C) 2008-2016 The CDEMU Project.
+License: unlimited-permission
+ This file is free documentation; the CDEmu project gives
+ unlimited permission to copy, distribute and modify it.
 
-    2000-2007  Robert Penz
-    2007-2008  Rok Mandeljc
+License: CC0-1.0
+ On Debian systems, the complete text of the Creative Commons 0 1.0
+ Universal license can be found in "/usr/share/common-licenses/CC0-1.0".
 
-License:
-
-    This package is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This package is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this package; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
-
-The Debian packaging is (C) 2007, Henrik Stokseth <hstokset@users.sourceforge.net> and
-is licensed under the GPL, see above.
-
+License: GPL-2+
+ On Debian systems, the complete text of the GNU General Public License
+ version 2 can be found in "/usr/share/common-licenses/GPL-2".

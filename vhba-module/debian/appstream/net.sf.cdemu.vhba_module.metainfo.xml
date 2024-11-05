@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<description>
+		<p>VHBA kernel module, a virtual SCSI host bus adapter used by CDEmu daemon from the CDEmu suite.</p>
+	</description>
+	<developer id="net.sf.cdemu.olvaffe">
+		<name>Chia-I Wu</name>
+	</developer>
+	<id>net.sf.cdemu.vhba_module</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<name>VHBA module</name>
+	<project_license>GPL-2.0+</project_license>
+	<releases>
+		<release version="20240202" date="2024-02-02" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20240202.tar.xz/download</url>
+		</release>
+		<release version="20211218" date="2021-12-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20211218.tar.xz/download</url>
+		</release>
+		<release version="20211023" date="2021-10-23" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20211023.tar.xz/download</url>
+		</release>
+		<release version="20210418" date="2021-04-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20210418.tar.xz/download</url>
+		</release>
+		<release version="20200106" date="2020-01-06" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20200106.tar.bz2/download</url>
+		</release>
+		<release version="20190831" date="2019-08-31" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20190831.tar.bz2/download</url>
+		</release>
+		<release version="20190827" date="2019-08-27" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20190827.tar.bz2/download</url>
+		</release>
+		<release version="20190410" date="2019-04-13" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20190410.tar.bz2/download</url>
+		</release>
+		<release version="20190302" date="2019-03-02" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20190302.tar.bz2/download</url>
+		</release>
+		<release version="20170610" date="2017-06-10" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20170610.tar.bz2/download</url>
+		</release>
+		<release version="20161009" date="2016-10-09" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20161009.tar.bz2/download</url>
+		</release>
+		<release version="20140928" date="2014-09-28" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20140928.tar.bz2/download</url>
+		</release>
+		<release version="20140629" date="2014-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20140629.tar.bz2/download</url>
+		</release>
+		<release version="20130607" date="2013-10-07" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20130607.tar.bz2/download</url>
+		</release>
+		<release version="20120422" date="2012-04-22" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20120422.tar.bz2/download</url>
+		</release>
+		<release version="20110915" date="2012-02-13" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20110915.tar.bz2/download</url>
+		</release>
+		<release version="20110416" date="2011-04-16" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20110416.tar.gz/download</url>
+		</release>
+		<release version="20100822" date="2010-08-25" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20100822.tar.gz/download</url>
+		</release>
+		<release version="1.2.1" date="2009-01-17" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-1.2.1.tar.bz2/download</url>
+		</release>
+		<release version="1.1.0" date="2008-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-1.1.0.tar.bz2/download</url>
+		</release>
+		<release version="1.0.0" date="2007-12-24" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-1.0.0.tar.bz2/download</url>
+		</release>
+	</releases>
+	<requires>
+		<kernel version="3.16" compare="ge">Linux</kernel>
+	</requires>
+	<summary>VHBA virtual host bus adapter module</summary>
+	<url type="bugtracker">https://sourceforge.net/p/cdemu/bugs/</url>
+	<url type="contact">https://cdemu.sourceforge.io/contact/</url>
+	<url type="homepage">https://cdemu.sourceforge.io/</url>
+	<url type="vcs-browser">https://sourceforge.net/p/cdemu/code/ci/master/tree/vhba-module/</url>
+</component>

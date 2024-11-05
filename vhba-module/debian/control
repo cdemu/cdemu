@@ -1,16 +1,17 @@
 Source: vhba-module
-Section: misc
+Section: kernel
 Priority: optional
-Homepage: http://cdemu.sourceforge.net/
-Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
-Build-Depends: debhelper (>= 10), dkms, dh-dkms
-Standards-Version: 4.3.0
-
+Homepage: https://cdemu.sourceforge.io/
+Maintainer: Matteo Bini <matteobin@tiepi.it>
+Build-Depends: debhelper-compat (= 13),
+               dh-sequence-dkms,
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Testsuite: autopkgtest-pkg-dkms
 
 Package: vhba-dkms
 Architecture: all
-Depends: build-essential, ${misc:Depends}
+Depends: ${misc:Depends}
 Description: VHBA virtual host bus adapter module
  VHBA kernel module, a virtual SCSI host bus adapter used by CDEmu daemon from
- the cdemu suite.
-
+ the CDEmu suite.

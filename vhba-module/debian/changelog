@@ -1,3 +1,55 @@
-vhba-module (20240917-1) debian; urgency=low
-  * Initial Release. Closes: #705409
- -- Henrik Stokseth <hstokset@users.sourceforge.net>  Sat, 05 Apr 2014 12:00:00 +0100
+vhba-module (20240917-1) unstable; urgency=medium
+
+  * New upstream version, closes: #1081379.
+  * Thanks to Andreas Beckmann <anbe@debian.org> for the following patches:
+    - Simplify appstream metadata installation.
+    - Simplify dkms installation.
+    - Switch to dh-sequence-dkms.
+    - Declare Testsuite: autopkgtest-pkg-dkms.
+    - Ship /etc/modules-load.d/vhba.conf as conffile.
+    - Drop redundant packaging bits.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Wed, 09 Oct 2024 22:18:49 +0200
+
+vhba-module (20240202-5) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.vhba_module.metainfo.xml:
+    - Revert id to previous version, because AppStream documentation and
+    implementation are not on the same page. This format should work for both.
+  * debian/rules:
+    - Change AppStream metadata file name (underscore instead of hyphen).
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 01 Jun 2024 10:15:49 +0200
+
+vhba-module (20240202-4) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.vhba-module.metainfo.xml:
+    - Change id to correct format.
+  * debian/rules:
+    - Change AppStream metadata file name (hyphen instead of underscore).
+
+ -- Matteo Bini <matteobin@tiepi.it>  Thu, 30 May 2024 21:01:01 +0200
+
+vhba-module (20240202-3) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.vhba_module.metainfo.xml:
+    - Add developer.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 25 May 2024 13:03:39 +0200
+
+vhba-module (20240202-2) unstable; urgency=medium
+
+  * debian/control:
+    - Bump Standards-Version to 4.7.0.
+  * debian/lintian-overrides:
+    - Add appstream-metadata-missing-modalias-provide.
+  * debian/source/lintian-overrides:
+    - Add new-package-uses-date-based-version-number.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Fri, 24 May 2024 19:42:14 +0200
+
+vhba-module (20240202-1) unstable; urgency=low
+
+  * Initial release, closes: #983402, #983403.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Wed, 28 Feb 2024 12:45:56 +0100

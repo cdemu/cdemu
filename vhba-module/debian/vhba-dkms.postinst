@@ -1,22 +1,14 @@
 #!/bin/sh
-# postinst script for vhba-dkms
-#
+set -e
 
 #DEBHELPER#
-
-myerror ()
-{
-	echo "ERROR: $1" >&2
-	exit 1
-}
 
 mywarning ()
 {
 	echo "WARNING: $1" >&2
 }
 
-case "$1" in
-	configure)
+if [ "$1" = "configure" ]; then
 		# try to load the module
 		if test -d "/sys/module/vhba"; then
 			mywarning "Reboot required to load new vhba module."
@@ -24,23 +16,4 @@ case "$1" in
 		else
 		    modprobe "vhba" || mywarning "Unable to load module."
         fi
-
-		# and make sure it's there after next reboot
-		if test -f "/etc/modules-load.d/vhba.conf"; then
-			mywarning "Configuration already exists."
-		else
-			mkdir -p "/etc/modules-load.d"
-			echo "vhba" > "/etc/modules-load.d/vhba.conf" || myerror "Unable to add module configuration." 
-		fi
-	;;
-
-	abort-upgrade|abort-remove|abort-deconfigure)
-	;;
-
-	*)
-		myerror "postinst called with unknown argument '$1'."
-	;;
-esac
-
-exit 0
-
+fi
