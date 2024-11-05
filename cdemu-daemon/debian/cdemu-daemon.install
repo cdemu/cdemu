@@ -1,4 +1,3 @@
-usr/bin/*
-usr/share/*
 service-example/cdemu-daemon.service /usr/lib/systemd/user
 service-example/net.sf.cdemu.CDEmuDaemon.service /usr/share/dbus-1/services
+debian/appstream/*	/usr/share/metainfo

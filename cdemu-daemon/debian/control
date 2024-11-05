@@ -1,18 +1,22 @@
 Source: cdemu-daemon
 Section: misc
 Priority: optional
-Homepage: http://cdemu.sourceforge.net/
-Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
-Build-Depends: libglib2.0-dev (>= 2.38), libao-dev (>= 0.8.0),
- libmirage11-dev (>= 3.2.0), debhelper (>= 10), intltool,
- cmake (>= 3.7.0)
-Standards-Version: 4.3.0
+Homepage: https://cdemu.sourceforge.io/
+Maintainer: Matteo Bini <matteobin@tiepi.it>
+Build-Depends: cmake (>= 3.7.0),
+               debhelper-compat (= 13),
+               intltool,
+               libao-dev (>= 0.8.0),
+               libglib2.0-dev (>= 2.38),
+               libmirage-dev (>= 3.2.0)
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
 
 
 Package: cdemu-daemon
-Section: misc
 Architecture: any
-Depends: vhba-dkms (>= 20170610), dbus-user-session, ${shlibs:Depends}, ${misc:Depends}
+Depends: dbus-user-session, ${shlibs:Depends}, ${misc:Depends}
+Recommends: vhba-dkms (>= 20170610)
 Description: Main CDEmu daemon
  This is CDEmu daemon, the daemon part of the CDEmu suite,
  a free, GPL CD/DVD-ROM device emulator for Linux.
@@ -26,13 +30,3 @@ Description: Main CDEmu daemon
  The daemon registers itself on D-BUS' system or session bus (depending on the
  options passed to it) where it exposes an interface that can be used by
  clients to control it.
-
-
-Package: cdemu-daemon-dbg
-Section: debug
-Architecture: any
-Priority: optional
-Depends: cdemu-daemon (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Main CDEmu daemon (debugging symbols)
- This package provides detached debugging symbols.
-

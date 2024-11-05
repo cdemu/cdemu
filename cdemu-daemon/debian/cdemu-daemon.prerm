@@ -2,6 +2,8 @@
 # prerm script for cdemu-daemon
 #
 
+set -e
+
 myerror ()
 {
 	echo "ERROR: $1" >&2

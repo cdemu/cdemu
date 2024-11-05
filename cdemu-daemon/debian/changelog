@@ -1,3 +1,51 @@
-cdemu-daemon (3.2.7-1) debian; urgency=low
-  * Initial Release. Closes: #705409
- -- Henrik Stokseth <hstokset@users.sourceforge.net>  Sat, 05 Apr 2014 12:00:00 +0100
+cdemu-daemon (3.2.7-2) unstable; urgency=medium
+
+  * debian/control:
+    - Move vhba-dkms dependency to Recommends field to avoid removing
+      CDEmu daemon and client packages, if just the VHBA kernel module
+      has issues (closes: #1084760). Thanks to Christoph Anton Mitterer
+      <calestyo@scientia.org> for the suggestion.
+  * debian/patches/00_hardening-flags.patch:
+    - Add env variables CPPFLAGS and CFLAGS to compiler options and
+      LDFLAGS to linker options, to fix hardening Lintian warning
+      (bindnow).
+  * debian/patches/00_ldflags.patch:
+    - Delete old patch, replaced by 00_hardening-flags.patch.
+  * debian/rules:
+    - Change from bindnow hardening flag to all.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 12 Oct 2024 13:44:25 +0200
+
+cdemu-daemon (3.2.7-1) unstable; urgency=medium
+
+  * New upstream version.
+  * debian/patches/00_ldflags.patch:
+    - Add env variable LDFLAGS to linker options, in CMakeLists.txt,
+      to fix hardening Lintian warning (bindnow).
+  * debian/rules:
+    - Add bindnow hardening flag.
+    - Remove empty dh_auto_test override.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 03 Aug 2024 15:14:45 +0200
+
+cdemu-daemon (3.2.6-3) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.daemon.metainfo.xml:
+    - Add developer.
+  * debian/control:
+    - Bump Standards-Version to 4.7.0.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 25 May 2024 12:35:26 +0200
+
+cdemu-daemon (3.2.6-2) unstable; urgency=low
+
+  * debian/appstream/net.sf.cdemu.daemon.metainfo.xml:
+    - Change version requirement for libmirage to 3.0.0.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Thu, 21 Mar 2024 14:05:38 +0100
+
+cdemu-daemon (3.2.6-1) unstable; urgency=low
+
+  * Initial release, closes: #983451.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 03 Feb 2024 13:58:53 +0100
