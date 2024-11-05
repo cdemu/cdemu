@@ -1,3 +1,54 @@
-libmirage (3.2.9-1) debian; urgency=low
-  * Initial Release. Closes: #705409
- -- Henrik Stokseth <hstokset@users.sourceforge.net>  Sat, 05 Apr 2014 12:00:00 +0100
+libmirage (3.2.9-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Fri, 11 Oct 2024 09:09:37 +0200
+
+libmirage (3.2.8-1) unstable; urgency=medium
+
+  * New upstream version.
+  * debian/control:
+    - Add Provides: gir1.2-mirage-3.2-dev (= ${binary:Version}), to fix
+      Lintian gir-package-name-does-not-match warning.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 03 Aug 2024 08:16:11 +0200
+
+libmirage (3.2.7-5) unstable; urgency=medium
+
+  * debian/rules:
+    - Disable gtk-doc on arch-only build (closes: #1072160). Thanks to
+      Helmut Grohne <helmut@subdivi.de> for the patch.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sun, 23 Jun 2024 11:49:22 +0200
+
+libmirage (3.2.7-4) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.libmirage.metainfo.xml:
+    - Add developer.
+  * debian/control:
+    - Bump Standards-Version to 4.7.0.
+  * debian/source/lintian-overrides:
+    - Add missing-build-dependency-for-dh-addon.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 25 May 2024 12:55:24 +0200
+
+libmirage (3.2.7-3) unstable; urgency=low
+
+  * debian/control:
+    - Add Multi-Arch: same to gir1.2-mirage-3.2.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Thu, 21 Mar 2024 13:23:51 +0100
+
+libmirage (3.2.7-2) unstable; urgency=low
+
+  * debian/control:
+    - Add Multi-Arch: foreign to libmirage-doc and Multi-Arch: same to
+      libmirage11.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sun, 10 Mar 2024 14:51:34 +0100
+
+libmirage (3.2.7-1) unstable; urgency=low
+
+  * Initial release, closes: #983444.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Tue, 20 Feb 2024 16:56:31 +0100

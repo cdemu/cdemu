@@ -1,17 +1,15 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 #export DH_VERBOSE=1
 
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DPOST_INSTALL_HOOKS:BOOL=OFF
-
-override_dh_auto_test:
-
-override_dh_strip:
-	dh_strip --dbg-package="libmirage11-dbg"
+	dh_auto_configure -- \
+		-DPOST_INSTALL_HOOKS:BOOL=OFF \
+		-DGTKDOC_ENABLED=$(if $(filter libmirage-doc,$(shell dh_listpackages)),ON,OFF)
 
 override_dh_makeshlibs:
 	dh_makeshlibs --exclude="libmirage-3.2"
@@ -21,4 +19,3 @@ override_dh_shlibdeps:
 
 %:
 	dh $@ --with gir
-

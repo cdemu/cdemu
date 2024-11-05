@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<description>
+		<p>This is libMirage library, a CD-ROM image access library, and part of the CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux. It is written in C and based on GLib.</p>
+		<p>The aim of libMirage is to provide uniform access to the data stored in different image formats, by creating a representation of disc stored in image file, which is based on GObjects.</p>
+	</description>
+	<developer id="net.sf.cdemu.mrok">
+		<name>Rok Mandeljc</name>
+	</developer>
+	<id>net.sf.cdemu.libmirage</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<name>libMirage</name>
+	<project_license>GPL-2.0+</project_license>
+	<provides>
+		<library>libmirage.so.11</library>
+	</provides>
+	<releases>
+		<release version="3.2.7" date="2023-11-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.7.tar.xz/download</url>
+		</release>
+		<release version="3.2.6" date="2021-12-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.6.tar.xz/download</url>
+		</release>
+		<release version="3.2.5" date="2021-04-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.5.tar.xz/download</url>
+		</release>
+		<release version="3.2.4" date="2020-01-06" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.4.tar.bz2/download</url>
+		</release>
+		<release version="3.2.3" date="2019-08-27" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.3.tar.bz2/download</url>
+		</release>
+		<release version="3.2.2" date="2019-03-17" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.2.tar.bz2/download</url>
+		</release>
+		<release version="3.2.1" date="2019-03-02" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.1.tar.bz2/download</url>
+		</release>
+		<release version="3.2.0" date="2018-07-08" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.0.tar.bz2/download</url>
+		</release>
+		<release version="3.1.0" date="2017-06-10" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.1.0.tar.bz2/download</url>
+		</release>
+		<release version="3.0.5" date="2016-10-09" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.0.5.tar.bz2/download</url>
+		</release>
+		<release version="3.0.4" date="2015-11-21" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.0.4.tar.bz2/download</url>
+		</release>
+		<release version="3.0.3" date="2014-11-09" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.0.3.tar.bz2/download</url>
+		</release>
+		<release version="3.0.2" date="2014-09-28" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.0.2.tar.bz2/download</url>
+		</release>
+		<release version="3.0.1" date="2014-07-25" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.0.1.tar.bz2/download</url>
+		</release>
+		<release version="3.0.0" date="2014-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.0.0.tar.bz2/download</url>
+		</release>
+		<release version="2.1.1" date="2013-09-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-2.1.1.tar.bz2/download</url>
+		</release>
+		<release version="2.1.0" date="2013-06-07" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-2.1.0.tar.bz2/download</url>
+		</release>
+		<release version="2.0.0" date="2012-12-22" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-2.0.0.tar.bz2/download</url>
+		</release>
+		<release version="1.5.0" date="2012-01-19" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.5.0.tar.bz2/download</url>
+		</release>
+		<release version="1.4.0" date="2011-09-15" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.4.0.tar.gz/download</url>
+		</release>
+		<release version="1.3.0" date="2010-08-24" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.3.0.tar.gz/download</url>
+		</release>
+		<release version="1.2.0" date="2009-07-25" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.2.0.tar.bz2/download</url>
+		</release>
+		<release version="1.1.1" date="2008-09-13" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.1.1.tar.bz2/download</url>
+		</release>
+		<release version="1.1.0" date="2008-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.1.0.tar.bz2/download</url>
+		</release>
+		<release version="1.0.0" date="2007-12-24" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-1.0.0.tar.bz2/download</url>
+		</release>
+	</releases>
+	<summary>CD-ROM image access library</summary>
+	<url type="bugtracker">https://sourceforge.net/p/cdemu/bugs/</url>
+	<url type="contact">https://cdemu.sourceforge.io/contact/</url>
+	<url type="homepage">https://cdemu.sourceforge.io/</url>
+	<url type="vcs-browser">https://sourceforge.net/p/cdemu/code/ci/master/tree/libmirage/</url>
+</component>
