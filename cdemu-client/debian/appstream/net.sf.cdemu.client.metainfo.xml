@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<description>
+		<p>This is cdemu-client, a command-line client for controlling the CDEmu daemon. It is part of the CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux.</p>
+		<p>It provides a way to perform the key tasks related to controlling the CDEmu daemon, such as loading and unloading devices, displaying devices' status and retrieving/setting devices' debug masks.</p>
+	</description>
+	<developer id="net.sf.cdemu.mrok">
+		<name>Rok Mandeljc</name>
+	</developer>
+	<id>net.sf.cdemu.client</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<name>CDEmu client</name>
+	<project_license>GPL-2.0+</project_license>
+	<provides>
+		<binary>cdemu</binary>
+	</provides>
+	<releases>
+	</releases>
+		<release version="3.2.5" date="2021-04-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.5.tar.xz/download</url>
+		</release>
+		<release version="3.2.4" date="2020-01-06" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.4.tar.bz2/download</url>
+		</release>
+		<release version="3.2.3" date="2019-08-31" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.3.tar.bz2/download</url>
+		</release>
+		<release version="3.2.2" date="2019-08-27" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.2.tar.bz2/download</url>
+		</release>
+		<release version="3.2.1" date="2019-03-02" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.1.tar.bz2/download</url>
+		</release>
+		<release version="3.2.0" date="2018-07-08" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.0.tar.bz2/download</url>
+		</release>
+		<release version="3.1.0" date="2017-06-10" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.1.0.tar.bz2/download</url>
+		</release>
+		<release version="3.0.4" date="2016-10-11" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.0.4.tar.bz2/download</url>
+		</release>
+		<release version="3.0.3" date="2016-10-09" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.0.3.tar.bz2/download</url>
+		</release>
+		<release version="3.0.1" date="2015-11-21" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.0.1.tar.bz2/download</url>
+		</release>
+		<release version="3.0.0" date="2014-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.0.0.tar.bz2/download</url>
+		</release>
+		<release version="2.1.1" date="2013-09-18" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-2.1.1.tar.bz2/download</url>
+		</release>
+		<release version="2.1.0" date="2013-06-07" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-2.1.0.tar.bz2/download</url>
+		</release>
+		<release version="2.0.0" date="2012-12-22" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-2.0.0.tar.bz2/download</url>
+		</release>
+		<release version="1.5.0" date="2012-01-19" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-1.5.0.tar.bz2/download</url>
+		</release>
+		<release version="1.4.0" date="2011-09-15" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-1.4.0.tar.gz/download</url>
+		</release>
+		<release version="1.3.0" date="2010-08-24" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-1.3.0.tar.gz/download</url>
+		</release>
+		<release version="1.2.0" date="2009-07-25" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-1.2.0.tar.bz2/download</url>
+		</release>
+		<release version="1.1.0" date="2008-06-29" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-1.1.0.tar.bz2/download</url>
+		</release>
+		<release version="1.0.0" date="2007-12-24" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-1.0.0.tar.bz2/download</url>
+		</release>
+	<requires>
+		<id version="3.0.0" compare="ge">net.sf.cdemu.daemon</id>
+	</requires>
+	<summary>Command-line client to control CDEmu daemon</summary>
+	<url type="bugtracker">https://sourceforge.net/p/cdemu/bugs/</url>
+	<url type="contact">https://cdemu.sourceforge.io/contact/</url>
+	<url type="homepage">https://cdemu.sourceforge.io/</url>
+	<url type="vcs-browser">https://sourceforge.net/p/cdemu/code/ci/master/tree/cdemu-client/</url>
+</component>

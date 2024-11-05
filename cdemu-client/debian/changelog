@@ -1,3 +1,14 @@
-cdemu-client (3.2.5-1) debian; urgency=low
-  * Initial Release. Closes: #705409
- -- Henrik Stokseth <hstokset@users.sourceforge.net>  Sat, 05 Apr 2014 12:00:00 +0100
+cdemu-client (3.2.5-2) unstable; urgency=medium
+
+  * debian/appstream/net.sf.cdemu.client.metainfo.xml:
+    - Add developer.
+  * debian/control:
+    - Bump Standards-Version to 4.7.0.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 25 May 2024 12:27:09 +0200
+
+cdemu-client (3.2.5-1) unstable; urgency=low
+
+  * Initial release, closes: #983452.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Thu, 21 Mar 2024 17:59:10 +0100

@@ -1,2 +1,2 @@
-debian/cdemu-client.conf    etc/
-
+debian/appstream/*	/usr/share/metainfo
+debian/cdemu-client.conf	etc/

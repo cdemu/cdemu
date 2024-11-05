@@ -12,4 +12,3 @@ override_dh_auto_test:
 
 %:
 	dh $@ --with python3
-
