@@ -170,6 +170,8 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
         /* Reset */
         self->priv->cur_lba = -1;
         self->priv->cur_track = NULL;
+        self->priv->leadout_lba = -1;
+        self->priv->prev_mode = -1;
     } else if (entry[3] == 0xA1) {
         /* Last track number */
     } else if (entry[3] == 0xA2) {
