@@ -130,7 +130,7 @@ static void mirage_writer_iso_update_disc_filenames (MirageWriterIso *self G_GNU
         g_object_unref(track);
 
         if (!filenames[i]) {
-            filenames[i] = "<ERROR>";
+            filenames[i] = g_strdup("<ERROR>");
         }
     }
 
@@ -282,6 +282,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
     }
 
     /* I/O stream */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment filename = %s\n", __debug__, filename);
     stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
     g_free(filename);
     if (!stream) {
