@@ -703,10 +703,12 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
                 /* Request new fragment from writer */
                 fragment = NULL;
-                if (fragment_address < track_start) {
-                    /* Pregap fragment */
+                if (fragment_address + fragment_length <= track_start) {
+                    /* Pure pregap fragment - lies completely before the track start */
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment is a pure-pregap fragment\n", __debug__);
                     fragment = mirage_writer_create_fragment(self, new_track, MIRAGE_FRAGMENT_PREGAP, error);
                 } else {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment is a data (or pregap + data) fragment\n", __debug__);
                     fragment = mirage_writer_create_fragment(self, new_track, MIRAGE_FRAGMENT_DATA, error);
                 }
 
