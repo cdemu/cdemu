@@ -5,8 +5,16 @@
 
 include /usr/share/dpkg/pkg-info.mk
 
-execute_after_dh_install:
-	dh_install -pvhba-dkms Makefile *.c usr/src/vhba-$(DEB_VERSION_UPSTREAM)/
-
 %:
-	dh $@ --buildsystem=none
+	dh $@
+
+override_dh_auto_clean:
+
+
+override_dh_auto_build:
+
+
+override_dh_auto_install:
+	dh_install -pvhba-dkms debian/appstream/net.sf.cdemu.vhba_module.metainfo.xml usr/share/metainfo
+	dh_install -pvhba-dkms debian/vhba.conf etc/modules-load.d
+	dh_install -pvhba-dkms Makefile *.c usr/src/vhba-$(DEB_VERSION_UPSTREAM)

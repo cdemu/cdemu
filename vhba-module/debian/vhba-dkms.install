@@ -1,2 +1,0 @@
-debian/appstream/net.sf.cdemu.vhba_module.metainfo.xml	usr/share/metainfo/
-debian/vhba.conf					etc/modules-load.d/
