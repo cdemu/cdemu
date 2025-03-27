@@ -5,7 +5,7 @@ Homepage: https://cdemu.sourceforge.io/
 Maintainer: Matteo Bini <matteobin@tiepi.it>
 Build-Depends: debhelper-compat (= 13),
                dh-sequence-dkms,
-Standards-Version: 4.7.0
+Standards-Version: 4.7.2
 Rules-Requires-Root: no
 Testsuite: autopkgtest-pkg-dkms
 
