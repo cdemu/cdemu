@@ -11,6 +11,9 @@
 	<name>VHBA module</name>
 	<project_license>GPL-2.0+</project_license>
 	<releases>
+		<release version="20240917" date="2024-09-17" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20240917.tar.xz/download</url>
+		</release>
 		<release version="20240202" date="2024-02-02" type="stable">
 			<url>https://sourceforge.net/projects/cdemu/files/vhba-module/vhba-module-20240202.tar.xz/download</url>
 		</release>
