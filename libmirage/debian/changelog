@@ -1,3 +1,9 @@
+libmirage (3.2.10-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 29 Mar 2025 23:22:07 +0100
+
 libmirage (3.2.9-1) unstable; urgency=medium
 
   * New upstream version.
