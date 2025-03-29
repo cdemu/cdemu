@@ -15,6 +15,12 @@
 		<library>libmirage.so.11</library>
 	</provides>
 	<releases>
+		<release version="3.2.9" date="2024-09-17" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.9.tar.xz/download</url>
+		</release>
+		<release version="3.2.8" date="2024-07-09" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.8.tar.xz/download</url>
+		</release>
 		<release version="3.2.7" date="2023-11-29" type="stable">
 			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.7.tar.xz/download</url>
 		</release>
