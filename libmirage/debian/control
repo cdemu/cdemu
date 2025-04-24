@@ -16,7 +16,7 @@ Build-Depends: cmake (>= 3.7.0),
                libsndfile1-dev,
                pkgconf,
                zlib1g-dev
-Standards-Version: 4.7.0
+Standards-Version: 4.7.2
 Rules-Requires-Root: no
 
 

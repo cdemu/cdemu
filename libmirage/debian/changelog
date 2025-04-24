@@ -1,8 +1,12 @@
 libmirage (3.2.10-1) unstable; urgency=medium
 
   * New upstream version.
+  * debian/appstream/net.sf.cdemu.libmirage.metainfo.xml:
+    - Add 3.2.8, 3.2.9 and 3.2.10 releases.
+  * debian/control:
+    - Bump Standards-Version to 4.7.2.
 
- -- Matteo Bini <matteobin@tiepi.it>  Sat, 29 Mar 2025 23:22:07 +0100
+ -- Matteo Bini <matteobin@tiepi.it>  Wed, 23 Apr 2025 13:58:00 +0200
 
 libmirage (3.2.9-1) unstable; urgency=medium
 
