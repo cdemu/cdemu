@@ -1,8 +1,24 @@
 vhba-module (20250329-1) unstable; urgency=medium
 
-  * New upstream version.
+  * New upstream version, closes: #1104419.
+  * debian/appstream/net.sf.cdemu.vhba-module.metainfo.xml:
+    - Add 20240917 and 20250329 releases.
+  * debian/control:
+    - Bump Standards-Version to 4.7.2.
+  * debian/copyright:
+    - Change Upstream-Contact to Rok Mandeljc, like in all of the other
+      CDEmu packages.
+  * debian/rules:
+    - Make rules compatible with debhelper <= 12.
+  * debian/vhba-dkms.dkms:
+    - Update PACKAGE_VERSION.
+  * debian/vhba-dkms.install:
+    - Remove file since install step is handled in rules.
+  * debian/vhba-dkms.postinst:
+    - Don't run modprobe inside a chroot environment (closes: #1101666).
+      Thanks to Andreas Beckmann <anbe@debian.org> for the patch.
 
- -- Matteo Bini <matteobin@tiepi.it>  Sat, 29 Mar 2025 23:22:07 +0100
+ -- Matteo Bini <matteobin@tiepi.it>  Mon, 05 May 2025 09:26:46 +0200
 
 vhba-module (20240917-1) unstable; urgency=medium
 

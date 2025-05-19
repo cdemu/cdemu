@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: VHBA module
-Upstream-Contact: https://cdemu.sourceforge.io/contact/
+Upstream-Contact: Rok Mandeljc <rok.mandeljc@gmail.com>
 Source: https://cdemu.sourceforge.io/
 
 Files: *
