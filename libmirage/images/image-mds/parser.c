@@ -308,7 +308,7 @@ static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
         cur_ptr += 2048;
 
         /* 0x0000: Physical information */
-        int num_layers = (cur_ptr[2] & 0x60) >> 4; /* Bits 5 and 6 of byte 2 comprise num_layers field */
+        int num_layers = (cur_ptr[2] & 0x60) >> 5; /* Bits 5 and 6 of byte 2 comprise num_layers field */
         if (num_layers == 0x01) {
             num_layers = 2; /* field value 01b specifies 2 layers */
         } else {
