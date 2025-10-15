@@ -45,6 +45,7 @@ struct _CdemuDaemonPrivate
 gboolean cdemu_daemon_add_device (CdemuDaemon *self);
 gboolean cdemu_daemon_remove_device (CdemuDaemon *self);
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
+void cdemu_daemon_prepare_for_sleep(CdemuDaemon *self, gboolean start);
 
 /* Daemon's D-BUS API */
 gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusType bus_type);
