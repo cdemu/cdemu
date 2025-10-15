@@ -50,6 +50,8 @@ set(cdemu-daemon_SOURCES
     src/device-mode-pages.c
     src/device-recording.c
     src/error.c
+    src/logind.c
+    src/sleep.c
     src/main.c
 )
 
