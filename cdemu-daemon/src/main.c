@@ -19,6 +19,7 @@
 
 #include <glib-unix.h>
 #include "cdemu.h"
+#include "sleep.h"
 
 CdemuDaemon *daemon_obj;
 FILE *logfile;
@@ -306,6 +307,9 @@ int main (int argc, char **argv)
     /* Signal trapping */
     setup_signal_trap();
 
+    /* Sleep Event tracking */
+    setup_sleep_event(daemon_obj);
+
     /* Initialize and start daemon */
     if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus, cdemu_debug_mask, mirage_debug_mask)) {
         /* Printed when daemon stops */
@@ -314,6 +318,9 @@ int main (int argc, char **argv)
         g_warning(Q_("Daemon initialization and start failed!\n"));
         succeeded = FALSE;
     }
+
+	/* Clean up sleep event tracking */
+	cleanup_sleep_event(daemon_obj);
 
     /* Release daemon object */
     g_object_unref(daemon_obj);
