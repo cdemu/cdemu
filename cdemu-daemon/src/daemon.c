@@ -151,6 +151,19 @@ void cdemu_daemon_stop_daemon (CdemuDaemon *self)
 }
 
 
+void cdemu_daemon_prepare_for_sleep(CdemuDaemon *self, gboolean start)
+{
+    GList *iter = NULL;
+
+    if (! g_main_loop_is_running(self->priv->main_loop)) return;
+
+    for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter))
+        if (start) cdemu_device_stop(iter->data);
+        else if(!cdemu_device_start(iter->data, self->priv->ctl_device))
+            CDEMU_DEBUG(iter->data, DAEMON_DEBUG_WARNING,
+                        "%s: failed to start device after wake up!\n", __debug__);
+}
+
 /**********************************************************************\
  *                          Device management                         *
 \**********************************************************************/
