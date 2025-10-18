@@ -629,7 +629,11 @@ class DiscTopologyWindow (Gtk.Window):
         axes.plot(sector_address, sector_density, color='red', linewidth=2.0)
         axes.set_facecolor('#ffffc7')
 
-        axes.grid(b=True, which='both', color='black',linestyle=':')
+        mpl_version_b = getattr(matplotlib, '__version_info__', None)
+        if mpl_version_b is None or mpl_version_b < (3, 5):
+            axes.grid(b=True, which='both', color='black',linestyle=':')
+        else:
+            axes.grid(visible=True, which='both', color='black',linestyle=':')
         axes.set_xlim(sector_address[0], sector_address[-1])
 
         axes.set_xlabel(_("Sector address"))
