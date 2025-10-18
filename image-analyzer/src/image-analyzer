@@ -82,6 +82,10 @@ if sys.platform == "linux" or sys.platform == "linux2":
         pass
 
 
+# matplotlib version
+mpl_version = getattr(matplotlib, '__version_info__', None)
+
+
 ########################################################################
 #                           Helper functions                           #
 ########################################################################
@@ -574,7 +578,6 @@ class DiscTopologyWindow (Gtk.Window):
         # Matplotlib toolbar - in versions < 3.6.0, NavigationToolbar
         # accepted two arguments, canvas and window. In 3.6.0, the
         # second argument was deprecated, and removed in 3.8.0.
-        mpl_version = getattr(matplotlib, '__version_info__', None)
         if mpl_version is None or mpl_version < (3, 6):
             toolbar = NavigationToolbar(canvas, self)
         else:
@@ -629,7 +632,13 @@ class DiscTopologyWindow (Gtk.Window):
         axes.plot(sector_address, sector_density, color='red', linewidth=2.0)
         axes.set_facecolor('#ffffc7')
 
-        axes.grid(b=True, which='both', color='black',linestyle=':')
+        # As of matplotlib 3.5, the argument "b" of "grid()" has been
+        # renamed to "visible".
+        # See: https://github.com/matplotlib/matplotlib/issues/25267
+        if mpl_version is None or mpl_version < (3, 5):
+            axes.grid(b=True, which='both', color='black', linestyle=':')
+        else:
+            axes.grid(visible=True, which='both', color='black', linestyle=':')
         axes.set_xlim(sector_address[0], sector_address[-1])
 
         axes.set_xlabel(_("Sector address"))
