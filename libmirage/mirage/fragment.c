@@ -699,12 +699,15 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
  * mirage_fragment_read_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (nullable) (array length=length): buffer with data to write, or %NULL
+ * @buffer: (out) (optional) (array length=length): location to store pointer to buffer with read data, or %NULL
  * @length: (out): location to store read data length
  * @error: (out) (optional): location to store error, or %NULL
  *
- * Writes subchannel data for sector at fragment-relative @address (given
- * in sectors).
+ * Reads subchannel data for sector at fragment-relative @address (given
+ * in sectors). The buffer for reading data into is allocated by function
+ * and should be freed using g_free() when no longer needed. The pointer
+ * to buffer is stored into @buffer and the length of read data is stored into
+ * @length.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
@@ -796,15 +799,12 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
  * mirage_fragment_write_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (nullable) (array length=length): buffer with read data, or %NULL
+ * @buffer: (in) (nullable) (array length=length): buffer with data to write, or %NULL
  * @length: (in): length of data to write
  * @error: (out) (optional): location to store error, or %NULL
  *
- * Reads subchannel data for sector at fragment-relative @address (given
- * in sectors). The buffer for reading data into is allocated by function
- * and should be freed using g_free() when no longer needed. The pointer
- * to buffer is stored into @buffer and the length of read data is stored into
- * @length.
+ * Writes subchannel data for sector at fragment-relative @address (given
+ * in sectors).
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
