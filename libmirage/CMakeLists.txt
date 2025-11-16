@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.16)
 project(libmirage VERSION 3.2.10 LANGUAGES C)
 
 # Semantic versioning 2.0.0 (semver.org):

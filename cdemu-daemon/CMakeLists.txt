@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.16)
 project(cdemu-daemon VERSION 3.2.7 LANGUAGES C)
 
 # Additional CMake modules

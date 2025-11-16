@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.16)
 # NOTE: project name must be left at "cdemu" (as opposed to being changed
 # to more appropriate "cdemu-client"), because several things depend on
 # it (e.g., translation names).
