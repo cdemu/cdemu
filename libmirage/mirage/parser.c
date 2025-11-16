@@ -150,7 +150,7 @@ const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
  * mirage_parser_load_image:
  * @self: a #MirageParser
  * @streams: (in) (array zero-terminated=1): %NULL-terminated array of data streams
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Loads the image stored in @streams.
  *
@@ -282,7 +282,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
  * mirage_parser_create_text_stream:
  * @self: a #MirageParser
  * @stream: (in) (transfer full): a #MirageStream
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Constructs a filter chain for reading text files on top of provided
  * @stream. First, if encoding is provided via parser parameters, or if

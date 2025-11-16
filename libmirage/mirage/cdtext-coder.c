@@ -355,7 +355,7 @@ void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
  * @code: (in): language code
  * @charset: (in): character set
  * @copyright: (in): copyright flag
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets block information for CD-TEXT block specified by @block. @block must be
  * a valid block number (0-7). @code is the language code that is to be assigned
@@ -665,10 +665,10 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
  * mirage_cdtext_decoder_get_block_info:
  * @self: a #MirageCdTextCoder
  * @block: (in): block number
- * @code: (out) (allow-none): location to store language code, or %NULL
- * @charset: (out) (allow-none): location to store character set, or %NULL
- * @copyright: (out) (allow-none): location to store copyright flag, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @code: (out) (optional): location to store language code, or %NULL
+ * @charset: (out) (optional): location to store character set, or %NULL
+ * @copyright: (out) (optional): location to store copyright flag, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves block information for CD-TEXT block specified by @block. @block
  * must be a valid block number (0-7). Language code assigned to the block is
@@ -708,7 +708,7 @@ gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint blo
  * @self: a #MirageCdTextCoder
  * @block: (in): block number
  * @callback_func: (in) (scope call) (closure user_data): callback function
- * @user_data: (in) (allow-none): data to be passed to callback function
+ * @user_data: (in) (nullable): data to be passed to callback function
  *
  * Retrieves data for CD-TEXT block specified by @block. @block must be a valid
  * block number (0-7). It calls @callback_func for every data pack that has been

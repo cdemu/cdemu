@@ -66,7 +66,7 @@ struct _MirageFileStreamPrivate
  * @self: a #MirageFileStream
  * @filename: (in): name of file on which the stream is to be opened
  * @writable: (in): a boolean indicating whether stream should be opened for read/write access
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Opens the stream on the file pointed to by @filename. If @writable
  * is %FALSE, the stream is opened in read-only mode; if @writable is

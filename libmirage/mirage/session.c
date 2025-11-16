@@ -650,7 +650,7 @@ void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageT
  * @self: a #MirageSession
  * @number: (in): track number for the added track
  * @track: (in) (transfer full): a #MirageTrack to be added
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Adds track to session layout.
  *
@@ -699,7 +699,7 @@ gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, M
  * mirage_session_remove_track_by_index:
  * @self: a #MirageSession
  * @index: (in): index of track to be removed
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Removes track from session layout.
  *
@@ -734,7 +734,7 @@ gboolean mirage_session_remove_track_by_index (MirageSession *self, gint index, 
  * mirage_session_remove_track_by_number:
  * @self: a #MirageSession
  * @number: (in): track number of track to be removed
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Removes track from session layout.
  *
@@ -791,7 +791,7 @@ void mirage_session_remove_track_by_object (MirageSession *self, MirageTrack *tr
  * mirage_session_get_track_by_index:
  * @self: a #MirageSession
  * @index: (in): index of track to be retrieved
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves track by index. If @index is negative, tracks from the end of
  * layout are retrieved (e.g. -1 is for last track, -2 for second-to-last
@@ -833,7 +833,7 @@ MirageTrack *mirage_session_get_track_by_index (MirageSession *self, gint index,
  * mirage_session_get_track_by_number:
  * @self: a #MirageSession
  * @number: (in): number of track to be retrieved
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves track by track number.
  *
@@ -870,7 +870,7 @@ MirageTrack *mirage_session_get_track_by_number (MirageSession *self, gint track
  * mirage_session_get_track_by_address:
  * @self: a #MirageSession
  * @address: (in): address belonging to track to be retrieved
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves track by address. @address must be valid (disc-relative) sector
  * address that is part of the track to be retrieved (i.e. lying between tracks's
@@ -914,7 +914,7 @@ MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint addr
  * mirage_session_enumerate_tracks:
  * @self: a #MirageSession
  * @func: (in) (scope call) (closure user_data): callback function
- * @user_data: (in) (allow-none): data to be passed to callback function
+ * @user_data: (in) (nullable): data to be passed to callback function
  *
  * Iterates over tracks list, calling @func for each track in the layout.
  *
@@ -938,7 +938,7 @@ gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageEnumTrackCa
  * mirage_session_get_track_before:
  * @self: a #MirageSession
  * @track: (in): a track
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves track that comes before @track.
  *
@@ -971,7 +971,7 @@ MirageTrack *mirage_session_get_track_before (MirageSession *self, MirageTrack *
  * mirage_session_get_track_after:
  * @self: a #MirageSession
  * @track: (in): a track
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves track that comes after @track.
  *
@@ -1022,7 +1022,7 @@ gint mirage_session_get_number_of_languages (MirageSession *self)
  * @self: a #MirageSession
  * @code: (in): language code for the added language
  * @language: (in) (transfer full): a #MirageLanguage to be added
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Adds language to session.
  *
@@ -1060,7 +1060,7 @@ gboolean mirage_session_add_language (MirageSession *self, gint code, MirageLang
  * mirage_session_remove_language_by_index:
  * @self: a #MirageSession
  * @index: (in): index of language to be removed
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Removes language from session.
  *
@@ -1090,7 +1090,7 @@ gboolean mirage_session_remove_language_by_index (MirageSession *self, gint inde
  * mirage_session_remove_language_by_code:
  * @self: a #MirageSession
  * @code: (in): language code of language to be removed
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Removes language from session.
  *
@@ -1131,7 +1131,7 @@ void mirage_session_remove_language_by_object (MirageSession *self, MirageLangua
  * mirage_session_get_language_by_index:
  * @self: a #MirageSession
  * @index: (in): index of language to be retrieved
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves language by index. If @index is negative, languages from the end of
  * session are retrieved (e.g. -1 is for last language, -2 for second-to-last
@@ -1171,7 +1171,7 @@ MirageLanguage *mirage_session_get_language_by_index (MirageSession *self, gint 
  * mirage_session_get_language_by_code:
  * @self: a #MirageSession
  * @code: (in): language code of language to be retrieved
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves language by language code.
  *
@@ -1208,7 +1208,7 @@ MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint c
  * mirage_session_enumerate_languages:
  * @self: a #MirageSession
  * @func: (in) (scope call) (closure user_data): callback function
- * @user_data: (in) (allow-none): data to be passed to callback function
+ * @user_data: (in) (nullable): data to be passed to callback function
  *
  * Iterates over languages list, calling @func for each language.
  *
@@ -1277,7 +1277,7 @@ static gboolean set_cdtext_data (gint code, gint type, gint track_number, guint8
  * @self: a #MirageSession
  * @data: (in) (array length=len): buffer containing encoded CD-TEXT data
  * @len: (in): length of data in buffer
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets CD-TEXT data for session. It internally creates and uses #MirageCdTextCoder
  * object as a decoder to decode data in @data. Decoded data is stored in #MirageLanguage
@@ -1316,7 +1316,7 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
  * @self: a #MirageSession
  * @data: (out callee-allocates) (transfer full) (array length=len): location to return buffer with encoded CD-TEXT data
  * @len: (out): location to return length of data in buffer
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Returns CD-TEXT data for session. It internally creates and uses #MirageCdTextCoder
  * object as an encoder to encode data from #MirageLanguage objects from both session and
@@ -1440,7 +1440,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
 /**
  * mirage_session_get_prev:
  * @self: a #MirageSession
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves session that is placed before @self in disc layout.
  *
@@ -1469,7 +1469,7 @@ MirageSession *mirage_session_get_prev (MirageSession *self, GError **error)
 /**
  * mirage_session_get_next:
  * @self: a #MirageSession
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves session that is placed after @self in disc layout.
  *

@@ -85,7 +85,7 @@ gboolean mirage_stream_is_writable (MirageStream *self)
  * @self: a #MirageFileStream
  * @buffer: (in): a buffer to read data into
  * @count: (in): number of bytes to read from stream
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Attempts to read @count bytes from stream into the buffer starting at
  * @buffer. Will block during the operation.
@@ -102,7 +102,7 @@ gssize mirage_stream_read (MirageStream *self, void *buffer, gsize count, GError
  * @self: a #MirageFileStream
  * @buffer: (in): a buffer to write data from
  * @count: (in): number of bytes to write to stream
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Attempts to write @count bytes to stream from the buffer starting at
  * @buffer. Will block during the operation.
@@ -119,7 +119,7 @@ gssize mirage_stream_write (MirageStream *self, const void *buffer, gsize count,
  * @self: a #MirageFileStream
  * @offset: (in): offset to seek
  * @type: (in): seek type
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Seeks in the stream by the given @offset, modified by @type.
  *
@@ -148,7 +148,7 @@ goffset mirage_stream_tell (MirageStream *self)
  * mirage_stream_move_file:
  * @self: a #MirageFileStream
  * @new_filename: (in): the new filename
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Attempts to move the file on top of which the stream (chain) is opened
  * to @new_filename. If supported, native move operations are used,

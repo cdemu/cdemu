@@ -122,7 +122,7 @@ static void initialize_filter_streams_list ()
 \**********************************************************************/
 /**
  * mirage_initialize:
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Initializes libMirage library. It should be called before any other of
  * libMirage functions.
@@ -209,7 +209,7 @@ gboolean mirage_initialize (GError **error)
 
 /**
  * mirage_shutdown:
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Shuts down libMirage library. It should be called when libMirage is no longer
  * needed.
@@ -267,7 +267,7 @@ gboolean mirage_shutdown (GError **error)
  * mirage_get_parsers_type:
  * @types: (out) (array length=num_parsers) (transfer none): array of parsers' #GType values
  * @num_parsers: (out): number of supported parsers
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves #GType values for supported parsers.
  *
@@ -291,7 +291,7 @@ gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError
  * mirage_get_parsers_info:
  * @info: (out) (array length=num_parsers) (transfer none): array of parsers' information structures
  * @num_parsers: (out): number of supported parsers
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves information structures for supported parsers.
  *
@@ -314,8 +314,8 @@ gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parse
 /**
  * mirage_enumerate_parsers:
  * @func: (in) (scope call) (closure user_data): callback function
- * @user_data: (in) (allow-none): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @user_data: (in) (nullable): data to be passed to callback function
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Iterates over list of supported parsers, calling @func for each parser.
  *
@@ -347,7 +347,7 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
  * mirage_get_writers_type:
  * @types: (out) (array length=num_writers) (transfer none): array of writers' #GType values
  * @num_writers: (out): number of supported writers
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves #GType values for supported writers.
  *
@@ -371,7 +371,7 @@ gboolean mirage_get_writers_type (const GType **types, gint *num_writers, GError
  * mirage_get_writers_info:
  * @info: (out) (array length=num_writers) (transfer none): array of writers' information structures
  * @num_writers: (out): number of supported writers
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves information structures for supported parsers.
  *
@@ -394,8 +394,8 @@ gboolean mirage_get_writers_info (const MirageWriterInfo **info, gint *num_write
 /**
  * mirage_enumerate_writers:
  * @func: (in) (scope call) (closure user_data): callback function
- * @user_data: (in) (allow-none): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @user_data: (in) (nullable): data to be passed to callback function
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Iterates over list of supported writers, calling @func for each writers.
  *
@@ -427,7 +427,7 @@ gboolean mirage_enumerate_writers (MirageEnumWriterInfoCallback func, gpointer u
  * mirage_get_filter_streams_type:
  * @types: (out) (array length=num_filter_streams) (transfer none): array of filter streams' #GType values
  * @num_filter_streams: (out): number of supported filter streams
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves #GType values for supported filter streams.
  *
@@ -451,7 +451,7 @@ gboolean mirage_get_filter_streams_type (const GType **types, gint *num_filter_s
  * mirage_get_filter_streams_info:
  * @info: (out) (array length=num_filter_streams) (transfer none): array of filter streams' information structures
  * @num_filter_streams: (out): number of supported filter streams
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves information structures for supported filter streams.
  *
@@ -474,8 +474,8 @@ gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gi
 /**
  * mirage_enumerate_filter_streams:
  * @func: (in) (scope call) (closure user_data): callback function
- * @user_data: (in) (allow-none): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @user_data: (in) (nullable): data to be passed to callback function
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Iterates over list of supported filter streams, calling @func for each filter stream.
  *
@@ -507,7 +507,7 @@ gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback fun
  * mirage_get_supported_debug_masks:
  * @masks: (out) (transfer none) (array length=num_masks): location to store pointer to masks array
  * @num_masks: (out): location to store number of elements in masks array
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves the pointer to array of supported debug masks and stores it in @masks.
  * The array consists of one or more structures of type #MirageDebugMaskInfo. The
@@ -534,7 +534,7 @@ gboolean mirage_get_supported_debug_masks (const MirageDebugMaskInfo **masks, gi
 /**
  * mirage_create_writer:
  * @writer_id: (in): ID of writer to create
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Attempts to create an instance of image writer whose ID is @writer_id.
  *

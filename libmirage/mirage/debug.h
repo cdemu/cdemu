@@ -110,7 +110,7 @@ typedef enum _MirageDebugMask
  * MIRAGE_DEBUG_PRINT_BUFFER:
  * @obj: (in): object
  * @lvl: (in): debug level
- * @prefix: (in) (allow-none): prefix, or none
+ * @prefix: (in) (nullable): optional prefix, or %NULL
  * @width: (in): output width
  * @buffer: (in) (array length=buffer_length): buffer to print
  * @buffer_length: (in): buffer length

@@ -68,7 +68,7 @@ static void mirage_object_parent_context_changed_handler (MirageObject *self, Mi
 /**
  * mirage_object_set_parent:
  * @self: a #MirageObject
- * @parent: (in) (allow-none) (type MirageObject): parent
+ * @parent: (in) (nullable) (type MirageObject): parent
  *
  * Sets object's parent. If @parent is %NULL, the object's parent is
  * reset.

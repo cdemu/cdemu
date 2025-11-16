@@ -35,7 +35,7 @@ find_package(Gettext 0.15 REQUIRED)
 pkg_check_modules(GLIB REQUIRED glib-2.0>=2.38 gobject-2.0>=2.38 gmodule-2.0>=2.38 gio-2.0>=2.38 IMPORTED_TARGET)
 
 if(INTROSPECTION_ENABLED)
-    pkg_check_modules(INTROSPECTION gobject-introspection-1.0>=1.30.0)
+    pkg_check_modules(INTROSPECTION gobject-introspection-1.0>=1.42.0)
     if(INTROSPECTION_FOUND)
         include(GObjectIntrospection)
         set(INTROSPECTION_STATUS "ON")

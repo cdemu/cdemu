@@ -270,9 +270,9 @@ GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
 /**
  * mirage_context_set_password_function:
  * @self: a #MirageContext
- * @func: (in) (allow-none) (scope notified) (closure user_data) (destroy destroy): a password function pointer
- * @user_data: (in) (allow-none): pointer to user data to be passed to the password function
- * @destroy: (in) (allow-none): destroy notify for @user_data, or %NULL
+ * @func: (in) (nullable) (scope notified) (closure user_data) (destroy destroy): a password function pointer
+ * @user_data: (in) (nullable): pointer to user data to be passed to the password function
+ * @destroy: (in) (nullable): destroy notify for @user_data, or %NULL
  *
  * Sets the password function to context. The function is used by parsers
  * that support encrypted images to obtain password for unlocking such images.
@@ -296,7 +296,7 @@ void mirage_context_set_password_function (MirageContext *self, MiragePasswordFu
 /**
  * mirage_context_obtain_password:
  * @self: a #MirageContext
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Obtains password string, using the #MiragePasswordFunction callback
  * that was provided via mirage_context_set_password_function().
@@ -332,7 +332,7 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
  * mirage_context_load_image:
  * @self: a #MirageContext
  * @filenames: (in) (array zero-terminated=1): filename(s)
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Creates a #MirageDisc object representing image stored in @filenames. @filenames
  * is a NULL-terminated list of filenames containing image data. The function tries
@@ -428,7 +428,7 @@ end:
  * mirage_context_create_input_stream:
  * @self: a #MirageContext
  * @filename: (in): filename to create input stream on
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Opens a file pointed to by @filename and creates a chain of filter
  * streams on top of it.
@@ -522,8 +522,8 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
  * mirage_context_create_output_stream:
  * @self: a #MirageContext
  * @filename: (in): filename to create output stream on
- * @filter_chain: (in) (allow-none) (array zero-terminated=1): NULL-terminated array of strings describing types of filters to include in the filter chain, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @filter_chain: (in) (nullable) (array zero-terminated=1): NULL-terminated array of strings describing types of filters to include in the filter chain, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Opens a file pointed to by @filename and optionally creates a chain
  * of filter streams on top of it.

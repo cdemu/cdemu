@@ -126,7 +126,7 @@ gint mirage_language_get_code (MirageLanguage *self)
  * @pack_type: (in): pack type
  * @pack_data: (in) (array length=length): pack data
  * @length: (in): length of pack data
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets pack data of type @pack_type to data in @pack_data. @length is length of
  * data in @pack_data. @pack_type must be one of #MirageLanguagePackType.
@@ -165,9 +165,9 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
  * mirage_language_get_pack_data:
  * @self: a #MirageLanguage
  * @pack_type: (in): pack type
- * @pack_data: (out) (transfer none) (allow-none) (array length=length): location to store buffer containing pack data, or %NULL
- * @length: (out) (allow-none): location to store length of pack data, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @pack_data: (out) (transfer none) (optional) (array length=length): location to store buffer containing pack data, or %NULL
+ * @length: (out) (optional): location to store length of pack data, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves pack data of type @pack_type. A pointer to buffer containing pack
  * data is stored in @pack data; the buffer belongs to the object and therefore

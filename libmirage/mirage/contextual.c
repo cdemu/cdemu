@@ -188,7 +188,7 @@ gboolean mirage_contextual_debug_is_active (MirageContextual *self, gint level)
  * mirage_contextual_debug_print_buffer:
  * @self: a #MirageContextual
  * @level: (in): debug level
- * @prefix: (in) (allow-none): prefix, or none
+ * @prefix: (in) (nullable): optional prefix, or %NULL
  * @width: (in): output width
  * @buffer: (in) (array length=buffer_length): buffer to print
  * @buffer_length: (in): buffer length
@@ -270,7 +270,7 @@ GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *nam
 /**
  * mirage_contextual_obtain_password:
  * @self: a #MirageContextual
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Obtains password string, using the #MiragePasswordFunction callback
  * that was provided via mirage_context_set_password_function().
@@ -303,7 +303,7 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
  * mirage_contextual_create_input_stream:
  * @self: a #MirageContextual
  * @filename: (in): filename to create input stream on
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Opens a file pointed to by @filename and creates a chain of filter
  * streams on top of it.
@@ -338,8 +338,8 @@ MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, con
  * mirage_contextual_create_output_stream:
  * @self: a #MirageContextual
  * @filename: (in): filename to create output stream on
- * @filter_chain: (in) (allow-none) (array zero-terminated=1): NULL-terminated array of strings describing types of filters to include in the filter chain, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @filter_chain: (in) (nullable) (array zero-terminated=1): NULL-terminated array of strings describing types of filters to include in the filter chain, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Opens a file pointed to by @filename and creates a chain of filter
  * streams on top of it.

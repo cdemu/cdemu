@@ -854,10 +854,10 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
  * @main_data: (in): main data buffer
  * @main_data_length: (in): length of data in main data buffer
  * @subchannel_format: (in): subchannel data format
- * @subchannel_data: (in) (allow-none): subchannel data buffer
+ * @subchannel_data: (in) (nullable): subchannel data buffer
  * @subchannel_data_length: (in): length of data in subchannel data buffer
  * @ignore_data_mask: (in): a mask of #MirageSectorValidData values, indicating which parts of main channel sector data, if any, should be ignored and regerated even though they are provided by the data feed
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Feeds data to sector. If @type is %MIRAGE_SECTOR_RAW or %MIRAGE_SECTOR_RAW_SCRAMBLED,
  * the real sector type is determined during feeding.
@@ -957,9 +957,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
  * @main_data: (out) (transfer none): location to store pointer to main data buffer
  * @main_data_length: (in): requested length of data in main data buffer
  * @subchannel_format: (out): requested subchannel data format
- * @subchannel_data: (in) (transfer none) (allow-none): location to store pointer to subchannel data buffer, or %NULL
+ * @subchannel_data: (in) (transfer none) (nullable): location to store pointer to subchannel data buffer, or %NULL
  * @subchannel_data_length: (in): requested length of data in subchannel data buffer
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Extracts data from sector. Which parts of main channel data are extracted
  * depends on provided @main_data_length.
@@ -1048,9 +1048,9 @@ gint mirage_sector_get_address (MirageSector *self)
 /**
  * mirage_sector_get_sync:
  * @self: a #MirageSector
- * @ret_buf: (out) (transfer none) (allow-none) (array length=ret_len): location to store pointer to buffer containing sync pattern, or %NULL
- * @ret_len: (out) (allow-none): location to store length of sync pattern, or %NULL. Length is given in bytes.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (optional) (array length=ret_len): location to store pointer to buffer containing sync pattern, or %NULL
+ * @ret_len: (out) (optional): location to store length of sync pattern, or %NULL. Length is given in bytes.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves sector's sync pattern. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf; therefore, the buffer should not
@@ -1090,7 +1090,7 @@ gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gin
  * @self: a #MirageSector
  * @buf: (in) (array length=len): buffer containing sync pattern
  * @len: (in): length of sync pattern
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets sector's sync pattern to that stored in @buf.
  *
@@ -1125,9 +1125,9 @@ gboolean mirage_sector_set_sync (MirageSector *self, const guint8 *buf, gint len
 /**
  * mirage_sector_get_header:
  * @self: a #MirageSector
- * @ret_buf: (out) (transfer none) (allow-none) (array length=ret_len): location to store pointer to buffer containing header, or %NULL
- * @ret_len: (out) (allow-none): location to store length of header, or %NULL. Length is given in bytes.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (optional) (array length=ret_len): location to store pointer to buffer containing header, or %NULL
+ * @ret_len: (out) (optional): location to store length of header, or %NULL. Length is given in bytes.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves sector's header. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf; therefore, the buffer should not
@@ -1167,7 +1167,7 @@ gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, g
  * @self: a #MirageSector
  * @buf: (in) (array length=len): buffer containing header
  * @len: (in): length of header
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets sector's header to that stored in @buf.
  *
@@ -1202,9 +1202,9 @@ gboolean mirage_sector_set_header (MirageSector *self, const guint8 *buf, gint l
 /**
  * mirage_sector_get_subheader:
  * @self: a #MirageSector
- * @ret_buf: (out) (transfer none) (allow-none) (array length=ret_len): location to store pointer to buffer containing subheader, or %NULL
- * @ret_len: (out) (allow-none): location to store length of subheader, or %NULL. Length is given in bytes.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (optional) (array length=ret_len): location to store pointer to buffer containing subheader, or %NULL
+ * @ret_len: (out) (optional): location to store length of subheader, or %NULL. Length is given in bytes.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves sector's subheader. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
@@ -1244,7 +1244,7 @@ gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf
  * @self: a #MirageSector
  * @buf: (in) (array length=len): buffer containing subheader
  * @len: (in): length of subheader
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets sector's subheader to that stored in @buf.
  *
@@ -1283,9 +1283,9 @@ gboolean mirage_sector_set_subheader (MirageSector *self, const guint8 *buf, gin
 /**
  * mirage_sector_get_data:
  * @self: a #MirageSector
- * @ret_buf: (out) (transfer none) (allow-none) (array length=ret_len): location to store pointer to buffer containing user data, or %NULL
- * @ret_len: (out) (allow-none): location to store length of user data, or %NULL. Length is given in bytes.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (optional) (array length=ret_len): location to store pointer to buffer containing user data, or %NULL
+ * @ret_len: (out) (optional): location to store length of user data, or %NULL. Length is given in bytes.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves sector's user data. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
@@ -1322,7 +1322,7 @@ gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gin
  * @self: a #MirageSector
  * @buf: (in) (array length=len): buffer containing user data
  * @len: (in): length of user data
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets sector's user data to that stored in @buf.
  *
@@ -1356,9 +1356,9 @@ gboolean mirage_sector_set_data (MirageSector *self, const guint8 *buf, gint len
 /**
  * mirage_sector_get_edc_ecc:
  * @self: a #MirageSector
- * @ret_buf: (out) (transfer none) (allow-none) (array length=ret_len): location to store pointer to buffer containing EDC/ECC data, or %NULL
- * @ret_len: (out) (allow-none): location to store length of EDC/ECC data, or %NULL. Length is given in bytes.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (optional) (array length=ret_len): location to store pointer to buffer containing EDC/ECC data, or %NULL
+ * @ret_len: (out) (optional): location to store length of EDC/ECC data, or %NULL. Length is given in bytes.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves sector's EDC/ECC data. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
@@ -1398,7 +1398,7 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
  * @self: a #MirageSector
  * @buf: (in) (array length=len): buffer containing EDC/ECC data
  * @len: (in): length of EDC/ECC data
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets sector's EDC/ECC data to that stored in @buf.
  *
@@ -1433,9 +1433,9 @@ gboolean mirage_sector_set_edc_ecc (MirageSector *self, const guint8 *buf, gint 
  * mirage_sector_get_subchannel:
  * @self: a #MirageSector
  * @format: (in): subchannel format
- * @ret_buf: (out) (transfer none) (allow-none) (array length=ret_len): location to store pointer to buffer containing subchannel, or %NULL
- * @ret_len: (out) (allow-none): location to store length of subchannel data, or %NULL. Length is given in bytes.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (optional) (array length=ret_len): location to store pointer to buffer containing subchannel, or %NULL
+ * @ret_len: (out) (optional): location to store length of subchannel data, or %NULL. Length is given in bytes.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Retrieves sector's subchannel. @format must be one of #MirageSectorSubchannelFormat.
  * The pointer to appropriate location in sector's data buffer is stored into
@@ -1501,7 +1501,7 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
  * @format: (in): subchannel format
  * @buf: (in) (array length=len): buffer containing subchannel data
  * @len: (in): length of subchannel data
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets sector's subchannel data to that stored in @buf. @format must be
  * one of #MirageSectorSubchannelFormat.

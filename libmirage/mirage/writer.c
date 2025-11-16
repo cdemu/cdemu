@@ -444,7 +444,7 @@ const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
  * @self: a #MirageWriter
  * @disc: (in): disc object for which the image will be created
  * @parameters: (in) (element-type utf8 GLib.Variant): writer parameters
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Initializes the image writer to start the writing process for @disc.
  * The latter should have set the image filename(s) and medium type, but
@@ -480,7 +480,7 @@ gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTa
  * @self: a #MirageWriter
  * @track: (in): track for which the fragment is to be created
  * @role: (in): fragment role
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Creates a fragment with specified @role for given @track. The latter
  * needs to already be part of disc's layout.
@@ -501,7 +501,7 @@ MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *
  * mirage_writer_finalize_image:
  * @self: a #MirageWriter
  * @disc: (in): disc object for which the image is being written
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Finalizes the image, possibly creating the image descriptor file if
  * necessary.
@@ -556,8 +556,8 @@ void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step)
  * @filename: (in): filename of output image
  * @original_disc: (in): disc layout obtained from original image
  * @parameters: (in) (element-type utf8 GLib.Variant): writer parameters
- * @cancellable: (in) (allow-none): optional %GCancellable object, NULL to ignore.
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @cancellable: (in) (nullable): optional %GCancellable object, NULL to ignore.
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Convenience function that converts an already-opened image stored in
  * @original_disc and writes it to @filename. If conversion progress

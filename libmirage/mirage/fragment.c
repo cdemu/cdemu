@@ -171,7 +171,7 @@ gint mirage_fragment_get_length (MirageFragment *self)
 /**
  * mirage_fragment_use_the_rest_of_file:
  * @self: a #MirageFragment
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Uses the rest of data file. It automatically calculates and sets fragment's
  * length.
@@ -388,9 +388,9 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
  * mirage_fragment_read_main_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (out) (allow-none) (array length=length): location to store pointer to buffer with read data, or %NULL
+ * @buffer: (out) (optional) (array length=length): location to store pointer to buffer with read data, or %NULL
  * @length: (out): location to store read data length
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Reads main channel data for sector at fragment-relative @address (given
  * in sectors). The buffer for reading data into is allocated by function
@@ -459,9 +459,9 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
  * mirage_fragment_write_main_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (allow-none) (array length=length): buffer with data to write, or %NULL
+ * @buffer: (in) (nullable) (array length=length): buffer with data to write, or %NULL
  * @length: (in): length of data to write
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Writes main channel data for sector at fragment-relative @address (given
  * in sectors).
@@ -699,9 +699,9 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
  * mirage_fragment_read_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (allow-none) (array length=length): buffer with data to write, or %NULL
+ * @buffer: (in) (nullable) (array length=length): buffer with data to write, or %NULL
  * @length: (out): location to store read data length
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Writes subchannel data for sector at fragment-relative @address (given
  * in sectors).
@@ -796,9 +796,9 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
  * mirage_fragment_write_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (allow-none) (array length=length): buffer with read data, or %NULL
+ * @buffer: (in) (nullable) (array length=length): buffer with read data, or %NULL
  * @length: (in): length of data to write
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Reads subchannel data for sector at fragment-relative @address (given
  * in sectors). The buffer for reading data into is allocated by function

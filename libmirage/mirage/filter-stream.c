@@ -188,7 +188,7 @@ MirageStream *mirage_filter_stream_get_underlying_stream (MirageFilterStream *se
  * @self: a #MirageFilterStream
  * @stream: (in): an underlying stream
  * @writable: (in): a flag indicating whether the stream should be opened in read/write mode or not
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @error: (out) (optional): location to store error, or %NULL
  *
  * Opens stream on top of provided underlying stream.
  *

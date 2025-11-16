@@ -124,7 +124,7 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
 /**
  * mirage_helper_find_data_file:
  * @filename: (in): declared filename
- * @path: (in) (allow-none): path where to look for file (can be a filename), or %NULL
+ * @path: (in) (nullable): path where to look for file (can be a filename), or %NULL
  *
  * Attempts to find a file with filename @filename and path @path. @filename can
  * be file's basename or an absolute path. @path can be either directory path (in
@@ -294,9 +294,9 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len)
  * mirage_helper_lba2msf:
  * @lba: (in): LBA address
  * @diff: (in): account for the difference
- * @m: (out) (allow-none): location to store minutes, or %NULL
- * @s: (out) (allow-none): location to store seconds, or %NULL
- * @f: (out) (allow-none): location to store frames, or %NULL
+ * @m: (out) (optional): location to store minutes, or %NULL
+ * @s: (out) (optional): location to store seconds, or %NULL
+ * @f: (out) (optional): location to store frames, or %NULL
  *
  * Converts LBA sector address stored in @lba into MSF address, storing each field
  * into @m, @s and @f, respectively.
