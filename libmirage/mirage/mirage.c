@@ -313,8 +313,8 @@ gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parse
 
 /**
  * mirage_enumerate_parsers:
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Iterates over list of supported parsers, calling @func for each parser.
@@ -393,8 +393,8 @@ gboolean mirage_get_writers_info (const MirageWriterInfo **info, gint *num_write
 
 /**
  * mirage_enumerate_writers:
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Iterates over list of supported writers, calling @func for each writers.
@@ -473,8 +473,8 @@ gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gi
 
 /**
  * mirage_enumerate_filter_streams:
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Iterates over list of supported filter streams, calling @func for each filter stream.

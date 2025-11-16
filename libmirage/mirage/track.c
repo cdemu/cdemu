@@ -983,8 +983,8 @@ MirageFragment *mirage_track_get_fragment_by_address (MirageTrack *self, gint ad
 /**
  * mirage_track_enumerate_fragments:
  * @self: a #MirageTrack
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  *
  * Iterates over fragments list, calling @func for each fragment in the layout.
  *
@@ -1260,8 +1260,8 @@ MirageIndex *mirage_track_get_index_by_address (MirageTrack *self, gint address,
 /**
  * mirage_track_enumerate_indices:
  * @self: a #MirageTrack
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): user data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): user data to be passed to callback function
  *
  * Iterates over indices list, calling @func for each index.
  *
@@ -1486,8 +1486,8 @@ MirageLanguage *mirage_track_get_language_by_code (MirageTrack *self, gint code,
 /**
  * mirage_track_enumerate_languages:
  * @self: a #MirageTrack
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  *
  * Iterates over languages list, calling @func for each language.
  *

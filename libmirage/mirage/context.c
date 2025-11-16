@@ -270,8 +270,8 @@ GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
 /**
  * mirage_context_set_password_function:
  * @self: a #MirageContext
- * @func: (in) (allow-none) (scope notified): a password function pointer
- * @user_data: (in) (closure): pointer to user data to be passed to the password function
+ * @func: (in) (allow-none) (scope notified) (closure user_data) (destroy destroy): a password function pointer
+ * @user_data: (in) (allow-none): pointer to user data to be passed to the password function
  * @destroy: (in) (allow-none): destroy notify for @user_data, or %NULL
  *
  * Sets the password function to context. The function is used by parsers

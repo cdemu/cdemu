@@ -787,8 +787,8 @@ MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track_nu
 /**
  * mirage_disc_enumerate_sessions:
  * @self: a #MirageDisc
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  *
  * Iterates over sessions list, calling @func for each session in the layout.
  *

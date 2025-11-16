@@ -913,8 +913,8 @@ MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint addr
 /**
  * mirage_session_enumerate_tracks:
  * @self: a #MirageSession
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  *
  * Iterates over tracks list, calling @func for each track in the layout.
  *
@@ -1207,8 +1207,8 @@ MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint c
 /**
  * mirage_session_enumerate_languages:
  * @self: a #MirageSession
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  *
  * Iterates over languages list, calling @func for each language.
  *

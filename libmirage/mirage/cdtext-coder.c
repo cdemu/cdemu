@@ -707,8 +707,8 @@ gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint blo
  * mirage_cdtext_decoder_get_data:
  * @self: a #MirageCdTextCoder
  * @block: (in): block number
- * @callback_func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
+ * @callback_func: (in) (scope call) (closure user_data): callback function
+ * @user_data: (in) (allow-none): data to be passed to callback function
  *
  * Retrieves data for CD-TEXT block specified by @block. @block must be a valid
  * block number (0-7). It calls @callback_func for every data pack that has been
