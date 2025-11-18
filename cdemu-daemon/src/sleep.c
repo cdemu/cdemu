@@ -22,7 +22,7 @@
 
 #include "cdemu.h"
 #include "sleep.h"
-#include "logind.h"
+#include "freedesktop-login-manager.h"
 #include "daemon-private.h"
 
 #define UNUSED(x) (void)(x)
@@ -31,10 +31,10 @@ static void _proxy_created(GObject *src, GAsyncResult *res, CdemuDaemon *daemon)
 {
 	UNUSED(src);
 
-	CdemuLoginManager *proxy;
+	FreedesktopLoginManager *proxy;
 	GError *error = NULL;
 
-	proxy = cdemu_login_manager_proxy_new_for_bus_finish(res, &error);
+	proxy = freedesktop_login_manager_proxy_new_for_bus_finish(res, &error);
 	if (proxy == NULL) {
 		g_warning(Q_("Failed to create logind proxy: %s"), error->message);
 		g_error_free(error);
@@ -50,7 +50,7 @@ static void _proxy_created(GObject *src, GAsyncResult *res, CdemuDaemon *daemon)
 
 void setup_sleep_event(CdemuDaemon *daemon)
 {
-	cdemu_login_manager_proxy_new_for_bus(
+	freedesktop_login_manager_proxy_new_for_bus(
 	    G_BUS_TYPE_SYSTEM,
 	    G_DBUS_PROXY_FLAGS_NONE,
 	    "org.freedesktop.login1",
@@ -63,7 +63,7 @@ void setup_sleep_event(CdemuDaemon *daemon)
 
 void cleanup_sleep_event(CdemuDaemon *daemon)
 {
-	CdemuLoginManager *proxy;
+	FreedesktopLoginManager *proxy;
 	proxy = g_object_steal_data(G_OBJECT(daemon), "logind-proxy");
 	if (proxy == NULL) return;
 	g_object_unref(proxy);
