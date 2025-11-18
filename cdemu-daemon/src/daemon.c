@@ -107,6 +107,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_name(context, "cdemu");
     mirage_context_set_debug_domain(context, "CDEMU");
+    mirage_context_set_debug_mask(context, self->priv->cdemu_debug_mask);
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
     g_object_unref(context);
 
