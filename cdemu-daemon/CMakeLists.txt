@@ -46,10 +46,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
     COMMAND ${GDBUS_CODEGEN}
-    --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin
+    --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required 2.64
     --header --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
     COMMAND ${GDBUS_CODEGEN}
-    --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin
+    --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required 2.64
     --body --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
     DEPENDS ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
     COMMENT "Generate GDBus bindings for org.freedesktop.login1"

@@ -140,8 +140,12 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
             &error
         );
         if (self->priv->login_manager_proxy) {
-            /* Connect handler for "prepare-for-sleep" signal */
             CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully connected to org.freedesktop.login1.Manager!\n", __debug__);
+
+            /* Try obtaining the system sleep inhibitor lock */
+            cdemu_daemon_obtain_system_sleep_inhibitor_lock(self);
+
+            /* Connect handler for "prepare-for-sleep" signal */
             g_signal_connect_swapped(self->priv->login_manager_proxy, "prepare-for-sleep", G_CALLBACK(cdemu_daemon_prepare_for_system_sleep), self);
         } else {
             /* Non-fatal error - just emit a warning */
@@ -186,12 +190,29 @@ void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start)
 
     if (start) {
         /* System is entering sleep/hibernation. */
+
+        /* Stop devices. */
         CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: stopping devices...\n", __debug__);
         for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter)) {
             cdemu_device_stop(iter->data);
         }
+
+        /* Release the sleep inhibitor lock, if held. */
+        if (self->priv->system_sleep_inhibitor_fds) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: releasing sleep inhibitor lock...\n", __debug__);
+            g_object_unref(self->priv->system_sleep_inhibitor_fds);
+            self->priv->system_sleep_inhibitor_fds = NULL;
+        } else {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: no sleep inhibitor lock to release\n", __debug__);
+        }
     } else {
         /* System has awoken from sleep/hibernation. */
+
+        /* Try re-taking the sleep inhibitor lock. */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-taking sleep inhibitor lock...\n", __debug__);
+        cdemu_daemon_obtain_system_sleep_inhibitor_lock(self);
+
+        /* Start devices. */
         CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-starting devices...\n", __debug__);
         for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter)) {
             if (!cdemu_device_start(iter->data, self->priv->ctl_device)) {
@@ -200,6 +221,41 @@ void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start)
         }
     }
 }
+
+void cdemu_daemon_obtain_system_sleep_inhibitor_lock (CdemuDaemon *self)
+{
+    gboolean succeeded;
+    GError *error = NULL;
+
+    if (self->priv->system_sleep_inhibitor_fds) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: trying to obtain system sleep inhibitor lock when one is already held!\n", __debug__);
+        return;
+    }
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: trying to obtain system sleep inhibitor lock...\n", __debug__);
+    succeeded = freedesktop_login_manager_call_inhibit_sync(
+        self->priv->login_manager_proxy,
+        "sleep",
+        Q_("CDEmu Daemon"),
+        Q_("CDEmu Daemon needs to deactivate virtual optical drives"),
+        "delay",
+        0,
+        -1, // timeout
+        NULL,
+        NULL,
+        &self->priv->system_sleep_inhibitor_fds,
+        NULL,
+        &error
+    );
+
+    if (succeeded) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully obtained system sleep inhibitor lock.\n", __debug__);
+    } else {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to obtain system sleep inhibitor lock: %s!\n", __debug__, error->message);
+        g_error_free(error);
+    }
+}
+
 
 /**********************************************************************\
  *                          Device management                         *
@@ -301,11 +357,18 @@ static void cdemu_daemon_init (CdemuDaemon *self)
 
     /* org.freedesktop.login1.Manager proxy */
     self->priv->login_manager_proxy = NULL;
+    self->priv->system_sleep_inhibitor_fds = NULL;
 }
 
 static void cdemu_daemon_dispose (GObject *gobject)
 {
     CdemuDaemon *self = CDEMU_DAEMON(gobject);
+
+    /* Release sleep inhibitor lock (if held) */
+    if (self->priv->system_sleep_inhibitor_fds) {
+        g_object_unref(self->priv->system_sleep_inhibitor_fds);
+        self->priv->system_sleep_inhibitor_fds = NULL;
+    }
 
     /* Unref org.freedesktop.login1.Manager proxy */
     if (self->priv->login_manager_proxy) {
