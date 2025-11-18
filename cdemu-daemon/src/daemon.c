@@ -19,6 +19,7 @@
 
 #include "cdemu.h"
 #include "daemon-private.h"
+#include "freedesktop-login-manager.h"
 
 #define __debug__ "Daemon"
 
@@ -123,6 +124,31 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
         return FALSE;
     }
 
+    /* Try connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1
+       so we can stop/start devices when system enters/exits suspend/hibernation. */
+    if (TRUE) {
+        GError *error = NULL;
+
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1...\n", __debug__);
+        self->priv->login_manager_proxy = freedesktop_login_manager_proxy_new_for_bus_sync(
+            G_BUS_TYPE_SYSTEM, /* always on system bus! */
+            G_DBUS_PROXY_FLAGS_NONE,
+            "org.freedesktop.login1",
+            "/org/freedesktop/login1",
+            NULL,
+            &error
+        );
+        if (self->priv->login_manager_proxy) {
+            /* Connect handler for "prepare-for-sleep" signal */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully connected to org.freedesktop.login1.Manager!\n", __debug__);
+            g_signal_connect_swapped(self->priv->login_manager_proxy, "prepare-for-sleep", G_CALLBACK(cdemu_daemon_prepare_for_system_sleep), self);
+        } else {
+            /* Non-fatal error - just emit a warning */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to connect to org.freedesktop.login1.Manager: %s!\n", __debug__, error->message);
+            g_error_free(error);
+        }
+    }
+
     /* Create desired number of devices */
     for (gint i = 0; i < num_devices; i++) {
         if (!cdemu_daemon_add_device(self)) {
@@ -151,17 +177,27 @@ void cdemu_daemon_stop_daemon (CdemuDaemon *self)
 }
 
 
-void cdemu_daemon_prepare_for_sleep(CdemuDaemon *self, gboolean start)
+void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start)
 {
-    GList *iter = NULL;
+    GList *iter;
 
-    if (! g_main_loop_is_running(self->priv->main_loop)) return;
+    CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: received prepare-for-sleep signal, start=%d\n", __debug__, start);
 
-    for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter))
-        if (start) cdemu_device_stop(iter->data);
-        else if(!cdemu_device_start(iter->data, self->priv->ctl_device))
-            CDEMU_DEBUG(iter->data, DAEMON_DEBUG_WARNING,
-                        "%s: failed to start device after wake up!\n", __debug__);
+    if (start) {
+        /* System is entering sleep/hibernation. */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: stopping devices...\n", __debug__);
+        for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter)) {
+            cdemu_device_stop(iter->data);
+        }
+    } else {
+        /* System has awoken from sleep/hibernation. */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-starting devices...\n", __debug__);
+        for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter)) {
+            if (!cdemu_device_start(iter->data, self->priv->ctl_device)) {
+                CDEMU_DEBUG(iter->data, DAEMON_DEBUG_WARNING, "%s: failed to start device after wake up!\n", __debug__);
+            }
+        }
+    }
 }
 
 /**********************************************************************\
@@ -261,11 +297,20 @@ static void cdemu_daemon_init (CdemuDaemon *self)
     /* D-Bus data */
     self->priv->connection = NULL;
     self->priv->owner_id = 0;
+
+    /* org.freedesktop.login1.Manager proxy */
+    self->priv->login_manager_proxy = NULL;
 }
 
 static void cdemu_daemon_dispose (GObject *gobject)
 {
     CdemuDaemon *self = CDEMU_DAEMON(gobject);
+
+    /* Unref org.freedesktop.login1.Manager proxy */
+    if (self->priv->login_manager_proxy) {
+        g_object_unref(self->priv->login_manager_proxy);
+        self->priv->login_manager_proxy = NULL;
+    }
 
     /* Unref main loop */
     g_main_loop_unref(self->priv->main_loop);

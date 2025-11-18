@@ -20,6 +20,8 @@
 #ifndef __CDEMU_DAEMON_PRIVATE_H__
 #define __CDEMU_DAEMON_PRIVATE_H__
 
+typedef struct _FreedesktopLoginManager FreedesktopLoginManager;
+
 struct _CdemuDaemonPrivate
 {
     gchar *version;
@@ -39,13 +41,17 @@ struct _CdemuDaemonPrivate
     /* D-Bus */
     GDBusConnection *connection;
     guint owner_id;
+
+    /* org.freedesktop.login1.Manager for notification of system sleep/hibernation */
+    FreedesktopLoginManager *login_manager_proxy;
 };
 
 /* Device management */
 gboolean cdemu_daemon_add_device (CdemuDaemon *self);
 gboolean cdemu_daemon_remove_device (CdemuDaemon *self);
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
-void cdemu_daemon_prepare_for_sleep(CdemuDaemon *self, gboolean start);
+
+void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start);
 
 /* Daemon's D-BUS API */
 gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusType bus_type);
