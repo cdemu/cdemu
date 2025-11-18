@@ -309,6 +309,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             { "DAEMON_DEBUG_AUDIOPLAY", DAEMON_DEBUG_AUDIOPLAY },
             { "DAEMON_DEBUG_KERNEL_IO", DAEMON_DEBUG_KERNEL_IO },
             { "DAEMON_DEBUG_RECORDING", DAEMON_DEBUG_RECORDING },
+            { "DAEMON_DEBUG_SLEEP_HANDLER", DAEMON_DEBUG_SLEEP_HANDLER },
         };
 
         GVariantBuilder *masks = encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks));
