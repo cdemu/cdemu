@@ -71,7 +71,6 @@ set(cdemu-daemon_SOURCES
     src/device-mode-pages.c
     src/device-recording.c
     src/error.c
-    src/sleep.c
     src/main.c
     # auto-generated
     ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h
