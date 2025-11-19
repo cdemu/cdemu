@@ -88,7 +88,7 @@ smaller blocks, so it cannot be used with libMirage.
 3. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - CMake >= 2.8.5
+ - CMake >= 3.16
  - GLib >= 2.38
  - libsndfile >= 1.0.0
  - libsamplerate >= 0.1.0

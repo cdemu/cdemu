@@ -31,7 +31,7 @@ notifications via libnotify (provided that python bindings are installed).
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - CMake >= 3.7.0
+ - CMake >= 3.16
  - IntlTool >= 0.21
  - GetText >= 0.15
 
