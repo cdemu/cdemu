@@ -435,8 +435,9 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
 }
 
 
-static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name G_GNUC_UNUSED, CdemuDaemon *self)
+static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name, CdemuDaemon *self)
 {
+    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to register name %s on %s bus!\n", __debug__, name, self->priv->bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
     cdemu_daemon_stop_daemon(self);
 }
 

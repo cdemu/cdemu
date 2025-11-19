@@ -39,6 +39,7 @@ struct _CdemuDaemonPrivate
     GList *devices;
 
     /* D-Bus */
+    GBusType bus_type;
     GDBusConnection *connection;
     guint owner_id;
 

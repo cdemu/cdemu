@@ -22,6 +22,23 @@
 
 G_BEGIN_DECLS
 
+/* Daemon settings */
+typedef struct _CdemuDaemonSettings CdemuDaemonSettings;
+struct _CdemuDaemonSettings
+{
+    GBusType bus_type;
+
+    gchar *ctl_device;
+    gchar *audio_driver;
+
+    gint num_devices;
+
+    guint cdemu_debug_mask;
+    guint mirage_debug_mask;
+
+    gboolean use_system_sleep_handler;
+};
+
 /**********************************************************************\
  *                        CdemuDaemon object                          *
 \**********************************************************************/
@@ -54,7 +71,7 @@ struct _CdemuDaemonClass
 GType cdemu_daemon_get_type (void);
 
 /* Public API */
-gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, guint cdemu_debug_mask, guint mirage_debug_mask, gint use_system_sleep_handler);
+gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, const CdemuDaemonSettings *settings);
 void cdemu_daemon_stop_daemon (CdemuDaemon *self);
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
 
