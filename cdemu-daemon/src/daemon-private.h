@@ -42,9 +42,11 @@ struct _CdemuDaemonPrivate
     GDBusConnection *connection;
     guint owner_id;
 
+#if ENABLE_LOGIND_SLEEP_HANDLER
     /* org.freedesktop.login1.Manager for notification of system sleep/hibernation */
     FreedesktopLoginManager *login_manager_proxy;
     GUnixFDList *system_sleep_inhibitor_fds; /* Inhibitor lock file descriptor(s). */
+#endif
 };
 
 /* Device management */
@@ -52,8 +54,10 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self);
 gboolean cdemu_daemon_remove_device (CdemuDaemon *self);
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
 
+#if ENABLE_LOGIND_SLEEP_HANDLER
 void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start);
 void cdemu_daemon_obtain_system_sleep_inhibitor_lock (CdemuDaemon *self);
+#endif
 
 /* Daemon's D-BUS API */
 gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusType bus_type);

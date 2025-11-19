@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(cdemu-daemon VERSION 3.2.7 LANGUAGES C)
 
+option(ENABLE_LOGIND_SLEEP_HANDLER "Enable support for systemd-logind sleep/hibernation signal handler." ON)
+
 # Additional CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -16,17 +18,17 @@ find_package(PkgConfig 0.16 REQUIRED)
 find_package(IntlTool 0.21 REQUIRED)
 find_package(Gettext 0.15 REQUIRED)
 
-pkg_check_modules(LIBMIRAGE REQUIRED libmirage>=3.2.0 IMPORTED_TARGET)
-pkg_check_modules(GLIB REQUIRED glib-2.0>=2.38 gobject-2.0>=2.38 gthread-2.0>=2.38 gio-2.0>=2.38 IMPORTED_TARGET)
-pkg_check_modules(AO REQUIRED ao>=0.8.0 IMPORTED_TARGET)
-
-# gdbus-codegen
-pkg_get_variable(GDBUS_CODEGEN gio-2.0 gdbus_codegen)
-if(GDBUS_CODEGEN STREQUAL "")
-    message(FATAL_ERROR "Could not gdbus-codegen executable!")
+if(ENABLE_LOGIND_SLEEP_HANDLER)
+    # Acquiring sleep inhibitor lock via D-Bus requires GDBus bindings
+    # generated with support for GLib >= 2.64
+    set(MIN_GLIB_VERSION 2.64)
 else()
-    message(STATUS "Found gdbus-codegen: ${GDBUS_CODEGEN}")
+    set(MIN_GLIB_VERSION 2.38)
 endif()
+
+pkg_check_modules(LIBMIRAGE REQUIRED libmirage>=3.2.0 IMPORTED_TARGET)
+pkg_check_modules(GLIB REQUIRED glib-2.0>=${MIN_GLIB_VERSION} gobject-2.0>=${MIN_GLIB_VERSION} gthread-2.0>=${MIN_GLIB_VERSION} gio-2.0>=${MIN_GLIB_VERSION} IMPORTED_TARGET)
+pkg_check_modules(AO REQUIRED ao>=0.8.0 IMPORTED_TARGET)
 
 # Global definitions
 set(CMAKE_C_STANDARD 99) # Enable C99
@@ -41,19 +43,6 @@ endif()
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_BINARY_DIR}/config.h)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
-
-# GDBus bindings for org.freedesktop.login1
-add_custom_command(
-    OUTPUT ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
-    COMMAND ${GDBUS_CODEGEN}
-    --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required 2.64
-    --header --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
-    COMMAND ${GDBUS_CODEGEN}
-    --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required 2.64
-    --body --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
-    DEPENDS ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
-    COMMENT "Generate GDBus bindings for org.freedesktop.login1"
-)
 
 # *** cdemu-daemon ***
 set(cdemu-daemon_SOURCES
@@ -72,10 +61,36 @@ set(cdemu-daemon_SOURCES
     src/device-recording.c
     src/error.c
     src/main.c
-    # auto-generated
-    ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h
-    ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
 )
+
+# GDBus bindings for org.freedesktop.login1
+if(ENABLE_LOGIND_SLEEP_HANDLER)
+    # gdbus-codegen
+    pkg_get_variable(GDBUS_CODEGEN gio-2.0 gdbus_codegen)
+    if(GDBUS_CODEGEN STREQUAL "")
+        message(FATAL_ERROR "Could not gdbus-codegen executable!")
+    else()
+        message(STATUS "Found gdbus-codegen: ${GDBUS_CODEGEN}")
+    endif()
+
+    add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
+        COMMAND ${GDBUS_CODEGEN}
+        --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required ${MIN_GLIB_VERSION}
+        --header --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
+        COMMAND ${GDBUS_CODEGEN}
+        --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required ${MIN_GLIB_VERSION}
+        --body --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
+        COMMENT "Generate GDBus bindings for org.freedesktop.login1"
+    )
+
+    list(APPEND cdemu-daemon_SOURCES
+        # auto-generated
+        ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h
+        ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
+    )
+endif()
 
 add_executable(cdemu-daemon ${cdemu-daemon_SOURCES})
 
