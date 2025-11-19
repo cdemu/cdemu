@@ -40,7 +40,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 # Config file
-configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_BINARY_DIR}/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/src/config.h.in ${PROJECT_BINARY_DIR}/config.h)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
