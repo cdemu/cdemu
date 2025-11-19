@@ -95,16 +95,17 @@ static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *se
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, guint cdemu_debug_mask, guint mirage_debug_mask, gint use_system_sleep_handler)
+gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, const CdemuDaemonSettings *settings)
 {
     MirageContext *context;
-    GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
 
-    self->priv->ctl_device = g_strdup(ctl_device);
-    self->priv->audio_driver = g_strdup(audio_driver);
+    self->priv->ctl_device = g_strdup(settings->ctl_device);
+    self->priv->audio_driver = g_strdup(settings->audio_driver);
 
-    self->priv->cdemu_debug_mask = cdemu_debug_mask;
-    self->priv->mirage_debug_mask = mirage_debug_mask;
+    self->priv->cdemu_debug_mask = settings->cdemu_debug_mask;
+    self->priv->mirage_debug_mask = settings->mirage_debug_mask;
+
+    self->priv->bus_type = settings->bus_type;
 
     /* Create a MirageContext and use it as debug context */
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
@@ -124,13 +125,13 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
        instance of the server). We're actually going to claim it once we create
        the devices, but we want to avoid the device creation if name claim is
        already doomed to fail... */
-    if (!cdemu_daemon_dbus_check_if_name_is_available(self, bus_type)) {
+    if (!cdemu_daemon_dbus_check_if_name_is_available(self, self->priv->bus_type)) {
         return FALSE;
     }
 
     /* Try connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1
        so we can stop/start devices when system enters/exits suspend/hibernation. */
-    if (use_system_sleep_handler) {
+    if (settings->use_system_sleep_handler) {
 #if ENABLE_LOGIND_SLEEP_HANDLER
         GError *error = NULL;
 
@@ -164,7 +165,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     }
 
     /* Create desired number of devices */
-    for (gint i = 0; i < num_devices; i++) {
+    for (gint i = 0; i < settings->num_devices; i++) {
         if (!cdemu_daemon_add_device(self)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create device!\n", __debug__);
             return FALSE;
@@ -172,7 +173,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     }
 
     /* Register on D-Bus bus */
-    cdemu_daemon_dbus_register_on_bus(self, bus_type);
+    cdemu_daemon_dbus_register_on_bus(self, self->priv->bus_type);
 
     /* Run the main loop */
     g_main_loop_run(self->priv->main_loop);
