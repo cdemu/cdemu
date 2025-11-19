@@ -19,7 +19,10 @@
 
 #include "cdemu.h"
 #include "daemon-private.h"
+
+#if ENABLE_LOGIND_SLEEP_HANDLER
 #include "freedesktop-login-manager.h"
+#endif
 
 #define __debug__ "Daemon"
 
@@ -128,6 +131,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     /* Try connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1
        so we can stop/start devices when system enters/exits suspend/hibernation. */
     if (use_system_sleep_handler) {
+#if ENABLE_LOGIND_SLEEP_HANDLER
         GError *error = NULL;
 
         CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1...\n", __debug__);
@@ -152,6 +156,9 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to connect to org.freedesktop.login1.Manager: %s!\n", __debug__, error->message);
             g_error_free(error);
         }
+#else
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler was disabled at build time.\n", __debug__);
+#endif
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler is disabled via settings.\n", __debug__);
     }
@@ -183,6 +190,11 @@ void cdemu_daemon_stop_daemon (CdemuDaemon *self)
     g_main_loop_quit(self->priv->main_loop);
 }
 
+
+/**********************************************************************\
+ *               System sleep signal handler (optional)               *
+\**********************************************************************/
+#if ENABLE_LOGIND_SLEEP_HANDLER
 
 void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start)
 {
@@ -257,6 +269,8 @@ void cdemu_daemon_obtain_system_sleep_inhibitor_lock (CdemuDaemon *self)
         g_error_free(error);
     }
 }
+
+#endif
 
 
 /**********************************************************************\
@@ -357,15 +371,18 @@ static void cdemu_daemon_init (CdemuDaemon *self)
     self->priv->connection = NULL;
     self->priv->owner_id = 0;
 
+#if ENABLE_LOGIND_SLEEP_HANDLER
     /* org.freedesktop.login1.Manager proxy */
     self->priv->login_manager_proxy = NULL;
     self->priv->system_sleep_inhibitor_fds = NULL;
+#endif
 }
 
 static void cdemu_daemon_dispose (GObject *gobject)
 {
     CdemuDaemon *self = CDEMU_DAEMON(gobject);
 
+#if ENABLE_LOGIND_SLEEP_HANDLER
     /* Release sleep inhibitor lock (if held) */
     if (self->priv->system_sleep_inhibitor_fds) {
         g_object_unref(self->priv->system_sleep_inhibitor_fds);
@@ -377,6 +394,7 @@ static void cdemu_daemon_dispose (GObject *gobject)
         g_object_unref(self->priv->login_manager_proxy);
         self->priv->login_manager_proxy = NULL;
     }
+#endif
 
     /* Unref main loop */
     g_main_loop_unref(self->priv->main_loop);
