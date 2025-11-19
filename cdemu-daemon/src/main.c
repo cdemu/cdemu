@@ -32,6 +32,7 @@ static gchar *bus = NULL;
 static gchar *log_filename = NULL;
 static gint cdemu_debug_mask = -1;
 static gint mirage_debug_mask = -1;
+static gint use_system_sleep_handler = -1;
 
 static gboolean config_file_exists = FALSE;
 
@@ -44,6 +45,7 @@ static GOptionEntry option_entries[] = {
     { "logfile", 'l', 0, G_OPTION_ARG_FILENAME, &log_filename, N_("Logfile"), N_("logfile") },
     { "default-cdemu-debug-mask", 0, 0, G_OPTION_ARG_INT, &cdemu_debug_mask, N_("Default debug mask for CDEmu devices"), N_("mask") },
     { "default-mirage-debug-mask", 0, 0, G_OPTION_ARG_INT, &mirage_debug_mask, N_("Default debug mask for underlying libMirage"), N_("mask") },
+    { "system-sleep-handler", 0, 0, G_OPTION_ARG_INT, &use_system_sleep_handler, N_("Enable system sleep handler to stop devices before system enters suspend/hibernation (0=disable, 1=enable)"), "0|1" },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
@@ -208,6 +210,16 @@ static gboolean setup_program_options (GError **error)
         }
     }
 
+    /* Enable system sleep handler */
+    if (use_system_sleep_handler == -1) {
+        gint value = get_config_int(config_file, "settings", "system-sleep-handler");
+        if (value < 0) {
+            use_system_sleep_handler = 1; /* Default: 1 (= enable) */
+        } else {
+            use_system_sleep_handler = value;
+        }
+    }
+
     /* Free the config file */
     if (config_file) {
         g_key_file_free(config_file);
@@ -282,6 +294,7 @@ int main (int argc, char **argv)
     g_message(Q_(" - bus type: %s\n"), bus);
     g_message(Q_(" - default CDEmu debug mask: 0x%X\n"), cdemu_debug_mask);
     g_message(Q_(" - default libMirage debug mask: 0x%X\n"), mirage_debug_mask);
+    g_message(Q_(" - enable system sleep handler: %d\n"), use_system_sleep_handler);
     g_message("\n");
 
     /* Decipher bus type */
@@ -307,7 +320,7 @@ int main (int argc, char **argv)
     setup_signal_trap();
 
     /* Initialize and start daemon */
-    if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus, cdemu_debug_mask, mirage_debug_mask)) {
+    if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus, cdemu_debug_mask, mirage_debug_mask, use_system_sleep_handler)) {
         /* Printed when daemon stops */
         g_message(Q_("Stopping daemon.\n"));
     } else {
