@@ -1,4 +1,4 @@
-.TH CDEMU-DAEMON 8 "Apr 5, 2021"
+.TH CDEMU-DAEMON 8 "Nov 19, 2025"
 .SH NAME
 cdemud \- The CDEmu daemon
 .SH SYNOPSIS
@@ -55,6 +55,21 @@ Default value is 0.
 .B --default-mirage-debug-mask=mask
 Default debug mask for CDEmu devices (at libMirage implementation level).
 Default value is 0.
+.TP
+.B --system-sleep-handler=0|1
+Enable or disable systemd-logind system sleep handler. When enabled,
+the daemon attempts to obtain delaying sleep inhibitor lock from the
+\fIorg.freedesktop.login1.Manager\fR systemd-logind interface at
+\fI/org/freedesktop/login1\fR on the system bus, and registers handler
+for the \fIprepare-for-sleep\fR signal. When system is about to enter
+suspend/hibernation (as indicated by received signal), the virtual devices
+are stopped, and inhibitor lock is released. After system resumes (as
+indicated by received signal), the inhibitor lock is re-acquired, and
+virtual devices are restarted. This mechanism attempts to mitigate issues
+with active virtual devices preventing the system from properly
+suspending/hibernating. Default value is 1 (the handler is enabled). If
+sleep handler functionality is disabled at build time, this option has
+no effect.
 .TP
 .B -? --help
 Display the help message.
