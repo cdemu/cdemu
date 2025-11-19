@@ -92,7 +92,7 @@ static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *se
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, guint cdemu_debug_mask, guint mirage_debug_mask)
+gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, guint cdemu_debug_mask, guint mirage_debug_mask, gint use_system_sleep_handler)
 {
     MirageContext *context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
@@ -127,7 +127,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
 
     /* Try connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1
        so we can stop/start devices when system enters/exits suspend/hibernation. */
-    if (TRUE) {
+    if (use_system_sleep_handler) {
         GError *error = NULL;
 
         CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1...\n", __debug__);
@@ -152,6 +152,8 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to connect to org.freedesktop.login1.Manager: %s!\n", __debug__, error->message);
             g_error_free(error);
         }
+    } else {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler is disabled via settings.\n", __debug__);
     }
 
     /* Create desired number of devices */
