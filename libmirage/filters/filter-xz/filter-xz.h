@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_XZ_H__
-#define __FILTER_XZ_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -27,9 +26,3 @@
 #include <lzma.h>
 
 #include "filter-stream.h"
-
-G_BEGIN_DECLS
-
-G_END_DECLS
-
-#endif /* __FILTER_XZ_H__ */

@@ -1,8 +1,7 @@
 /* LzmaDec.h -- LZMA Decoder
 2009-02-07 : Igor Pavlov : Public domain */
 
-#ifndef __LZMA_DEC_H
-#define __LZMA_DEC_H
+#pragma once
 
 #include "Types.h"
 
@@ -130,7 +129,7 @@ LzmaDec_Allocate* can return:
   SZ_ERROR_MEM         - Memory allocation error
   SZ_ERROR_UNSUPPORTED - Unsupported properties
 */
-   
+
 SRes LzmaDec_AllocateProbs(CLzmaDec *p, const Byte *props, unsigned propsSize, ISzAlloc *alloc);
 void LzmaDec_FreeProbs(CLzmaDec *p, ISzAlloc *alloc);
 
@@ -159,7 +158,7 @@ void LzmaDec_Free(CLzmaDec *state, ISzAlloc *alloc);
 */
 
 /* LzmaDec_DecodeToDic
-   
+
    The decoding to internal dictionary buffer (CLzmaDec::dic).
    You must manually update CLzmaDec::dicPos, if it reaches CLzmaDec::dicBufSize !!!
 
@@ -226,6 +225,4 @@ SRes LzmaDecode(Byte *dest, SizeT *destLen, const Byte *src, SizeT *srcLen,
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

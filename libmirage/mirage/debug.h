@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_DEBUG_H__
-#define __MIRAGE_DEBUG_H__
+#pragma once
 
 /**
  * SECTION: mirage-debug
@@ -120,5 +119,3 @@ typedef enum _MirageDebugMask
  * with given arguments.
  */
 #define MIRAGE_DEBUG_PRINT_BUFFER(obj, lvl, prefix, width, buffer, buffer_length) mirage_contextual_debug_print_buffer(MIRAGE_CONTEXTUAL(obj), lvl, prefix, width, buffer, buffer_length)
-
-#endif /* __MIRAGE_DEBUG_H__ */

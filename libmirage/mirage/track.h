@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_TRACK_H__
-#define __MIRAGE_TRACK_H__
+#pragma once
 
 #include <mirage/types.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MIRAGE_ISRC_SIZE:
@@ -200,6 +199,5 @@ gboolean mirage_track_enumerate_languages (MirageTrack *self, MirageEnumLanguage
 MirageTrack *mirage_track_get_prev (MirageTrack *self, GError **error);
 MirageTrack *mirage_track_get_next (MirageTrack *self, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_TRACK_H__ */
+G_END_DECLS

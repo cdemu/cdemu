@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_SESSION_H__
-#define __MIRAGE_SESSION_H__
+#pragma once
 
 #include <mirage/types.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MIRAGE_MCN_SIZE:
@@ -175,6 +174,5 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
 MirageSession *mirage_session_get_prev (MirageSession *self, GError **error);
 MirageSession *mirage_session_get_next (MirageSession *self, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_SESSION_H__ */
+G_END_DECLS

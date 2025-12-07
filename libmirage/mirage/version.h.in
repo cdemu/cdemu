@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_VERSION_H__
-#define __MIRAGE_VERSION_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 extern const guint mirage_version_major;
 extern const guint mirage_version_minor;
@@ -124,6 +123,5 @@ extern const gchar *mirage_version_short;
  **/
 #define MIRAGE_SOVERSION_PATCH @MIRAGE_SOVERSION_PATCH@
 
-G_END_DECLS
 
-#endif /* __MIRAGE_VERSION_H__ */
+G_END_DECLS

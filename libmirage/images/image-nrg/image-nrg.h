@@ -19,8 +19,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_NRG_H__
-#define __IMAGE_NRG_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -29,8 +28,8 @@
 
 #include "parser.h"
 
-
 G_BEGIN_DECLS
+
 
 #pragma pack(1)
 
@@ -148,6 +147,5 @@ typedef enum
     MEDIA_HD_DVD_ANY    = MEDIA_HD_DVD|MEDIA_HD_DVD_ROM, /* Any HD DVD media */
 } NERO_MEDIA_TYPE;
 
-G_END_DECLS
 
-#endif /* __IMAGE_NRG_H__ */
+G_END_DECLS

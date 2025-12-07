@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_CONTEXT_H__
-#define __MIRAGE_CONTEXT_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -106,6 +104,5 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
 MirageStream *mirage_context_create_input_stream (MirageContext *self, const gchar *filename, GError **error);
 MirageStream *mirage_context_create_output_stream (MirageContext *self, const gchar *filename, const gchar **filter_chain, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_CONTEXT_H__ */
+G_END_DECLS

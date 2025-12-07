@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_CCD_H__
-#define __IMAGE_CCD_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -29,6 +28,7 @@
 #include "parser.h"
 
 G_BEGIN_DECLS
+
 
 typedef struct
 {
@@ -84,6 +84,5 @@ typedef struct
     gchar *ISRC;
 } CCD_Entry;
 
-G_END_DECLS
 
-#endif /* __IMAGE_CCD_H__ */
+G_END_DECLS

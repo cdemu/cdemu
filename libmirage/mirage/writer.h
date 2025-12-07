@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_WRITER_H__
-#define __MIRAGE_WRITER_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -156,6 +154,5 @@ guint mirage_writer_get_conversion_progress_step (MirageWriter *self);
 void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step);
 gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GCancellable *cancellable, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_WRITER_H__ */
+G_END_DECLS

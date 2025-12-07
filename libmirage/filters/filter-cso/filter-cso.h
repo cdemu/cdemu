@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_CSO_H__
-#define __FILTER_CSO_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -29,6 +28,7 @@
 #include "filter-stream.h"
 
 G_BEGIN_DECLS
+
 
 #pragma pack(1)
 typedef struct
@@ -43,6 +43,5 @@ typedef struct
 } ciso_header_t;            /* Length: 24 bytes                   */
 #pragma pack()
 
-G_END_DECLS
 
-#endif /* __FILTER_CSO_H__ */
+G_END_DECLS

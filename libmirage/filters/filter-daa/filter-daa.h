@@ -20,8 +20,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_DAA_H__
-#define __FILTER_DAA_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -31,11 +30,10 @@
 
 #include "filter-stream.h"
 
-
 G_BEGIN_DECLS
 
-#pragma pack(1)
 
+#pragma pack(1)
 
 typedef enum
 {
@@ -106,9 +104,7 @@ typedef struct
     guint8 daa_key[128]; /* Stored DAA key */
 } DAA_DescriptorEncryption;
 
-
 #pragma pack()
 
-G_END_DECLS
 
-#endif /* __FILTER_DAA_H__ */
+G_END_DECLS

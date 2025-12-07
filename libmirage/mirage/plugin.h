@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_PLUGIN_H__
-#define __MIRAGE_PLUGIN_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -71,6 +69,5 @@ GType mirage_plugin_get_type (void);
 
 MiragePlugin *mirage_plugin_new (const gchar *filename);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_PLUGIN_H__ */
+G_END_DECLS

@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_PARSER_H__
-#define __MIRAGE_PARSER_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -106,6 +104,5 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc);
 
 GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageStream *stream, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_PARSER_H__ */
+G_END_DECLS

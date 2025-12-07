@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_FILTER_STREAM_H__
-#define __MIRAGE_FILTER_STREAM_H__
+#pragma once
 
 #include <mirage/mirage.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MirageFilterStreamInfo:
@@ -125,5 +124,3 @@ goffset mirage_filter_stream_simplified_get_position (MirageFilterStream *self);
 
 
 G_END_DECLS
-
-#endif /* __MIRAGE_FILTER_STREAM_H__ */

@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_ECM_FILTER_STREAM_H__
-#define __FILTER_ECM_FILTER_STREAM_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define MIRAGE_TYPE_FILTER_STREAM_ECM            (mirage_filter_stream_ecm_get_type())
 #define MIRAGE_FILTER_STREAM_ECM(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILTER_STREAM_ECM, MirageFilterStreamEcm))
@@ -51,6 +50,5 @@ struct _MirageFilterStreamEcmClass
 GType mirage_filter_stream_ecm_get_type (void);
 void mirage_filter_stream_ecm_type_register (GTypeModule *type_module);
 
-G_END_DECLS
 
-#endif /* __FILTER_ECM_FILTER_STREAM_H__ */
+G_END_DECLS

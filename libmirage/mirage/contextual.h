@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_CONTEXTUAL_H__
-#define __MIRAGE_CONTEXTUAL_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -78,6 +76,5 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
 MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, const gchar *filename, GError **error);
 MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, const gchar **filter_chain, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_CONTEXTUAL_H__ */
+G_END_DECLS

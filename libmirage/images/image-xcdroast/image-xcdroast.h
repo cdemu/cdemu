@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_XCDROAST_H__
-#define __IMAGE_XCDROAST_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -28,8 +27,8 @@
 
 #include "parser.h"
 
-
 G_BEGIN_DECLS
+
 
 typedef struct
 {
@@ -76,6 +75,5 @@ typedef struct
     gchar *cd_discid;
 } XINF_Track;
 
-G_END_DECLS
 
-#endif /* __IMAGE_XCDROAST_H__ */
+G_END_DECLS

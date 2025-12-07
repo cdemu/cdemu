@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_CDI_PARSER_H__
-#define __IMAGE_CDI_PARSER_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define MIRAGE_TYPE_PARSER_CDI            (mirage_parser_cdi_get_type())
 #define MIRAGE_PARSER_CDI(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CDI, MirageParserCdi))
@@ -51,6 +50,5 @@ struct _MirageParserCdiClass
 GType mirage_parser_cdi_get_type (void);
 void mirage_parser_cdi_type_register (GTypeModule *type_module);
 
-G_END_DECLS
 
-#endif /* __IMAGE_CDI_PARSER_H__ */
+G_END_DECLS

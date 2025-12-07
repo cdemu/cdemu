@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_MDX_H__
-#define __IMAGE_MDX_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -27,8 +26,8 @@
 
 #include "parser.h"
 
-
 G_BEGIN_DECLS
+
 
 #define MDX_SIGNATURE "MEDIA DESCRIPTOR"
 
@@ -56,6 +55,5 @@ typedef struct
 
 #pragma pack()
 
-G_END_DECLS
 
-#endif /* __IMAGE_MDX_H__ */
+G_END_DECLS

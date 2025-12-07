@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_DAA_FILTER_STREAM__
-#define __FILTER_DAA_FILTER_STREAM__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define MIRAGE_TYPE_FILTER_STREAM_DAA            (mirage_filter_stream_daa_get_type())
 #define MIRAGE_FILTER_STREAM_DAA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILTER_STREAM_DAA, MirageFilterStreamDaa))
@@ -51,6 +50,5 @@ struct _MirageFilterStreamDaaClass
 GType mirage_filter_stream_daa_get_type (void);
 void mirage_filter_stream_daa_type_register (GTypeModule *type_module);
 
-G_END_DECLS
 
-#endif /* __FILTER_DAA_FILTER_STREAM__ */
+G_END_DECLS

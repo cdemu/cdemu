@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_OBJECT_H__
-#define __MIRAGE_OBJECT_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -73,6 +71,5 @@ GType mirage_object_get_type (void);
 void mirage_object_set_parent (MirageObject *self, gpointer parent);
 gpointer mirage_object_get_parent (MirageObject *self);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_OBJECT_H__ */
+G_END_DECLS

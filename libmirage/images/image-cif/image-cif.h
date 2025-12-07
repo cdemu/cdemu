@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_CIF_H__
-#define __IMAGE_CIF_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -27,8 +26,8 @@
 
 #include "parser.h"
 
-
 G_BEGIN_DECLS
+
 
 /* Image type */
 typedef enum {
@@ -144,5 +143,3 @@ typedef struct
 
 
 G_END_DECLS
-
-#endif /* __IMAGE_CIF_H__ */

@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_TOC_WRITER_H__
-#define __IMAGE_TOC_WRITER_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define MIRAGE_TYPE_WRITER_TOC            (mirage_writer_toc_get_type())
 #define MIRAGE_WRITER_TOC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_WRITER_TOC, MirageWriterToc))
@@ -51,6 +50,5 @@ struct _MirageWriterTocClass
 GType mirage_writer_toc_get_type (void);
 void mirage_writer_toc_type_register (GTypeModule *type_module);
 
-G_END_DECLS
 
-#endif /* __IMAGE_TOC_WRITER_H__ */
+G_END_DECLS

@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_DISC_H__
-#define __MIRAGE_DISC_H__
+#pragma once
 
 #include <mirage/types.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MirageMediumType:
@@ -160,6 +159,5 @@ void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gi
 void mirage_disc_get_dpm_data (MirageDisc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data);
 gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gdouble *angle, gdouble *density, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_DISC_H__ */
+G_END_DECLS

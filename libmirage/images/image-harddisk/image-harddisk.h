@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_HD_H__
-#define __IMAGE_HD_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -27,10 +26,3 @@
 
 #include "parser.h"
 #include "partition-tables.h"
-
-
-G_BEGIN_DECLS
-
-G_END_DECLS
-
-#endif /* __IMAGE_HD_H__ */

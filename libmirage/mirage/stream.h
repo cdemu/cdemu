@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_STREAM_H__
-#define __MIRAGE_STREAM_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -87,6 +85,5 @@ gboolean mirage_stream_move_file (MirageStream *self, const gchar *new_filename,
 
 GInputStream *mirage_stream_get_g_input_stream (MirageStream *self);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_STREAM_H__ */
+G_END_DECLS

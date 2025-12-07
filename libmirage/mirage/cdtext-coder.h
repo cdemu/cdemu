@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_CDTEXT_CODER_H__
-#define __MIRAGE_CDTEXT_CODER_H__
+#pragma once
 
 #include <mirage/types.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MirageCdTextDataCallback:
@@ -105,5 +104,3 @@ gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, Mi
 
 
 G_END_DECLS
-
-#endif /* __MIRAGE_CDTEXT_CODER_H__ */

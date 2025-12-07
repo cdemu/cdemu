@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_LANGUAGE_H__
-#define __MIRAGE_LANGUAGE_H__
+#pragma once
 
 #include <mirage/types.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MirageLanguagePackType:
@@ -117,6 +116,5 @@ gint mirage_language_get_code (MirageLanguage *self);
 gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 *pack_data, gint length, GError **error);
 gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 **pack_data, gint *length, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_LANGUAGE_H__ */
+G_END_DECLS

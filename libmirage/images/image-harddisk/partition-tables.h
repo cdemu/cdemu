@@ -18,8 +18,7 @@
  */
 
 
-#ifndef __IMAGE_HD_PARTITION_TABLE_H__
-#define __IMAGE_HD_PARTITION_TABLE_H__
+#pragma once
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,8 +26,8 @@
 
 #include <mirage/mirage.h>
 
-
 G_BEGIN_DECLS
+
 
 /* APM Partition Map Flags */
 typedef enum {
@@ -158,7 +157,5 @@ void mirage_print_apm_entry_block(MirageContextual *self, apm_entry_t *pme_block
 void mirage_print_gpt_header(MirageContextual *self, gpt_header_t *gpt_header);
 void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry);
 
+
 G_END_DECLS
-
-#endif /* __IMAGE_HD_PARTITION_TABLE_H__ */
-

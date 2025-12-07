@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_ERROR_H__
-#define __MIRAGE_ERROR_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define MIRAGE_ERROR (mirage_error_quark())
 #define MIRAGE_TYPE_ERROR (mirage_error_get_type())
@@ -67,6 +66,5 @@ typedef enum _MirageErrorCode
     MIRAGE_ERROR_WRITER_ERROR,
 } MirageErrorCode;
 
-G_END_DECLS
 
-#endif /* __MIRAGE_ERROR_H__ */
+G_END_DECLS

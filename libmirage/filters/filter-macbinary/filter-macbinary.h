@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_MACBINARY_H__
-#define __FILTER_MACBINARY_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -31,6 +30,7 @@
 #include "../filter-dmg/adc.h"
 
 G_BEGIN_DECLS
+
 
 typedef enum {
     FF_ISONDESK   = 0x0001,
@@ -120,6 +120,5 @@ typedef struct {
 } bcm_block_t; /* length: 24 bytes */
 #pragma pack()
 
-G_END_DECLS
 
-#endif /* __FILTER_MACBINARY_H__ */
+G_END_DECLS

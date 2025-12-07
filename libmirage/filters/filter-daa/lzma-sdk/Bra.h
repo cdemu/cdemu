@@ -1,8 +1,7 @@
 /* Bra.h -- Branch converters for executables
 2009-02-07 : Igor Pavlov : Public domain */
 
-#ifndef __BRA_H
-#define __BRA_H
+#pragma once
 
 #include "Types.h"
 
@@ -13,23 +12,23 @@ extern "C" {
 /*
 These functions convert relative addresses to absolute addresses
 in CALL instructions to increase the compression ratio.
-  
+
   In:
     data     - data buffer
     size     - size of data
     ip       - current virtual Instruction Pinter (IP) value
     state    - state variable for x86 converter
     encoding - 0 (for decoding), 1 (for encoding)
-  
+
   Out:
     state    - state variable for x86 converter
 
   Returns:
     The number of processed bytes. If you call these functions with multiple calls,
     you must start next call with first byte after block of processed bytes.
-  
+
   Type   Endian  Alignment  LookAhead
-  
+
   x86    little      1          4
   ARMT   little      2          2
   ARM    little      4          0
@@ -63,6 +62,4 @@ SizeT IA64_Convert(Byte *data, SizeT size, UInt32 ip, int encoding);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

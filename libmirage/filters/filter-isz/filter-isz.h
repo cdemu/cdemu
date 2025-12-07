@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_ISZ_H__
-#define __FILTER_ISZ_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -29,8 +28,8 @@
 
 #include "filter-stream.h"
 
-
 G_BEGIN_DECLS
+
 
 typedef enum {
     NONE     = 0,
@@ -98,6 +97,5 @@ typedef struct {
     guint64 adj_offset; /* Offset adjusted relative to start of segment data */
 } ISZ_Chunk; /* length depending on ptr_len */
 
-G_END_DECLS
 
-#endif /* __FILTER_ISZ_H__ */
+G_END_DECLS

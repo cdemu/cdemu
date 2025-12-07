@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_CUE_H__
-#define __IMAGE_CUE_H__
+#pragma once
 
 #include "mirage/config.h"
 #include <mirage/mirage.h>
@@ -26,5 +25,3 @@
 #include <glib/gi18n-lib.h>
 
 #include "parser.h"
-
-#endif /* __IMAGE_CUE_H__ */

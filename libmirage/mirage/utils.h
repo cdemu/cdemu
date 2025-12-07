@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_UTILS_H__
-#define __MIRAGE_UTILS_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -149,6 +147,5 @@ gchar *mirage_helper_format_string (const gchar *format, ...);
 gchar *mirage_helper_format_stringv (const gchar *format, va_list args);
 gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_UTILS_H__ */
+G_END_DECLS

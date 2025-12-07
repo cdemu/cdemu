@@ -18,8 +18,7 @@
  */
 
 
-#ifndef __MIRAGE_H__
-#define __MIRAGE_H__
+#pragma once
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -136,6 +135,5 @@ gboolean mirage_get_supported_debug_masks (const MirageDebugMaskInfo **masks, gi
 
 MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_H__ */
+G_END_DECLS

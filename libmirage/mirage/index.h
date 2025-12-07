@@ -17,11 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_INDEX_H__
-#define __MIRAGE_INDEX_H__
+#pragma once
 
 #include <mirage/types.h>
-
 
 G_BEGIN_DECLS
 
@@ -74,6 +72,5 @@ gint mirage_index_get_number (MirageIndex *self);
 void mirage_index_set_address (MirageIndex *self, gint address);
 gint mirage_index_get_address (MirageIndex *self);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_INDEX_H__ */
+G_END_DECLS

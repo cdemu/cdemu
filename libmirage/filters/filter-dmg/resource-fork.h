@@ -17,10 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FILTER_DMG_RESOURCE_FORK_H__
-#define __FILTER_DMG_RESOURCE_FORK_H__
+#pragma once
 
 G_BEGIN_DECLS
+
 
 typedef enum {
     map_changed  = 0x20,
@@ -105,6 +105,5 @@ gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork);
 rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type);
 rsrc_ref_t *rsrc_find_ref_by_type_and_id(rsrc_fork_t *rsrc_fork, const gchar *type, gint16 id);
 
-G_END_DECLS
 
-#endif /* __FILTER_DMG_RESOURCE_FORK_H__ */
+G_END_DECLS

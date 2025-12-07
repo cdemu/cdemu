@@ -17,13 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_FRAGMENT_H__
-#define __MIRAGE_FRAGMENT_H__
+#pragma once
 
 #include <mirage/types.h>
 
-
 G_BEGIN_DECLS
+
 
 /**
  * MirageMainDataFormat:
@@ -144,6 +143,5 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
 
 gboolean mirage_fragment_is_writable (MirageFragment *self);
 
-G_END_DECLS
 
-#endif /* __MIRAGE_FRAGMENT_H__ */
+G_END_DECLS

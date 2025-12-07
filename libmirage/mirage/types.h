@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MIRAGE_TYPES_H__
-#define __MIRAGE_TYPES_H__
+#pragma once
 
 /* For now, only definitions that are shared among several headers are
    listed here, and the rest are kept in their corresponding headers. */
 
 G_BEGIN_DECLS
+
 
 typedef struct _MirageDisc MirageDisc;
 typedef struct _MirageFragment MirageFragment;
@@ -63,5 +63,3 @@ typedef enum _MirageSectorType
 
 
 G_END_DECLS
-
-#endif /* __MIRAGE_TYPES_H__ */

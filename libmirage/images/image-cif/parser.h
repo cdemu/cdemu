@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_CIF_PARSER_H__
-#define __IMAGE_CIF_PARSER_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define MIRAGE_TYPE_PARSER_CIF            (mirage_parser_cif_get_type())
 #define MIRAGE_PARSER_CIF(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CIF, MirageParserCif))
@@ -51,6 +50,5 @@ struct _MirageParserCifClass
 GType mirage_parser_cif_get_type (void);
 void mirage_parser_cif_type_register (GTypeModule *type_module);
 
-G_END_DECLS
 
-#endif /* __IMAGE_CIF_PARSER_H__ */
+G_END_DECLS
