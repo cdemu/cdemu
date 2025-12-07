@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_AUDIO_PRIVATE_H__
-#define __CDEMU_AUDIO_PRIVATE_H__
+#pragma once
 
 struct _CdemuAudioPrivate
 {
@@ -48,5 +47,3 @@ struct _CdemuAudioPrivate
     /* A hack to account for null driver's behaviour */
     gboolean null_hack;
 };
-
-#endif /* __CDEMU_AUDIO_PRIVATE_H__ */

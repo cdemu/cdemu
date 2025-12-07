@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_DEBUG_H__
-#define __CDEMU_DEBUG_H__
+#pragma once
 
 /* Debug masks */
 typedef enum
@@ -40,5 +39,3 @@ typedef enum
 #define CDEMU_DEBUG(obj, lvl, ...) MIRAGE_DEBUG(obj, lvl, __VA_ARGS__)
 #define CDEMU_DEBUG_ON(obj, lvl) MIRAGE_DEBUG_ON(obj, lvl)
 #define CDEMU_DEBUG_PRINT_BUFFER(obj, lvl, prefix, width, buffer, buffer_length) MIRAGE_DEBUG_PRINT_BUFFER(obj, lvl, prefix, width, buffer, buffer_length)
-
-#endif /* __CDEMU_DEBUG_H__ */

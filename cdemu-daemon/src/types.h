@@ -17,19 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_TYPES_H__
-#define __CDEMU_TYPES_H__
+#pragma once
 
 /* For now, only definitions that are shared among several headers are
    listed here, and the rest are kept in their corresponding headers. */
 
 G_BEGIN_DECLS
 
+
 typedef struct _CdemuAudio CdemuAudio;
 typedef struct _CdemuDevice CdemuDevice;
 typedef struct _CdemuCommand CdemuCommand;
 typedef struct _CdemuRecording CdemuRecording;
 
-G_END_DECLS
 
-#endif /* __CDEMU_TYPES_H__ */
+G_END_DECLS

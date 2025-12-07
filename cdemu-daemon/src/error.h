@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_ERROR_H__
-#define __CDEMU_ERROR_H__
+#pragma once
 
 #define CDEMU_ERROR (cdemu_error_quark ())
 #define CDEMU_TYPE_ERROR (cdemu_error_get_type ())
@@ -36,5 +35,3 @@ enum
 
 GQuark cdemu_error_quark (void);
 GType  cdemu_error_get_type (void);
-
-#endif /* __CDEMU_ERROR_H__ */

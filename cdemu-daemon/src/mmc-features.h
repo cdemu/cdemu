@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMUD_MMC_FEATURES_H__
-#define __CDEMUD_MMC_FEATURES_H__
+#pragma once
 
 #pragma pack(1)
 
@@ -659,5 +658,3 @@ typedef enum {
 } ProfileCode;
 
 #pragma pack()
-
-#endif /* __CDEMUD_MMC_FEATURES_H__ */

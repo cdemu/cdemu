@@ -17,10 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_AUDIO_H__
-#define __CDEMU_AUDIO_H__
+#pragma once
 
 G_BEGIN_DECLS
+
 
 #define CDEMU_TYPE_AUDIO            (cdemu_audio_get_type())
 #define CDEMU_AUDIO(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), CDEMU_TYPE_AUDIO, CdemuAudio))
@@ -57,6 +57,5 @@ gboolean cdemu_audio_pause (CdemuAudio *self);
 gboolean cdemu_audio_stop (CdemuAudio *self);
 gint cdemu_audio_get_status (CdemuAudio *self);
 
-G_END_DECLS
 
-#endif /* __CDEMU_AUDIO_H__ */
+G_END_DECLS

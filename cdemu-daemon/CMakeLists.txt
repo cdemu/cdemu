@@ -77,10 +77,10 @@ if(ENABLE_LOGIND_SLEEP_HANDLER)
         OUTPUT ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
         COMMAND ${GDBUS_CODEGEN}
         --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required ${MIN_GLIB_VERSION}
-        --header --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
+        --header --pragma-once --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
         COMMAND ${GDBUS_CODEGEN}
         --interface-prefix org.freedesktop.login1 --c-generate-autocleanup all --c-namespace FreedesktopLogin --glib-min-required ${MIN_GLIB_VERSION}
-        --body --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
+        --body --pragma-once --output ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
         DEPENDS ${PROJECT_SOURCE_DIR}/src/org.freedesktop.login1.xml
         COMMENT "Generate GDBus bindings for org.freedesktop.login1"
     )

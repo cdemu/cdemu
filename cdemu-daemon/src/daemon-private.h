@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_DAEMON_PRIVATE_H__
-#define __CDEMU_DAEMON_PRIVATE_H__
+#pragma once
 
 typedef struct _FreedesktopLoginManager FreedesktopLoginManager;
 
@@ -70,5 +69,3 @@ void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint numbe
 void cdemu_daemon_dbus_emit_device_mapping_ready (CdemuDaemon *self, gint number);
 void cdemu_daemon_dbus_emit_device_added (CdemuDaemon *self);
 void cdemu_daemon_dbus_emit_device_removed (CdemuDaemon *self);
-
-#endif /* __CDEMU_DAEMON_PRIVATE_H__ */

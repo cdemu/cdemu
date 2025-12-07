@@ -17,9 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-
-#ifndef __CDEMU_H__
-#define __CDEMU_H__
+#pragma once
 
 #include "config.h"
 
@@ -56,5 +54,3 @@
 
 #include "daemon.h"
 #include "device.h"
-
-#endif /* __CDEMU_H__ */

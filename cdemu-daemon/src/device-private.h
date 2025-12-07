@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_DEVICE_PRIVATE_H__
-#define __CDEMU_DEVICE_PRIVATE_H__
+#pragma once
 
 struct _CdemuCommand
 {
@@ -197,6 +196,3 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
 /* Recording */
 gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const guint8 *cue_sheet, gint cue_sheet_size);
 void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode);
-
-
-#endif /* __CDEMU_DEVICE_PRIVATE_H__ */

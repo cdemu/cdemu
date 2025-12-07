@@ -17,11 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_DEVICE_H__
-#define __CDEMU_DEVICE_H__
-
+#pragma once
 
 G_BEGIN_DECLS
+
 
 /**********************************************************************\
  *                        CdemuDevice object                          *
@@ -73,6 +72,5 @@ void cdemu_device_get_mapping (CdemuDevice *self, gchar **sr_device, gchar **sg_
 gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device);
 void cdemu_device_stop (CdemuDevice *self);
 
-G_END_DECLS
 
-#endif /* __CDEMU_DEVICE_H__ */
+G_END_DECLS

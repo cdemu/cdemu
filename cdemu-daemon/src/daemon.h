@@ -17,10 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_DAEMON_H__
-#define __CDEMU_DAEMON_H__
+#pragma once
 
 G_BEGIN_DECLS
+
 
 /* Daemon settings */
 typedef struct _CdemuDaemonSettings CdemuDaemonSettings;
@@ -77,5 +77,3 @@ CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GEr
 
 
 G_END_DECLS
-
-#endif /* __CDEMU_DAEMON_H__ */

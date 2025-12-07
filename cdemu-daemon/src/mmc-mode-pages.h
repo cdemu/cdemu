@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMUD_MODE_PAGES_H__
-#define __CDEMUD_MODE_PAGES_H__
+#pragma once
 
 #pragma pack(1)
 
@@ -485,5 +484,3 @@ struct ModePage_0x2A_WriteSpeedPerformanceDescriptor
 };
 
 #pragma pack()
-
-#endif /* __CDEMUD_MODE_PAGES_H__ */

@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_SENSE_CONSTANTS_H__
-#define __CDEMU_SENSE_CONSTANTS_H__
+#pragma once
 
 /* Status codes */
 typedef enum {
@@ -355,5 +354,3 @@ static inline guint32 make_status(SenseStatus status, SenseKey sensekey, Additio
 
     return val;
 }
-
-#endif /* __CDEMU_SENSE_CONSTANTS_H__ */

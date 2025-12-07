@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CDEMU_PACKET_COMMANDS_H__
-#define __CDEMU_PACKET_COMMANDS_H__
+#pragma once
 
 typedef enum {
     BLANK = 0xA1,
@@ -2477,5 +2476,3 @@ struct WRITE_BUFFER_CDB
 };
 
 #pragma pack()
-
-#endif /* __CDEMU_PACKET_COMMANDS_H__ */
