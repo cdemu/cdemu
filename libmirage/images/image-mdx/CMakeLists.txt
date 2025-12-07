@@ -3,13 +3,20 @@ set(image_name "image-${image_short}")
 
 project(${image_name} LANGUAGES C)
 
+# Dependencies
+find_package(ZLIB 1.2.4 QUIET)
+pkg_check_modules(LIBGCRYPT REQUIRED libgcrypt IMPORTED_TARGET)
+
 # Build
-if(TRUE)
+if(ZLIB_FOUND AND LIBGCRYPT_FOUND)
     add_library(${image_name} MODULE
+        crypto.c
         parser.c
         plugin.c
     )
     target_link_libraries(${image_name} PRIVATE mirage)
+    target_link_libraries(${image_name} PRIVATE PkgConfig::LIBGCRYPT)
+    target_link_libraries(${image_name} PRIVATE ZLIB::ZLIB)
 
     # Disable library prefix
     set_target_properties(${image_name} PROPERTIES PREFIX "")
