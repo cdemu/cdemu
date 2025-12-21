@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # cdemu: command-line CDEmu client
-# Copyright (C) 2006-2014 Rok Mandeljc
+# Copyright (C) 2006-2025 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,63 +17,48 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from __future__ import print_function
-
 import argparse
-import collections
+import configparser
 import datetime
-import sys
-import os
 import getpass
+import gettext
+import os
 import shlex
 import subprocess
+import sys
 
 import gi
-from gi.repository import GLib
-from gi.repository import Gio
 
+# Put under if block to avoid triggering E402 warnings in subsequent imports...
+if True:
+    gi.require_version('GLib', '2.0')
+    gi.require_version('Gio', '2.0')
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
-import gettext
+from gi.repository import GLib, Gio
 
 
 # *** Globals ***
 app_name = "cdemu"
 app_version = "3.2.5"
-supported_daemon_interface_version = [ 7, 0 ]
+supported_daemon_interface_version = (7, 0)
 
 # I18n
-if sys.version_info[0] < 3:
-    # Prior to python3, we need to explicitly enable unicode strings
-    gettext.install(app_name, unicode=True)
-else:
-    gettext.install(app_name)
-
+gettext.install(app_name)
 
 # Set process name
-# "linux2" is for python2, "linux" is for python3
-if sys.platform == "linux" or sys.platform == "linux2":
-    # Process name must be a byte string...
-    if isinstance(app_name, bytes):
-        app_name_bytes = app_name
-    else:
-        app_name_bytes = app_name.encode('utf-8')
-
+if sys.platform == "linux":
     try:
         import ctypes
         libc = ctypes.CDLL("libc.so.6")
-        libc.prctl(15, app_name_bytes, 0, 0, 0) # 15 = PR_SET_NAME
+        libc.prctl(15, app_name.encode('utf-8'), 0, 0, 0)  # 15 = PR_SET_NAME
     except Exception:
         pass
 
 
 # String to boolean conversion helper
-def str2bool (value):
-    return value.lower() in ("yes", "true", "t", "1")
+def str2bool(value):
+    return value.lower() in {"yes", "true", "t", "1"}
+
 
 ########################################################################
 #                            Terminal colors                           #
@@ -83,20 +67,23 @@ def str2bool (value):
 # foreground: 30-37, background: 40-47, reset: 0, bold: 1. (ECMA-48 / VT102)
 def set_terminal_color(stream, *attrs):
     if stream.isatty():
-        attrs_str = ";".join(map(str, attrs))
-        stream.write("\x1b[%sm" % (attrs_str))
+        attrs_str = ";".join(str(attr) for attr in attrs)
+        stream.write(f"\x1b[{attrs_str:s}m")
 
-def print_header (message):
+
+def print_header(message):
     set_terminal_color(sys.stdout, 1, 34)
     print(message, file=sys.stdout)
     set_terminal_color(sys.stdout, 0)
 
-def print_error (message):
+
+def print_error(message):
     set_terminal_color(sys.stderr, 1, 31)
     print(_("ERROR: %s") % (message), file=sys.stderr)
     set_terminal_color(sys.stderr, 0)
 
-def print_warning (message):
+
+def print_warning(message):
     set_terminal_color(sys.stdout, 1, 33)
     print(_("WARNING: %s") % (message), file=sys.stdout)
     set_terminal_color(sys.stdout, 0)
@@ -105,28 +92,52 @@ def print_warning (message):
 ########################################################################
 #                                 Error                                #
 ########################################################################
-class CDEmuError (Exception): pass
-class CDEmuParserError (Exception): pass
+class CDEmuError(Exception):
+    pass
+
+
+class CDEmuParserError(Exception):
+    pass
+
 
 ########################################################################
 #                              Load device                             #
 ########################################################################
-class cmd_load (object):
-    def __init__ (self, subparsers):
+class cmd_load:
+    def __init__(self, subparsers):
         name = "load"
         description_msg = _("")
         help_msg = _("loads an image to the device")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("image_file", type=str, nargs="+", help=_("image file(s)"))
-        parser.add_argument("--encoding", type=str, help=_("encoding for text-based images"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "image_file",
+            type=str,
+            nargs="+",
+            help=_("image file(s)"),
+        )
+        parser.add_argument(
+            "--encoding",
+            type=str,
+            help=_("encoding for text-based images"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # We need to pass absolute filenames to daemon
-        filenames = [os.path.abspath(f) for f in arguments.image_file]
+        filenames = [os.path.abspath(filename) for filename in arguments.image_file]
 
         # Gather parser parameters into a dictionary
         parser_params = {}
@@ -166,56 +177,93 @@ class cmd_load (object):
             return self.load_device(proxy, device, filenames, parser_params)
 
     # Device loading with password query support
-    def load_device (self, proxy, device, filenames, params={}):
+    def load_device(self, proxy, device, filenames, params):
         # Try to load it
         try:
             proxy.DeviceLoad(device, filenames, params)
         except GLib.Error as e:
-            if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
-                # We need password
-                if "CDEMU_ASKPASS" in os.environ:
-                    proc = subprocess.Popen(shlex.split(os.environ["CDEMU_ASKPASS"]), text=True, stdout=subprocess.PIPE)
-                    (pout, perr) = proc.communicate()
-                    pret = proc.wait()
-                    password = pout
-                else:
-                    if sys.stdin.isatty():
-                        print(_("The image you are trying to load is encrypted."))
-                        password = getpass.getpass(_("Password: "))
-                    else:
-                        if "SSH_ASKPASS" in os.environ:
-                            proc = subprocess.Popen(shlex.split(os.environ["SSH_ASKPASS"]), text=True, stdout=subprocess.PIPE)
-                            (pout, perr) = proc.communicate()
-                            pret = proc.wait()
-                            password = pout
-                        else:
-                            raise CDEmuError(_("No password agent was supplied."))
-
-                # Append password to params
-                params["password"] = GLib.Variant("s", password)
-                return self.load_device(proxy, device, filenames, params)
-            else:
+            if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" not in str(e):
                 raise CDEmuError(_("Failed to load image: %s") % (e))
+
+            # We need password
+            if "CDEMU_ASKPASS" in os.environ:
+                password = subprocess.run(
+                    shlex.split(os.environ["CDEMU_ASKPASS"]),
+                    check=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout
+            else:
+                if sys.stdin.isatty():
+                    print(_("The image you are trying to load is encrypted."))
+                    password = getpass.getpass(_("Password: "))
+                else:
+                    if "SSH_ASKPASS" in os.environ:
+                        password = subprocess.run(
+                            shlex.split(os.environ["SSH_ASKPASS"]),
+                            check=True,
+                            text=True,
+                            stdout=subprocess.PIPE,
+                        ).stdout
+                    else:
+                        raise CDEmuError(_("No password agent was supplied."))
+
+            # Append password to params
+            params["password"] = GLib.Variant("s", password)
+            return self.load_device(proxy, device, filenames, params)
+
 
 ########################################################################
 #                              Create blank                            #
 ########################################################################
-class cmd_create_blank (object):
-    def __init__ (self, subparsers):
+class cmd_create_blank:
+    def __init__(self, subparsers):
         name = "create-blank"
         description_msg = _("")
         help_msg = _("load blank/recordable image to the device")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("image_file", type=str, help=_("image filename/basename"))
-        parser.add_argument("--writer-id", type=str, nargs="?", required=True, help=_("ID of image writer to use"))
-        parser.add_argument("--medium-type", type=str, nargs="?", choices=['cdr74', 'cdr80', 'cdr90', 'cdr99', 'dvd+r', 'bdr'], help=_("medium type"))
-        parser.add_argument("--param", type=str, nargs="?", action='append', help=_("additional writer parameter(s)"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "image_file",
+            type=str,
+            help=_("image filename/basename"),
+        )
+        parser.add_argument(
+            "--writer-id",
+            type=str,
+            nargs="?",
+            required=True,
+            help=_("ID of image writer to use"),
+        )
+        parser.add_argument(
+            "--medium-type",
+            type=str,
+            nargs="?",
+            choices=['cdr74', 'cdr80', 'cdr90', 'cdr99', 'dvd+r', 'bdr'],
+            help=_("medium type"),
+        )
+        parser.add_argument(
+            "--param",
+            type=str,
+            nargs="?",
+            action='append',
+            help=_("additional writer parameter(s)"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # We need to pass absolute filename/basename to daemon
         filename = os.path.abspath(arguments.image_file)
 
@@ -229,7 +277,11 @@ class cmd_create_blank (object):
             # Process parameters
             writer_parameters = self.process_writer_parameters(arguments.param)
             # Validate parameters using writer's parameter sheet
-            writer_parameters = self.validate_writer_parameters(proxy, arguments.writer_id, writer_parameters)
+            writer_parameters = self.validate_writer_parameters(
+                proxy,
+                arguments.writer_id,
+                writer_parameters,
+            )
             # Set to parameters dictionary that we will send to daemon
             parameters.update(writer_parameters)
 
@@ -266,7 +318,7 @@ class cmd_create_blank (object):
             return self.load_device(proxy, device, filename, parameters)
 
     # Device loading
-    def load_device (self, proxy, device, filenames, params={}):
+    def load_device(self, proxy, device, filenames, params):
         # Try to load it
         try:
             proxy.DeviceCreateBlank(device, filenames, params)
@@ -274,7 +326,7 @@ class cmd_create_blank (object):
             raise CDEmuError(_("Failed to load blank image: %s") % (e))
 
     # Image writer parameter processing
-    def process_writer_parameters (self, parameter_strings):
+    def process_writer_parameters(self, parameter_strings):
         parameters = {}
 
         # In general, we can be given multiple strings, one for each
@@ -287,8 +339,8 @@ class cmd_create_blank (object):
             for parameter_token in parameter_tokens:
                 # Split into key and value
                 try:
-                    (key, value) = parameter_token.split("=")
-                except ValueError as e:
+                    key, value = parameter_token.split("=")
+                except ValueError:
                     raise CDEmuError(_("Parameter token '%s' is not a key=value pair!") % parameter_token)
 
                 # Strip whitespaces and insert into dictionary
@@ -297,7 +349,7 @@ class cmd_create_blank (object):
         return parameters
 
     # Writer parameter validation
-    def validate_writer_parameters (self, proxy, writer_id, parameters):
+    def validate_writer_parameters(self, proxy, writer_id, parameters):
         # Grab writer's parameter sheet
         try:
             parameter_sheet = proxy.EnumWriterParameters(writer_id)
@@ -313,12 +365,12 @@ class cmd_create_blank (object):
         # NOTE: we need to use list(parameters.items()) because we may
         # change the dictionary (pop() call during validation), and that
         # raises error in python3
-        for key,value in list(parameters.items()):
+        for key, value in list(parameters.items()):
             try:
                 parameter_entry = valid_parameters[key]
-            except KeyError as e:
+            except KeyError:
                 print_warning(_("Parameter '%s' not found in writer's parameter sheet!") % (key))
-                parameters.pop(key, '') # Remove from dictionary
+                parameters.pop(key, '')  # Remove from dictionary
                 continue
 
             # Determine type
@@ -342,9 +394,13 @@ class cmd_create_blank (object):
                 try:
                     parameters[key] = GLib.Variant("i", int(value, 0))
                 except ValueError:
-                    raise CDEmuError(_("String '%s' given as value for parameter '%s' is not a number!") % (value, key))
+                    raise CDEmuError(
+                        _("String '%s' given as value for parameter '%s' is not a number!") % (value, key))
             else:
-                print_warning(_("Unhandled parameter type '%s' declared for parameter '%s'!") % (type(parameter[3]), key))
+                print_warning(
+                    _("Unhandled parameter type '%s' declared for parameter '%s'!") %
+                    (type(parameter_entry[3]), key),
+                )
                 continue
 
         return parameters
@@ -353,18 +409,28 @@ class cmd_create_blank (object):
 ########################################################################
 #                             Unload device                            #
 ########################################################################
-class cmd_unload (object):
-    def __init__ (self, subparsers):
+class cmd_unload:
+    def __init__(self, subparsers):
         name = "unload"
         description_msg = _("")
         help_msg = _("unloads the device")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Particular device vs. all devices
         if arguments.device == "all":
             try:
@@ -391,16 +457,22 @@ class cmd_unload (object):
 ########################################################################
 #                            Display status                            #
 ########################################################################
-class cmd_display_status (object):
-    def __init__ (self, subparsers):
+class cmd_display_status:
+    def __init__(self, subparsers):
         name = "status"
         description_msg = _("")
         help_msg = _("displays the devices' status")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Print status for all devices
         try:
             num_devices = proxy.GetNumberOfDevices()
@@ -409,15 +481,15 @@ class cmd_display_status (object):
 
         print_header(_("Devices' status:"))
         print("%-5s %-10s %s" % (_("DEV"), _("LOADED"), _("FILENAME")))
-        for device in range (num_devices):
+        for device in range(num_devices):
             try:
-                [loaded, filenames] = proxy.DeviceGetStatus(device)
+                loaded, filenames = proxy.DeviceGetStatus(device)
             except GLib.Error as e:
                 print_warning(_("Failed to get status of device %i: %s") % (device, e))
                 continue
 
             if not loaded:
-                filenames = [ "" ]
+                filenames = [""]
 
             # First line is for all device's data, the rest are for additional filenames
             print("%-5s %-10s %s" % (device, loaded, filenames[0]))
@@ -428,16 +500,22 @@ class cmd_display_status (object):
 ########################################################################
 #                            Device mapping                            #
 ########################################################################
-class cmd_device_mapping (object):
-    def __init__ (self, subparsers):
+class cmd_device_mapping:
+    def __init__(self, subparsers):
         name = "device-mapping"
         description_msg = _("")
         help_msg = _("displays the device mapping information")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Print device mapping for all devices
         try:
             num_devices = proxy.GetNumberOfDevices()
@@ -446,9 +524,9 @@ class cmd_device_mapping (object):
 
         print_header(_("Device mapping:"))
         print("%-5s %-15s %-15s" % (_("DEV"), _("SCSI CD-ROM"), _("SCSI generic")))
-        for device in range (num_devices):
+        for device in range(num_devices):
             try:
-                [dev_sr, dev_sg] = proxy.DeviceGetMapping(device)
+                dev_sr, dev_sg = proxy.DeviceGetMapping(device)
             except GLib.Error as e:
                 print_warning(_("Failed to get device mapping of device %i: %s") % (device, e))
                 continue
@@ -459,27 +537,42 @@ class cmd_device_mapping (object):
 ########################################################################
 #                           Daemon debug mask                          #
 ########################################################################
-class cmd_daemon_debug_mask (object):
-    def __init__ (self, subparsers):
+class cmd_daemon_debug_mask:
+    def __init__(self, subparsers):
         name = "daemon-debug-mask"
         description_msg = _("")
         help_msg = _("displays/sets daemon debug mask")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_value",
+            nargs="?",
+            type=str,
+            help=_("new value"),
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Retrieve list of valid masks (for encoding/decoding)
-        mask_mapping = self.__get_debug_mask_mapping(proxy)
+        mask_mapping = self._get_debug_mask_mapping(proxy)
 
         # Set daemon debug mask
         if hasattr(arguments, "new_value"):
             # Convert the input value to mask
-            mask = self.__convert_input_to_mask(arguments.new_value, mask_mapping)
+            mask = self._convert_input_to_mask(arguments.new_value, mask_mapping)
 
             # Set the mask
             if arguments.device == "all":
@@ -493,7 +586,10 @@ class cmd_daemon_debug_mask (object):
                     try:
                         proxy.DeviceSetOption(device, "daemon-debug-mask", GLib.Variant("i", mask))
                     except GLib.Error as e:
-                        print_warning(_("Failed to set daemon debug mask of device %i to 0x%X: %s") % (device, mask, e))
+                        print_warning(
+                            _("Failed to set daemon debug mask of device %i to 0x%X: %s") %
+                            (device, mask, e),
+                        )
                         continue
             else:
                 try:
@@ -505,7 +601,10 @@ class cmd_daemon_debug_mask (object):
                 try:
                     proxy.DeviceSetOption(device, "daemon-debug-mask", GLib.Variant("i", mask))
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to set daemon debug mask of device %i to 0x%X: %s") % (device, mask, e))
+                    raise CDEmuError(
+                        _("Failed to set daemon debug mask of device %i to 0x%X: %s") %
+                        (device, mask, e),
+                    )
 
         # Get daemon debug mask
         else:
@@ -523,10 +622,13 @@ class cmd_daemon_debug_mask (object):
                     try:
                         mask = proxy.DeviceGetOption(device, "daemon-debug-mask")
                     except GLib.Error as e:
-                        print_warning(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
+                        print_warning(
+                            _("Failed to get daemon debug mask of device %i: %s") %
+                            (device, e),
+                        )
                         continue
 
-                    mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+                    mask_meaning = self._convert_mask_to_string(mask, mask_mapping)
 
                     print("%-5s 0x%08X   %s" % (device, mask, mask_meaning))
             else:
@@ -534,15 +636,21 @@ class cmd_daemon_debug_mask (object):
                     device = int(arguments.device, 0)
                     mask = proxy.DeviceGetOption(device, "daemon-debug-mask")
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
+                    raise CDEmuError(
+                        _("Failed to get daemon debug mask of device %i: %s") %
+                        (device, e),
+                    )
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
-                mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+                mask_meaning = self._convert_mask_to_string(mask, mask_mapping)
 
-                print(_("Daemon debug mask of device %i: 0x%X (%s)") % (device, mask, mask_meaning))
+                print(
+                    _("Daemon debug mask of device %i: 0x%X (%s)") %
+                    (device, mask, mask_meaning),
+                )
 
-    def __convert_input_to_mask (self, input_str, mapping):
+    def _convert_input_to_mask(self, input_str, mapping):
         output_mask = 0
 
         # Split input string on pipe (|)
@@ -556,30 +664,32 @@ class cmd_daemon_debug_mask (object):
                 else:
                     val = int(token, 0)
             except ValueError:
-                raise CDEmuError(_("String '%s' is not a number nor was it found in the list of valid debug mask identifiers") % (token))
+                raise CDEmuError(
+                    _("String '%s' is not a number nor was it found in the list of valid debug mask identifiers") %
+                    (token)
+                )
 
             output_mask |= val
 
         return output_mask
 
-    def __convert_mask_to_string (self, value, mapping):
-        output_list = []
-
-        for mask_name, mask_value in mapping.items():
-            if value & mask_value:
-                output_list.append(mask_name)
-
+    def _convert_mask_to_string(self, value, mapping):
+        output_list = [
+            mask_name for mask_name, mask_value in mapping.items()
+            if value & mask_value != 0
+        ]
         return "|".join(output_list)
 
-    def __get_debug_mask_mapping (self, proxy):
-        mapping = collections.OrderedDict()
-
+    def _get_debug_mask_mapping(self, proxy):
         try:
             debug_masks = proxy.EnumDaemonDebugMasks()
-            for debug_mask in debug_masks:
-                mapping[debug_mask[0]] = debug_mask[1]
+            mapping = {
+                mask_entry[0]: mask_entry[1]
+                for mask_entry in debug_masks
+            }
         except GLib.Error as e:
             print_warning(_("Failed to enumerate supported daemon debug masks: %s") % (e))
+            mapping = {}
 
         return mapping
 
@@ -587,26 +697,41 @@ class cmd_daemon_debug_mask (object):
 ########################################################################
 #                          Library debug mask                          #
 ########################################################################
-class cmd_library_debug_mask (object):
-    def __init__ (self, subparsers):
+class cmd_library_debug_mask:
+    def __init__(self, subparsers):
         name = "library-debug-mask"
         description_msg = _("")
         help_msg = _("displays/sets library debug mask")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_value",
+            nargs="?",
+            type=str,
+            help=_("new value"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Retrieve list of valid masks (for encoding/decoding)
-        mask_mapping = self.__get_debug_mask_mapping(proxy)
+        mask_mapping = self._get_debug_mask_mapping(proxy)
 
         # Set debug mask
         if hasattr(arguments, "new_value"):
             # Convert the input value to mask
-            mask = self.__convert_input_to_mask(arguments.new_value, mask_mapping)
+            mask = self._convert_input_to_mask(arguments.new_value, mask_mapping)
 
             # Set the mask
             if arguments.device == "all":
@@ -620,7 +745,10 @@ class cmd_library_debug_mask (object):
                     try:
                         proxy.DeviceSetOption(device, "library-debug-mask", GLib.Variant("i", mask))
                     except GLib.Error as e:
-                        print_warning(_("Failed to set library debug mask of device %i to 0x%X: %s") % (device, mask, e))
+                        print_warning(
+                            _("Failed to set library debug mask of device %i to 0x%X: %s") %
+                            (device, mask, e),
+                        )
                         continue
             else:
                 try:
@@ -632,7 +760,10 @@ class cmd_library_debug_mask (object):
                 try:
                     proxy.DeviceSetOption(device, "library-debug-mask", GLib.Variant("i", mask))
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to set library debug mask of device %i to 0x%X: %s") % (device, mask, e))
+                    raise CDEmuError(
+                        _("Failed to set library debug mask of device %i to 0x%X: %s") %
+                        (device, mask, e),
+                    )
 
         # Get debug mask
         else:
@@ -650,9 +781,12 @@ class cmd_library_debug_mask (object):
                     try:
                         mask = proxy.DeviceGetOption(device, "library-debug-mask")
                     except GLib.Error as e:
-                        print_warning(_("Failed to get library debug mask of device %i: %s") % (device, e))
+                        print_warning(
+                            _("Failed to get library debug mask of device %i: %s") %
+                            (device, e),
+                        )
 
-                    mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+                    mask_meaning = self._convert_mask_to_string(mask, mask_mapping)
 
                     print("%-5s 0x%08X   %s" % (device, mask, mask_meaning))
             else:
@@ -660,15 +794,21 @@ class cmd_library_debug_mask (object):
                     device = int(arguments.device, 0)
                     mask = proxy.DeviceGetOption(device, "library-debug-mask")
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to get library debug mask of device %i: %s") % (device, e))
+                    raise CDEmuError(
+                        _("Failed to get library debug mask of device %i: %s") %
+                        (device, e),
+                    )
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (mask))
 
-                mask_meaning = self.__convert_mask_to_string(mask, mask_mapping)
+                mask_meaning = self._convert_mask_to_string(mask, mask_mapping)
 
-                print(_("Library debug mask of device %i: 0x%X (%s)") % (device, mask, mask_meaning))
+                print(
+                    _("Library debug mask of device %i: 0x%X (%s)") %
+                    (device, mask, mask_meaning),
+                )
 
-    def __convert_input_to_mask (self, input_str, mapping):
+    def _convert_input_to_mask(self, input_str, mapping):
         output_mask = 0
 
         # Split input string on pipe (|)
@@ -682,30 +822,32 @@ class cmd_library_debug_mask (object):
                 else:
                     val = int(token, 0)
             except ValueError:
-                raise CDEmuError(_("String '%s' is not a number nor was it found in the list of valid debug mask identifiers") % (token))
+                raise CDEmuError(
+                    _("String '%s' is not a number nor was it found in the list of valid debug mask identifiers") %
+                    (token),
+                )
 
             output_mask |= val
 
         return output_mask
 
-    def __convert_mask_to_string (self, value, mapping):
-        output_list = []
-
-        for mask_name, mask_value in mapping.items():
-            if value & mask_value:
-                output_list.append(mask_name)
-
+    def _convert_mask_to_string(self, value, mapping):
+        output_list = [
+            mask_name for mask_name, mask_value in mapping.items()
+            if value & mask_value != 0
+        ]
         return "|".join(output_list)
 
-    def __get_debug_mask_mapping (self, proxy):
-        mapping = collections.OrderedDict()
-
+    def _get_debug_mask_mapping(self, proxy):
         try:
             debug_masks = proxy.EnumLibraryDebugMasks()
-            for debug_mask in debug_masks:
-                mapping[debug_mask[0]] = debug_mask[1]
+            mapping = {
+                mask_entry[0]: mask_entry[1]
+                for mask_entry in debug_masks
+            }
         except GLib.Error as e:
             print_warning(_("Failed to enumerate supported library debug masks: %s") % (e))
+            mapping = {}
 
         return mapping
 
@@ -713,19 +855,34 @@ class cmd_library_debug_mask (object):
 ########################################################################
 #                            DPM emulation                            #
 ########################################################################
-class cmd_dpm_emulation (object):
-    def __init__ (self, subparsers):
+class cmd_dpm_emulation:
+    def __init__(self, subparsers):
         name = "dpm-emulation"
         description_msg = _("")
         help_msg = _("displays/sets DPM emulation flag")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_value",
+            nargs="?",
+            type=str,
+            help=_("new value"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Set DPM emulation flag
         if hasattr(arguments, "new_value"):
             try:
@@ -744,7 +901,10 @@ class cmd_dpm_emulation (object):
                     try:
                         proxy.DeviceSetOption(device, "dpm-emulation", GLib.Variant("b", enabled))
                     except GLib.Error as e:
-                        print_warning(_("Failed to set DPM emulation flag of device %i to %i: %s") % (device, enabled, e))
+                        print_warning(
+                            _("Failed to set DPM emulation flag of device %i to %i: %s") %
+                            (device, enabled, e),
+                        )
                         continue
             else:
                 try:
@@ -756,7 +916,10 @@ class cmd_dpm_emulation (object):
                 try:
                     proxy.DeviceSetOption(device, "dpm-emulation", GLib.Variant("b", enabled))
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to set DPM emulation flag of device %i to %i: %s") % (device, enabled, e))
+                    raise CDEmuError(
+                        _("Failed to set DPM emulation flag of device %i to %i: %s") %
+                        (device, enabled, e),
+                    )
 
         # Get DPM emulation flag
         else:
@@ -793,19 +956,34 @@ class cmd_dpm_emulation (object):
 ########################################################################
 #                        Transfer rate emulation                       #
 ########################################################################
-class cmd_tr_emulation (object):
-    def __init__ (self, subparsers):
+class cmd_tr_emulation:
+    def __init__(self, subparsers):
         name = "tr-emulation"
         description_msg = _("")
         help_msg = _("displays/sets transfer rate emulation flag")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_value",
+            nargs="?",
+            type=str,
+            help=_("new value"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Set TR emulation flag
         if hasattr(arguments, "new_value"):
             try:
@@ -824,7 +1002,10 @@ class cmd_tr_emulation (object):
                     try:
                         proxy.DeviceSetOption(device, "tr-emulation", GLib.Variant("b", enabled))
                     except GLib.Error as e:
-                        print_warning(_("Failed to set transfer rate emulation flag of device %i to %i: %s") % (device, enabled, e))
+                        print_warning(
+                            _("Failed to set transfer rate emulation flag of device %i to %i: %s") %
+                            (device, enabled, e),
+                        )
                         continue
             else:
                 try:
@@ -836,7 +1017,10 @@ class cmd_tr_emulation (object):
                 try:
                     proxy.DeviceSetOption(device, "tr-emulation", GLib.Variant("b", enabled))
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to set transfer rate emulation flag of device %i to %i: %s") % (device, enabled, e))
+                    raise CDEmuError(
+                        _("Failed to set transfer rate emulation flag of device %i to %i: %s") %
+                        (device, enabled, e),
+                    )
 
         # Get TR emulation flag
         else:
@@ -873,19 +1057,34 @@ class cmd_tr_emulation (object):
 ########################################################################
 #                         Bad sector emulation                         #
 ########################################################################
-class cmd_bad_sector_emulation (object):
-    def __init__ (self, subparsers):
+class cmd_bad_sector_emulation:
+    def __init__(self, subparsers):
         name = "bad-sector-emulation"
         description_msg = _("")
         help_msg = _("displays/sets bad sector emulation flag")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_value",
+            nargs="?",
+            type=str,
+            help=_("new value"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Set bad sector emulation flag
         if hasattr(arguments, "new_value"):
             try:
@@ -904,7 +1103,10 @@ class cmd_bad_sector_emulation (object):
                     try:
                         proxy.DeviceSetOption(device, "bad-sector-emulation", GLib.Variant("b", enabled))
                     except GLib.Error as e:
-                        print_warning(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
+                        print_warning(
+                            _("Failed to set bad sector emulation flag of device %i to %i: %s") %
+                            (device, enabled, e),
+                        )
                         continue
             else:
                 try:
@@ -916,7 +1118,10 @@ class cmd_bad_sector_emulation (object):
                 try:
                     proxy.DeviceSetOption(device, "bad-sector-emulation", GLib.Variant("b", enabled))
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
+                    raise CDEmuError(
+                        _("Failed to set bad sector emulation flag of device %i to %i: %s") %
+                        (device, enabled, e),
+                    )
 
         # Get bad sector emulation flag
         else:
@@ -953,19 +1158,34 @@ class cmd_bad_sector_emulation (object):
 ########################################################################
 #                            DVD report CSS                            #
 ########################################################################
-class cmd_dvd_report_css (object):
-    def __init__ (self, subparsers):
+class cmd_dvd_report_css:
+    def __init__(self, subparsers):
         name = "dvd-report-css"
         description_msg = _("")
         help_msg = _("displays/sets DVD report CSS/CPPM flag")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_value",
+            nargs="?",
+            type=str,
+            help=_("new value"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Set DVD report CSS flag
         if hasattr(arguments, "new_value"):
             try:
@@ -984,7 +1204,10 @@ class cmd_dvd_report_css (object):
                     try:
                         proxy.DeviceSetOption(device, "dvd-report-css", GLib.Variant("b", enabled))
                     except GLib.Error as e:
-                        print_warning(_("Failed to set DVD report CSS/CPPM flag of device %i to %i: %s") % (device, enabled, e))
+                        print_warning(
+                            _("Failed to set DVD report CSS/CPPM flag of device %i to %i: %s") %
+                            (device, enabled, e),
+                        )
                         continue
             else:
                 try:
@@ -996,7 +1219,10 @@ class cmd_dvd_report_css (object):
                 try:
                     proxy.DeviceSetOption(device, "dvd-report-css", GLib.Variant("b", enabled))
                 except GLib.Error as e:
-                    raise CDEmuError(_("Failed to set DVD report CSS/CPPM flag of device %i to %i: %s") % (device, enabled, e))
+                    raise CDEmuError(
+                        _("Failed to set DVD report CSS/CPPM flag of device %i to %i: %s") %
+                        (device, enabled, e),
+                    )
 
         # Get DVD report CSS flag
         else:
@@ -1033,19 +1259,34 @@ class cmd_dvd_report_css (object):
 ########################################################################
 #                               Device ID                              #
 ########################################################################
-class cmd_device_id (object):
-    def __init__ (self, subparsers):
+class cmd_device_id:
+    def __init__(self, subparsers):
         name = "device-id"
         description_msg = _("")
         help_msg = _("displays/sets device ID")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-        parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("new_id", nargs='*', type=str, help=_("new device ID: vendor ID, product ID, revision and vendor-specific string"))
+        parser.add_argument(
+            "device",
+            type=str,
+            help=_("device"),
+        )
+        parser.add_argument(
+            "new_id",
+            nargs='*',
+            type=str,
+            help=_("new device ID: vendor ID, product ID, revision and vendor-specific string"),
+        )
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Set device ID
         if hasattr(arguments, "new_id"):
             device_id = tuple(arguments.new_id)
@@ -1078,7 +1319,6 @@ class cmd_device_id (object):
                 except GLib.Error as e:
                     raise CDEmuError(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
 
-
         # Get device ID
         else:
             # Particular device vs. all devices
@@ -1094,7 +1334,7 @@ class cmd_device_id (object):
                 for device in range(num_devices):
                     try:
                         values = proxy.DeviceGetOption(device, "device-id")
-                        device_id = list(map(str, values))
+                        device_id = [str(value) for value in values]
                     except GLib.Error as e:
                         print_warning(_("Failed to get device ID of device %i: %s") % (device, e))
                         continue
@@ -1104,7 +1344,7 @@ class cmd_device_id (object):
                 try:
                     device = int(arguments.device, 0)
                     values = proxy.DeviceGetOption(device, "device-id")
-                    device_id = list(map(str, values))
+                    device_id = [str(value) for value in values]
                 except GLib.Error as e:
                     raise CDEmuError(_("Failed to get device ID of device %i: %s") % (device, e))
                 except ValueError:
@@ -1116,16 +1356,22 @@ class cmd_device_id (object):
 ########################################################################
 #                          Enumerate parsers                           #
 ########################################################################
-class cmd_enum_parsers (object):
-    def __init__ (self, subparsers):
+class cmd_enum_parsers:
+    def __init__(self, subparsers):
         name = "enum-parsers"
         description_msg = _("")
         help_msg = _("enumerates supported parsers")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Display supported parsers
         try:
             parsers = proxy.EnumSupportedParsers()
@@ -1144,16 +1390,22 @@ class cmd_enum_parsers (object):
 ########################################################################
 #                           Enumerate writers                          #
 ########################################################################
-class cmd_enum_writers (object):
-    def __init__ (self, subparsers):
+class cmd_enum_writers:
+    def __init__(self, subparsers):
         name = "enum-writers"
         description_msg = _("")
         help_msg = _("enumerates supported writers")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Display supported writers
         try:
             writers = proxy.EnumSupportedWriters()
@@ -1169,16 +1421,22 @@ class cmd_enum_writers (object):
 ########################################################################
 #                       Enumerate filter streams                       #
 ########################################################################
-class cmd_enum_filter_streams (object):
-    def __init__ (self, subparsers):
+class cmd_enum_filter_streams:
+    def __init__(self, subparsers):
         name = "enum-filter-streams"
         description_msg = _("")
         help_msg = _("enumerates supported filter streams")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Display supported filter streams
         try:
             filter_streams = proxy.EnumSupportedFilterStreams()
@@ -1197,16 +1455,22 @@ class cmd_enum_filter_streams (object):
 ########################################################################
 #                     Enumerate daemon debug masks                     #
 ########################################################################
-class cmd_enum_daemon_debug_masks (object):
-    def __init__ (self, subparsers):
+class cmd_enum_daemon_debug_masks:
+    def __init__(self, subparsers):
         name = "enum-daemon-debug-masks"
         description_msg = _("")
         help_msg = _("enumerates valid daemon debug masks")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Print module's debug masks
         try:
             debug_masks = proxy.EnumDaemonDebugMasks()
@@ -1221,16 +1485,22 @@ class cmd_enum_daemon_debug_masks (object):
 ########################################################################
 #                     Enumerate library debug masks                    #
 ########################################################################
-class cmd_enum_library_debug_masks (object):
-    def __init__ (self, subparsers):
+class cmd_enum_library_debug_masks:
+    def __init__(self, subparsers):
         name = "enum-library-debug-masks"
         description_msg = _("")
         help_msg = _("enumerates valid library debug masks")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Print module's debug masks
         try:
             debug_masks = proxy.EnumLibraryDebugMasks()
@@ -1245,18 +1515,24 @@ class cmd_enum_library_debug_masks (object):
 ########################################################################
 #                      Enumerate writer parameters                     #
 ########################################################################
-class cmd_enum_writer_parameters (object):
-    def __init__ (self, subparsers):
+class cmd_enum_writer_parameters:
+    def __init__(self, subparsers):
         name = "enum-writer-parameters"
         description_msg = _("")
         help_msg = _("prints the list of writer's parameters")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
         parser.add_argument("writer", type=str, help=_("writer ID"))
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Get parameter sheet for the specified writer
         try:
             parameter_sheet = proxy.EnumWriterParameters(arguments.writer)
@@ -1271,13 +1547,14 @@ class cmd_enum_writer_parameters (object):
             print_header("%s" % (parameter[0]))
             print(_("  Name: %s") % (parameter[1]))
             print(_("  Description: %s") % (parameter[2]))
-            print(_("  Type: %s") % (self.parameter_type_name(parameter)))
+            print(_("  Type: %s") % (self._parameter_type_name(parameter)))
             print(_("  Default value: %s") % (parameter[3]))
 
             for enum_value in parameter[4]:
                 print(_("  Possible value: %s") % (enum_value))
 
-    def parameter_type_name (self, parameter):
+    @staticmethod
+    def _parameter_type_name(parameter):
         if len(parameter[4]):
             return _("enum")
         elif isinstance(parameter[3], str):
@@ -1290,44 +1567,25 @@ class cmd_enum_writer_parameters (object):
             return _("unknown")
 
 
-# This is a stand-alone function because it is shared between
-# enum-writer-parameters and create-blank implementations
-def fetch_and_parse_writer_parameter_sheet (proxy, writer_id):
-    # Enumerate all supported writers
-    try:
-        parameter_sheet = proxy.EnumWriterParameters(writer_id)
-    except GLib.Error as e:
-        raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
-
-    # Find the one we want
-    for writer in writers:
-        if writer[0] == writer_id:
-            break
-    else:
-        raise CDEmuError(_("Unsupported writer: %s") % (arguments.writer))
-
-    # Parse XML parameter sheet
-    try:
-        parameters = elementtree.fromstring(writer[2])
-    except Exception as e:
-        raise CDEmuError(_("Failed to parse parameter sheet: %s") % (e))
-
-    return parameters
-
-
 ########################################################################
 #                               Version                                #
 ########################################################################
-class cmd_version (object):
-    def __init__ (self, subparsers):
+class cmd_version:
+    def __init__(self, subparsers):
         name = "version"
         description_msg = "Displays daemon and library version information."
         help_msg = _("displays version information")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         # Print version information
         try:
             library_version = proxy.GetLibraryVersion()
@@ -1339,23 +1597,29 @@ class cmd_version (object):
         except GLib.Error as e:
             raise CDEmuError(_("Failed to get daemon version: %s") % (e))
 
-        print(_("Library version: %s") % (str(library_version)))
-        print(_("Daemon version: %s")  % (str(daemon_version)))
+        print(_("Library version: %s") % (library_version))
+        print(_("Daemon version: %s") % (daemon_version))
 
 
 ########################################################################
 #                              Add device                              #
 ########################################################################
-class cmd_add_device (object):
-    def __init__ (self, subparsers):
+class cmd_add_device:
+    def __init__(self, subparsers):
         name = "add-device"
         description_msg = _("")
         help_msg = _("creates another virtual device")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         try:
             proxy.AddDevice()
         except GLib.Error as e:
@@ -1367,16 +1631,22 @@ class cmd_add_device (object):
 ########################################################################
 #                            Remove device                             #
 ########################################################################
-class cmd_remove_device (object):
-    def __init__ (self, subparsers):
+class cmd_remove_device:
+    def __init__(self, subparsers):
         name = "remove-device"
         description_msg = _("")
         help_msg = _("removes the last virtual device")
 
-        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser = subparsers.add_parser(
+            name,
+            description=description_msg,
+            help=help_msg,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            argument_default=argparse.SUPPRESS,
+        )
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, proxy, arguments):
+    def __call__(self, proxy, arguments):
         try:
             proxy.RemoveDevice()
         except GLib.Error as e:
@@ -1388,47 +1658,66 @@ class cmd_remove_device (object):
 ########################################################################
 #                         Command-line parser                          #
 ########################################################################
-class CDEmuCommandLineParser (argparse.ArgumentParser):
-    def error (self, message):
+class CDEmuCommandLineParser(argparse.ArgumentParser):
+    def error(self, message):
         self.print_usage(sys.stderr)
         print_error(message)
         sys.exit(2)
 
-class ActionDeviceId (argparse.Action):
+
+class ActionDeviceId(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-         print("%r %r %r" % (namespace, values, option_string))
-         setattr(namespace, self.dest, values)
+        print("%r %r %r" % (namespace, values, option_string))
+        setattr(namespace, self.dest, values)
 
-def create_parser ():
-    parser = CDEmuCommandLineParser(description=_("Command-line CDEmu client."), formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
-    parser.add_argument("--bus", metavar="BUS", choices=["system", "session"], help=_("sets D-BUS bus type to use"))
-    parser.add_argument("--version", action="version", version="%s %s - (C) 2006-%d Rok Mandeljc" % (app_name, app_version, datetime.date.today().year))
 
-    subparsers = parser.add_subparsers(title=_("valid commands"), metavar="command", help=_("command help"))
+def create_parser():
+    parser = CDEmuCommandLineParser(
+        description=_("Command-line CDEmu client."),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        argument_default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--bus",
+        metavar="BUS",
+        choices=["system", "session"],
+        help=_("sets D-BUS bus type to use"),
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%s %s - (C) 2006-%d Rok Mandeljc" % (app_name, app_version, datetime.date.today().year),
+    )
+
+    subparsers = parser.add_subparsers(
+        title=_("valid commands"),
+        metavar="command",
+        help=_("command help"),
+    )
     subparsers.required = True
 
     # Command sub-parsers
-    cmd_load(subparsers) # Load
-    cmd_create_blank(subparsers) # Create blank
-    cmd_unload(subparsers) # Unload
-    cmd_display_status(subparsers) # Status
-    cmd_add_device(subparsers) # Add device
-    cmd_remove_device(subparsers) # Remove device
-    cmd_device_mapping(subparsers) # Device mapping
-    cmd_daemon_debug_mask(subparsers) # Daemon debug mask
-    cmd_library_debug_mask(subparsers) # Library debug mask
-    cmd_dpm_emulation(subparsers) # DPM emulation
-    cmd_tr_emulation(subparsers) # TR emulation
-    cmd_bad_sector_emulation(subparsers) # Bad sector emulation
-    cmd_dvd_report_css(subparsers) # DVD report CSS/CPPM
-    cmd_device_id(subparsers) # Device ID
-    cmd_enum_parsers(subparsers) # Enumerate parsers
-    cmd_enum_writers(subparsers) # Enumerate writers
-    cmd_enum_filter_streams(subparsers) # Enumerate filter streams
-    cmd_enum_daemon_debug_masks(subparsers) # Enumerate daemon debug masks
-    cmd_enum_library_debug_masks(subparsers) # Enumerate library debug masks
-    cmd_enum_writer_parameters(subparsers) # Enumerate writer parameters
-    cmd_version(subparsers) # Version
+    cmd_load(subparsers)  # Load
+    cmd_create_blank(subparsers)  # Create blank
+    cmd_unload(subparsers)  # Unload
+    cmd_display_status(subparsers)  # Status
+    cmd_add_device(subparsers)  # Add device
+    cmd_remove_device(subparsers)  # Remove device
+    cmd_device_mapping(subparsers)  # Device mapping
+    cmd_daemon_debug_mask(subparsers)  # Daemon debug mask
+    cmd_library_debug_mask(subparsers)  # Library debug mask
+    cmd_dpm_emulation(subparsers)  # DPM emulation
+    cmd_tr_emulation(subparsers)  # TR emulation
+    cmd_bad_sector_emulation(subparsers)  # Bad sector emulation
+    cmd_dvd_report_css(subparsers)  # DVD report CSS/CPPM
+    cmd_device_id(subparsers)  # Device ID
+    cmd_enum_parsers(subparsers)  # Enumerate parsers
+    cmd_enum_writers(subparsers)  # Enumerate writers
+    cmd_enum_filter_streams(subparsers)  # Enumerate filter streams
+    cmd_enum_daemon_debug_masks(subparsers)  # Enumerate daemon debug masks
+    cmd_enum_library_debug_masks(subparsers)  # Enumerate library debug masks
+    cmd_enum_writer_parameters(subparsers)  # Enumerate writer parameters
+    cmd_version(subparsers)  # Version
 
     return parser
 
@@ -1436,11 +1725,11 @@ def create_parser ():
 ########################################################################
 #               CDEmuDaemonProxy: Daemon proxy object                  #
 ########################################################################
-class CDEmuDaemonProxy ():
+class CDEmuDaemonProxy:
     _name = 'net.sf.cdemu.CDEmuDaemon'
     _object_path = '/Daemon'
 
-    def __init__ (self, bus_type):
+    def __init__(self, bus_type):
         try:
             if bus_type == "system":
                 bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
@@ -1448,9 +1737,17 @@ class CDEmuDaemonProxy ():
                 bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
             else:
                 print_warning(_("Invalid bus parameter '%s', using default!") % (bus_type))
-                bus = Gio.bus_get_sync(Gio.BusType.SESSION, None) # Use session bus by default
+                bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)  # Use session bus by default
 
-            self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, "net.sf.cdemu.CDEmuDaemon", "/Daemon", "net.sf.cdemu.CDEmuDaemon", None)
+            self.proxy = Gio.DBusProxy.new_sync(
+                bus,
+                0,
+                None,
+                "net.sf.cdemu.CDEmuDaemon",
+                "/Daemon",
+                "net.sf.cdemu.CDEmuDaemon",
+                None,
+            )
         except GLib.Error as e:
             raise CDEmuError(_("Failed to connect to CDEmu daemon: %s") % (e))
 
@@ -1458,82 +1755,99 @@ class CDEmuDaemonProxy ():
         try:
             interface_version = self.GetDaemonInterfaceVersion2()
         except GLib.Error as e:
-            raise CDEmuError(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % (e))
+            raise CDEmuError(
+                _("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") %  # noqa: E501
+                (e)
+            )
 
         # Check daemon interface version
-        if interface_version[0] != supported_daemon_interface_version[0] or interface_version[1] < supported_daemon_interface_version[1]:
-            raise CDEmuError(_("CDEmu daemon interface version %i.%i detected, but version %i.%i is required!") % (interface_version[0], interface_version[1], supported_daemon_interface_version[0], supported_daemon_interface_version[1]))
+        if (
+            # The major version must be exact match...
+            interface_version[0] != supported_daemon_interface_version[0] or
+            # ... and the daemon's interface version needs to be greater
+            # or equal to what is supported by client.
+            interface_version[1] < supported_daemon_interface_version[1]
+        ):
+            raise CDEmuError(
+                _("CDEmu daemon interface version %i.%i detected, but version %i.%i is required!") %
+                (
+                    interface_version[0],
+                    interface_version[1],
+                    supported_daemon_interface_version[0],
+                    supported_daemon_interface_version[1],
+                ),
+            )
 
-    def GetDaemonVersion (self):
+    def GetDaemonVersion(self):
         return self.proxy.GetDaemonVersion()
 
-    def GetLibraryVersion (self):
+    def GetLibraryVersion(self):
         return self.proxy.GetLibraryVersion()
 
-    def GetDaemonInterfaceVersion2 (self):
+    def GetDaemonInterfaceVersion2(self):
         return self.proxy.GetDaemonInterfaceVersion2()
 
-    def EnumDaemonDebugMasks (self):
+    def EnumDaemonDebugMasks(self):
         return self.proxy.EnumDaemonDebugMasks()
 
-    def EnumLibraryDebugMasks (self):
+    def EnumLibraryDebugMasks(self):
         return self.proxy.EnumLibraryDebugMasks()
 
-    def EnumSupportedParsers (self):
+    def EnumSupportedParsers(self):
         return self.proxy.EnumSupportedParsers()
 
-    def EnumSupportedWriters (self):
+    def EnumSupportedWriters(self):
         return self.proxy.EnumSupportedWriters()
 
-    def EnumSupportedFilterStreams (self):
+    def EnumSupportedFilterStreams(self):
         return self.proxy.EnumSupportedFilterStreams()
 
-    def EnumWriterParameters (self, writer_id):
+    def EnumWriterParameters(self, writer_id):
         return self.proxy.EnumWriterParameters('(s)', writer_id)
 
-
-    def GetNumberOfDevices (self):
+    def GetNumberOfDevices(self):
         return self.proxy.GetNumberOfDevices()
 
-
-    def DeviceGetMapping (self, device_number):
+    def DeviceGetMapping(self, device_number):
         return self.proxy.DeviceGetMapping('(i)', device_number)
 
-    def DeviceGetStatus (self, device_number):
+    def DeviceGetStatus(self, device_number):
         return self.proxy.DeviceGetStatus('(i)', device_number)
 
-    def DeviceLoad (self, device_number, filenames, parameters):
+    def DeviceLoad(self, device_number, filenames, parameters):
         return self.proxy.DeviceLoad('(iasa{sv})', device_number, filenames, parameters)
 
-    def DeviceCreateBlank (self, device_number, filename, parameters):
+    def DeviceCreateBlank(self, device_number, filename, parameters):
         return self.proxy.DeviceCreateBlank('(isa{sv})', device_number, filename, parameters)
 
-    def DeviceUnload (self, device_number):
+    def DeviceUnload(self, device_number):
         return self.proxy.DeviceUnload('(i)', device_number)
 
-    def DeviceGetOption (self, device_number, option_name):
+    def DeviceGetOption(self, device_number, option_name):
         return self.proxy.DeviceGetOption('(is)', device_number, option_name)
 
-    def DeviceSetOption (self, device_number, option_name, option_value):
+    def DeviceSetOption(self, device_number, option_name, option_value):
         return self.proxy.DeviceSetOption('(isv)', device_number, option_name, option_value)
 
-
-    def AddDevice (self):
+    def AddDevice(self):
         return self.proxy.AddDevice()
 
-    def RemoveDevice (self):
+    def RemoveDevice(self):
         return self.proxy.RemoveDevice()
 
 
 ########################################################################
 #                               Main                                   #
 ########################################################################
-def main ():
-    bus_type = "session" # Use session bus as hard-coded default
+def main():
+    bus_type = "session"  # Use session bus as hard-coded default.
 
     # *** Parse config file, if available ***
-    # Load options; Try "~/.cdemu-client" first, then try "/etc/cdemu-client.conf" next.
-    paths = (os.path.expanduser("~/.cdemu-client"), "/etc/cdemu-client.conf")
+    # Load options; try "~/.cdemu-client" first, followed by "/etc/cdemu-client.conf".
+    paths = (
+        os.path.expanduser("~/.cdemu-client"),
+        "/etc/cdemu-client.conf",
+    )
     for path in paths:
         if os.path.exists(path):
             break
@@ -1564,6 +1878,7 @@ def main ():
 
     # *** Execute command ***
     arguments.command_function(proxy, arguments)
+
 
 if __name__ == "__main__":
     try:

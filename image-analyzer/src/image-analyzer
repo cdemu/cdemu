@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
-# image-analyzer: Gtk+ CD/DVD-ROM image analysis and conversion tool
-# Copyright (C) 2016 Rok Mandeljc
+# image-analyzer: Gtk CD/DVD-ROM image analysis and conversion tool
+# Copyright (C) 2016-2025 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,36 +17,35 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from __future__ import print_function
-
-import gi
-
-gi.require_version('Gtk', '3.0')
-gi.require_version('Mirage', '3.2')
-
-from gi.repository import GLib, GObject, Gio
-from gi.repository import Gtk, Pango
-from gi.repository import Mirage
-
 import datetime
+import gettext
 import os
-import re
 import signal
 import string
 import sys
-
-# XML parsing
 import xml.etree.ElementTree
 import xml.dom.minidom
 
-# Matplotlib
-import matplotlib  # For __version_info__
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
-from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
+import gi
 
-# gettext
-import gettext
+# Put under if block to avoid triggering E402 warnings in subsequent imports...
+if True:
+    gi.require_version('GLib', '2.0')
+    gi.require_version('Gio', '2.0')
+    gi.require_version('Gtk', '3.0')
+    gi.require_version('Pango', '1.0')
+    gi.require_version('Mirage', '3.2')
+
+from gi.repository import GLib, Gio
+from gi.repository import Gtk, Pango
+from gi.repository import Mirage
+
+import matplotlib
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_gtk3cairo \
+    import FigureCanvasGTK3Cairo as FigureCanvas
+from matplotlib.backends.backend_gtk3 \
+    import NavigationToolbar2GTK3 as NavigationToolbar
 
 
 # *** Globals ***
@@ -55,29 +53,18 @@ app_name = "image-analyzer"
 app_version = "3.2.6"
 
 # I18n
-if sys.version_info[0] < 3:
-    # Prior to python3, we need to explicitly enable unicode strings
-    gettext.install(app_name, unicode=True)
-else:
-    gettext.install(app_name)
+gettext.install(app_name)
 
 # Window ID
 window_id = 1
 
 
 # Set process name
-# "linux2" is for python2, "linux" is for python3
-if sys.platform == "linux" or sys.platform == "linux2":
-    # Process name must be a byte string...
-    if isinstance(app_name, bytes):
-        app_name_bytes = app_name
-    else:
-        app_name_bytes = app_name.encode('utf-8')
-
+if sys.platform == "linux":
     try:
         import ctypes
         libc = ctypes.CDLL("libc.so.6")
-        libc.prctl(15, app_name_bytes, 0, 0, 0) # 15 = PR_SET_NAME
+        libc.prctl(15, app_name.encode("utf-8"), 0, 0, 0)  # 15 = PR_SET_NAME
     except Exception:
         pass
 
@@ -89,88 +76,92 @@ mpl_version = getattr(matplotlib, '__version_info__', None)
 ########################################################################
 #                           Helper functions                           #
 ########################################################################
-def print_medium_type (value):
+def print_medium_type(value):
     dictionary = {
-        Mirage.MediumType.CD : _("CD-ROM"),
-        Mirage.MediumType.DVD : _("DVD-ROM"),
-        Mirage.MediumType.BD : _("BlueRay Disc"),
-        Mirage.MediumType.HD : _("HD-DVD Disc"),
-        Mirage.MediumType.HDD : _("Hard-disk"),
+        Mirage.MediumType.CD: _("CD-ROM"),
+        Mirage.MediumType.DVD: _("DVD-ROM"),
+        Mirage.MediumType.BD: _("BlueRay Disc"),
+        Mirage.MediumType.HD: _("HD-DVD Disc"),
+        Mirage.MediumType.HDD: _("Hard-disk"),
     }
     return dictionary[value]
 
-def print_session_type (value):
+
+def print_session_type(value):
     dictionary = {
-        Mirage.SessionType.CDDA : _("CD-DA/CD-ROM"),
-        Mirage.SessionType.CDROM : _("CD-DA/CD-ROM"),
-        Mirage.SessionType.CDI : _("CD-I"),
-        Mirage.SessionType.CDROM_XA : _("CD-ROM XA"),
+        Mirage.SessionType.CDDA: _("CD-DA/CD-ROM"),
+        Mirage.SessionType.CDROM: _("CD-DA/CD-ROM"),
+        Mirage.SessionType.CDI: _("CD-I"),
+        Mirage.SessionType.CDROM_XA: _("CD-ROM XA"),
     }
     return dictionary[value]
 
-def print_track_flags (value):
+
+def print_track_flags(value):
     dictionary = {
-        Mirage.TrackFlag.FOURCHANNEL : _("four channel audio"),
-        Mirage.TrackFlag.COPYPERMITTED : _("copy permitted"),
-        Mirage.TrackFlag.PREEMPHASIS : _("pre-emphasis")
+        Mirage.TrackFlag.FOURCHANNEL: _("four channel audio"),
+        Mirage.TrackFlag.COPYPERMITTED: _("copy permitted"),
+        Mirage.TrackFlag.PREEMPHASIS: _("pre-emphasis")
     }
-    strings = []
-    for flag, description in dictionary.items():
-        if value & flag:
-            strings.append(description)
+    strings = [
+        description for flag, description in dictionary.items()
+        if value & flag != 0
+    ]
     return "; ".join(strings)
 
-def print_sector_type (value):
+
+def print_sector_type(value):
     dictionary = {
-        Mirage.SectorType.MODE0 : _("Mode 0"),
-        Mirage.SectorType.AUDIO : _("Audio"),
-        Mirage.SectorType.MODE1 : _("Mode 1"),
-        Mirage.SectorType.MODE2 : _("Mode 2 Formless"),
-        Mirage.SectorType.MODE2_FORM1 : _("Mode 2 Form 1"),
-        Mirage.SectorType.MODE2_FORM2 : _("Mode 2 Form 2"),
+        Mirage.SectorType.MODE0: _("Mode 0"),
+        Mirage.SectorType.AUDIO: _("Audio"),
+        Mirage.SectorType.MODE1: _("Mode 1"),
+        Mirage.SectorType.MODE2: _("Mode 2 Formless"),
+        Mirage.SectorType.MODE2_FORM1: _("Mode 2 Form 1"),
+        Mirage.SectorType.MODE2_FORM2: _("Mode 2 Form 2"),
         Mirage.SectorType.MODE2_MIXED: _("Mode 2 Mixed"),
     }
     return dictionary[value]
 
-def print_binary_fragment_main_format (value):
+
+def print_binary_fragment_main_format(value):
     dictionary = {
-        Mirage.MainDataFormat.DATA : _("Binary data"),
-        Mirage.MainDataFormat.AUDIO : _("Audio data"),
-        Mirage.MainDataFormat.AUDIO_SWAP : _("Audio data (swapped)"),
+        Mirage.MainDataFormat.DATA: _("Binary data"),
+        Mirage.MainDataFormat.AUDIO: _("Audio data"),
+        Mirage.MainDataFormat.AUDIO_SWAP: _("Audio data (swapped)"),
     }
-    strings = []
-    for flag, description in dictionary.items():
-        if value & flag:
-            strings.append(description)
+    strings = [
+        description for flag, description in dictionary.items()
+        if value & flag != 0
+    ]
     return "; ".join(strings)
 
-def print_binary_fragment_subchannel_format (value):
+
+def print_binary_fragment_subchannel_format(value):
     dictionary = {
-        Mirage.SubchannelDataFormat.INTERNAL : _("internal"),
-        Mirage.SubchannelDataFormat.EXTERNAL : _("external"),
-        Mirage.SubchannelDataFormat.PW96_INTERLEAVED : _("PW96 interleaved"),
-        Mirage.SubchannelDataFormat.PW96_LINEAR : _("PW96 linear"),
-        Mirage.SubchannelDataFormat.RW96 : _("RW96"),
-        Mirage.SubchannelDataFormat.Q16 : _("Q16"),
+        Mirage.SubchannelDataFormat.INTERNAL: _("internal"),
+        Mirage.SubchannelDataFormat.EXTERNAL: _("external"),
+        Mirage.SubchannelDataFormat.PW96_INTERLEAVED: _("PW96 interleaved"),
+        Mirage.SubchannelDataFormat.PW96_LINEAR: _("PW96 linear"),
+        Mirage.SubchannelDataFormat.RW96: _("RW96"),
+        Mirage.SubchannelDataFormat.Q16: _("Q16"),
     }
-    strings = []
-    for flag, description in dictionary.items():
-        if value & flag:
-            strings.append(description)
+    strings = [
+        description for flag, description in dictionary.items()
+        if value & flag != 0
+    ]
     return "; ".join(strings)
 
-def print_raw_buffer (buf):
-    if sys.version_info[0] < 3:
-        return " ".join([ format(ord(c), '02X') for c in buf ])
-    else:
-        return " ".join([ format(c, '02X') for c in buf ])
+
+def print_raw_buffer(buffer):
+    return " ".join([f"{element:02X}" for element in buffer])
+
 
 ########################################################################
 #                          Read sector window                          #
 ########################################################################
-class ReadSectorWindow (Gtk.Window):
-    def __init__ (self):
-        Gtk.Window.__init__(self)
+class ReadSectorWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
 
         self.set_title(_("Read sector (#%02d)") % window_id)
         self.set_default_size(600, 400)
@@ -197,16 +188,49 @@ class ReadSectorWindow (Gtk.Window):
         scrolled_window.add(text_view)
         self.text_view = text_view
 
-        # Text buffer
+        # Text buffer with tag-based formatting
         text_buffer = text_view.get_buffer()
-        text_buffer.create_tag("tag_section", weight=Pango.Weight.BOLD)
 
-        text_buffer.create_tag("tag_sync", foreground="#CC0033", family="monospace") # Red
-        text_buffer.create_tag("tag_header", foreground="#33CC33", family="monospace") # Green
-        text_buffer.create_tag("tag_subheader", foreground="#990099", family="monospace") # Purple
-        text_buffer.create_tag("tag_data", family="monospace") # Black
-        text_buffer.create_tag("tag_edc_ecc", foreground="#FF9933", family="monospace") # Orange
-        text_buffer.create_tag("tag_subchannel", foreground="#0033FF", family="monospace") # Blue
+        text_buffer.create_tag(
+            "tag_section",
+            weight=Pango.Weight.BOLD,
+        )
+
+        # Sync pattern: red
+        text_buffer.create_tag(
+            "tag_sync",
+            foreground="#CC0033",
+            family="monospace",
+        )
+        # Header: green
+        text_buffer.create_tag(
+            "tag_header",
+            foreground="#33CC33",
+            family="monospace",
+        )
+        # Subheader: purple
+        text_buffer.create_tag(
+            "tag_subheader",
+            foreground="#990099",
+            family="monospace",
+        )
+        # Main channel data: black
+        text_buffer.create_tag(
+            "tag_data",
+            family="monospace",
+        )
+        # EDC/ECC: orange
+        text_buffer.create_tag(
+            "tag_edc_ecc",
+            foreground="#FF9933",
+            family="monospace",
+        )
+        # Subchannel: blue
+        text_buffer.create_tag(
+            "tag_subchannel",
+            foreground="#0033FF",
+            family="monospace",
+        )
 
         self.text_buffer = text_buffer
 
@@ -228,7 +252,7 @@ class ReadSectorWindow (Gtk.Window):
         # Init
         self.set_disc(None)
 
-    def set_disc (self, disc):
+    def set_disc(self, disc):
         self.disc = disc
 
         if self.disc is not None:
@@ -238,14 +262,14 @@ class ReadSectorWindow (Gtk.Window):
             self.spin_button.set_range(start_sector, start_sector + length - 1)
 
             self.text_buffer.set_text(_("Ready!"))
-            self.set_sensitive(True) # Enable window
+            self.set_sensitive(True)  # Enable window
         else:
             self.spin_button.set_range(0, 0)
 
             self.text_buffer.set_text(_("No disc loaded!"))
-            self.set_sensitive(False) # Disable whole window
+            self.set_sensitive(False)  # Disable whole window
 
-    def read_sector (self):
+    def read_sector(self):
         text_buffer = self.text_buffer
 
         # Clear text buffer
@@ -261,117 +285,234 @@ class ReadSectorWindow (Gtk.Window):
             text_buffer.set_text(_("Failed to get sector: %s") % (e.message))
             return
 
-
         # Sector address
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector address: "), "tag_section")
-        text_buffer.insert(text_buffer.get_end_iter(), "0x%X (%d)\n" % (address & 0xFFFFFFFF, address))
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Sector address: "),
+            "tag_section",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "0x%X (%d)\n" % (address & 0xFFFFFFFF, address),
+        )
 
         # Sector address MSF
         address_msf = Mirage.helper_lba2msf_str(address, True)
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector address MSF: "), "tag_section")
-        text_buffer.insert(text_buffer.get_end_iter(), "%s\n" % (address_msf))
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Sector address MSF: "),
+            "tag_section",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "%s\n" % (address_msf),
+        )
 
         # Sector type
         sector_type = sector.get_sector_type()
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector type: "), "tag_section")
-        text_buffer.insert(text_buffer.get_end_iter(), "0x%X (%s)\n" % (sector_type, print_sector_type(sector_type)))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Sector type: "),
+            "tag_section",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "0x%X (%s)\n" % (sector_type, print_sector_type(sector_type)),
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n",
+        )
 
         # DPM
         try:
-            ( dpm_available, sector_angle, sector_density ) = self.disc.get_dpm_data_for_sector(address)
-        except:
+            dpm_available, sector_angle, sector_density = \
+                self.disc.get_dpm_data_for_sector(address)
+        except Exception:
             dpm_available = False
 
         if dpm_available:
             # Sector angle
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector angle: "), "tag_section")
-            text_buffer.insert(text_buffer.get_end_iter(), _("%f rotations") % (sector_angle))
-            text_buffer.insert(text_buffer.get_end_iter(), "\n")
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                _("Sector angle: "),
+                "tag_section",
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("%f rotations") % (sector_angle),
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                "\n",
+            )
 
             # Sector density
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector density: "), "tag_section")
-            text_buffer.insert(text_buffer.get_end_iter(), _("%f degrees per sector") % (sector_density))
-            text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                _("Sector density: "),
+                "tag_section",
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("%f degrees per sector") % (sector_density),
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                "\n\n",
+            )
 
         # Q subchannel
-        (status, subchannel_data) = sector.get_subchannel(Mirage.SectorSubchannelFormat.Q)
+        status, subchannel_data = sector.get_subchannel(
+            Mirage.SectorSubchannelFormat.Q,
+        )
 
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Q subchannel:"), "tag_section")
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
-        text_buffer.insert(text_buffer.get_end_iter(), "%s" % (print_raw_buffer(subchannel_data)))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
-
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Q subchannel:"),
+            "tag_section",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            print_raw_buffer(subchannel_data) + " ",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n",
+        )
 
         # Subchannel CRC verification
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Subchannel CRC verification: "), "tag_section")
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Subchannel CRC verification: "),
+            "tag_section",
+        )
         if sector.verify_subchannel_crc():
-            text_buffer.insert(text_buffer.get_end_iter(), _("passed"))
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("passed"),
+            )
         else:
-            text_buffer.insert(text_buffer.get_end_iter(), _("bad CRC"))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("bad CRC"),
+            )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n\n",
+        )
 
         # L-EC verification
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector data L-EC verification: "), "tag_section")
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Sector data L-EC verification: "),
+            "tag_section",
+        )
         if sector.verify_lec():
-            text_buffer.insert(text_buffer.get_end_iter(), _("passed"))
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("passed"),
+            )
         else:
-            text_buffer.insert(text_buffer.get_end_iter(), _("bad sector"))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("bad sector"),
+            )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n\n",
+        )
 
         # Sector data dump
-        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector data dump:"), "tag_section")
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+        text_buffer.insert_with_tags_by_name(
+            text_buffer.get_end_iter(),
+            _("Sector data dump:"),
+            "tag_section",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n",
+        )
 
         # Sync
         try:
-            (status, data) = sector.get_sync()
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), "%s " % (print_raw_buffer(data)), "tag_sync")
-        except:
+            status, data = sector.get_sync()
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                print_raw_buffer(data) + " ",
+                "tag_sync",
+            )
+        except Exception:
             pass
 
         # Header
         try:
-            (status, data) = sector.get_header()
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), "%s " % (print_raw_buffer(data)), "tag_header")
-        except:
+            status, data = sector.get_header()
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                print_raw_buffer(data) + " ",
+                "tag_header",
+            )
+        except Exception:
             pass
 
         # Subheader
         try:
-            (status, data) = sector.get_subheader()
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), "%s " % (print_raw_buffer(data)), "tag_subheader")
-        except:
+            status, data = sector.get_subheader()
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                print_raw_buffer(data) + " ",
+                "tag_subheader",
+            )
+        except Exception:
             pass
 
         # Data
         try:
-            (status, data) = sector.get_data()
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), "%s " % (print_raw_buffer(data)), "tag_data")
-        except:
+            status, data = sector.get_data()
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                print_raw_buffer(data) + " ",
+                "tag_data",
+            )
+        except Exception:
             pass
 
         # EDC/ECC
         try:
-            (status, data) = sector.get_edc_ecc()
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), "%s " % (print_raw_buffer(data)), "tag_edc_ecc")
-        except:
+            status, data = sector.get_edc_ecc()
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                print_raw_buffer(data) + " ",
+                "tag_edc_ecc",
+            )
+        except Exception:
             pass
 
         # Subchannel
         try:
-            (status, data) = sector.get_subchannel(Mirage.SectorSubchannelFormat.PW)
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), "%s " % (print_raw_buffer(data)), "tag_subchannel")
-        except:
+            status, data = sector.get_subchannel(
+                Mirage.SectorSubchannelFormat.PW,
+            )
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                print_raw_buffer(data) + " ",
+                "tag_subchannel",
+            )
+        except Exception:
             pass
 
 
 ########################################################################
 #                        Sector analysis window                        #
 ########################################################################
-class SectorAnalysisWindow (Gtk.Window):
-    def __init__ (self):
-        Gtk.Window.__init__(self)
+class SectorAnalysisWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
 
         self.set_title(_("Sector analysis (#%02d)") % window_id)
         self.set_default_size(600, 400)
@@ -432,18 +573,17 @@ class SectorAnalysisWindow (Gtk.Window):
         # Init
         self.set_disc(None)
 
-    def set_disc (self, disc):
+    def set_disc(self, disc):
         self.disc = disc
 
         if self.disc is not None:
             self.text_buffer.set_text(_("Ready!"))
-            self.set_sensitive(True) # Enable window
+            self.set_sensitive(True)  # Enable window
         else:
             self.text_buffer.set_text(_("No disc loaded!"))
-            self.set_sensitive(False) # Disable whole window
+            self.set_sensitive(False)  # Disable whole window
 
-
-    def analyze_sectors (self):
+    def analyze_sectors(self):
         text_buffer = self.text_buffer
 
         # Clear text
@@ -465,8 +605,14 @@ class SectorAnalysisWindow (Gtk.Window):
         length = disc.layout_get_length()
 
         # Display message
-        text_buffer.insert(text_buffer.get_end_iter(), _("Performing sector analysis..."))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            _("Performing sector analysis..."),
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n\n",
+        )
 
         # Go over sessions
         num_sessions = disc.get_number_of_sessions()
@@ -478,9 +624,19 @@ class SectorAnalysisWindow (Gtk.Window):
             session_length = session.layout_get_length()
             num_tracks = session.get_number_of_tracks()
 
-            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Session #%d: ") % (session_number), "tag_section")
-            text_buffer.insert(text_buffer.get_end_iter(), _("start: %d, length %d, %d tracks") % (session_start, session_length, num_tracks))
-            text_buffer.insert(text_buffer.get_end_iter(), "n\n")
+            text_buffer.insert_with_tags_by_name(
+                text_buffer.get_end_iter(),
+                _("Session #%d: ") % (session_number),
+                "tag_section",
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("start: %d, length %d, %d tracks") % (session_start, session_length, num_tracks),
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                "\n\n",
+            )
 
             # Go over tracks
             for j in range(num_tracks):
@@ -490,36 +646,76 @@ class SectorAnalysisWindow (Gtk.Window):
                 track_start = track.layout_get_start_sector()
                 track_length = track.layout_get_length()
 
-                text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Track #%d: ") % (track_number), "tag_section")
-                text_buffer.insert(text_buffer.get_end_iter(), _("start: %d, length %d") % (track_start, track_length))
-                text_buffer.insert(text_buffer.get_end_iter(), "\n")
-
+                text_buffer.insert_with_tags_by_name(
+                    text_buffer.get_end_iter(),
+                    _("Track #%d: ") % (track_number),
+                    "tag_section",
+                )
+                text_buffer.insert(
+                    text_buffer.get_end_iter(),
+                    _("start: %d, length %d") % (track_start, track_length),
+                )
+                text_buffer.insert(
+                    text_buffer.get_end_iter(),
+                    "\n",
+                )
 
                 for address in range(track_start, track_start + track_length):
                     # Get sector
                     try:
                         sector = track.get_sector(address, True)
-                    except:
+                    except Exception:
                         sector = None
 
                     if sector is not None:
                         # Verify L-EC
                         if not sector.verify_lec():
-                            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF), "tag_section")
-                            text_buffer.insert(text_buffer.get_end_iter(), "L-EC error")
-                            text_buffer.insert(text_buffer.get_end_iter(), "\n")
+                            text_buffer.insert_with_tags_by_name(
+                                text_buffer.get_end_iter(),
+                                _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF),
+                                "tag_section",
+                            )
+                            text_buffer.insert(
+                                text_buffer.get_end_iter(),
+                                "L-EC error",
+                            )
+                            text_buffer.insert(
+                                text_buffer.get_end_iter(),
+                                "\n",
+                            )
                         # Verify subchannel CRC
                         if not sector.verify_subchannel_crc():
-                            text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF), "tag_section")
-                            text_buffer.insert(text_buffer.get_end_iter(), "Subchannel CRC error")
-                            text_buffer.insert(text_buffer.get_end_iter(), "\n")
+                            text_buffer.insert_with_tags_by_name(
+                                text_buffer.get_end_iter(),
+                                _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF),
+                                "tag_section",
+                            )
+                            text_buffer.insert(
+                                text_buffer.get_end_iter(),
+                                "Subchannel CRC error",
+                            )
+                            text_buffer.insert(
+                                text_buffer.get_end_iter(),
+                                "\n",
+                            )
                     else:
-                        text_buffer.insert_with_tags_by_name(text_buffer.get_end_iter(), _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF), "tag_section")
-                        text_buffer.insert(text_buffer.get_end_iter(), _("Failed to get sector!"))
-                        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+                        text_buffer.insert_with_tags_by_name(
+                            text_buffer.get_end_iter(),
+                            _("Sector %d (0x%X): ") % (address, address & 0xFFFFFFFF),
+                            "tag_section",
+                        )
+                        text_buffer.insert(
+                            text_buffer.get_end_iter(),
+                            _("Failed to get sector!"),
+                        )
+                        text_buffer.insert(
+                            text_buffer.get_end_iter(),
+                            "\n",
+                        )
 
                     # Update progress bar
-                    self.progress_bar.set_fraction(float(address - start_sector)/(length - start_sector))
+                    progress = float(address - start_sector) / (length - start_sector)
+                    self.progress_bar.set_fraction(progress)
 
                     # Process events to keep GUI interactive
                     while Gtk.events_pending():
@@ -530,7 +726,10 @@ class SectorAnalysisWindow (Gtk.Window):
                         break
 
                 # Print a newline after a track is processed
-                text_buffer.insert(text_buffer.get_end_iter(), "\n")
+                text_buffer.insert(
+                    text_buffer.get_end_iter(),
+                    "\n",
+                )
 
                 # Does user want to cancel the operation?
                 if self.cancel_analysis.is_cancelled():
@@ -543,10 +742,19 @@ class SectorAnalysisWindow (Gtk.Window):
         # Finish: display message, hide progress bar and cancel button,
         # and show analyze button
         if self.cancel_analysis.is_cancelled():
-            text_buffer.insert(text_buffer.get_end_iter(), _("Sector analysis cancelled!"))
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("Sector analysis cancelled!"),
+            )
         else:
-            text_buffer.insert(text_buffer.get_end_iter(), _("Sector analysis complete!"))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n")
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("Sector analysis complete!"),
+            )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n",
+        )
 
         self.progress_bar.hide()
         self.button_cancel.hide()
@@ -556,9 +764,9 @@ class SectorAnalysisWindow (Gtk.Window):
 ########################################################################
 #                         Disc topology window                         #
 ########################################################################
-class DiscTopologyWindow (Gtk.Window):
-    def __init__ (self):
-        Gtk.Window.__init__(self)
+class DiscTopologyWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
 
         self.set_title(_("Disc topology (#%02d)") % window_id)
         self.set_default_size(800, 600)
@@ -568,11 +776,11 @@ class DiscTopologyWindow (Gtk.Window):
         self.add(box)
 
         # Matplotlib figure
-        figure = Figure(figsize=(10,10), dpi=100, facecolor='#ffffad')
+        figure = Figure(figsize=(10, 10), dpi=100, facecolor='#ffffad')
         self.figure = figure
 
         canvas = FigureCanvas(figure)
-        canvas.set_size_request(600,400)
+        canvas.set_size_request(600, 400)
         box.pack_start(canvas, True, True, 0)
 
         # Matplotlib toolbar - in versions < 3.6.0, NavigationToolbar
@@ -586,8 +794,7 @@ class DiscTopologyWindow (Gtk.Window):
 
         box.show_all()
 
-
-    def set_dpm_data (self, dpm_data, filenames):
+    def set_dpm_data(self, dpm_data, filenames):
         # Clear figure
         figure = self.figure
         figure.clear()
@@ -604,7 +811,7 @@ class DiscTopologyWindow (Gtk.Window):
         entries = dpm_data[2]
 
         # Determine image name
-        title = "%s" %(os.path.basename(filenames[0]))
+        title = os.path.basename(filenames[0])
         if len(filenames) > 1:
             title += " ..."
 
@@ -617,12 +824,18 @@ class DiscTopologyWindow (Gtk.Window):
 
         # Compute sector addresses and corresponding densities (same as
         # is done in disc's get_dpm_data_for_sector() method)
-        sector_address = [ start_sector + x*resolution for x in range(1, len(entries)) ]
-        sector_density = [ (t - s)/(256.0*resolution)*360.0 for s, t in zip(entries, entries[1:])]
+        sector_address = [
+            start_sector + (x * resolution)
+            for x in range(1, len(entries))
+        ]
+        sector_density = [
+            (t - s) / (256.0 * resolution) * 360.0
+            for s, t in zip(entries, entries[1:])
+        ]
 
         # Prepend first entry
         sector_address.insert(0, start_sector)
-        sector_density.insert(0, entries[0]/(256.0*resolution)*360.0)
+        sector_density.insert(0, entries[0] / (256.0 * resolution) * 360.0)
 
         # Plot
         figure.suptitle(title)
@@ -648,13 +861,12 @@ class DiscTopologyWindow (Gtk.Window):
         self.set_sensitive(True)
 
 
-
 ########################################################################
 #                        Disc structures window                        #
 ########################################################################
-class DiscStructuresWindow (Gtk.Window):
-    def __init__ (self):
-        Gtk.Window.__init__(self)
+class DiscStructuresWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__()
 
         self.set_title(_("Disc structures (#%02d)") % window_id)
         self.set_default_size(600, 400)
@@ -717,21 +929,26 @@ class DiscStructuresWindow (Gtk.Window):
         # Init
         self.set_disc(None)
 
-    def set_disc (self, disc):
+    def set_disc(self, disc):
         self.disc = disc
 
         if self.disc is not None:
-            if self.disc.get_medium_type() in [ Mirage.MediumType.DVD, Mirage.MediumType.HD, Mirage.MediumType.BD ]:
+            SUPPORTED_MEDIA_TYPES = [
+                Mirage.MediumType.DVD,
+                Mirage.MediumType.HD,
+                Mirage.MediumType.BD,
+            ]
+            if self.disc.get_medium_type() in SUPPORTED_MEDIA_TYPES:
                 self.text_buffer.set_text(_("Ready!"))
-                self.set_sensitive(True) # Enable window
+                self.set_sensitive(True)  # Enable window
             else:
                 self.text_buffer.set_text(_("Unsupported medium type!"))
-                self.set_sensitive(False) # Disable whole window
+                self.set_sensitive(False)  # Disable whole window
         else:
             self.text_buffer.set_text(_("No disc loaded!"))
-            self.set_sensitive(False) # Disable whole window
+            self.set_sensitive(False)  # Disable whole window
 
-    def get_structure (self):
+    def get_structure(self):
         text_buffer = self.text_buffer
 
         # Read address and type
@@ -743,24 +960,39 @@ class DiscStructuresWindow (Gtk.Window):
 
         # Get structure from disc
         try:
-            (status, data) = self.disc.get_disc_structure(layer, structure_type)
+            status, data = self.disc.get_disc_structure(layer, structure_type)
         except GLib.Error as e:
-            text_buffer.insert(text_buffer.get_end_iter(), _("Failed to get structure: %s") % (e.message))
-            text_buffer.insert(text_buffer.get_end_iter(), "\n")
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                _("Failed to get structure: %s") % (e.message),
+            )
+            text_buffer.insert(
+                text_buffer.get_end_iter(),
+                "\n",
+            )
             return
 
         # Dump structure
-        text_buffer.insert(text_buffer.get_end_iter(), _("%d bytes") % (len(data)))
-        text_buffer.insert(text_buffer.get_end_iter(), "\n\n")
-        text_buffer.insert(text_buffer.get_end_iter(), "%s" % (print_raw_buffer(data)))
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            _("%d bytes") % (len(data)),
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            "\n\n",
+        )
+        text_buffer.insert(
+            text_buffer.get_end_iter(),
+            print_raw_buffer(data),
+        )
 
 
 ########################################################################
 #                              Log window                              #
 ########################################################################
 class LogWindow (Gtk.Window):
-    def __init__ (self):
-        Gtk.Window.__init__(self)
+    def __init__(self):
+        super().__init__()
 
         self.set_title(_("Log (#%02d)") % window_id)
         self.set_default_size(600, 400)
@@ -801,32 +1033,31 @@ class LogWindow (Gtk.Window):
 
         grid.show_all()
 
-
-    def clear_log (self):
+    def clear_log(self):
         txt_buffer = self.text_view.get_buffer()
         txt_buffer.set_text("", -1)
 
-    def append_to_log (self, message):
-        if message is not None and len(message):
-            txt_buffer = self.text_view.get_buffer()
-            end_iter = txt_buffer.get_end_iter()
-            txt_buffer.insert(end_iter, message, -1)
-
-
-    def get_log_text (self):
+    def append_to_log(self, message):
+        if not message:
+            return
         txt_buffer = self.text_view.get_buffer()
-        (start, end) = txt_buffer.get_bounds()
+        txt_buffer.insert(
+            txt_buffer.get_end_iter(),
+            message,
+        )
 
-        txt_buffer.get_text(start, end, False)
+    def get_log_text(self):
+        txt_buffer = self.text_view.get_buffer()
+        start, end = txt_buffer.get_bounds()
+        return txt_buffer.get_text(start, end, False)
 
-    def set_debug_to_stdout (self, enabled):
+    def set_debug_to_stdout(self, enabled):
         self.checkbutton_stdout.set_active(enabled)
 
-    def get_debug_to_stdout (self):
+    def get_debug_to_stdout(self):
         return self.checkbutton_stdout.get_active()
 
-
-    def select_debug_mask (self):
+    def select_debug_mask(self):
         # Get list of supported debug masks
         valid_masks = Mirage.get_supported_debug_masks()[1]
 
@@ -838,7 +1069,10 @@ class LogWindow (Gtk.Window):
         dialog.set_title(_("Debug mask"))
         dialog.set_modal(True)
         dialog.set_transient_for(self)
-        dialog.add_buttons(_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT)
+        dialog.add_buttons(
+            _("OK"), Gtk.ResponseType.ACCEPT,
+            _("Cancel"), Gtk.ResponseType.REJECT,
+        )
 
         # Create the mask widgets
         grid = Gtk.Grid.new()
@@ -875,12 +1109,16 @@ class LogWindow (Gtk.Window):
 ########################################################################
 #                               Dialogs                                #
 ########################################################################
-class OpenImageDialog (Gtk.FileChooserDialog):
-    def __init__ (self, *args, **kwargs):
-        Gtk.FileChooserDialog.__init__ (self, *args, **kwargs)
+class OpenImageDialog(Gtk.FileChooserDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.set_title(_("Open image"))
         self.set_action(Gtk.FileChooserAction.OPEN)
-        self.add_buttons(_("Open"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.CANCEL)
+        self.add_buttons(
+            _("Open"), Gtk.ResponseType.ACCEPT,
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+        )
 
         self.set_select_multiple(True)
         self.set_local_only(False)
@@ -920,12 +1158,17 @@ class OpenImageDialog (Gtk.FileChooserDialog):
                 # "All images" filter
                 filter_all.add_mime_type(mime_type)
 
-class OpenDumpDialog (Gtk.FileChooserDialog):
-    def __init__ (self, *args, **kwargs):
-        Gtk.FileChooserDialog.__init__ (self, *args, **kwargs)
+
+class OpenDumpDialog(Gtk.FileChooserDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.set_title(_("Open image dump"))
         self.set_action(Gtk.FileChooserAction.OPEN)
-        self.add_buttons(_("Open"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.CANCEL)
+        self.add_buttons(
+            _("Open"), Gtk.ResponseType.ACCEPT,
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+        )
 
         self.set_local_only(False)
 
@@ -941,12 +1184,17 @@ class OpenDumpDialog (Gtk.FileChooserDialog):
         filter_all.add_pattern("*")
         self.add_filter(filter_all)
 
-class SaveDumpDialog (Gtk.FileChooserDialog):
-    def __init__ (self, *args, **kwargs):
-        Gtk.FileChooserDialog.__init__ (self, *args, **kwargs)
+
+class SaveDumpDialog(Gtk.FileChooserDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.set_title(_("Save image dump"))
         self.set_action(Gtk.FileChooserAction.SAVE)
-        self.add_buttons(_("Save"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.CANCEL)
+        self.add_buttons(
+            _("Save"), Gtk.ResponseType.ACCEPT,
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+        )
 
         self.set_local_only(False)
         self.set_do_overwrite_confirmation(True)
@@ -964,12 +1212,16 @@ class SaveDumpDialog (Gtk.FileChooserDialog):
         self.add_filter(filter_all)
 
 
-class ImageWriterDialog (Gtk.Dialog):
-    def __init__ (self, *args, **kwargs):
-        Gtk.Dialog.__init__(self, *args, **kwargs)
+class ImageWriterDialog(Gtk.Dialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.set_title("Convert image")
         self.set_border_width(5)
-        self.add_buttons(_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.CANCEL)
+        self.add_buttons(
+            _("OK"), Gtk.ResponseType.ACCEPT,
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+        )
 
         # Frame: image settings
         frame = Gtk.Frame.new(_("Output image"))
@@ -1004,7 +1256,7 @@ class ImageWriterDialog (Gtk.Dialog):
         self.combo_box_writer = combo_box
 
         # Populate combox box
-        (status, writers) = Mirage.get_writers_info()
+        status, writers = Mirage.get_writers_info()
         for writer_info in writers:
             combo_box.append_text(writer_info.id)
 
@@ -1020,14 +1272,16 @@ class ImageWriterDialog (Gtk.Dialog):
         self.get_content_area().show_all()
         self.frame_writer.hide()
 
-    def select_file (self):
+    def select_file(self):
         dialog = Gtk.FileChooserDialog(
             title=_("Select output image file"),
             parent=self,
-            action=Gtk.FileChooserAction.SAVE)
+            action=Gtk.FileChooserAction.SAVE,
+        )
         dialog.add_buttons(
             _("Cancel"), Gtk.ResponseType.CANCEL,
-            _("Save"), Gtk.ResponseType.ACCEPT)
+            _("Save"), Gtk.ResponseType.ACCEPT,
+        )
         dialog.set_do_overwrite_confirmation(True)
         dialog.set_local_only(False)
 
@@ -1037,7 +1291,7 @@ class ImageWriterDialog (Gtk.Dialog):
 
         dialog.destroy()
 
-    def change_writer (self):
+    def change_writer(self):
         # Clear image writer
         self.writer = None
 
@@ -1053,7 +1307,7 @@ class ImageWriterDialog (Gtk.Dialog):
 
         # Get selected writer ID and create the writer
         writer_id = self.combo_box_writer.get_active_text()
-        if writer_id is None or len(writer_id) == 0:
+        if not writer_id:
             return
 
         writer = Mirage.create_writer(writer_id)
@@ -1123,13 +1377,13 @@ class ImageWriterDialog (Gtk.Dialog):
         # Store writer
         self.writer = writer
 
-    def get_filename (self):
+    def get_filename(self):
         return self.entry_filename.get_text()
 
-    def get_writer (self):
+    def get_writer(self):
         return self.writer
 
-    def get_writer_parameters (self):
+    def get_writer_parameters(self):
         parameters = dict()
 
         for parameter_id, widget in self.writer_options_widgets.items():
@@ -1250,78 +1504,85 @@ class DiscDump:
     TAG_SUBCHANNEL_SIZE = "subchannel-size"
     TAG_SUBCHANNEL_FORMAT = "subchannel-format"
 
-    def __init__ (self):
+    def __init__(self):
         self.clear()
 
-    def clear (self):
+    def clear(self):
         self.xml_doc = None
         self.parser_log = ""
         self.filename = ""
 
-    def is_loaded (self):
+    def is_loaded(self):
         return self.xml_doc is not None
 
-    def get_filename (self):
+    def get_filename(self):
         return self.filename
 
-    def create_from_disc (self, disc, parser_log):
+    def create_from_disc(self, disc, parser_log):
         # Clear
         self.clear()
 
         # Create root node
-        root_node = xml.etree.ElementTree.Element(DiscDump.TAG_IMAGE_ANALYZER_DUMP)
+        root_node = xml.etree.ElementTree.Element(
+            DiscDump.TAG_IMAGE_ANALYZER_DUMP,
+        )
 
         # Dump disc
         self.dump_disc(root_node, disc)
 
         # Append parser log
-        self.add_node(root_node, DiscDump.TAG_PARSER_LOG, parser_log)
+        self.add_node(
+            root_node,
+            DiscDump.TAG_PARSER_LOG,
+            parser_log,
+        )
 
         # Create XML tree
         self.xml_doc = xml.etree.ElementTree.ElementTree(root_node)
 
+    def save_xml_dump(self, filename):
+        # Use minidom to re-parse the XML tree, and pretty-print it.
+        xml_string = xml.dom.minidom.parseString(
+            xml.etree.ElementTree.tostring(self.xml_doc.getroot())
+        ).toprettyxml(indent="  ")
 
-    def save_xml_dump (self, filename):
-        # Use minidom to re-parse the XML tree, and pretty-print it
-        xml_string = xml.dom.minidom.parseString(xml.etree.ElementTree.tostring(self.xml_doc.getroot())).toprettyxml(indent="  ")
-        with open(filename, "w") as f:
-            f.write(xml_string)
+        with open(filename, "w", encoding="utf-8") as fp:
+            fp.write(xml_string)
 
-
-    def load_xml_dump (self, filename):
+    def load_xml_dump(self, filename):
         # Load the XML
         self.xml_doc = xml.etree.ElementTree.parse(filename)
 
         # Validate root tag
         root_tag = self.xml_doc.getroot().tag
         if root_tag != DiscDump.TAG_IMAGE_ANALYZER_DUMP:
-            raise Exception(_("Invalid XML dump file (root tag is '%s', expected '%s'!") % (root_tag, DiscDump.TAG_IMAGE_ANALYZER_DUMP))
+            raise Exception(
+                _("Invalid XML dump file (root tag is '%s', expected '%s'!") %
+                (root_tag, DiscDump.TAG_IMAGE_ANALYZER_DUMP)
+            )
 
         # Store the filename
         self.filename = filename
 
-
-    def get_image_filenames (self):
+    def get_image_filenames(self):
         root_node = self.xml_doc.getroot()
         filenames_node = root_node.find(DiscDump.TAG_DISC).find(DiscDump.TAG_FILENAMES)
+        return [
+            filename_node.text
+            for filename_node in filenames_node.findall(DiscDump.TAG_FILENAME)
+        ]
 
-        filenames = []
-        for filename_node in filenames_node.findall(DiscDump.TAG_FILENAME):
-            filenames.append(filename_node.text)
-
-        return filenames
-
-    def get_disc_tree (self):
+    def get_disc_tree(self):
         root_node = self.xml_doc.getroot()
         node = root_node.find(DiscDump.TAG_DISC)
         return node
 
-    def get_parser_log (self):
+    def get_parser_log(self):
         root_node = self.xml_doc.getroot()
         node = root_node.find(DiscDump.TAG_PARSER_LOG)
         return node.text
 
-    def get_dpm_data (self):
+    def get_dpm_data(self):
         dpm_start_sector = 0
         dpm_resolution = 0
         dpm_entries = []
@@ -1340,193 +1601,352 @@ class DiscDump:
 
             # Entries
             dpm_entries_node = dpm_node.find(DiscDump.TAG_DPM_ENTRIES)
-            for dpm_entry_node in dpm_entries_node.findall(DiscDump.TAG_DPM_ENTRY):
-                dpm_entries.append(int(dpm_entry_node.text, 0))
+            dpm_entries = [
+                int(dpm_entry_node.text, 0)
+                for dpm_entry_node in dpm_entries_node.findall(DiscDump.TAG_DPM_ENTRY)
+            ]
 
-        return (dpm_start_sector, dpm_resolution, dpm_entries)
+        return dpm_start_sector, dpm_resolution, dpm_entries
 
     # *** Disc -> XML conversion ***
-    def add_node (self, root_node, tag, text = ""):
+    def add_node(self, root_node, tag, text=""):
         node = xml.etree.ElementTree.SubElement(root_node, tag)
         node.text = text
         return node
 
-    def dump_disc (self, root_node, disc):
-        disc_node = self.add_node(root_node, DiscDump.TAG_DISC)
+    def dump_disc(self, root_node, disc):
+        disc_node = self.add_node(
+            root_node,
+            DiscDump.TAG_DISC,
+        )
 
         # Medium type
-        medium_type = disc.get_medium_type()
-        self.add_node(disc_node, DiscDump.TAG_MEDIUM_TYPE, "%d" % (medium_type))
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_MEDIUM_TYPE,
+            f"{disc.get_medium_type():d}",
+        )
 
         # Filenames
-        filenames = disc.get_filenames()
-        filenames_node = self.add_node(disc_node, DiscDump.TAG_FILENAMES)
-        for filename in filenames:
-            self.add_node(filenames_node, DiscDump.TAG_FILENAME, filename)
+        filenames_node = self.add_node(
+            disc_node,
+            DiscDump.TAG_FILENAMES,
+        )
+        for filename in disc.get_filenames():
+            self.add_node(
+                filenames_node,
+                DiscDump.TAG_FILENAME,
+                filename,
+            )
 
         # First session
-        first_session = disc.layout_get_first_session()
-        self.add_node(disc_node, DiscDump.TAG_FIRST_SESSION, "%d" % (first_session))
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_FIRST_SESSION,
+            f"{disc.layout_get_first_session():d}",
+        )
 
         # First track
-        first_track = disc.layout_get_first_track()
-        self.add_node(disc_node, DiscDump.TAG_FIRST_TRACK, "%d" % (first_track))
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_FIRST_TRACK,
+            f"{disc.layout_get_first_track():d}",
+        )
 
         # Start sector
-        start_sector = disc.layout_get_start_sector()
-        self.add_node(disc_node, DiscDump.TAG_START_SECTOR, "%d" % (start_sector))
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_START_SECTOR,
+            f"{disc.layout_get_start_sector():d}",
+        )
 
         # Length
-        length = disc.layout_get_length()
-        self.add_node(disc_node, DiscDump.TAG_LENGTH, "%d" % (length))
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_LENGTH,
+            f"{disc.layout_get_length():d}",
+        )
 
-        # Num sessions
-        num_sessions = disc.get_number_of_sessions()
-        self.add_node(disc_node, DiscDump.TAG_NUM_SESSIONS, "%d" % (num_sessions))
+        # Number of sessions
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_NUM_SESSIONS,
+            f"{disc.get_number_of_sessions():d}",
+        )
 
-        # Num tracks
-        num_tracks = disc.get_number_of_tracks()
-        self.add_node(disc_node, DiscDump.TAG_NUM_TRACKS, "%d" % (num_tracks))
+        # Number of tracks
+        self.add_node(
+            disc_node,
+            DiscDump.TAG_NUM_TRACKS,
+            f"{disc.get_number_of_tracks():d}",
+        )
 
         # Sessions
-        sessions_node = self.add_node(disc_node, DiscDump.TAG_SESSIONS)
-        disc.enumerate_sessions(lambda s: self.dump_session(sessions_node, s))
+        sessions_node = self.add_node(
+            disc_node,
+            DiscDump.TAG_SESSIONS,
+        )
+        disc.enumerate_sessions(
+            lambda session: self.dump_session(sessions_node, session),
+        )
 
         # DPM
-        ( dpm_start_sector, dpm_resolution, dpm_data ) = disc.get_dpm_data()
-
+        dpm_start_sector, dpm_resolution, dpm_data = disc.get_dpm_data()
         if len(dpm_data) > 0:
-            dpm_node = self.add_node(disc_node, DiscDump.TAG_DPM)
-            self.add_node(dpm_node, DiscDump.TAG_DPM_START, "%d" % (dpm_start_sector))
-            self.add_node(dpm_node, DiscDump.TAG_DPM_RESOLUTION, "%d" % (dpm_resolution))
-            self.add_node(dpm_node, DiscDump.TAG_DPM_NUM_ENTRIES, "%d" % (len(dpm_data)))
-            dpm_entries_node = self.add_node(dpm_node, DiscDump.TAG_DPM_ENTRIES)
+            dpm_node = self.add_node(
+                disc_node,
+                DiscDump.TAG_DPM,
+            )
+
+            self.add_node(
+                dpm_node,
+                DiscDump.TAG_DPM_START,
+                f"{dpm_start_sector:d}",
+            )
+            self.add_node(
+                dpm_node,
+                DiscDump.TAG_DPM_RESOLUTION,
+                f"{dpm_resolution:d}",
+            )
+            self.add_node(
+                dpm_node,
+                DiscDump.TAG_DPM_NUM_ENTRIES,
+                f"{len(dpm_data):d}",
+            )
+
+            dpm_entries_node = self.add_node(
+                dpm_node,
+                DiscDump.TAG_DPM_ENTRIES,
+            )
             for entry in dpm_data:
-                self.add_node(dpm_entries_node, DiscDump.TAG_DPM_ENTRY, "%d" % (entry))
+                self.add_node(
+                    dpm_entries_node,
+                    DiscDump.TAG_DPM_ENTRY,
+                    f"{entry:d}",
+                )
 
         return True
 
-    def dump_session (self, root_node, session):
-        session_node = self.add_node(root_node, DiscDump.TAG_SESSION)
+    def dump_session(self, root_node, session):
+        session_node = self.add_node(
+            root_node,
+            DiscDump.TAG_SESSION,
+        )
 
         # Session type
-        session_type = session.get_session_type()
-        self.add_node(session_node, DiscDump.TAG_SESSION_TYPE, "%d" % (session_type))
+        self.add_node(
+            session_node,
+            DiscDump.TAG_SESSION_TYPE,
+            f"{session.get_session_type():d}",
+        )
 
         # MCN
         mcn = session.get_mcn()
         if mcn is not None:
-            self.add_node(session_node, DiscDump.TAG_MCN, "%s" % (mcn))
+            self.add_node(
+                session_node,
+                DiscDump.TAG_MCN,
+                f"{mcn:s}",
+            )
 
         # Session number
-        session_number = session.layout_get_session_number()
-        self.add_node(session_node, DiscDump.TAG_SESSION_NUMBER, "%d" % (session_number))
+        self.add_node(
+            session_node,
+            DiscDump.TAG_SESSION_NUMBER,
+            f"{session.layout_get_session_number():d}",
+        )
 
-        # First track
-        first_track = session.layout_get_first_track()
-        self.add_node(session_node, DiscDump.TAG_FIRST_TRACK, "%d" % (first_track))
+        # First track number
+        self.add_node(
+            session_node,
+            DiscDump.TAG_FIRST_TRACK,
+            f"{session.layout_get_first_track():d}",
+        )
 
         # Start sector
-        start_sector = session.layout_get_start_sector()
-        self.add_node(session_node, DiscDump.TAG_START_SECTOR, "%d" % (start_sector))
+        self.add_node(
+            session_node,
+            DiscDump.TAG_START_SECTOR,
+            f"{session.layout_get_start_sector():d}",
+        )
 
         # Length
-        length = session.layout_get_length()
-        self.add_node(session_node, DiscDump.TAG_LENGTH, "%d" % (length))
+        self.add_node(
+            session_node,
+            DiscDump.TAG_LENGTH,
+            f"{session.layout_get_length():d}",
+        )
 
         # Ledout length
-        leadout_length = session.get_leadout_length()
-        self.add_node(session_node, DiscDump.TAG_LEADOUT_LENGTH, "%d" % (leadout_length))
+        self.add_node(
+            session_node,
+            DiscDump.TAG_LEADOUT_LENGTH,
+            f"{session.get_leadout_length():d}",
+        )
 
         # Number of tracks
-        num_tracks = session.get_number_of_tracks()
-        self.add_node(session_node, DiscDump.TAG_NUM_TRACKS, "%d" % (num_tracks))
+        self.add_node(
+            session_node,
+            DiscDump.TAG_NUM_TRACKS,
+            f"{session.get_number_of_tracks():d}",
+        )
 
         # Tracks
-        tracks_node = self.add_node(session_node, DiscDump.TAG_TRACKS)
-        session.enumerate_tracks(lambda t: self.dump_track(tracks_node, t))
+        tracks_node = self.add_node(
+            session_node,
+            DiscDump.TAG_TRACKS,
+        )
+        session.enumerate_tracks(
+            lambda track: self.dump_track(tracks_node, track),
+        )
 
-        # Number of langages
-        num_languages = session.get_number_of_languages()
-        self.add_node(session_node, DiscDump.TAG_NUM_LANGUAGES, "%d" % (num_languages))
+        # Number of languages
+        self.add_node(
+            session_node,
+            DiscDump.TAG_NUM_LANGUAGES,
+            f"{session.get_number_of_languages():d}",
+        )
 
         # Languages
-        languages_node = self.add_node(session_node, DiscDump.TAG_LANGUAGES)
-        session.enumerate_languages(lambda l: self.dump_language(languages_node, l))
+        languages_node = self.add_node(
+            session_node,
+            DiscDump.TAG_LANGUAGES,
+        )
+        session.enumerate_languages(
+            lambda language: self.dump_language(languages_node, language),
+        )
 
         return True
 
-    def dump_track (self, root_node, track):
-        track_node = self.add_node(root_node, DiscDump.TAG_TRACK)
+    def dump_track(self, root_node, track):
+        track_node = self.add_node(
+            root_node,
+            DiscDump.TAG_TRACK,
+        )
 
-         # Flags
-        flags = track.get_flags()
-        self.add_node(track_node, DiscDump.TAG_FLAGS, "%d" % (flags))
+        # Flags
+        self.add_node(
+            track_node,
+            DiscDump.TAG_FLAGS,
+            f"{track.get_flags():d}",
+        )
 
         # Sector type
-        sector_type = track.get_sector_type()
-        self.add_node(track_node, DiscDump.TAG_SECTOR_TYPE, "%d" % (sector_type))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_SECTOR_TYPE,
+            f"{track.get_sector_type():d}",
+        )
 
         # ADR
-        adr = track.get_adr()
-        self.add_node(track_node, DiscDump.TAG_ADR, "%d" % (adr))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_ADR,
+            f"{track.get_adr():d}",
+        )
 
         # CTL
-        ctl = track.get_ctl()
-        self.add_node(track_node, DiscDump.TAG_CTL, "%d" % (ctl))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_CTL,
+            f"{track.get_ctl():d}",
+        )
 
         # ISRC
         isrc = track.get_isrc()
         if isrc is not None:
-            self.add_node(track_node, DiscDump.TAG_ISRC, "%s" % (isrc))
+            self.add_node(
+                track_node,
+                DiscDump.TAG_ISRC,
+                f"{isrc:s}",
+            )
 
         # Session number
-        session_number = track.layout_get_session_number()
-        self.add_node(track_node, DiscDump.TAG_SESSION_NUMBER, "%d" % (session_number))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_SESSION_NUMBER,
+            f"{track.layout_get_session_number():d}",
+        )
 
         # Track number
-        track_number = track.layout_get_track_number()
-        self.add_node(track_node, DiscDump.TAG_TRACK_NUMBER, "%d" % (track_number))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_TRACK_NUMBER,
+            f"{track.layout_get_track_number():d}",
+        )
 
         # Start sector
-        start_sector = track.layout_get_start_sector()
-        self.add_node(track_node, DiscDump.TAG_START_SECTOR, "%d" % (start_sector))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_START_SECTOR,
+            f"{track.layout_get_start_sector():d}",
+        )
 
         # Length
-        length = track.layout_get_length()
-        self.add_node(track_node, DiscDump.TAG_LENGTH, "%d" % (length))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_LENGTH,
+            f"{track.layout_get_length():d}",
+        )
 
-        # Num fragments
-        num_fragments = track.get_number_of_fragments()
-        self.add_node(track_node, DiscDump.TAG_NUM_FRAGMENTS, "%d" % (num_fragments))
+        # Number of fragments
+        self.add_node(
+            track_node,
+            DiscDump.TAG_NUM_FRAGMENTS,
+            f"{track.get_number_of_fragments():d}",
+        )
 
         # Fragments
-        fragments_node = self.add_node(track_node, DiscDump.TAG_FRAGMENTS)
-        track.enumerate_fragments(lambda f: self.dump_fragment(fragments_node, f))
+        fragments_node = self.add_node(
+            track_node,
+            DiscDump.TAG_FRAGMENTS,
+        )
+        track.enumerate_fragments(
+            lambda fragment: self.dump_fragment(fragments_node, fragment),
+        )
 
         # Track start
-        track_start = track.get_track_start()
-        self.add_node(track_node, DiscDump.TAG_TRACK_START, "%d" % (track_start))
+        self.add_node(
+            track_node,
+            DiscDump.TAG_TRACK_START,
+            f"{track.get_track_start():d}",
+        )
 
-        # Num indices
-        num_indices = track.get_number_of_indices()
-        self.add_node(track_node, DiscDump.TAG_NUM_INDICES, "%d" % (num_indices))
+        # Number of  indices
+        self.add_node(
+            track_node,
+            DiscDump.TAG_NUM_INDICES,
+            f"{track.get_number_of_indices():d}",
+        )
 
         # Indices
-        indices_node = self.add_node(track_node, DiscDump.TAG_INDICES)
-        track.enumerate_indices(lambda i: self.dump_index(indices_node, i))
+        indices_node = self.add_node(
+            track_node,
+            DiscDump.TAG_INDICES,
+        )
+        track.enumerate_indices(
+            lambda index: self.dump_index(indices_node, index),
+        )
 
-        # Num languages
-        num_languages = track.get_number_of_languages()
-        self.add_node(track_node, DiscDump.TAG_NUM_LANGUAGES, "%d" % (num_languages))
+        # Number of languages
+        self.add_node(
+            track_node,
+            DiscDump.TAG_NUM_LANGUAGES,
+            f"{track.get_number_of_languages():d}",
+        )
 
         # Languages
-        languages_node = self.add_node(track_node, DiscDump.TAG_LANGUAGES)
-        track.enumerate_languages(lambda l: self.dump_language(languages_node, l))
+        languages_node = self.add_node(
+            track_node,
+            DiscDump.TAG_LANGUAGES,
+        )
+        track.enumerate_languages(
+            lambda language: self.dump_language(languages_node, language),
+        )
 
         return True
 
-    def dump_language (self, root_node, language):
+    def dump_language(self, root_node, language):
         # Language pack types
         packs = {
             DiscDump.TAG_TITLE: Mirage.LanguagePackType.TITLE,
@@ -1547,81 +1967,132 @@ class DiscDump:
             DiscDump.TAG_SIZE: Mirage.LanguagePackType.SIZE,
         }
 
-        language_node = self.add_node(root_node, DiscDump.TAG_LANGUAGE)
+        language_node = self.add_node(
+            root_node,
+            DiscDump.TAG_LANGUAGE,
+        )
 
         # Language code
-        code = language.get_code()
-        self.add_node(language_node, DiscDump.TAG_LANGUAGE_CODE, "%d" % (code))
+        self.add_node(
+            language_node,
+            DiscDump.TAG_LANGUAGE_CODE,
+            f"{language.get_code():d}",
+        )
 
         for node_name, pack_type in packs.items():
             try:
                 pack_data = language.get_pack_data(pack_type)
-            except:
+            except Exception:
                 continue
 
             # Convert the data to printable format
-            if sys.version_info[0] < 3:
-                printables = string.printable
-                pack_str = [ '%c' % (x) if x in printables else '\\x{0:02x}'.format(ord(x)) for x in pack_data[1] ]
-            else:
-                printables = bytes(string.printable, 'ascii')
-                pack_str = [ '%c' % (x) if x in printables else '\\x{0:02x}'.format(x) for x in pack_data[1] ]
+            printables = string.printable.encode('ascii')
+            pack_str = [
+                f'{element}:c' if element in printables else f'\\x{element:02x}'
+                for element in pack_data[1]
+            ]
             pack_str = ''.join(pack_str)
 
-            data_node = self.add_node(language_node, node_name, pack_str)
-            data_node.attrib["length"] = "%s" % (len(pack_data[1]))
+            data_node = self.add_node(
+                language_node,
+                node_name,
+                pack_str,
+            )
+            data_node.attrib["length"] = f"{len(pack_data[1])}:d"
 
         return True
 
-    def dump_fragment (self, root_node, fragment):
-        fragment_node = self.add_node(root_node, DiscDump.TAG_FRAGMENT)
+    def dump_fragment(self, root_node, fragment):
+        fragment_node = self.add_node(
+            root_node,
+            DiscDump.TAG_FRAGMENT,
+        )
 
         # Address
-        address = fragment.get_address()
-        self.add_node(fragment_node, DiscDump.TAG_ADDRESS, "%d" % (address))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_ADDRESS,
+            f"{fragment.get_address():d}",
+        )
 
         # Length
-        length = fragment.get_length()
-        self.add_node(fragment_node, DiscDump.TAG_LENGTH, "%d" % (length))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_LENGTH,
+            f"{fragment.get_length():d}",
+        )
 
         # Main data
-        main_name = fragment.main_data_get_filename()
-        self.add_node(fragment_node, DiscDump.TAG_MAIN_NAME, "%s" % (main_name))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_MAIN_NAME,
+            f"{fragment.main_data_get_filename() or '':s}",
+        )
 
-        main_offset = fragment.main_data_get_offset()
-        self.add_node(fragment_node, DiscDump.TAG_MAIN_OFFSET, "%d" % (main_offset))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_MAIN_OFFSET,
+            f"{fragment.main_data_get_offset():d}",
+        )
 
-        main_size = fragment.main_data_get_size()
-        self.add_node(fragment_node, DiscDump.TAG_MAIN_SIZE, "%d" % (main_size))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_MAIN_SIZE,
+            f"{fragment.main_data_get_size():d}",
+        )
 
-        main_format = fragment.main_data_get_format()
-        self.add_node(fragment_node, DiscDump.TAG_MAIN_FORMAT, "%d" % (main_format))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_MAIN_FORMAT,
+            f"{fragment.main_data_get_format():d}",
+        )
 
         # Subchannel data
-        subchannel_name = fragment.subchannel_data_get_filename()
-        self.add_node(fragment_node, DiscDump.TAG_SUBCHANNEL_NAME, "%s" % (subchannel_name))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_SUBCHANNEL_NAME,
+            f"{fragment.subchannel_data_get_filename() or '':s}",
+        )
 
-        subchannel_offset = fragment.subchannel_data_get_offset()
-        self.add_node(fragment_node, DiscDump.TAG_SUBCHANNEL_OFFSET, "%d" % (subchannel_offset))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_SUBCHANNEL_OFFSET,
+            f"{fragment.subchannel_data_get_offset():d}",
+        )
 
-        subchannel_size = fragment.subchannel_data_get_size()
-        self.add_node(fragment_node, DiscDump.TAG_SUBCHANNEL_SIZE, "%d" % (subchannel_size))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_SUBCHANNEL_SIZE,
+            f"{fragment.subchannel_data_get_size():d}",
+        )
 
-        subchannel_format = fragment.subchannel_data_get_format()
-        self.add_node(fragment_node, DiscDump.TAG_SUBCHANNEL_FORMAT, "%d" % (subchannel_format))
+        self.add_node(
+            fragment_node,
+            DiscDump.TAG_SUBCHANNEL_FORMAT,
+            f"{fragment.subchannel_data_get_format():d}",
+        )
 
         return True
 
-    def dump_index (self, root_node, index):
-        index_node = self.add_node(root_node, DiscDump.TAG_INDEX)
+    def dump_index(self, root_node, index):
+        index_node = self.add_node(
+            root_node,
+            DiscDump.TAG_INDEX,
+        )
 
         # Number
-        number = index.get_number()
-        self.add_node(index_node, DiscDump.TAG_NUMBER, "%d" % (number))
+        self.add_node(
+            index_node,
+            DiscDump.TAG_NUMBER,
+            f"{index.get_number():d}",
+        )
 
         # Address
-        address = index.get_address()
-        self.add_node(index_node, DiscDump.TAG_ADDRESS, "%d" % (address))
+        self.add_node(
+            index_node,
+            DiscDump.TAG_ADDRESS,
+            f"{index.get_address():d}",
+        )
 
         return True
 
@@ -1629,66 +2100,95 @@ class DiscDump:
 ########################################################################
 #            The Gtk.TreeStore representation of dumped disc           #
 ########################################################################
-class DiscTreeStore (Gtk.TreeStore):
-    def __init__ (self):
-        Gtk.TreeStore.__init__(self, str)
+class DiscTreeStore(Gtk.TreeStore):
+    def __init__(self):
+        super().__init__(str)
 
-    def load_from_xml_tree (self, root_node):
+    def load_from_xml_tree(self, root_node):
         self.clear()
         self.add_disc(None, root_node)
 
-
     # *** XML -> treestore conversion ***
-    def add_node (self, parent, string):
+    def add_node(self, parent, string):
         node = self.append(parent)
         self.set_value(node, 0, string)
         return node
 
-    def add_disc (self, parent_iter, root_node):
+    def add_disc(self, parent_iter, root_node):
         disc_iter = self.add_node(parent_iter, "Disc")
 
         # Medium type
         node = root_node.find(DiscDump.TAG_MEDIUM_TYPE)
         medium_type = int(node.text, 0)
-        self.add_node(disc_iter, _("Medium type: 0x%X (%s)") % (medium_type, print_medium_type(medium_type)))
+        self.add_node(
+            disc_iter,
+            _("Medium type: 0x%X (%s)") % (medium_type, print_medium_type(medium_type)),
+        )
 
         # Filename(s)
         node = root_node.find(DiscDump.TAG_FILENAMES)
-        filenames_iter = self.add_node(disc_iter, _("Filename(s)"))
+        filenames_iter = self.add_node(
+            disc_iter,
+            _("Filename(s)"),
+        )
         for filename_node in node.findall(DiscDump.TAG_FILENAME):
-            self.add_node(filenames_iter, "%s" % (filename_node.text))
+            self.add_node(
+                filenames_iter,
+                filename_node.text,
+            )
 
         # Layout
         layout_iter = self.add_node(disc_iter, _("Layout"))
 
         node = root_node.find(DiscDump.TAG_FIRST_SESSION)
         first_session = int(node.text, 0)
-        self.add_node(layout_iter, _("First sesssion: %d") % (first_session))
+        self.add_node(
+            layout_iter,
+            _("First sesssion: %d") % (first_session),
+        )
 
         node = root_node.find(DiscDump.TAG_FIRST_TRACK)
         first_track = int(node.text, 0)
-        self.add_node(layout_iter, _("First track: %d") % (first_track))
+        self.add_node(
+            layout_iter,
+            _("First track: %d") % (first_track),
+        )
 
         node = root_node.find(DiscDump.TAG_START_SECTOR)
         start_sector = int(node.text, 0)
-        self.add_node(layout_iter, _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF))
+        self.add_node(
+            layout_iter,
+            _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF),
+        )
 
         node = root_node.find(DiscDump.TAG_LENGTH)
         length = int(node.text, 0)
-        self.add_node(layout_iter, _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF))
+        self.add_node(
+            layout_iter,
+            _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF),
+        )
 
         # Number of tracks and sessions
         node = root_node.find(DiscDump.TAG_NUM_SESSIONS)
         num_sessions = int(node.text, 0)
-        self.add_node(disc_iter, _("Number of sessions: %d") % (num_sessions))
+        self.add_node(
+            disc_iter,
+            _("Number of sessions: %d") % (num_sessions),
+        )
 
         node = root_node.find(DiscDump.TAG_NUM_TRACKS)
         num_tracks = int(node.text, 0)
-        self.add_node(disc_iter, _("Number of tracks: %d") % (num_tracks))
+        self.add_node(
+            disc_iter,
+            _("Number of tracks: %d") % (num_tracks),
+        )
 
         # Sessions
         node = root_node.find(DiscDump.TAG_SESSIONS)
-        sessions_iter = self.add_node(disc_iter, _("Sessions (%d)") % (num_sessions))
+        sessions_iter = self.add_node(
+            disc_iter,
+            _("Sessions (%d)") % (num_sessions),
+        )
         for session_node in node.findall(DiscDump.TAG_SESSION):
             self.add_session(sessions_iter, session_node)
 
@@ -1697,53 +2197,83 @@ class DiscTreeStore (Gtk.TreeStore):
         if node is not None:
             self.add_dpm(disc_iter, node)
 
-    def add_session (self, parent_iter, root_node):
+    def add_session(self, parent_iter, root_node):
         # Read session number in advance
         node = root_node.find(DiscDump.TAG_SESSION_NUMBER)
         session_number = int(node.text, 0)
 
-        session_iter = self.add_node(parent_iter, _("Session %02d") % (session_number))
+        session_iter = self.add_node(
+            parent_iter,
+            _("Session %02d") % (session_number),
+        )
 
         # Session type
         node = root_node.find(DiscDump.TAG_SESSION_TYPE)
         session_type = int(node.text, 0)
-        self.add_node(session_iter, _("Session type: 0x%X (%s)") % (session_type, print_session_type(session_type)))
+        self.add_node(
+            session_iter,
+            _("Session type: 0x%X (%s)") % (session_type, print_session_type(session_type)),
+        )
 
         # MCN (optional)
         node = root_node.find(DiscDump.TAG_MCN)
         if node is not None:
             mcn = node.text
-            self.add_node(session_iter, _("MCN: %s") % (mcn))
+            self.add_node(
+                session_iter,
+                _("MCN: %s") % (mcn),
+            )
 
         # Session number
-        self.add_node(session_iter, _("Session number: %d") % (session_number))
+        self.add_node(
+            session_iter,
+            _("Session number: %d") % (session_number),
+        )
 
         # Layout
-        layout_iter = self.add_node(session_iter, _("Layout"))
+        layout_iter = self.add_node(
+            session_iter,
+            _("Layout"),
+        )
 
         node = root_node.find(DiscDump.TAG_FIRST_TRACK)
         first_track = int(node.text, 0)
-        self.add_node(layout_iter, _("First track: %d") % (first_track))
+        self.add_node(
+            layout_iter,
+            _("First track: %d") % (first_track),
+        )
 
         node = root_node.find(DiscDump.TAG_START_SECTOR)
         start_sector = int(node.text, 0)
-        self.add_node(layout_iter, _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF))
+        self.add_node(
+            layout_iter,
+            _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF),
+        )
 
         node = root_node.find(DiscDump.TAG_LENGTH)
         length = int(node.text, 0)
-        self.add_node(layout_iter, _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF))
+        self.add_node(
+            layout_iter,
+            _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF),
+        )
 
         # Leadout length
         node = root_node.find(DiscDump.TAG_LEADOUT_LENGTH)
         leadout_length = int(node.text, 0)
-        self.add_node(layout_iter, _("Lead-out length: %d (0x%X)") % (leadout_length, leadout_length & 0xFFFFFFFF))
+        self.add_node(
+            layout_iter,
+            _("Lead-out length: %d (0x%X)") % (leadout_length, leadout_length & 0xFFFFFFFF),
+        )
 
         # Tracks
         node = root_node.find(DiscDump.TAG_NUM_TRACKS)
         num_tracks = int(node.text, 0)
 
         node = root_node.find(DiscDump.TAG_TRACKS)
-        tracks_iter = self.add_node(session_iter, _("Tracks (%d)") % (num_tracks))
+        tracks_iter = self.add_node(
+            session_iter,
+            _("Tracks (%d)") % (num_tracks),
+        )
         for track_node in node.findall(DiscDump.TAG_TRACK):
             self.add_track(tracks_iter, track_node)
 
@@ -1752,12 +2282,15 @@ class DiscTreeStore (Gtk.TreeStore):
         num_languages = int(node.text, 0)
 
         node = root_node.find(DiscDump.TAG_LANGUAGES)
-        languages_iter = self.add_node(session_iter, _("Languages (%d)") % (num_languages))
+        languages_iter = self.add_node(
+            session_iter,
+            _("Languages (%d)") % (num_languages),
+        )
         if node is not None:
             for language_node in node.findall(DiscDump.TAG_LANGUAGE):
                 self.add_language(languages_iter, language_node)
 
-    def add_track (self, parent_iter, root_node):
+    def add_track(self, parent_iter, root_node):
         # Read track number in advance
         node = root_node.find(DiscDump.TAG_TRACK_NUMBER)
         track_number = int(node.text, 0)
@@ -1769,58 +2302,91 @@ class DiscTreeStore (Gtk.TreeStore):
         else:
             track_title = _("Track %02d") % (track_number)
 
-        track_iter = self.add_node(parent_iter, track_title)
+        track_iter = self.add_node(
+            parent_iter,
+            track_title,
+        )
 
         # Flags
         node = root_node.find(DiscDump.TAG_FLAGS)
         flags = int(node.text, 0)
-        self.add_node(track_iter, _("Flags: 0x%X (%s)") % (flags, print_track_flags(flags)))
+        self.add_node(
+            track_iter,
+            _("Flags: 0x%X (%s)") % (flags, print_track_flags(flags)),
+        )
 
         # Sector type
         node = root_node.find(DiscDump.TAG_SECTOR_TYPE)
         sector_type = int(node.text, 0)
-        self.add_node(track_iter, _("Sector type: 0x%X (%s)") % (sector_type, print_sector_type(sector_type)))
+        self.add_node(
+            track_iter,
+            _("Sector type: 0x%X (%s)") % (sector_type, print_sector_type(sector_type)),
+        )
 
         # ADR
         node = root_node.find(DiscDump.TAG_ADR)
         adr = int(node.text, 0)
-        self.add_node(track_iter, _("ADR: %d") % (adr))
+        self.add_node(
+            track_iter,
+            _("ADR: %d") % (adr),
+        )
 
         # CTL
         node = root_node.find(DiscDump.TAG_CTL)
         ctl = int(node.text, 0)
-        self.add_node(track_iter, _("CTL: %d") % (ctl))
+        self.add_node(
+            track_iter,
+            _("CTL: %d") % (ctl),
+        )
 
         # ISRC (optional)
         node = root_node.find(DiscDump.TAG_ISRC)
         if node is not None:
             isrc = node.text
-            self.add_node(track_iter, _("ISRC: %s") % (isrc))
+            self.add_node(
+                track_iter,
+                _("ISRC: %s") % (isrc),
+            )
 
         # Session number
         node = root_node.find(DiscDump.TAG_SESSION_NUMBER)
         session_number = int(node.text, 0)
-        self.add_node(track_iter, _("Session number: %d") % (session_number))
+        self.add_node(
+            track_iter,
+            _("Session number: %d") % (session_number),
+        )
 
         # Track number
-        self.add_node(track_iter, _("Track number: %d") % (track_number))
+        self.add_node(
+            track_iter,
+            _("Track number: %d") % (track_number),
+        )
 
         # Start sector
         node = root_node.find(DiscDump.TAG_START_SECTOR)
         start_sector = int(node.text, 0)
-        self.add_node(track_iter, _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF))
+        self.add_node(
+            track_iter,
+            _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF),
+        )
 
         # Length
         node = root_node.find(DiscDump.TAG_LENGTH)
         length = int(node.text, 0)
-        self.add_node(track_iter, _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF))
+        self.add_node(
+            track_iter,
+            _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF),
+        )
 
         # Fragments
         node = root_node.find(DiscDump.TAG_NUM_FRAGMENTS)
         num_fragments = int(node.text, 0)
 
         node = root_node.find(DiscDump.TAG_FRAGMENTS)
-        fragments_iter = self.add_node(track_iter, _("Fragments (%d)") % (num_fragments))
+        fragments_iter = self.add_node(
+            track_iter,
+            _("Fragments (%d)") % (num_fragments),
+        )
         if node is not None:
             idx = 0
             for fragment_node in node.findall(DiscDump.TAG_FRAGMENT):
@@ -1830,14 +2396,20 @@ class DiscTreeStore (Gtk.TreeStore):
         # Track start
         node = root_node.find(DiscDump.TAG_TRACK_START)
         track_start = int(node.text, 0)
-        self.add_node(track_iter, _("Track start: %d (0x%X)") % (track_start, track_start & 0xFFFFFFFF))
+        self.add_node(
+            track_iter,
+            _("Track start: %d (0x%X)") % (track_start, track_start & 0xFFFFFFFF),
+        )
 
         # Indices
         node = root_node.find(DiscDump.TAG_NUM_INDICES)
         num_indices = int(node.text, 0)
 
         node = root_node.find(DiscDump.TAG_INDICES)
-        indices_iter = self.add_node(track_iter, _("Indices (%d)") % (num_indices))
+        indices_iter = self.add_node(
+            track_iter,
+            _("Indices (%d)") % (num_indices),
+        )
         if node is not None:
             for index_node in node.findall(DiscDump.TAG_INDEX):
                 self.add_index(indices_iter, index_node)
@@ -1847,45 +2419,72 @@ class DiscTreeStore (Gtk.TreeStore):
         num_languages = int(node.text, 0)
 
         node = root_node.find(DiscDump.TAG_LANGUAGES)
-        languages_iter = self.add_node(track_iter, _("Languages (%d)") % (num_languages))
+        languages_iter = self.add_node(
+            track_iter,
+            _("Languages (%d)") % (num_languages),
+        )
         if node is not None:
             for language_node in node.findall(DiscDump.TAG_LANGUAGE):
                 self.add_language(languages_iter, language_node)
 
-    def add_fragment (self, parent_iter, root_node, fragment_idx):
-        fragment_iter = self.add_node(parent_iter, _("Fragment #%d") % (fragment_idx))
+    def add_fragment(self, parent_iter, root_node, fragment_idx):
+        fragment_iter = self.add_node(
+            parent_iter,
+            _("Fragment #%d") % (fragment_idx),
+        )
 
         # Address
         node = root_node.find(DiscDump.TAG_ADDRESS)
         address = int(node.text, 0)
-        self.add_node(fragment_iter, _("Address: %d (0x%X)") % (address, address & 0xFFFFFFFF))
+        self.add_node(
+            fragment_iter,
+            _("Address: %d (0x%X)") % (address, address & 0xFFFFFFFF),
+        )
 
         # Length
         node = root_node.find(DiscDump.TAG_LENGTH)
         length = int(node.text, 0)
-        self.add_node(fragment_iter, _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF))
+        self.add_node(
+            fragment_iter,
+            _("Length: %d (0x%X)") % (length, length & 0xFFFFFFFF),
+        )
 
         # Main data
         main_iter = self.add_node(fragment_iter, _("Main data"))
 
         node = root_node.find(DiscDump.TAG_MAIN_NAME)
         filename = node.text
-        self.add_node(main_iter, _("Filename: %s") % (filename))
+        self.add_node(
+            main_iter,
+            _("Filename: %s") % (filename),
+        )
 
         node = root_node.find(DiscDump.TAG_MAIN_OFFSET)
         offset = int(node.text, 0)
-        self.add_node(main_iter, _("Offset: %d (0x%X)") % (offset, offset & 0xFFFFFFFFFFFFFFFF))
+        self.add_node(
+            main_iter,
+            _("Offset: %d (0x%X)") % (offset, offset & 0xFFFFFFFFFFFFFFFF),
+        )
 
         node = root_node.find(DiscDump.TAG_MAIN_SIZE)
         size = int(node.text, 0)
-        self.add_node(main_iter, _("Size: %d (0x%X)") % (size, size & 0xFFFFFFFF))
+        self.add_node(
+            main_iter,
+            _("Size: %d (0x%X)") % (size, size & 0xFFFFFFFF),
+        )
 
         node = root_node.find(DiscDump.TAG_MAIN_FORMAT)
         data_format = int(node.text, 0)
-        self.add_node(main_iter, _("Format: 0x%X (%s)") % (data_format, print_binary_fragment_main_format(data_format)))
+        self.add_node(
+            main_iter,
+            _("Format: 0x%X (%s)") % (data_format, print_binary_fragment_main_format(data_format)),
+        )
 
         # Subchannel data
-        subchannel_iter = self.add_node(fragment_iter, _("Subchannel data"))
+        subchannel_iter = self.add_node(
+            fragment_iter,
+            _("Subchannel data"),
+        )
 
         node = root_node.find(DiscDump.TAG_SUBCHANNEL_NAME)
         filename = node.text
@@ -1893,44 +2492,60 @@ class DiscTreeStore (Gtk.TreeStore):
 
         node = root_node.find(DiscDump.TAG_SUBCHANNEL_OFFSET)
         offset = int(node.text, 0)
-        self.add_node(subchannel_iter, _("Offset: %d (0x%X)") % (offset, offset & 0xFFFFFFFFFFFFFFFF))
+        self.add_node(
+            subchannel_iter,
+            _("Offset: %d (0x%X)") % (offset, offset & 0xFFFFFFFFFFFFFFFF),
+        )
 
         node = root_node.find(DiscDump.TAG_SUBCHANNEL_SIZE)
         size = int(node.text, 0)
-        self.add_node(subchannel_iter, _("Size: %d (0x%X)") % (size, size & 0xFFFFFFFF))
+        self.add_node(
+            subchannel_iter,
+            _("Size: %d (0x%X)") % (size, size & 0xFFFFFFFF),
+        )
 
         node = root_node.find(DiscDump.TAG_SUBCHANNEL_FORMAT)
         data_format = int(node.text, 0)
-        self.add_node(subchannel_iter, _("Format: 0x%X (%s)") % (data_format, print_binary_fragment_subchannel_format(data_format)))
+        self.add_node(
+            subchannel_iter,
+            _("Format: 0x%X (%s)") %
+            (data_format, print_binary_fragment_subchannel_format(data_format)),
+        )
 
-    def add_language (self, parent_iter, root_node):
+    def add_language(self, parent_iter, root_node):
         # Read language code in advance
         node = root_node.find(DiscDump.TAG_LANGUAGE_CODE)
         language_code = int(node.text, 0)
 
-        language_iter = self.add_node(parent_iter, _("Language %d") % (language_code))
+        language_iter = self.add_node(
+            parent_iter,
+            _("Language %d") % (language_code),
+        )
 
         # Language code
-        self.add_node(language_iter, _("Language code: %d") % (language_code))
+        self.add_node(
+            language_iter,
+            _("Language code: %d") % (language_code),
+        )
 
         # Add all data entries
         entries = {
-            DiscDump.TAG_TITLE : _("Title"),
-            DiscDump.TAG_PERFORMER : _("Performer"),
-            DiscDump.TAG_SONGWRITER : _("Songwriter"),
-            DiscDump.TAG_COMPOSER : _("Composer"),
-            DiscDump.TAG_ARRANGER : _("Arranger"),
-            DiscDump.TAG_MESSAGE : _("Message"),
-            DiscDump.TAG_DISC_ID : _("Disc ID"),
-            DiscDump.TAG_GENRE : _("Genre"),
-            DiscDump.TAG_TOC : _("TOC"),
-            DiscDump.TAG_TOC2 : _("TOC2"),
-            DiscDump.TAG_RESERVED_8A : _("Reserved 8A"),
-            DiscDump.TAG_RESERVED_8B : _("Reserved 8B"),
-            DiscDump.TAG_RESERVED_8C : _("Reserved 8C"),
-            DiscDump.TAG_CLOSED_INFO : _("Closed info"),
-            DiscDump.TAG_UPC_ISRC : _("UPC/ISRC"),
-            DiscDump.TAG_SIZE : _("Size"),
+            DiscDump.TAG_TITLE: _("Title"),
+            DiscDump.TAG_PERFORMER: _("Performer"),
+            DiscDump.TAG_SONGWRITER: _("Songwriter"),
+            DiscDump.TAG_COMPOSER: _("Composer"),
+            DiscDump.TAG_ARRANGER: _("Arranger"),
+            DiscDump.TAG_MESSAGE: _("Message"),
+            DiscDump.TAG_DISC_ID: _("Disc ID"),
+            DiscDump.TAG_GENRE: _("Genre"),
+            DiscDump.TAG_TOC: _("TOC"),
+            DiscDump.TAG_TOC2: _("TOC2"),
+            DiscDump.TAG_RESERVED_8A: _("Reserved 8A"),
+            DiscDump.TAG_RESERVED_8B: _("Reserved 8B"),
+            DiscDump.TAG_RESERVED_8C: _("Reserved 8C"),
+            DiscDump.TAG_CLOSED_INFO: _("Closed info"),
+            DiscDump.TAG_UPC_ISRC: _("UPC/ISRC"),
+            DiscDump.TAG_SIZE: _("Size"),
         }
 
         for node_name, description in entries.items():
@@ -1938,9 +2553,12 @@ class DiscTreeStore (Gtk.TreeStore):
             if node is not None:
                 data = node.text
                 data_len = int(node.attrib[DiscDump.ATTR_LENGTH])
-                self.add_node(language_iter, "%s: %s (%d)" % (description, data, data_len))
+                self.add_node(
+                    language_iter,
+                    "%s: %s (%d)" % (description, data, data_len),
+                )
 
-    def add_index (self, parent_iter, root_node):
+    def add_index(self, parent_iter, root_node):
         # Number
         node = root_node.find(DiscDump.TAG_NUMBER)
         number = int(node.text, 0)
@@ -1949,40 +2567,55 @@ class DiscTreeStore (Gtk.TreeStore):
         node = root_node.find(DiscDump.TAG_ADDRESS)
         address = int(node.text, 0)
 
-        self.add_node(parent_iter, "%02d: %d (0x%X)" % (number, address, address & 0xFFFFFFFF))
+        self.add_node(
+            parent_iter,
+            "%02d: %d (0x%X)" % (number, address, address & 0xFFFFFFFF),
+        )
 
-    def add_dpm (self, parent_iter, root_node):
+    def add_dpm(self, parent_iter, root_node):
         dpm_iter = self.add_node(parent_iter, _("DPM"))
 
         # Start sector
         node = root_node.find(DiscDump.TAG_DPM_START)
         start_sector = int(node.text, 0)
-        self.add_node(dpm_iter, _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF))
+        self.add_node(
+            dpm_iter,
+            _("Start sector: %d (0x%X)") % (start_sector, start_sector & 0xFFFFFFFF),
+        )
 
         # Resolution
         node = root_node.find(DiscDump.TAG_DPM_RESOLUTION)
         resolution = int(node.text, 0)
-        self.add_node(dpm_iter, _("Resolution: %d (0x%X)") % (resolution, resolution))
+        self.add_node(
+            dpm_iter,
+            _("Resolution: %d (0x%X)") % (resolution, resolution),
+        )
 
         # Entries
         node = root_node.find(DiscDump.TAG_DPM_NUM_ENTRIES)
         num_entries = int(node.text, 0)
 
-        entries_iter = self.add_node(dpm_iter, _("Entries (%d)") % (num_entries))
+        entries_iter = self.add_node(
+            dpm_iter,
+            _("Entries (%d)") % (num_entries),
+        )
 
         node = root_node.find(DiscDump.TAG_DPM_ENTRIES)
         if node is not None:
             for entry_node in node.findall(DiscDump.TAG_DPM_ENTRY):
                 dpm_entry = int(entry_node.text, 0)
-                self.add_node(entries_iter, "0x%08X" % (dpm_entry & 0xFFFFFFFF))
+                self.add_node(
+                    entries_iter,
+                    "0x%08X" % (dpm_entry & 0xFFFFFFFF),
+                )
 
 
 ########################################################################
 #                             Main window                              #
 ########################################################################
-class MainWindow (Gtk.ApplicationWindow):
-    def __init__ (self, app, debug_to_stdout = False, debug_mask = 0, filenames = []):
-        Gtk.ApplicationWindow.__init__(self, application = app)
+class MainWindow(Gtk.ApplicationWindow):
+    def __init__(self, app, debug_to_stdout, debug_mask, filenames):
+        super().__init__(application=app)
 
         # Determine instance ID
         global window_id
@@ -2035,7 +2668,7 @@ class MainWindow (Gtk.ApplicationWindow):
         self.log_window = LogWindow()
         self.log_window.connect("delete-event", lambda w, e: w.hide() or True)
         self.log_window.set_debug_to_stdout(debug_to_stdout)
-        self.log_window.mirage_context = self.mirage_context # Set mirage context
+        self.log_window.mirage_context = self.mirage_context  # Set mirage context
 
         self.read_sector_window = ReadSectorWindow()
         self.read_sector_window.connect("delete-event", lambda w, e: w.hide() or True)
@@ -2070,7 +2703,6 @@ class MainWindow (Gtk.ApplicationWindow):
         action.connect("activate", lambda a, p: self.destroy())
         self.add_action(action)
 
-
         action = Gio.SimpleAction.new("log-window", None)
         action.connect("activate", lambda a, p: self.log_window.present())
         self.add_action(action)
@@ -2092,13 +2724,17 @@ class MainWindow (Gtk.ApplicationWindow):
         self.add_action(action)
 
         # Setup log redirection
-        self.logger_id = GLib.log_set_handler(self.mirage_context.get_debug_domain(), GLib.LogLevelFlags.LEVEL_MASK | GLib.LogLevelFlags.FLAG_FATAL | GLib.LogLevelFlags.FLAG_RECURSION, self.log_handler)
+        self.logger_id = GLib.log_set_handler(
+            self.mirage_context.get_debug_domain(),
+            GLib.LogLevelFlags.LEVEL_MASK | GLib.LogLevelFlags.FLAG_FATAL | GLib.LogLevelFlags.FLAG_RECURSION,
+            self.log_handler,
+        )
 
         # Window title
         self.update_window_title()
 
         # Load image/dump (if specified)
-        if len(filenames):
+        if filenames:
             if filenames[0].endswith(".xml"):
                 self.open_dump(filenames[0])
             else:
@@ -2107,36 +2743,37 @@ class MainWindow (Gtk.ApplicationWindow):
         # Increment window count
         window_id = window_id + 1
 
-    def log_handler (self, log_domain, log_level, message):
+    def log_handler(self, log_domain, log_level, message):
         # Append to log window's text buffer
         self.log_window.append_to_log(message)
 
         # Print to stdout?
         if log_level & GLib.LogLevelFlags.LEVEL_ERROR:
-            print("%s: %s: %s" % (log_domain, _("ERROR"), message), end="")
+            level_str = _("ERROR")
+            print(f"{log_domain}: {level_str}: {message}", end="")
         elif log_level & GLib.LogLevelFlags.LEVEL_CRITICAL:
-            print("%s: %s: %s" % (log_domain, _("CRITICAL"), message), end="")
+            level_str = _("CRITICAL")
+            print(f"{log_domain}: {level_str}: {message}", end="")
         elif log_level & GLib.LogLevelFlags.LEVEL_WARNING:
-            print("%s: %s: %s" % (log_domain, _("WARNING"), message), end="")
+            level_str = _("WARNING")
+            print(f"{log_domain}: {level_str}: {message}", end="")
         elif self.log_window.get_debug_to_stdout():
-            print("%s: %s" % (log_domain, message), end="")
+            print(f"{log_domain}: {message}", end="")
 
-
-    def update_window_title (self):
+    def update_window_title(self):
         title = _("Image analyzer #%02d") % (self.instance_id)
 
         if self.disc:
             filenames = self.disc.get_filenames()
-            title += ": %s" % (os.path.basename(filenames[0]))
+            title += f": {os.path.basename(filenames[0])}"
             if len(filenames) > 1:
                 title += " ..."
         elif self.disc_dump.is_loaded():
-            title += ": %s" % (os.path.basename(self.disc_dump.get_filename()))
+            title += f": {os.path.basename(self.disc_dump.get_filename())}"
 
         self.set_title(title)
 
-
-    def on_open_image (self, action, param):
+    def on_open_image(self, action, param):
         # Run the dialog
         response = self.open_image_dialog.run()
         self.open_image_dialog.hide()
@@ -2148,7 +2785,7 @@ class MainWindow (Gtk.ApplicationWindow):
             # Open image
             self.open_image(filenames)
 
-    def on_convert_image (self, action, param):
+    def on_convert_image(self, action, param):
         # We need a disc
         if self.disc is None:
             return
@@ -2163,10 +2800,12 @@ class MainWindow (Gtk.ApplicationWindow):
                 if filename is None or len(filename) == 0:
                     error_dialog = Gtk.MessageDialog(
                         parent=self.image_writer_dialog,
-                        modal=True, destroy_with_parent=True,
+                        modal=True,
+                        destroy_with_parent=True,
                         message_type=Gtk.MessageType.WARNING,
                         buttons=Gtk.ButtonsType.CLOSE,
-                        text=_("Image filename/basename not set!"))
+                        text=_("Image filename/basename not set!"),
+                    )
                     error_dialog.run()
                     error_dialog.destroy()
                     continue
@@ -2176,10 +2815,12 @@ class MainWindow (Gtk.ApplicationWindow):
                 if writer is None:
                     error_dialog = Gtk.MessageDialog(
                         parent=self.image_writer_dialog,
-                        modal=True, destroy_with_parent=True,
+                        modal=True,
+                        destroy_with_parent=True,
                         message_type=Gtk.MessageType.WARNING,
                         buttons=Gtk.ButtonsType.CLOSE,
-                        text=_("No image writer chosen!"))
+                        text=_("No image writer chosen!"),
+                    )
                     error_dialog.run()
                     error_dialog.destroy()
                     continue
@@ -2198,7 +2839,7 @@ class MainWindow (Gtk.ApplicationWindow):
             # Convert
             self.convert_image(filename, writer, writer_parameters)
 
-    def on_open_dump (self, action, param):
+    def on_open_dump(self, action, param):
         # Run the dialog
         response = self.open_dump_dialog.run()
         self.open_dump_dialog.hide()
@@ -2210,9 +2851,9 @@ class MainWindow (Gtk.ApplicationWindow):
             # Open dump
             self.open_dump(filename)
 
-    def on_save_dump (self, action, param):
+    def on_save_dump(self, action, param):
         # We need an opened disc for dump
-        if self.disc == None:
+        if self.disc is None:
             return
 
         # Run the dialog
@@ -2226,8 +2867,7 @@ class MainWindow (Gtk.ApplicationWindow):
             # Save dump
             self.save_dump(filename)
 
-
-    def close_image_or_dump (self):
+    def close_image_or_dump(self):
         # Clear disc dump
         self.disc_dump.clear()
 
@@ -2241,11 +2881,10 @@ class MainWindow (Gtk.ApplicationWindow):
 
         self.disc_topology_window.set_dpm_data(None, [])
 
-        # Updae window title
+        # Update window title
         self.update_window_title()
 
-
-    def open_image (self, filenames):
+    def open_image(self, filenames):
         # Close any opened image or dump
         self.close_image_or_dump()
 
@@ -2255,19 +2894,26 @@ class MainWindow (Gtk.ApplicationWindow):
         except GLib.Error as e:
             error_dialog = Gtk.MessageDialog(
                 parent=self,
-                modal=True, destroy_with_parent=True,
+                modal=True,
+                destroy_with_parent=True,
                 message_type=Gtk.MessageType.WARNING,
                 buttons=Gtk.ButtonsType.CLOSE,
-                text=_("Failed to load image: %s" % (e.message)))
+                text=_("Failed to load image: %s" % (e.message)),
+            )
             error_dialog.run()
             error_dialog.destroy()
             return
 
         # Dump disc
-        self.disc_dump.create_from_disc(self.disc, self.log_window.get_log_text())
+        self.disc_dump.create_from_disc(
+            self.disc,
+            self.log_window.get_log_text(),
+        )
 
         # Update the disc tree from the disc dump
-        self.disc_tree.load_from_xml_tree(self.disc_dump.get_disc_tree())
+        self.disc_tree.load_from_xml_tree(
+            self.disc_dump.get_disc_tree(),
+        )
 
         # Set disc to child windows
         self.disc_structures_window.set_disc(self.disc)
@@ -2275,12 +2921,15 @@ class MainWindow (Gtk.ApplicationWindow):
         self.sector_analysis_window.set_disc(self.disc)
 
         # Set DPM data to disc topology window
-        self.disc_topology_window.set_dpm_data(self.disc.get_dpm_data(), self.disc.get_filenames())
+        self.disc_topology_window.set_dpm_data(
+            self.disc.get_dpm_data(),
+            self.disc.get_filenames(),
+        )
 
         # Update window title
         self.update_window_title()
 
-    def open_dump (self, filename):
+    def open_dump(self, filename):
         # Close any opened image or dump
         self.close_image_or_dump()
 
@@ -2290,51 +2939,60 @@ class MainWindow (Gtk.ApplicationWindow):
         except Exception as e:
             error_dialog = Gtk.MessageDialog(
                 parent=self,
-                modal=True, destroy_with_parent=True,
+                modal=True,
+                destroy_with_parent=True,
                 message_type=Gtk.MessageType.ERROR,
                 buttons=Gtk.ButtonsType.CLOSE,
-                text=_("Failed to load XML dump: %s" % (e.message)))
+                text=_("Failed to load XML dump: %s" % (e.message)),
+            )
             error_dialog.run()
             error_dialog.destroy()
             return
 
         # Update the disc tree
-        self.disc_tree.load_from_xml_tree(self.disc_dump.get_disc_tree())
+        self.disc_tree.load_from_xml_tree(
+            self.disc_dump.get_disc_tree(),
+        )
 
         # Display parser log
-        self.log_window.append_to_log(self.disc_dump.get_parser_log())
+        self.log_window.append_to_log(
+            self.disc_dump.get_parser_log(),
+        )
 
         # DPM data
-        self.disc_topology_window.set_dpm_data(self.disc_dump.get_dpm_data(), self.disc_dump.get_image_filenames())
+        self.disc_topology_window.set_dpm_data(
+            self.disc_dump.get_dpm_data(),
+            self.disc_dump.get_image_filenames(),
+        )
 
         # Update window title
         self.update_window_title()
 
-    def save_dump (self, filename):
+    def save_dump(self, filename):
         try:
             self.disc_dump.save_xml_dump(filename)
         except Exception as e:
             error_dialog = Gtk.MessageDialog(
                 parent=self,
-                modal=True, destroy_with_parent=True,
+                modal=True,
+                destroy_with_parent=True,
                 message_type=Gtk.MessageType.WARNING,
                 buttons=Gtk.ButtonsType.CLOSE,
-                text=_("Failed to save XML dump: %s" % (e.message)))
+                text=_("Failed to save XML dump: %s" % (e.message)),
+            )
             error_dialog.run()
             error_dialog.destroy()
             return
 
-
-    def update_conversion_progress (self, progress_bar, progress):
+    def update_conversion_progress(self, progress_bar, progress):
         # Update progress bar
-        progress_bar.set_fraction(progress/100.0)
+        progress_bar.set_fraction(progress / 100.0)
 
         # Process events
         while Gtk.events_pending():
             Gtk.main_iteration()
 
-
-    def convert_image (self, filename, writer, writer_parameters):
+    def convert_image(self, filename, writer, writer_parameters):
         # Ensure that the writer has our context
         writer.set_context(self.mirage_context)
 
@@ -2346,9 +3004,12 @@ class MainWindow (Gtk.ApplicationWindow):
         progress_dialog = Gtk.Dialog(
             _("Image conversion progress"),
             parent=self,
-            modal=True, destroy_with_parent=True)
+            modal=True,
+            destroy_with_parent=True,
+        )
         progress_dialog.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL)
-        progress_dialog.connect("delete-event", lambda w, e: w.hide() or True) # Needed because we don't "run" the dialog
+        # Hide on close, because we do not "run" the dialog.
+        progress_dialog.connect("delete-event", lambda w, e: w.hide() or True)
         progress_dialog.set_border_width(5)
         progress_dialog.get_content_area().add(progress_bar)
         progress_dialog.show_all()
@@ -2368,32 +3029,40 @@ class MainWindow (Gtk.ApplicationWindow):
             # Success message
             message_dialog = Gtk.MessageDialog(
                 parent=self,
-                modal=True, destroy_with_parent=True,
+                modal=True,
+                destroy_with_parent=True,
                 message_type=Gtk.MessageType.INFO,
                 buttons=Gtk.ButtonsType.CLOSE,
-                text=_("Image conversion succeeded."))
+                text=_("Image conversion succeeded."),
+            )
         except GLib.Error as e:
             # Error message
             message_dialog = Gtk.MessageDialog(
                 parent=self,
-                modal=True, destroy_with_parent=True,
+                modal=True,
+                destroy_with_parent=True,
                 message_type=Gtk.MessageType.ERROR,
                 buttons=Gtk.ButtonsType.CLOSE,
-                text=_("Image conversion failed: %s" % (e.message)))
+                text=_("Image conversion failed: %s" % (e.message)),
+            )
 
         progress_dialog.destroy()
 
         message_dialog.run()
         message_dialog.destroy()
 
-
-    def get_password (self):
+    def get_password(self):
         # Create dialog
         dialog = Gtk.Dialog(
             _("Enter password"),
             parent=self,
-            modal=True, destroy_with_parent=True)
-        dialog.add_buttons(_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT)
+            modal=True,
+            destroy_with_parent=True,
+        )
+        dialog.add_buttons(
+            _("OK"), Gtk.ResponseType.ACCEPT,
+            _("Cancel"), Gtk.ResponseType.REJECT,
+        )
         dialog.set_default_response(Gtk.ResponseType.ACCEPT)
 
         # Grid
@@ -2413,7 +3082,7 @@ class MainWindow (Gtk.ApplicationWindow):
         grid.attach(label, 0, 1, 1, 1)
 
         # Entry
-        entry = Gtk.Entry.new();
+        entry = Gtk.Entry.new()
         entry.set_hexpand(True)
         entry.set_visibility(False)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
@@ -2434,19 +3103,36 @@ class MainWindow (Gtk.ApplicationWindow):
 ########################################################################
 #                             Application                              #
 ########################################################################
-class ImageAnalyzer (Gtk.Application):
+class ImageAnalyzer(Gtk.Application):
     def __init__(self):
-        Gtk.Application.__init__(self, application_id="net.sf.cdemu.ImageAnalyzer", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
+        super().__init__(
+            application_id="net.sf.cdemu.ImageAnalyzer",
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE
+        )
 
         # Command-line options
-        self.add_main_option("debug-to-stdout", ord("s"), GLib.OptionFlags.NONE, GLib.OptionArg.NONE, _("Print libMirage debug to stdout"), None)
-        self.add_main_option("debug-mask", ord("d"), GLib.OptionFlags.NONE, GLib.OptionArg.INT, _("libMirage debug mask"), None)
+        self.add_main_option(
+            "debug-to-stdout",
+            ord("s"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            _("Print libMirage debug to stdout"),
+            None,
+        )
+        self.add_main_option(
+            "debug-mask",
+            ord("d"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.INT,
+            _("libMirage debug mask"),
+            None,
+        )
 
-    def do_activate (self, debug_to_stdout = False, debug_mask = 0, filenames = []):
+    def do_activate(self, debug_to_stdout, debug_mask, filenames):
         window = MainWindow(self, debug_to_stdout, debug_mask, filenames)
         window.show_all()
 
-    def do_startup (self):
+    def do_startup(self):
         # Chain up to parent
         Gtk.Application.do_startup(self)
 
@@ -2522,14 +3208,14 @@ class ImageAnalyzer (Gtk.Application):
         self.set_menubar(menu_bar)
 
         # Accelerators
-        self.set_accels_for_action("win.open-image", [ _("<Primary>o") ])
-        self.set_accels_for_action("win.convert-image", [ _("<Primary>x") ])
-        self.set_accels_for_action("win.save-dump", [ _("<Primary>s") ])
-        self.set_accels_for_action("win.close", [ _("<Primary>w") ])
-        self.set_accels_for_action("win.log-window", [ _("<Primary>l") ])
-        self.set_accels_for_action("win.read-sector-window", [ _("<Primary>r") ])
+        self.set_accels_for_action("win.open-image", [_("<Primary>o")])
+        self.set_accels_for_action("win.convert-image", [_("<Primary>x")])
+        self.set_accels_for_action("win.save-dump", [_("<Primary>s")])
+        self.set_accels_for_action("win.close", [_("<Primary>w")])
+        self.set_accels_for_action("win.log-window", [_("<Primary>l")])
+        self.set_accels_for_action("win.read-sector-window", [_("<Primary>r")])
 
-    def do_shutdown (self):
+    def do_shutdown(self):
         # Clean-up libMirage
         Mirage.shutdown()
 
@@ -2541,10 +3227,7 @@ class ImageAnalyzer (Gtk.Application):
         arguments = command_line.get_arguments()
 
         # Gather options
-        if options.contains("debug-to-stdout"):
-            debug_to_stdout = True
-        else:
-            debug_to_stdout = False
+        debug_to_stdout = options.contains("debug-to-stdout")
 
         if options.contains("debug-mask"):
             debug_mask = options.lookup_value("debug-mask").get_int32()
@@ -2559,29 +3242,32 @@ class ImageAnalyzer (Gtk.Application):
 
         return 0
 
-    def on_new_window (self, action, param):
-        self.do_activate()
+    def on_new_window(self, action, param):
+        # TODO: should we propagate debug_to_stdout and debug_mask from initial instance?
+        self.do_activate(debug_to_stdout=False, debug_mask=0, filenames=None)
 
-    def on_about (self, action, param):
+    def on_about(self, action, param):
+        current_year = datetime.date.today().year
+
         about_dialog = Gtk.AboutDialog(modal=True)
         about_dialog.set_name(app_name)
         about_dialog.set_version(app_version)
-        about_dialog.set_copyright("Copyright (C) 2006-%d Rok Mandeljc" % (datetime.date.today().year))
+        about_dialog.set_copyright("Copyright (C) 2006-%d Rok Mandeljc" % (current_year))
         about_dialog.set_comments(_("Utility for CD/DVD image analysis and manipulation."))
         about_dialog.set_website("http://cdemu.sf.net")
         about_dialog.set_website_label(_("The CDEmu project website"))
-        about_dialog.set_authors([ "Rok Mandeljc <rok.mandeljc@gmail.com>" ])
+        about_dialog.set_authors(["Rok Mandeljc <rok.mandeljc@gmail.com>"])
         about_dialog.set_translator_credits(_("translator-credits"))
 
         about_dialog.run()
         about_dialog.destroy()
 
-    def on_quit (self, action, param):
+    def on_quit(self, action, param):
         self.quit()
 
 
 if __name__ == "__main__":
     app = ImageAnalyzer()
-    signal.signal(signal.SIGINT, signal.SIG_DFL) # Make Ctrl+C work
+    signal.signal(signal.SIGINT, signal.SIG_DFL)  # Make Ctrl+C work
     status = app.run(sys.argv)
     sys.exit(status)

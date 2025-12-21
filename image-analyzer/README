@@ -34,7 +34,7 @@ and manipulation, with following functionality:
  - IntlTool >= 0.21
  - GetText >= 0.15
 
- - Python3 >= 3.4 (default) or Python2 >= 2.7
+ - Python >= 3.8
  - PyGObject >= 3.0.0
 
  - libMirage >= 3.2.0 GIR
