@@ -5,18 +5,18 @@ Homepage: https://cdemu.sourceforge.io/
 Maintainer: Matteo Bini <matteobin@tiepi.it>
 Build-Depends: debhelper-compat (= 13)
 Build-Depends-Indep: bash-completion,
-                     cmake (>= 3.7.0),
+                     cmake (>= 3.16.0),
                      dh-python,
                      intltool,
                      pkgconf,
-                     python3 (>= 3.4.0)
+                     python3 (>= 3.8.0)
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
 
 
 Package: cdemu-client
 Architecture: all
-Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0, cdemu-daemon (>= 3.0.0), ${python3:Depends}, ${misc:Depends}
+Depends: python3 (>= 3.8.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0, cdemu-daemon (>= 3.0.0), ${python3:Depends}, ${misc:Depends}
 Recommends: bash-completion, gcdemu (>= 3.0.0)
 Description: Command-line client to control CDEmu daemon
  This is cdemu-client, a command-line client for controlling the

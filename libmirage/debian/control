@@ -3,7 +3,7 @@ Section: libs
 Priority: optional
 Homepage: https://cdemu.sourceforge.io/
 Maintainer: Matteo Bini <matteobin@tiepi.it>
-Build-Depends: cmake (>= 3.7.0),
+Build-Depends: cmake (>= 3.16.0),
                debhelper-compat (= 13),
                gobject-introspection,
                gtk-doc-tools,

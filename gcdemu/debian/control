@@ -4,18 +4,18 @@ Priority: optional
 Homepage: https://cdemu.sourceforge.io/
 Maintainer: Matteo Bini <matteobin@tiepi.it>
 Build-Depends: debhelper-compat (= 13)
-Build-Depends-Indep: cmake (>= 3.7.0),
+Build-Depends-Indep: cmake (>= 3.16.0),
                      dh-python,
                      intltool,
                      libglib2.0-bin,
-                     python3 (>= 3.4.0)
+                     python3 (>= 3.8.0)
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
 
 
 Package: gcdemu
 Architecture: all
-Depends: python3 (>= 3.4.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0,
+Depends: python3 (>= 3.8.0), python3-gi (>= 3.0.0), gir1.2-glib-2.0,
  gir1.2-gtk-3.0, gir1.2-appindicator3-0.1 | gir1.2-ayatanaappindicator3-0.1, gir1.2-notify-0.7,
  cdemu-daemon (>= 3.0.0), librsvg2-2, ${python3:Depends}, ${misc:Depends}
 Recommends: cdemu-client (>= 3.0.0)
