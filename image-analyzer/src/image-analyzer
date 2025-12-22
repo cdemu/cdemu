@@ -2745,6 +2745,8 @@ class MainWindow(Gtk.ApplicationWindow):
         # Window title
         self.update_window_title()
 
+        self.connect("destroy", lambda w: self.on_destroy())
+
         # Load image/dump (if specified)
         if filenames:
             if filenames[0].endswith(".xml"):
@@ -2754,6 +2756,19 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Increment window count
         window_id = window_id + 1
+
+    def on_destroy(self):
+        # Destroy all sub-windows and dialogs
+        self.open_image_dialog.destroy()
+        self.open_dump_dialog.destroy()
+        self.save_dump_dialog.destroy()
+        self.image_writer_dialog.destroy()
+
+        self.log_window.destroy()
+        self.read_sector_window.destroy()
+        self.sector_analysis_window.destroy()
+        self.disc_topology_window.destroy()
+        self.disc_structures_window.destroy()
 
     def log_handler(self, log_domain, log_level, message):
         # Append to log window's text buffer
