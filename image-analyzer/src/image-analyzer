@@ -163,6 +163,7 @@ class ReadSectorWindow(Gtk.Window):
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
+        self.layout = grid
 
         # Scrolled window
         scrolled_window = Gtk.ScrolledWindow.new()
@@ -251,12 +252,12 @@ class ReadSectorWindow(Gtk.Window):
             self.spin_button.set_range(start_sector, start_sector + length - 1)
 
             self.text_buffer.set_text(_("Ready!"))
-            self.set_sensitive(True)  # Enable window
+            self.layout.set_sensitive(True)  # Enable widgets
         else:
             self.spin_button.set_range(0, 0)
 
             self.text_buffer.set_text(_("No disc loaded!"))
-            self.set_sensitive(False)  # Disable whole window
+            self.layout.set_sensitive(False)  # Disable widgets
 
     def read_sector(self):
         text_buffer = self.text_buffer
@@ -514,6 +515,7 @@ class SectorAnalysisWindow(Gtk.Window):
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
+        self.layout = grid
 
         # Scrolled window
         scrolled_window = Gtk.ScrolledWindow.new()
@@ -567,10 +569,10 @@ class SectorAnalysisWindow(Gtk.Window):
 
         if self.disc is not None:
             self.text_buffer.set_text(_("Ready!"))
-            self.set_sensitive(True)  # Enable window
+            self.layout.set_sensitive(True)  # Enable widgets
         else:
             self.text_buffer.set_text(_("No disc loaded!"))
-            self.set_sensitive(False)  # Disable whole window
+            self.layout.set_sensitive(False)  # Disable widgets
 
     def analyze_sectors(self):
         text_buffer = self.text_buffer
@@ -763,6 +765,7 @@ class DiscTopologyWindow(Gtk.Window):
 
         box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         self.add(box)
+        self.layout = box
 
         # Check if matplotlib and its Gtk3 backend are available.
         self.matplotlib_available = False
@@ -802,6 +805,9 @@ class DiscTopologyWindow(Gtk.Window):
 
         box.show_all()
 
+        # Disable widgets by default
+        self.layout.set_sensitive(False)
+
     def set_dpm_data(self, dpm_data, filenames):
         # No-op if matplotlib is unavailable
         if not self.matplotlib_available:
@@ -814,7 +820,7 @@ class DiscTopologyWindow(Gtk.Window):
         # No disc loaded
         if dpm_data is None:
             figure.suptitle(_("No disc loaded!"))
-            self.set_sensitive(False)
+            self.layout.set_sensitive(False)
             return
 
         # DPM data
@@ -831,7 +837,7 @@ class DiscTopologyWindow(Gtk.Window):
         if len(entries) == 0:
             title += "\n" + _("No DPM data provided!")
             figure.suptitle(title)
-            self.set_sensitive(False)
+            self.layout.set_sensitive(False)
             return
 
         # Compute sector addresses and corresponding densities (same as
@@ -869,8 +875,8 @@ class DiscTopologyWindow(Gtk.Window):
         axes.set_xlabel(_("Sector address"))
         axes.set_ylabel(_("Sector density [degrees/sector]"))
 
-        # Enable the window
-        self.set_sensitive(True)
+        # Enable widgets
+        self.layout.set_sensitive(True)
 
 
 ########################################################################
@@ -891,6 +897,7 @@ class DiscStructuresWindow(Gtk.Window):
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.add(grid)
+        self.layout = grid
 
         # Scrolled window
         scrolled_window = Gtk.ScrolledWindow.new()
@@ -952,13 +959,13 @@ class DiscStructuresWindow(Gtk.Window):
             ]
             if self.disc.get_medium_type() in SUPPORTED_MEDIA_TYPES:
                 self.text_buffer.set_text(_("Ready!"))
-                self.set_sensitive(True)  # Enable window
+                self.layout.set_sensitive(True)  # Enable widgets
             else:
                 self.text_buffer.set_text(_("Unsupported medium type!"))
-                self.set_sensitive(False)  # Disable whole window
+                self.layout.set_sensitive(False)  # Disable widgets
         else:
             self.text_buffer.set_text(_("No disc loaded!"))
-            self.set_sensitive(False)  # Disable whole window
+            self.layout.set_sensitive(False)  # Disable widgets
 
     def get_structure(self):
         text_buffer = self.text_buffer
