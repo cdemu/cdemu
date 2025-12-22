@@ -40,13 +40,6 @@ from gi.repository import GLib, Gio
 from gi.repository import Gtk, Pango
 from gi.repository import Mirage
 
-import matplotlib
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_gtk3cairo \
-    import FigureCanvasGTK3Cairo as FigureCanvas
-from matplotlib.backends.backend_gtk3 \
-    import NavigationToolbar2GTK3 as NavigationToolbar
-
 
 # *** Globals ***
 app_name = "image-analyzer"
@@ -67,10 +60,6 @@ if sys.platform == "linux":
         libc.prctl(15, app_name.encode("utf-8"), 0, 0, 0)  # 15 = PR_SET_NAME
     except Exception:
         pass
-
-
-# matplotlib version
-mpl_version = getattr(matplotlib, '__version_info__', None)
 
 
 ########################################################################
@@ -775,26 +764,49 @@ class DiscTopologyWindow(Gtk.Window):
         box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         self.add(box)
 
-        # Matplotlib figure
-        figure = Figure(figsize=(10, 10), dpi=100, facecolor='#ffffad')
-        self.figure = figure
+        # Check if matplotlib and its Gtk3 backend are available.
+        self.matplotlib_available = False
+        self.matplotlib_version = None
+        try:
+            import matplotlib
 
-        canvas = FigureCanvas(figure)
-        canvas.set_size_request(600, 400)
-        box.pack_start(canvas, True, True, 0)
+            from matplotlib.figure import Figure
+            from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
+            from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 
-        # Matplotlib toolbar - in versions < 3.6.0, NavigationToolbar
-        # accepted two arguments, canvas and window. In 3.6.0, the
-        # second argument was deprecated, and removed in 3.8.0.
-        if mpl_version is None or mpl_version < (3, 6):
-            toolbar = NavigationToolbar(canvas, self)
+            self.matplotlib_available = True
+            self.matplotlib_version = getattr(matplotlib, '__version_info__', None)
+        except ImportError:
+            pass
+
+        if self.matplotlib_available:
+            # Matplotlib figure
+            figure = Figure(figsize=(10, 10), dpi=100, facecolor='#ffffad')
+            self.figure = figure
+
+            canvas = FigureCanvas(figure)
+            canvas.set_size_request(600, 400)
+            box.pack_start(canvas, True, True, 0)
+
+            # Matplotlib toolbar - in versions < 3.6.0, NavigationToolbar
+            # accepted two arguments, canvas and window. In 3.6.0, the
+            # second argument was deprecated, and removed in 3.8.0.
+            if self.matplotlib_version is None or self.matplotlib_version < (3, 6):
+                toolbar = NavigationToolbar(canvas, self)
+            else:
+                toolbar = NavigationToolbar(canvas)
+            box.pack_start(toolbar, False, True, 0)
         else:
-            toolbar = NavigationToolbar(canvas)
-        box.pack_start(toolbar, False, True, 0)
+            label = Gtk.Label.new(_("Matplotlib and/or its Gtk3 backend are missing!"))
+            box.pack_start(label, True, True, 0)
 
         box.show_all()
 
     def set_dpm_data(self, dpm_data, filenames):
+        # No-op if matplotlib is unavailable
+        if not self.matplotlib_available:
+            return
+
         # Clear figure
         figure = self.figure
         figure.clear()
@@ -848,7 +860,7 @@ class DiscTopologyWindow(Gtk.Window):
         # As of matplotlib 3.5, the argument "b" of "grid()" has been
         # renamed to "visible".
         # See: https://github.com/matplotlib/matplotlib/issues/25267
-        if mpl_version is None or mpl_version < (3, 5):
+        if self.matplotlib_version is None or self.matplotlib_version < (3, 5):
             axes.grid(b=True, which='both', color='black', linestyle=':')
         else:
             axes.grid(visible=True, which='both', color='black', linestyle=':')
