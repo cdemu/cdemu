@@ -30,28 +30,25 @@ G_BEGIN_DECLS
 
 
 /* APM Partition Map Flags */
-typedef enum {
-    APM_VALID         = 0x00000001,
-    APM_ALLOCATED     = 0x00000002,
-    APM_IN_USE        = 0x00000004,
-    APM_BOOTABLE      = 0x00000008,
-    APM_READABLE      = 0x00000010,
-    APM_WRITABLE      = 0x00000020,
-    APM_OS_PIC_CODE   = 0x00000040,
-    APM_OS_SPECIFIC_2 = 0x00000080,
-    APM_OS_SPECIFIC_1 = 0x00000100,
-    /* bits 9..31 are reserved */
-} apm_flag_t;
+#define APM_VALID         0x00000001
+#define APM_ALLOCATED     0x00000002
+#define APM_IN_USE        0x00000004
+#define APM_BOOTABLE      0x00000008
+#define APM_READABLE      0x00000010
+#define APM_WRITABLE      0x00000020
+#define APM_OS_PIC_CODE   0x00000040
+#define APM_OS_SPECIFIC_2 0x00000080
+#define APM_OS_SPECIFIC_1 0x00000100
+/* bits 9..31 are reserved */
 
 /* GPT Partition Map Attributes */
-typedef enum {
-    GPT_SYSTEM_PARTITION     = 0x0000000000000001,
-    GPT_LEGACY_BIOS_BOOTABLE = 0x0000000000000004,
-    GPT_READ_ONLY            = 0x1000000000000000,
-    GPT_SHADOW_COPY          = 0x2000000000000000,
-    GPT_HIDDEN               = 0x4000000000000000,
-    GPT_DO_NOT_AUTOMOUNT     = 0x8000000000000000
-} gpt_attr_t;
+#define GPT_SYSTEM_PARTITION     0x0000000000000001
+#define GPT_LEGACY_BIOS_BOOTABLE 0x0000000000000004
+#define GPT_READ_ONLY            0x1000000000000000
+#define GPT_SHADOW_COPY          0x2000000000000000
+#define GPT_HIDDEN               0x4000000000000000
+#define GPT_DO_NOT_AUTOMOUNT     0x8000000000000000
+
 
 #pragma pack(1)
 
@@ -85,7 +82,7 @@ typedef struct {
     gchar   part_type[32]; /* type of partition, eg. Apple_HFS */
     guint32 lblock_start; /* logical block start of partition */
     guint32 lblock_count; /* logical block count of partition */
-    guint32 flags; /* One or more of apm_flag_t */
+    guint32 flags; /* See APM_* macros */
     guint32 boot_block; /* logical block start of boot code */
     guint32 boot_bytes; /* byte count of boot code */
     guint32 load_address; /* load address in memory of boot code */
@@ -138,7 +135,7 @@ typedef struct {
     } guid;
 	guint64 lba_start;
 	guint64 lba_end;
-	guint64 attributes; /* One or more of gpt_attr_t */
+	guint64 attributes; /* See GPT_* macros */
 	guint16 name[36]; /* UTF-16 */
 } gpt_entry_t; /* length: 128 bytes */
 
