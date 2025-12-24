@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(cdemu-daemon VERSION 3.2.7 LANGUAGES C)
 
 option(ENABLE_LOGIND_SLEEP_HANDLER "Enable support for systemd-logind sleep/hibernation signal handler." ON)
+option(PEDANTIC_MODE "Enable -pedantic flag on gcc compiler" OFF)
 
 # Additional CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -36,6 +37,9 @@ set(CMAKE_C_STANDARD 99) # Enable C99
 if(CMAKE_COMPILER_IS_GNUCC)
     # Enable additional warnings
     add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    if(PEDANTIC_MODE)
+        add_definitions(-pedantic)
+    endif()
 endif()
 
 # Config file
@@ -112,4 +116,7 @@ message(STATUS "")
 message(STATUS "*** CDEmu daemon v.${PROJECT_VERSION} configuration summary ***")
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
+message(STATUS "Options:")
+message(STATUS " pedantic mode: " ${PEDANTIC_MODE})
+message(STATUS " systemd-logind sleep/hibernation signal handler support: " ${ENABLE_LOGIND_SLEEP_HANDLER})
 message(STATUS "")
