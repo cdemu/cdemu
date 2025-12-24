@@ -204,7 +204,7 @@ static gboolean mirage_parser_cue_set_new_file (MirageParserCue *self, const gch
 
 static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number, const gchar *mode_string, GError **error)
 {
-    gint i;
+    guint i;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track %d\n", __debug__, number);
 

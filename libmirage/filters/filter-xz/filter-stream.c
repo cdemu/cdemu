@@ -38,7 +38,7 @@ struct _MirageFilterStreamXzPrivate
     gint io_buffer_size;
 
     /* Block (inflate) buffer */
-    gint cached_block_number;
+    guint cached_block_number;
     guint8 *block_buffer;
     gint block_buffer_size;
 
@@ -152,7 +152,7 @@ static gboolean mirage_filter_stream_xz_read_index (MirageFilterStreamXz *self, 
         return FALSE;
     }
 
-    if (mirage_stream_read(stream, self->priv->io_buffer, self->priv->footer.backward_size, NULL) != self->priv->footer.backward_size) {
+    if ((gsize)mirage_stream_read(stream, self->priv->io_buffer, self->priv->footer.backward_size, NULL) != self->priv->footer.backward_size) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read stream's index!"));
         return FALSE;
     }
@@ -306,7 +306,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
         lzma_block block;
 
         guint8 value;
-        gint ret;
+        guint ret;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...\n", __debug__);
 

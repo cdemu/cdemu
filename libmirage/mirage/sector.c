@@ -1006,7 +1006,7 @@ gboolean mirage_sector_extract_data (MirageSector *self, const guint8 **main_dat
         return FALSE;
     }
 
-    if (actual_subchannel_length != subchannel_data_length) {
+    if ((guint)actual_subchannel_length != subchannel_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: requested subchannel size (%d) and actual subchannel size (%d) mismatch!\n", __debug__, subchannel_data_length, actual_subchannel_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Requested subchannel size (%d) and actual subchannel size (%d) mismatch!"), subchannel_data_length, actual_subchannel_length);
         return FALSE;

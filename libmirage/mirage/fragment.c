@@ -517,7 +517,7 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%" G_GINT64_MODIFIER "X\n", __debug__, self->priv->main_size, position);
 
     mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
-    if (mirage_stream_tell(self->priv->main_stream) != position) {
+    if ((gsize)mirage_stream_tell(self->priv->main_stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
 
         gchar tmp[100] = ""; /* Work-around for lack of direct G_GINT64_MODIFIER support in xgettext() */
@@ -855,7 +855,7 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%" G_GINT64_MODIFIER "X\n", __debug__, self->priv->subchannel_size, position);
 
     mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
-    if (mirage_stream_tell(stream) != position) {
+    if ((gsize)mirage_stream_tell(stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
 
         gchar tmp[100] = ""; /* Work-around for lack of direct G_GINT64_MODIFIER support in xgettext() */

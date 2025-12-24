@@ -354,7 +354,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MirageParserNrg *self, gint ses
     }
 
     /* Read ETN blocks */
-    for (gint i = 0; i < blockentry->num_subblocks; i++) {
+    for (guint i = 0; i < blockentry->num_subblocks; i++) {
         NRG_ETN_Block *block = &self->priv->etn_blocks[i];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ETN block #%i\n", __debug__, i);
@@ -417,7 +417,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MirageParserNrg *self, gint ses
     cur_ptr += blockentry->length;
 
     /* Conversion */
-    for (gint i = 0; i < blockentry->num_subblocks; i++) {
+    for (guint i = 0; i < blockentry->num_subblocks; i++) {
         NRG_CUE_Block *block = &self->priv->cue_blocks[i];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CUE block #%i\n", __debug__, i);
@@ -476,7 +476,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MirageParserNrg *self, gint ses
 
     /* Allocate space and read DAO blocks */
     self->priv->dao_blocks = g_new0(NRG_DAO_Block, blockentry->num_subblocks);
-    for (gint i = 0; i < blockentry->num_subblocks; i++) {
+    for (guint i = 0; i < blockentry->num_subblocks; i++) {
         NRG_DAO_Block *block = &self->priv->dao_blocks[i];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAO block #%i\n", __debug__, i);

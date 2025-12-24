@@ -85,7 +85,7 @@ static void initialize_parsers_list ()
     libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
 
     libmirage.parsers_info = g_new0(MirageParserInfo, libmirage.num_parsers);
-    for (gint i = 0; i < libmirage.num_parsers; i++) {
+    for (guint i = 0; i < libmirage.num_parsers; i++) {
         MirageParser *parser = g_object_new(libmirage.parsers[i], NULL);
         mirage_parser_info_copy(mirage_parser_get_info(parser), &libmirage.parsers_info[i]);
         g_object_unref(parser);
@@ -97,7 +97,7 @@ static void initialize_writers_list ()
     libmirage.writers = g_type_children(MIRAGE_TYPE_WRITER, &libmirage.num_writers);
 
     libmirage.writers_info = g_new0(MirageWriterInfo, libmirage.num_writers);
-    for (gint i = 0; i < libmirage.num_writers; i++) {
+    for (guint i = 0; i < libmirage.num_writers; i++) {
         MirageWriter *writer = g_object_new(libmirage.writers[i], NULL);
         mirage_writer_info_copy(mirage_writer_get_info(writer), &libmirage.writers_info[i]);
         g_object_unref(writer);
@@ -109,7 +109,7 @@ static void initialize_filter_streams_list ()
     libmirage.filter_streams = g_type_children(MIRAGE_TYPE_FILTER_STREAM, &libmirage.num_filter_streams);
 
     libmirage.filter_streams_info = g_new0(MirageFilterStreamInfo, libmirage.num_filter_streams);
-    for (gint i = 0; i < libmirage.num_filter_streams; i++) {
+    for (guint i = 0; i < libmirage.num_filter_streams; i++) {
         MirageFilterStream *filter_stream = g_object_new(libmirage.filter_streams[i], NULL);
         mirage_filter_stream_info_copy(mirage_filter_stream_get_info(filter_stream), &libmirage.filter_streams_info[i]);
         g_object_unref(filter_stream);
@@ -225,21 +225,21 @@ gboolean mirage_shutdown (GError **error)
     }
 
     /* Free parser info */
-    for (gint i = 0; i < libmirage.num_parsers; i++) {
+    for (guint i = 0; i < libmirage.num_parsers; i++) {
         mirage_parser_info_free(&libmirage.parsers_info[i]);
     }
     g_free(libmirage.parsers_info);
     g_free(libmirage.parsers);
 
     /* Free writer info */
-    for (gint i = 0; i < libmirage.num_writers; i++) {
+    for (guint i = 0; i < libmirage.num_writers; i++) {
         mirage_writer_info_free(&libmirage.writers_info[i]);
     }
     g_free(libmirage.writers_info);
     g_free(libmirage.writers);
 
     /* Free filter stream info */
-    for (gint i = 0; i < libmirage.num_filter_streams; i++) {
+    for (guint i = 0; i < libmirage.num_filter_streams; i++) {
         mirage_filter_stream_info_free(&libmirage.filter_streams_info[i]);
     }
     g_free(libmirage.filter_streams_info);
@@ -332,7 +332,7 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
     }
 
     /* Go over all parsers */
-    for (gint i = 0; i < libmirage.num_parsers; i++) {
+    for (guint i = 0; i < libmirage.num_parsers; i++) {
         if (!(*func)(&libmirage.parsers_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Iteration has been cancelled!"));
             return FALSE;
@@ -412,7 +412,7 @@ gboolean mirage_enumerate_writers (MirageEnumWriterInfoCallback func, gpointer u
     }
 
     /* Go over all writers */
-    for (gint i = 0; i < libmirage.num_writers; i++) {
+    for (guint i = 0; i < libmirage.num_writers; i++) {
         if (!(*func)(&libmirage.writers_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Iteration has been cancelled!"));
             return FALSE;
@@ -492,7 +492,7 @@ gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback fun
     }
 
     /* Go over all filter streams */
-    for (gint i = 0; i < libmirage.num_filter_streams; i++) {
+    for (guint i = 0; i < libmirage.num_filter_streams; i++) {
         if (!(*func)(&libmirage.filter_streams_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, Q_("Iteration has been cancelled!"));
             return FALSE;
@@ -550,7 +550,7 @@ MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error)
         return NULL;
     }
 
-    for (gint i = 0; i < libmirage.num_writers; i++) {
+    for (guint i = 0; i < libmirage.num_writers; i++) {
         if (!g_ascii_strcasecmp(writer_id, libmirage.writers_info[i].id)) {
             return g_object_new(libmirage.writers[i], NULL);
         }

@@ -1327,8 +1327,8 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
  */
 gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gint *len, GError **error)
 {
-    gint num_languages;
-    gint num_tracks;
+    guint num_languages;
+    guint num_tracks;
     gint buflen;
     guint8 *buffer;
     MirageCdTextCoder *encoder;
@@ -1368,7 +1368,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
     };
 
     /* Add all languages' data to encoder */
-    for (gint i = 0; i < num_languages; i++) {
+    for (guint i = 0; i < num_languages; i++) {
         MirageLanguage* session_language;
         gint code;
 
@@ -1383,7 +1383,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
         mirage_cdtext_encoder_set_block_info(encoder, i, code, 0, 0, NULL);
 
         /* Pack all supported pack types */
-        for (gint j = 0; j < G_N_ELEMENTS(pack_types); j++) {
+        for (guint j = 0; j < G_N_ELEMENTS(pack_types); j++) {
             gint pack_type = pack_types[j];
 
             const guint8 *session_language_data = NULL;
@@ -1395,7 +1395,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
             }
 
             /* Now get and pack the same data for the all tracks */
-            for (gint k = 0; k < num_tracks; k++) {
+            for (guint k = 0; k < num_tracks; k++) {
                 MirageTrack *track;
                 gint number;
 

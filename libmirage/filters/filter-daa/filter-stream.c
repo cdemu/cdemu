@@ -88,7 +88,7 @@ struct _MirageFilterStreamDaaPrivate
 
     gint chunk_table_offset;
     gint chunk_data_offset;
-    gint chunk_size;
+    guint chunk_size;
 
     /* Bitsizes of bit-packed chunk table (format version 2) */
     gint bitsize_type;
@@ -1172,8 +1172,8 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
         }
         case FORMAT_VERSION2: {
             guint32 len;
-            gint bsize_type = 0;
-            gint bsize_len = 0;
+            guint bsize_type = 0;
+            guint bsize_len = 0;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: format version 2\n\n", __debug__);
 

@@ -118,8 +118,8 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
     /* Assuming a data track with ISO9660 or UDF filesystem, check all
        possible combinations of sector data and subchannel sizes */
-    for (gint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
-        for (gint j = 0; j < G_N_ELEMENTS(valid_sector_sizes); j++) {
+    for (guint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
+        for (guint j = 0; j < G_N_ELEMENTS(valid_sector_sizes); j++) {
             gint full_sector_size = valid_sector_sizes[j].sector_size + valid_subchannel_sizes[i];
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking %d-byte sector size with %d-byte subchannel and data offset %d...\n", __debug__, valid_sector_sizes[j].sector_size, valid_subchannel_sizes[i], valid_sector_sizes[j].data_offset);
 

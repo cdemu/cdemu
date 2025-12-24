@@ -96,12 +96,12 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
     if (in_size == 0)
         return 0;
 
-    while (inp - input < in_size) {
+    while ((gsize)(inp - input) < in_size) {
         chunk_type = adc_chunk_type(*inp);
         switch (chunk_type) {
             case PLAIN:
                 chunk_size = adc_chunk_size(*inp);
-                if (outp + chunk_size - output > avail_size) {
+                if ((gsize)(outp + chunk_size - output) > avail_size) {
                     output_full = TRUE;
                     break;
                 }
@@ -113,7 +113,7 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
             case TWOBYTE:
                 chunk_size = adc_chunk_size(*inp);
                 offset = adc_chunk_offset(inp);
-                if (outp + chunk_size - output > avail_size) {
+                if ((gsize)(outp + chunk_size - output) > avail_size) {
                     output_full = TRUE;
                     break;
                 }
@@ -133,7 +133,7 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
             case THREEBYTE:
                 chunk_size = adc_chunk_size(*inp);
                 offset = adc_chunk_offset(inp);
-                if (outp + chunk_size - output > avail_size) {
+                if ((gsize)(outp + chunk_size - output) > avail_size) {
                     output_full = TRUE;
                     break;
                 }

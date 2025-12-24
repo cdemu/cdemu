@@ -77,7 +77,10 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
     /* readcd from cdrdtools appears to pad odd TOC lengths to make them
        even, whereas readcd from cdrkit does not. So we account for both
        cases. */
-    if ((file_size == 2 + toc_len + 2) || (file_size == 2 + toc_len + 3)) {
+    if (
+        (file_size == (guint16)(2 + toc_len + 2)) ||
+        (file_size == (guint16)(2 + toc_len + 3))
+    ) {
         return TRUE;
     }
 

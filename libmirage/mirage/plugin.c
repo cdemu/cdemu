@@ -86,8 +86,8 @@ MiragePlugin *mirage_plugin_new (const gchar *filename)
 static gboolean mirage_plugin_load_module (GTypeModule *_self)
 {
     MiragePlugin *self = MIRAGE_PLUGIN(_self);
-    gint *plugin_soversion_major;
-    gint *plugin_soversion_minor;
+    guint *plugin_soversion_major;
+    guint *plugin_soversion_minor;
 
     if (!self->priv->filename) {
         return FALSE;

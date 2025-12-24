@@ -40,12 +40,12 @@ struct _MirageFilterStreamIszPrivate
 
     /* Part list */
     ISZ_Chunk *parts;
-    gint num_parts;
+    guint num_parts;
 
     /* Inflate buffer */
     guint8 *inflate_buffer;
     gint inflate_buffer_size;
-    gint cached_part;
+    guint cached_part;
 
     /* I/O buffer */
     guint8 *io_buffer;
@@ -410,7 +410,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
         mirage_filter_stream_isz_deobfuscate(chunk_buffer, chunk_buf_size);
 
         /* Compute index from chunk table */
-        for (gint i = 0; i < self->priv->num_parts; i++) {
+        for (guint i = 0; i < self->priv->num_parts; i++) {
             guint8 *chunk_ptr = &chunk_buffer[i * header->ptr_len];
             ISZ_Chunk *cur_part  = &self->priv->parts[i];
 
@@ -423,7 +423,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
 
     /* We don't have a chunk table so initialize a part index */
     else {
-        for (gint i = 0; i < self->priv->num_parts; i++) {
+        for (guint i = 0; i < self->priv->num_parts; i++) {
             ISZ_Chunk *cur_part  = &self->priv->parts[i];
 
             cur_part->type = DATA;
@@ -437,15 +437,16 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     }
 
     /* Compute offsets for index */
-    for (gint i = 0; i < self->priv->num_parts; i++) {
+    for (guint i = 0; i < self->priv->num_parts; i++) {
         ISZ_Chunk *cur_part  = &self->priv->parts[i];
-        ISZ_Chunk *prev_part = &self->priv->parts[i - 1];
 
         /* Calculate input offset */
         if (i == 0) {
             cur_part->offset = 0;
             cur_part->adj_offset = 0;
         } else {
+            ISZ_Chunk *prev_part = &self->priv->parts[i - 1];
+
             cur_part->offset = prev_part->offset + prev_part->length;
             cur_part->adj_offset = prev_part->adj_offset + prev_part->length;
         }
@@ -610,7 +611,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
     return TRUE;
 }
 
-static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *self, guint8 *buffer, gint chunk_num)
+static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *self, guint8 *buffer, guint chunk_num)
 {
     const ISZ_Chunk *part = &self->priv->parts[chunk_num];
     ISZ_Segment *segment = &self->priv->segments[part->segment];
@@ -621,7 +622,7 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
     goffset part_offs = segment->chunk_offs + part->adj_offset;
     gsize   part_avail = chunk_num < segment->first_chunk_num + segment->num_chunks - 1 ?
                          part->length : part->length - segment->left_size;
-    gint    ret;
+    gssize  ret;
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
@@ -637,10 +638,10 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
         return -1;
-    } else if (ret == to_read) {
+    } else if ((gsize)ret == to_read) {
         have_read += ret;
         to_read -= ret;
-    } else if (ret < to_read) {
+    } else if ((gsize)ret < to_read) {
         /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);*/
         have_read += ret;
         to_read -= ret;
@@ -664,7 +665,7 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
         } else if (ret == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
             return -1;
-        } else if (ret == to_read) {
+        } else if ((gsize)ret == to_read) {
             have_read += ret;
             to_read -= ret;
         }
@@ -679,7 +680,7 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
 {
     MirageFilterStreamIsz *self = MIRAGE_FILTER_STREAM_ISZ(_self);
     goffset position = mirage_filter_stream_simplified_get_position(MIRAGE_FILTER_STREAM(self));
-    gint part_idx;
+    guint part_idx;
 
     /* Find part that corresponds to current position */
     part_idx = position / self->priv->header.block_size;
@@ -694,10 +695,6 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
         const ISZ_Chunk *part = &self->priv->parts[part_idx];
-        z_stream  *zlib_stream = &self->priv->zlib_stream;
-        bz_stream *bzip2_stream = &self->priv->bzip2_stream;
-
-        gint ret;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
@@ -707,15 +704,19 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             memset (self->priv->inflate_buffer, 0, self->priv->inflate_buffer_size);
         } else if (part->type == DATA) {
             /* Read uncompressed part */
-            ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
-            if (ret != part->length) {
+            gssize ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
+            if ((gsize)ret != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
         } else if (part->type == ZLIB) {
+            z_stream *zlib_stream = &self->priv->zlib_stream;
+            gint zlib_ret;
+            gssize read_bytes;
+
             /* Reset inflate engine */
-            ret = inflateReset2(zlib_stream, 15);
-            if (ret != Z_OK) {
+            zlib_ret = inflateReset2(zlib_stream, 15);
+            if (zlib_ret != Z_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
                 return -1;
             }
@@ -727,24 +728,28 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             zlib_stream->next_out  = self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if (ret != part->length) {
+            read_bytes = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
 
             /* Inflate */
             do {
-                ret = inflate(zlib_stream, Z_NO_FLUSH);
-                if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
+                zlib_ret = inflate(zlib_stream, Z_NO_FLUSH);
+                if (zlib_ret == Z_NEED_DICT || zlib_ret == Z_MEM_ERROR || zlib_ret == Z_DATA_ERROR) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!\n", __debug__, zlib_stream->msg);
                     return -1;
                 }
             } while (zlib_stream->avail_in);
         } else if (part->type == BZ2) {
+            bz_stream *bzip2_stream = &self->priv->bzip2_stream;
+            int bz_ret;
+            gssize read_bytes;
+
             /* Reset decompress engine */
-            ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
-            if (ret != BZ_OK) {
+            bz_ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
+            if (bz_ret != BZ_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
                 return -1;
             }
@@ -756,8 +761,8 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             bzip2_stream->next_out  = (gchar *) self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if (ret != part->length) {
+            read_bytes = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
@@ -767,16 +772,16 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
 
             /* Inflate */
             do {
-                ret = BZ2_bzDecompress(bzip2_stream);
-                if (ret < 0) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!\n", __debug__, ret);
+                bz_ret = BZ2_bzDecompress(bzip2_stream);
+                if (bz_ret < 0) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!\n", __debug__, bz_ret);
                     return -1;
                 }
             } while (bzip2_stream->avail_in);
 
             /* Uninitialize decompress engine */
-            ret = BZ2_bzDecompressEnd(bzip2_stream);
-            if (ret != BZ_OK) {
+            bz_ret = BZ2_bzDecompressEnd(bzip2_stream);
+            if (bz_ret != BZ_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!\n", __debug__);
                 return -1;
             }

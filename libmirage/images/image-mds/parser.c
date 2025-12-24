@@ -52,25 +52,25 @@ static inline void mds_header_fix_endian (MDS_Header *header)
     header->medium_type = GUINT16_FROM_LE(header->medium_type);
     header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
 
-    for (gint i = 0; i < G_N_ELEMENTS(header->__dummy1__); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(header->__dummy1__); i++) {
         header->__dummy1__[i] = GUINT16_FROM_LE(header->__dummy1__[i]);
     }
 
     header->bca_len = GUINT16_FROM_LE(header->bca_len);
 
-    for (gint i = 0; i < G_N_ELEMENTS(header->__dummy2__); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(header->__dummy2__); i++) {
         header->__dummy2__[i] = GUINT32_FROM_LE(header->__dummy2__[i]);
     }
 
     header->bca_data_offset = GUINT32_FROM_LE(header->bca_data_offset);
 
-    for (gint i = 0; i < G_N_ELEMENTS(header->__dummy3__); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(header->__dummy3__); i++) {
         header->__dummy3__[i] = GUINT32_FROM_LE(header->__dummy3__[i]);
     }
 
     header->disc_structures_offset = GUINT32_FROM_LE(header->disc_structures_offset);
 
-    for (gint i = 0; i < G_N_ELEMENTS(header->__dummy4__); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(header->__dummy4__); i++) {
         header->__dummy4__[i] = GUINT32_FROM_LE(header->__dummy4__[i]);
     }
 
@@ -123,7 +123,7 @@ static inline void dpm_data_fix_endian (guint32 *dpm_data, guint32 num_entries)
 
 static inline void widechar_filename_fix_endian (gunichar2 *filename)
 {
-    for (gint i = 0; ; i++) {
+    for (guint i = 0; ; i++) {
         filename[i] = GUINT16_FROM_LE(filename[i]);
         if (!filename[i]) {
             break;
@@ -160,7 +160,7 @@ static gint mirage_parser_mds_convert_track_mode (MirageParserMds *self, gint mo
     };
 
     /* Basically, do the test twice; once for value, and once for value + 8 */
-    for (gint i = 0; i < G_N_ELEMENTS(modes); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(modes); i++) {
         if (((mode & 0x0F) == modes[i].mds_mode)
             || ((mode & 0x0F) == modes[i].mds_mode + 8)) {
             return modes[i].mirage_mode;
@@ -269,7 +269,7 @@ static void mirage_parser_mds_parse_dpm_data (MirageParserMds *self)
     }
 
     /* Read each block */
-    for (gint i = 0; i < num_dpm_blocks; i++) {
+    for (guint i = 0; i < num_dpm_blocks; i++) {
         dpm_block_offset[i] = GUINT32_FROM_LE(dpm_block_offset[i]);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __debug__, i, dpm_block_offset[i]);
         mirage_parser_mds_parse_dpm_block(self, dpm_block_offset[i]);
@@ -413,7 +413,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
     cur_ptr = self->priv->mds_data + session_block->tracks_blocks_offset;
 
     /* Read track entries */
-    for (gint i = 0; i < session_block->num_all_blocks; i++) {
+    for (guint i = 0; i < session_block->num_all_blocks; i++) {
         MDS_TrackBlock *block;
         MDS_TrackExtraBlock *extra_block = NULL;
         MDS_Footer *footer_block = NULL;
@@ -459,7 +459,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
 
         /* Read footer, if applicable */
         if (block->footer_offset) {
-            for (gint j = 0; j < block->number_of_files; j++) {
+            for (guint j = 0; j < block->number_of_files; j++) {
                 footer_block = (MDS_Footer *)(self->priv->mds_data + block->footer_offset + j*sizeof(MDS_Footer));
                 mds_footer_fix_endian(footer_block);
 
@@ -510,7 +510,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
             /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
                files are split on (2048) sector boundary, which means we can simply represent them with multiple data
                fragments */
-            for (gint j = 0; j < block->number_of_files; j++) {
+            for (guint j = 0; j < block->number_of_files; j++) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment for file #%i\n", __debug__, j);
 
                 footer_block = (MDS_Footer *)(self->priv->mds_data + block->footer_offset + j*sizeof(MDS_Footer));

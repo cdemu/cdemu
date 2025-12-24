@@ -87,7 +87,7 @@ static void mirage_parser_toc_set_session_type (MirageParserToc *self, gchar *ty
         {"CD_I", MIRAGE_SESSION_CDI},
     };
 
-    for (gint i = 0; i < G_N_ELEMENTS(session_types); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(session_types); i++) {
         if (!mirage_helper_strcasecmp(session_types[i].str, type_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %s\n", __debug__, session_types[i].str);
             mirage_session_set_session_type(self->priv->cur_session, session_types[i].type);
@@ -125,7 +125,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
 
     };
 
-    for (gint i = 0; i < G_N_ELEMENTS(track_modes); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(track_modes); i++) {
         if (!mirage_helper_strcasecmp(track_modes[i].str, mode_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
 
@@ -149,7 +149,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
             {"RW", MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96 },
         };
 
-        for (gint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
+        for (guint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
             if (!mirage_helper_strcasecmp(subchan_modes[i].str, subchan_string)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel mode: %s\n", __debug__, subchan_modes[i].str);
                 self->priv->cur_subchannel_size = subchan_modes[i].sectsize;
@@ -449,7 +449,7 @@ static gboolean mirage_parser_toc_cdtext_parse_language (MirageParserToc *self, 
         }
 
         /* Set appropriate pack */
-        for (gint i = 0; i < G_N_ELEMENTS(packs); i++) {
+        for (guint i = 0; i < G_N_ELEMENTS(packs); i++) {
             if (!g_strcmp0(type_str, packs[i].pack_id)) {
                 mirage_language_set_pack_data(language, packs[i].pack_type, (const guint8 *)content, content_len, NULL);
                 break;

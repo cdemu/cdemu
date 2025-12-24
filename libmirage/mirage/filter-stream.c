@@ -346,7 +346,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
 
     while (count > 0) {
         /* Check if we're at end of stream */
-        if (self->priv->position >= self->priv->stream_length) {
+        if ((gsize)self->priv->position >= self->priv->stream_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: end of stream reached!\n", __debug__);
             break;
         }

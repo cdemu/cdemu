@@ -567,7 +567,7 @@ static void mirage_parser_b6t_parse_bca (MirageParserB6t *self)
 
 static void mirage_parser_b6t_parse_dvd_structures (MirageParserB6t *self)
 {
-    gint length = 0;
+    guint length = 0;
 
     /* Return if there's nothing to do */
     if (!self->priv->disc_block_1->dvdrom_structures_length) {
@@ -864,7 +864,7 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MirageParserB6t *self, GErr
 
     /* Now, the actual blocks; we need to copy these, because filename field
        needs to be changed */
-    for (gint i = 0; i < num_data_blocks; i++) {
+    for (guint i = 0; i < num_data_blocks; i++) {
         B6T_DataBlock *data_block = g_new0(B6T_DataBlock, 1);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block #%i\n", __debug__, i);

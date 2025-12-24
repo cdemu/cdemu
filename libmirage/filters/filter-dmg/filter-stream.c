@@ -54,7 +54,7 @@ struct _MirageFilterStreamDmgPrivate
 
     /* Part list */
     DMG_Part *parts;
-    gint num_parts;
+    guint num_parts;
 
     /* Inflate buffer */
     guint8 *inflate_buffer;
@@ -334,7 +334,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
         }
 
         mirage_stream_seek(stream, koly_block->xml_offset, G_SEEK_SET, NULL);
-        if (mirage_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL) != koly_block->xml_length) {
+        if ((gsize)mirage_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL) != koly_block->xml_length) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read XML resource-fork!"));
             return FALSE;
         }
@@ -348,7 +348,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
         }
 
         mirage_stream_seek(stream, koly_block->rsrc_fork_offset, G_SEEK_SET, NULL);
-        if (mirage_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL) != koly_block->rsrc_fork_length) {
+        if ((gsize)mirage_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL) != koly_block->rsrc_fork_length) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read binary resource-fork!"));
             return FALSE;
         }
@@ -491,8 +491,8 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
 
             /* Find segment belonging to part */
             temp_part.segment = -1;
-            for (gint s = 0; s < self->priv->num_koly_blocks; s++) {
-                if (temp_part.in_offset >= koly_block[s].running_data_fork_offset) {
+            for (guint s = 0; s < self->priv->num_koly_blocks; s++) {
+                if (temp_part.in_offset >= (goffset)koly_block[s].running_data_fork_offset) {
                     temp_part.segment = s;
                 } else {
                     break;
@@ -755,7 +755,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
     gsize   have_read = 0;
     goffset part_offs = koly_block->data_fork_offset + part->in_offset - koly_block->running_data_fork_offset;
     gsize   part_avail = koly_block->running_data_fork_offset + koly_block->data_fork_length - part->in_offset;
-    gint    ret;
+    gssize  ret;
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
@@ -773,10 +773,10 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
         return -1;
-    } else if (ret == to_read) {
+    } else if ((gsize)ret == to_read) {
         have_read += ret;
         to_read -= ret;
-    } else if (ret < to_read) {
+    } else if ((gsize)ret < to_read) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);
         have_read += ret;
         to_read -= ret;
@@ -799,7 +799,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
         } else if (ret == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
             return -1;
-        } else if (ret == to_read) {
+        } else if ((gsize)ret == to_read) {
             have_read += ret;
             to_read -= ret;
         }
@@ -817,9 +817,9 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
     gint part_idx = -1;
 
     /* Find part that corresponds to current position */
-    for (gint p = 0; p < self->priv->num_parts; p++) {
+    for (guint p = 0; p < self->priv->num_parts; p++) {
         DMG_Part *cur_part = &self->priv->parts[p];
-        gint req_sector = position / DMG_SECTOR_SIZE;
+        guint req_sector = position / DMG_SECTOR_SIZE;
 
         if ((cur_part->first_sector <= req_sector) && (cur_part->first_sector + cur_part->num_sectors >= req_sector)) {
             part_idx = p;
@@ -836,9 +836,6 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
         const DMG_Part *part = &self->priv->parts[part_idx];
-        z_stream *zlib_stream = &self->priv->zlib_stream;
-        bz_stream *bzip2_stream = &self->priv->bzip2_stream;
-        gint ret;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
@@ -847,15 +844,19 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* We don't use internal buffers for zero data */
         } else if (part->type == RAW) {
             /* Read uncompressed part */
-            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
-            if (ret != part->in_length) {
+            gssize ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
+            if ((gsize)ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
         } else if (part->type == ZLIB) {
+            z_stream *zlib_stream = &self->priv->zlib_stream;
+            int zlib_ret;
+            gssize read_bytes;
+
             /* Reset inflate engine */
-            ret = inflateReset2(zlib_stream, 15);
-            if (ret != Z_OK) {
+            zlib_ret = inflateReset2(zlib_stream, 15);
+            if (zlib_ret != Z_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
                 return -1;
             }
@@ -867,24 +868,28 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             zlib_stream->next_out  = self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if (ret != part->in_length) {
+            read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
 
             do {
                 /* Inflate */
-                ret = inflate(zlib_stream, Z_NO_FLUSH);
-                if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
+                zlib_ret = inflate(zlib_stream, Z_NO_FLUSH);
+                if (zlib_ret == Z_NEED_DICT || zlib_ret == Z_MEM_ERROR || zlib_ret == Z_DATA_ERROR) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!\n", __debug__, zlib_stream->msg);
                     return -1;
                 }
             } while (zlib_stream->avail_in);
         } else if (part->type == BZLIB) {
+            bz_stream *bzip2_stream = &self->priv->bzip2_stream;
+            int bz_ret;
+            gssize read_bytes;
+
             /* Reset decompress engine */
-            ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
-            if (ret != BZ_OK) {
+            bz_ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
+            if (bz_ret != BZ_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
                 return -1;
             }
@@ -896,40 +901,41 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             bzip2_stream->next_out  = (gchar *) self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if (ret != part->in_length) {
+            read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
 
             do {
                 /* Inflate */
-                ret = BZ2_bzDecompress(bzip2_stream);
-                if (ret < 0) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!\n", __debug__, ret);
+                bz_ret = BZ2_bzDecompress(bzip2_stream);
+                if (bz_ret < 0) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!\n", __debug__, bz_ret);
                     return -1;
                 }
             } while (bzip2_stream->avail_in);
 
             /* Uninitialize decompress engine */
-            ret = BZ2_bzDecompressEnd(bzip2_stream);
-            if (ret != BZ_OK) {
+            bz_ret = BZ2_bzDecompressEnd(bzip2_stream);
+            if (bz_ret != BZ_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!\n", __debug__);
                 return -1;
             }
         } else if (part->type == ADC) {
+            gsize read_bytes;
             gsize written_bytes;
+            gsize ret;
 
             /* Read some compressed data */
-            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if (ret != part->in_length) {
+            read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
 
             /* Inflate */
-            ret = (gint) adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * DMG_SECTOR_SIZE,
-                           self->priv->inflate_buffer, &written_bytes);
+            ret = adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * DMG_SECTOR_SIZE, self->priv->inflate_buffer, &written_bytes);
 
             g_assert (ret == part->in_length);
             g_assert (written_bytes == part->num_sectors * DMG_SECTOR_SIZE);
@@ -1014,7 +1020,7 @@ static void mirage_filter_stream_dmg_finalize (GObject *gobject)
 {
     MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(gobject);
 
-    for (gint s = 0; s < self->priv->num_streams; s++) {
+    for (guint s = 0; s < self->priv->num_streams; s++) {
         g_object_unref(self->priv->streams[s]);
     }
     g_free(self->priv->streams);

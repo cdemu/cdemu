@@ -740,7 +740,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 MirageSector *sector = mirage_track_get_sector(original_track, sector_address, FALSE, error);
                 if (sector) {
                     if (progress_step_size) {
-                        gint sector_count = mirage_sector_get_address(sector) - disc_layout_start;
+                        guint sector_count = mirage_sector_get_address(sector) - disc_layout_start;
 
                         if (sector_count >= conversion_progress*progress_step_size) {
                             g_signal_emit_by_name(self, "conversion-progress", conversion_progress*self->priv->progress_step, NULL);

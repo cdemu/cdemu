@@ -124,7 +124,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
     mirage_stream_seek(self->priv->cif_stream, -sizeof(subblock_length), G_SEEK_CUR, NULL);
 
     /* Sanity check */
-    if (mirage_stream_tell(self->priv->cif_stream) + subblock_length > self->priv->disc_offset + self->priv->disc_length) {
+    if ((gsize)mirage_stream_tell(self->priv->cif_stream) + subblock_length > self->priv->disc_offset + self->priv->disc_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
         return FALSE;
@@ -156,8 +156,8 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
 
     CIF_AudioTrackDescriptor *audio_descriptor = (CIF_AudioTrackDescriptor *)(data+sizeof(CIF_TrackDescriptor));
 
-    gint sector_size;
-    gint track_length;
+    guint sector_size;
+    guint track_length;
     gint track_mode;
 
     descriptor->descriptor_length = GUINT16_FROM_LE(descriptor->descriptor_length);
@@ -504,7 +504,7 @@ static gboolean mirage_parser_cif_parse_disc_block (MirageParserCif *self, GErro
     g_free(descriptor_data);
 
     /* Sanity check */
-    if (mirage_stream_tell(self->priv->cif_stream) != (self->priv->disc_offset + self->priv->disc_length)) {
+    if ((gsize)mirage_stream_tell(self->priv->cif_stream) != (self->priv->disc_offset + self->priv->disc_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: WARNING: did not finish at the end of disc block!\n", __debug__);
     }
 
@@ -534,7 +534,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
     self->priv->offset_entries = g_new0(CIF_OffsetEntry, num_entries);
     self->priv->num_offset_entries = num_entries;
 
-    for (gint i = 0; i < num_entries && mirage_stream_tell(self->priv->cif_stream) < (self->priv->ofs_offset + self->priv->ofs_length); i++) {
+    for (guint i = 0; i < num_entries && (gsize)mirage_stream_tell(self->priv->cif_stream) < (self->priv->ofs_offset + self->priv->ofs_length); i++) {
         CIF_OffsetEntry entry;
 
         /* Read whole entry */
@@ -561,7 +561,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
     }
 
     /* Sanity check */
-    if (mirage_stream_tell(self->priv->cif_stream) != (self->priv->ofs_offset + self->priv->ofs_length)) {
+    if ((gsize)mirage_stream_tell(self->priv->cif_stream) != (self->priv->ofs_offset + self->priv->ofs_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: WARNING: did not finish at the end of ofs block!\n", __debug__);
     }
 
@@ -581,7 +581,7 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
 
     /* Build blocks list */
     mirage_stream_seek(self->priv->cif_stream, 0, G_SEEK_SET, NULL);
-    while (mirage_stream_tell(self->priv->cif_stream) < file_size) {
+    while ((gsize)mirage_stream_tell(self->priv->cif_stream) < file_size) {
         /* Read whole header */
         if (mirage_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL) != sizeof(header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);

@@ -121,7 +121,7 @@ static void dump_language (GString *toc_contents, gint index, MirageLanguage *la
 
     g_string_append_printf(toc_contents, "  LANGUAGE %d {\n", index);
 
-    for (gint i = 0; i < G_N_ELEMENTS(packs); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(packs); i++) {
         const guint8 *pack_data;
         gint pack_length = 0;
         if (mirage_language_get_pack_data(language, packs[i].pack_type, &pack_data, &pack_length, NULL)) {
@@ -406,7 +406,7 @@ static gboolean mirage_writer_toc_create_toc_files (MirageWriterToc *self, Mirag
             GString *toc_contents = mirage_writer_toc_create_toc_file(self, session);
 
             /* Write */
-            if (mirage_stream_write(toc_stream, toc_contents->str, toc_contents->len, error) != (toc_contents->len)) {
+            if ((gsize)mirage_stream_write(toc_stream, toc_contents->str, toc_contents->len, error) != (toc_contents->len)) {
                 succeeded = FALSE;
             }
 

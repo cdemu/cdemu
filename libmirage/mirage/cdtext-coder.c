@@ -316,7 +316,7 @@ static void mirage_cdtext_decoder_read_size_info (MirageCdTextCoder *self G_GNUC
     guint8 *size_info = g_malloc0(sizeof(CDTextSizeInfo));
     CDTextEncodedPack *cur_pack = size_info_pack;
 
-    for (gint i = 0; i < sizeof(CDTextSizeInfo)/12; i++) {
+    for (guint i = 0; i < sizeof(CDTextSizeInfo)/12; i++) {
         memcpy(size_info+12*i, cur_pack->data, 12);
         cur_pack++;
     }

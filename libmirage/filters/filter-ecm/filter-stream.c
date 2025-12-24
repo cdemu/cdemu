@@ -265,7 +265,7 @@ static gint mirage_filter_stream_ecm_find_part (MirageFilterStreamEcm *self, gof
     part_index = self->priv->cached_part;
     if (part_index != -1 ) {
         part = &self->priv->parts[part_index];
-        if (position >= part->offset && position < (part->offset + part->size)) {
+        if (position >= part->offset && position < (goffset)(part->offset + part->size)) {
             return part_index;
         }
     }
@@ -273,14 +273,14 @@ static gint mirage_filter_stream_ecm_find_part (MirageFilterStreamEcm *self, gof
     /* Check if it's within the first part */
     part_index = 0;
     part = &self->priv->parts[part_index];
-    if (position >= part->offset && position < (part->offset + part->size)) {
+    if (position >= part->offset && position < (goffset)(part->offset + part->size)) {
         return part_index;
     }
 
     /* Check if it's within the last part */
     part_index = self->priv->num_parts - 1;
     part = &self->priv->parts[part_index];
-    if (position >= part->offset && position < (part->offset + part->size)) {
+    if (position >= part->offset && position < (goffset)(part->offset + part->size)) {
         return part_index;
     }
 
@@ -300,7 +300,7 @@ static gint mirage_filter_stream_ecm_find_part (MirageFilterStreamEcm *self, gof
         /* Seek forward (last part has already been checked) */
         for (gint i = part_index; i < self->priv->num_parts - 1; i++) {
             part = &self->priv->parts[i];
-            if (position < part->offset + part->size) {
+            if (position < (goffset)(part->offset + part->size)) {
                 return i;
             }
         }
@@ -354,7 +354,7 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
             count = MIN(count, part->size - part_offset);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: reading %" G_GSIZE_MODIFIER "d bytes\n", __debug__, count);
-            if (mirage_stream_read(stream, buffer, count, NULL) != count) {
+            if ((gsize)mirage_stream_read(stream, buffer, count, NULL) != count) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, count);
                 return -1;
             }

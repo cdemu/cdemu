@@ -443,10 +443,10 @@ static gssize mirage_filter_stream_macbinary_read_raw_chunk (MirageFilterStreamM
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
         return -1;
-    } else if (ret == to_read) {
+    } else if ((guint)ret == to_read) {
         have_read += ret;
         to_read -= ret;
-    } else if (ret < to_read) {
+    } else if ((guint)ret < to_read) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);
         have_read += ret;
         to_read -= ret;
@@ -470,7 +470,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     /* Find part that corresponds to current position */
     for (gint p = 0; p < self->priv->num_parts; p++) {
         const NDIF_Part *cur_part = &self->priv->parts[p];
-        gint req_sector = position / 512;
+        guint req_sector = position / 512;
 
         if ((cur_part->first_sector <= req_sector) && (cur_part->first_sector + cur_part->num_sectors >= req_sector)) {
             part_idx = p;
@@ -487,7 +487,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
         const NDIF_Part *part = &self->priv->parts[part_idx];
-        gint ret;
+        gsize ret;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
@@ -512,8 +512,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
             }
 
             /* Inflate */
-            ret = (gint) adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * 512,
-                           self->priv->inflate_buffer, &written_bytes);
+            ret = adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * 512, self->priv->inflate_buffer, &written_bytes);
 
             g_assert (ret == part->in_length);
             g_assert (written_bytes == part->num_sectors * 512);

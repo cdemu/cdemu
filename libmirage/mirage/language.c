@@ -81,8 +81,8 @@ static MirageLanguage_Pack *mirage_language_get_pack_by_type (MirageLanguage *se
         MIRAGE_LANGUAGE_PACK_SIZE,
     };
 
-    for (gint i = 0; i < G_N_ELEMENTS(pack_types); i++) {
-        if (pack_types[i] == pack_type) {
+    for (guint i = 0; i < G_N_ELEMENTS(pack_types); i++) {
+        if (pack_types[i] == (guint)pack_type) {
             return &self->priv->packs[i];
         }
     }
