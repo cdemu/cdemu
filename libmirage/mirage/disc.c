@@ -144,7 +144,7 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
 
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(session, mirage_disc_session_layout_changed_handler, self);
+    mirage_signal_handlers_disconnect_by_func(session, G_CALLBACK(mirage_disc_session_layout_changed_handler), self);
 
     /* Remove session from list and unref it */
     self->priv->sessions_list = g_list_remove(self->priv->sessions_list, session);
@@ -1592,7 +1592,7 @@ static void mirage_disc_dispose (GObject *gobject)
         if (entry->data) {
             MirageSession *session = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(session, mirage_disc_session_layout_changed_handler, self);
+            mirage_signal_handlers_disconnect_by_func(session, G_CALLBACK(mirage_disc_session_layout_changed_handler), self);
             g_object_unref(session);
 
             entry->data = NULL;

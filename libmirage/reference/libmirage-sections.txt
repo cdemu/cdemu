@@ -626,6 +626,7 @@ mirage_helper_subchannel_q_decode_mcn
 mirage_helper_subchannel_q_encode_isrc
 mirage_helper_subchannel_q_encode_mcn
 mirage_helper_validate_isrc
+mirage_signal_handlers_disconnect_by_func
 </SECTION>
 
 <SECTION>

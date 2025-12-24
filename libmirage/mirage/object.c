@@ -77,7 +77,7 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
 {
     if (self->priv->parent) {
         /* Remove "debug-context-change" signal handler */
-        g_signal_handlers_disconnect_by_func(self->priv->parent, mirage_object_parent_context_changed_handler, self);
+        mirage_signal_handlers_disconnect_by_func(self->priv->parent, G_CALLBACK(mirage_object_parent_context_changed_handler), self);
 
         /* Remove previous weak reference pointer */
         g_object_remove_weak_pointer(G_OBJECT(self->priv->parent), &self->priv->parent);
@@ -178,7 +178,7 @@ static void mirage_object_dispose (GObject *gobject)
 
     /* Remove weak reference pointer to parent */
     if (self->priv->parent) {
-        g_signal_handlers_disconnect_by_func(self->priv->parent, mirage_object_parent_context_changed_handler, self);
+        mirage_signal_handlers_disconnect_by_func(self->priv->parent, G_CALLBACK(mirage_object_parent_context_changed_handler), self);
         g_object_remove_weak_pointer(G_OBJECT(self->priv->parent), &self->priv->parent);
         self->priv->parent = NULL;
     }

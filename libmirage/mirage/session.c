@@ -215,7 +215,7 @@ static void mirage_session_track_layout_changed_handler (MirageSession *self, Mi
 static void mirage_session_remove_track (MirageSession *self, MirageTrack *track)
 {
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(track, mirage_session_track_layout_changed_handler, self);
+    mirage_signal_handlers_disconnect_by_func(track, G_CALLBACK(mirage_session_track_layout_changed_handler), self);
 
     /* Remove track from list and unref it */
     self->priv->tracks_list = g_list_remove(self->priv->tracks_list, track);
@@ -1540,7 +1540,7 @@ static void mirage_session_dispose (GObject *gobject)
         if (entry->data) {
             MirageTrack *track = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(track, mirage_session_track_layout_changed_handler, self);
+            mirage_signal_handlers_disconnect_by_func(track, G_CALLBACK(mirage_session_track_layout_changed_handler), self);
             g_object_unref(track);
 
             entry->data = NULL;

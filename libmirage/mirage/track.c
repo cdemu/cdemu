@@ -214,7 +214,7 @@ static void mirage_track_fragment_layout_changed_handler (MirageTrack *self, Mir
 static void mirage_track_remove_fragment (MirageTrack *self, MirageFragment *fragment)
 {
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(fragment, mirage_track_fragment_layout_changed_handler, self);
+    mirage_signal_handlers_disconnect_by_func(fragment, G_CALLBACK(mirage_track_fragment_layout_changed_handler), self);
 
     /* Remove fragment from list and unref it */
     self->priv->fragments_list = g_list_remove(self->priv->fragments_list, fragment);
@@ -1597,7 +1597,7 @@ static void mirage_track_dispose (GObject *gobject)
         if (entry->data) {
             MirageFragment *fragment = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(fragment, mirage_track_fragment_layout_changed_handler, self);
+            mirage_signal_handlers_disconnect_by_func(fragment, G_CALLBACK(mirage_track_fragment_layout_changed_handler), self);
             g_object_unref(fragment);
 
             entry->data = NULL;

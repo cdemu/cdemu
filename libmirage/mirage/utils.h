@@ -148,4 +148,8 @@ gchar *mirage_helper_format_stringv (const gchar *format, va_list args);
 gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary);
 
 
+/* Miscellaneous */
+guint mirage_signal_handlers_disconnect_by_func (gpointer instance, GCallback func, gpointer user_data);
+
+
 G_END_DECLS
