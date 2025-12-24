@@ -71,7 +71,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
 
     /* Create mapping setup timer with 1-second granularity */
     source = g_timeout_source_new_seconds(1);
-    g_source_set_callback(source, (GSourceFunc)cdemu_device_setup_mapping, self, NULL);
+    g_source_set_callback(source, G_SOURCE_FUNC(cdemu_device_setup_mapping), self, NULL);
     g_source_attach(source, self->priv->main_context);
     g_source_unref(source);
 

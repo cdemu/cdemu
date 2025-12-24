@@ -36,7 +36,6 @@ set(CMAKE_C_STANDARD 99) # Enable C99
 if(CMAKE_COMPILER_IS_GNUCC)
     # Enable additional warnings
     add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    add_definitions(-Wno-cast-function-type)
 endif()
 
 # Config file

@@ -268,7 +268,7 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
 
     /* Create I/O watch */
     self->priv->io_watch = g_io_create_watch(self->priv->io_channel, G_IO_IN);
-    g_source_set_callback(self->priv->io_watch, (GSourceFunc)cdemu_device_io_handler, self, NULL);
+    g_source_set_callback(self->priv->io_watch, G_SOURCE_FUNC(cdemu_device_io_handler), self, NULL);
     g_source_attach(self->priv->io_watch, self->priv->main_context);
 
     /* Start I/O thread */

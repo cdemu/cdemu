@@ -842,7 +842,7 @@ void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *f
     self->priv->fragments_list = g_list_insert(self->priv->fragments_list, fragment, index);
 
     /* Connect fragment modified signal */
-    g_signal_connect_swapped(fragment, "layout-changed", (GCallback)mirage_track_fragment_layout_changed_handler, self);
+    g_signal_connect_swapped(fragment, "layout-changed", G_CALLBACK(mirage_track_fragment_layout_changed_handler), self);
 
     /* Bottom-up change */
     mirage_track_commit_bottomup_change(self);

@@ -90,7 +90,7 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
         g_object_add_weak_pointer(parent, &self->priv->parent);
 
         /* Connect "*/
-        g_signal_connect_swapped(parent, "context-changed", (GCallback)mirage_object_parent_context_changed_handler, self);
+        g_signal_connect_swapped(parent, "context-changed", G_CALLBACK(mirage_object_parent_context_changed_handler), self);
 
         /* Set parent's context by simulating the signal */
         mirage_object_parent_context_changed_handler(self, parent);

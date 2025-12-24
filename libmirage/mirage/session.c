@@ -639,7 +639,7 @@ void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageT
     self->priv->tracks_list = g_list_insert(self->priv->tracks_list, track, index + 1);
 
     /* Connect track modified signal */
-    g_signal_connect_swapped(track, "layout-changed", (GCallback)mirage_session_track_layout_changed_handler, self);
+    g_signal_connect_swapped(track, "layout-changed", G_CALLBACK(mirage_session_track_layout_changed_handler), self);
 
     /* Bottom-up change */
     mirage_session_commit_bottomup_change(self);
@@ -687,7 +687,7 @@ gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, M
     self->priv->tracks_list = g_list_insert_sorted(self->priv->tracks_list, track, (GCompareFunc)sort_tracks_by_number);
 
     /* Connect track modified signal */
-    g_signal_connect_swapped(track, "layout-changed", (GCallback)mirage_session_track_layout_changed_handler, self);
+    g_signal_connect_swapped(track, "layout-changed", G_CALLBACK(mirage_session_track_layout_changed_handler), self);
 
     /* Bottom-up change */
     mirage_session_commit_bottomup_change(self);

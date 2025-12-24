@@ -93,7 +93,6 @@ if(CMAKE_COMPILER_IS_GNUCC)
     # Enable additional warnings
     add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     add_definitions(-Wno-sign-compare)
-    add_definitions(-Wno-cast-function-type)
 endif()
 
 # *** libMirage core library ***

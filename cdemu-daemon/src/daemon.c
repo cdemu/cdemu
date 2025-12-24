@@ -88,7 +88,7 @@ static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *se
     data->device = device;
 
     CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: restarting device...\n", __debug__);
-    g_idle_add((GSourceFunc)device_restart_callback, data);
+    g_idle_add(G_SOURCE_FUNC(device_restart_callback), data);
 }
 
 
@@ -296,10 +296,10 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
 
     /* Add handling for signals from the device... this allows us to
        pass them on via DBUS */
-    g_signal_connect(device, "status-changed", (GCallback)device_status_changed_handler, self);
-    g_signal_connect(device, "option-changed", (GCallback)device_option_changed_handler, self);
-    g_signal_connect(device, "kernel-io-error", (GCallback)device_kernel_io_error_handler, self);
-    g_signal_connect(device, "mapping-ready", (GCallback)device_mapping_ready_handler, self);
+    g_signal_connect(device, "status-changed", G_CALLBACK(device_status_changed_handler), self);
+    g_signal_connect(device, "option-changed", G_CALLBACK(device_option_changed_handler), self);
+    g_signal_connect(device, "kernel-io-error", G_CALLBACK(device_kernel_io_error_handler), self);
+    g_signal_connect(device, "mapping-ready", G_CALLBACK(device_mapping_ready_handler), self);
 
     /* Start device */
     if (!cdemu_device_start(device, self->priv->ctl_device)) {

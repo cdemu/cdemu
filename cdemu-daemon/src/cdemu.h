@@ -54,3 +54,10 @@
 
 #include "daemon.h"
 #include "device.h"
+
+/* G_SOURCE_FUNC() macro is available since GLib2 2.58. As long as we
+ * nominally provide support for building with older versions, provide
+ * an equivalent macro definition. */
+#if !defined(G_SOURCE_FUNC)
+#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
+#endif

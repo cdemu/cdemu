@@ -480,7 +480,7 @@ void mirage_disc_add_session_by_index (MirageDisc *self, gint index, MirageSessi
     self->priv->sessions_list = g_list_insert(self->priv->sessions_list, session, index);
 
     /* Connect session modified signal */
-    g_signal_connect_swapped(session, "layout-changed", (GCallback)mirage_disc_session_layout_changed_handler, self);
+    g_signal_connect_swapped(session, "layout-changed", G_CALLBACK(mirage_disc_session_layout_changed_handler), self);
 
     /* Bottom-up change */
     mirage_disc_commit_bottomup_change(self);
@@ -528,7 +528,7 @@ gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, Mirag
     self->priv->sessions_list = g_list_insert_sorted(self->priv->sessions_list, session, (GCompareFunc)sort_sessions_by_number);
 
     /* Connect session modified signal */
-    g_signal_connect_swapped(session, "layout-changed", (GCallback)mirage_disc_session_layout_changed_handler, self);
+    g_signal_connect_swapped(session, "layout-changed", G_CALLBACK(mirage_disc_session_layout_changed_handler), self);
 
     /* Bottom-up change */
     mirage_disc_commit_bottomup_change(self);
