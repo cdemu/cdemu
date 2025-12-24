@@ -505,7 +505,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
     /* Fragments work with fragment-relative addresses, so get fragment's start address */
     fragment_start = mirage_fragment_get_address(fragment);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, address, address - fragment_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, (void *)fragment, address, address - fragment_start);
 
     /* Main channel data */
     if (!mirage_fragment_read_main_data(fragment, relative_address - fragment_start, &main_buffer, &main_length, &local_error)) {
@@ -615,7 +615,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     /* Fragments work with fragment-relative addresses, so get fragment's start address */
     fragment_start = mirage_fragment_get_address(fragment);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, relative_address, relative_address - fragment_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, (void *)fragment, relative_address, relative_address - fragment_start);
 
     /* Get expected main channel data size from the fragment; if fragment
        expects subchannel, we always feed 96-byte raw interleaved PW */
@@ -815,7 +815,7 @@ void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *f
 {
     gint num_fragments;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: (index: %i, fragment: %p)\n", __debug__, index, fragment);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: (index: %i, fragment: %p)\n", __debug__, index, (void *)fragment);
 
     /* First fragment, last fragment... allow negative indexes to go from behind */
     num_fragments = mirage_track_get_number_of_fragments(self);

@@ -953,7 +953,7 @@ MirageTrack *mirage_session_get_track_before (MirageSession *self, MirageTrack *
     /* Get index of given track in the list */
     index = g_list_index(self->priv->tracks_list, track);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, Q_("Track %p is not in session layout!"), track);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, Q_("Track %p is not in session layout!"), (void *)track);
         return NULL;
     }
     index -= 1; /* Because lead-in has index 0... */
@@ -963,7 +963,7 @@ MirageTrack *mirage_session_get_track_before (MirageSession *self, MirageTrack *
         return mirage_session_get_track_by_index(self, index - 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track before track %p not found!"), track);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track before track %p not found!"), (void *)track);
     return NULL;
 }
 
@@ -987,7 +987,7 @@ MirageTrack *mirage_session_get_track_after (MirageSession *self, MirageTrack *t
     /* Get index of given track in the list */
     index = g_list_index(self->priv->tracks_list, track);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, Q_("Track %p is not in session layout!"), track);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, Q_("Track %p is not in session layout!"), (void *)track);
         return NULL;
     }
     index -= 1; /* Because lead-in has index 0... */
@@ -998,7 +998,7 @@ MirageTrack *mirage_session_get_track_after (MirageSession *self, MirageTrack *t
         return mirage_session_get_track_by_index(self, index + 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track after track %p not found!"), track);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Track after track %p not found!"), (void *)track);
     return NULL;
 }
 

@@ -575,7 +575,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
     guint progress_step_size = num_all_sectors*self->priv->progress_step/100;
     guint conversion_progress = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image conversion; filename '%s', original disc: %p\n", __debug__, filename, original_disc);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image conversion; filename '%s', original disc: %p\n", __debug__, filename, (void *)original_disc);
 
     /* Create disc */
     MirageDisc *new_disc = g_object_new(MIRAGE_TYPE_DISC, NULL);

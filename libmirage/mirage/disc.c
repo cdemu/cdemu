@@ -827,7 +827,7 @@ MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *
     /* Get index of given session in the list */
     index = g_list_index(self->priv->sessions_list, session);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session %p is not in disc layout!"), session);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session %p is not in disc layout!"), (void *)session);
         return NULL;
     }
 
@@ -836,7 +836,7 @@ MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *
         return mirage_disc_get_session_by_index(self, index - 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session before session %p not found!"), session);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session before session %p not found!"), (void *)session);
     return NULL;
 }
 
@@ -859,7 +859,7 @@ MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *s
     /* Get index of given session in the list */
     index = g_list_index(self->priv->sessions_list, session);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session %p is not in disc layout!"), session);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session %p is not in disc layout!"), (void *)session);
         return NULL;
     }
 
@@ -869,7 +869,7 @@ MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *s
         return mirage_disc_get_session_by_index(self, index + 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session after session %p not found!"), session);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Session after session %p not found!"), (void *)session);
     return NULL;
 }
 
