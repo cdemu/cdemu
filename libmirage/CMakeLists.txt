@@ -23,6 +23,7 @@ option(GTKDOC_ENABLED "Use gtk-doc to build documentation" ON)
 option(INTROSPECTION_ENABLED "Generate gobject introspection files" ON)
 option(VAPI_ENABLED "Generate the Vala API file" ON)
 option(POST_INSTALL_HOOKS "Run post-install hooks" ON)
+option(PEDANTIC_MODE "Enable -pedantic flag on gcc compiler" OFF)
 
 # Plugin directory
 set(MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}" CACHE PATH "Path to libMirage plugin directory." FORCE)
@@ -92,6 +93,9 @@ set(CMAKE_C_STANDARD 99) # Enable C99
 if(CMAKE_COMPILER_IS_GNUCC)
     # Enable additional warnings
     add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    if(PEDANTIC_MODE)
+        add_definitions(-pedantic)
+    endif()
 endif()
 
 # *** libMirage core library ***
@@ -280,6 +284,7 @@ message(STATUS "Image formats:")
 message(STATUS " enabled: ${IMAGE_FORMATS_ENABLED}")
 message(STATUS " disabled: ${IMAGE_FORMATS_DISABLED}")
 message(STATUS "Options:")
+message(STATUS " pedantic mode: " ${PEDANTIC_MODE})
 message(STATUS " build gtk-doc documentation: " ${GTKDOC_STATUS})
 message(STATUS " build gobject-introspection bindings: " ${INTROSPECTION_STATUS})
 message(STATUS " build Vala bindings: " ${VAPI_STATUS})
