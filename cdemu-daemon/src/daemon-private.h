@@ -19,7 +19,9 @@
 
 #pragma once
 
-typedef struct _FreedesktopLoginManager FreedesktopLoginManager;
+#if ENABLE_LOGIND_SLEEP_HANDLER
+#include "freedesktop-login-manager.h"
+#endif
 
 struct _CdemuDaemonPrivate
 {

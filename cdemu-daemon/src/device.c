@@ -402,7 +402,7 @@ static void cdemu_device_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemu_device_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(cdemu_device_parent_class)->dispose(gobject);
 }
 
 static void cdemu_device_finalize (GObject *gobject)
@@ -447,7 +447,7 @@ static void cdemu_device_finalize (GObject *gobject)
     g_free(self->priv->device_mutex);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemu_device_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(cdemu_device_parent_class)->finalize(gobject);
 }
 
 static void cdemu_device_class_init (CdemuDeviceClass *klass)

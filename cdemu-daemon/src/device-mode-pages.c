@@ -397,7 +397,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         struct ModePage_0x2A *page = mode_page->page_current;
         memset((page+1), 0, desc_length);
     }
-};
+}
 
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self)
 {

@@ -325,7 +325,7 @@ static void cdemu_audio_finalize (GObject *gobject)
     cdemu_audio_stop(self);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemu_audio_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(cdemu_audio_parent_class)->finalize(gobject);
 }
 
 static void cdemu_audio_class_init (CdemuAudioClass *klass)

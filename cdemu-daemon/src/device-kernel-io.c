@@ -144,7 +144,7 @@ void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint
 
 void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq)
 {
-    return cdemu_device_write_sense_full(self, sense_key, asc_ascq, 0, 0x0000);
+    cdemu_device_write_sense_full(self, sense_key, asc_ascq, 0, 0x0000);
 }
 
 

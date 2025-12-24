@@ -20,10 +20,6 @@
 #include "cdemu.h"
 #include "daemon-private.h"
 
-#if ENABLE_LOGIND_SLEEP_HANDLER
-#include "freedesktop-login-manager.h"
-#endif
-
 #define __debug__ "Daemon"
 
 
@@ -410,7 +406,7 @@ static void cdemu_daemon_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemu_daemon_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(cdemu_daemon_parent_class)->dispose(gobject);
 }
 
 static void cdemu_daemon_finalize (GObject *gobject)
@@ -430,7 +426,7 @@ static void cdemu_daemon_finalize (GObject *gobject)
     ao_shutdown();
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemu_daemon_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(cdemu_daemon_parent_class)->finalize(gobject);
 }
 
 static void cdemu_daemon_class_init (CdemuDaemonClass *klass)
