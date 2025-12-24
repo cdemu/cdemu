@@ -228,7 +228,7 @@ static void mirage_language_finalize (GObject *gobject)
     g_free(self->priv->packs);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_language_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_language_parent_class)->finalize(gobject);
 }
 
 static void mirage_language_class_init (MirageLanguageClass *klass)

@@ -1007,15 +1007,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserCdi,
-                               mirage_parser_cdi,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserCdi))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCdi,
+    mirage_parser_cdi,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCdi)
+)
 
 void mirage_parser_cdi_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_cdi_register_type(type_module);
+    mirage_parser_cdi_register_type(type_module);
 }
 
 
@@ -1041,7 +1043,7 @@ static void mirage_parser_cdi_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_cdi_class_init (MirageParserCdiClass *klass)

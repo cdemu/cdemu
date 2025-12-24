@@ -738,15 +738,17 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserCif,
-                               mirage_parser_cif,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserCif))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCif,
+    mirage_parser_cif,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCif)
+)
 
 void mirage_parser_cif_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_cif_register_type(type_module);
+    mirage_parser_cif_register_type(type_module);
 }
 
 
@@ -776,7 +778,7 @@ static void mirage_parser_cif_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_cif_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_cif_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_cif_finalize (GObject *gobject)
@@ -786,7 +788,7 @@ static void mirage_parser_cif_finalize (GObject *gobject)
     g_free(self->priv->offset_entries);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_cif_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_cif_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_cif_class_init (MirageParserCifClass *klass)

@@ -389,15 +389,17 @@ static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_s
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamSndfile,
-                               mirage_filter_stream_sndfile,
-                               MIRAGE_TYPE_FILTER_STREAM,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamSndfile))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamSndfile,
+    mirage_filter_stream_sndfile,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamSndfile)
+)
 
 void mirage_filter_stream_sndfile_type_register (GTypeModule *type_module)
 {
-    return mirage_filter_stream_sndfile_register_type(type_module);
+    mirage_filter_stream_sndfile_register_type(type_module);
 }
 
 
@@ -442,7 +444,7 @@ static void mirage_filter_stream_sndfile_dispose (GObject *gobject)
         self->priv->resampler = NULL;
     }
 
-    return G_OBJECT_CLASS(mirage_filter_stream_sndfile_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_sndfile_parent_class)->dispose(gobject);
 }
 
 
@@ -458,7 +460,7 @@ static void mirage_filter_stream_sndfile_finalize (GObject *gobject)
     g_free(self->priv->resample_buffer_out);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_filter_stream_sndfile_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_sndfile_parent_class)->finalize(gobject);
 }
 
 static void mirage_filter_stream_sndfile_class_init (MirageFilterStreamSndfileClass *klass)

@@ -463,15 +463,17 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserIso,
-                               mirage_parser_iso,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserIso))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserIso,
+    mirage_parser_iso,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserIso)
+)
 
 void mirage_parser_iso_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_iso_register_type(type_module);
+    mirage_parser_iso_register_type(type_module);
 }
 
 

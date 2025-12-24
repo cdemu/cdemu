@@ -552,15 +552,17 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamMacBinary,
-                               mirage_filter_stream_macbinary,
-                               MIRAGE_TYPE_FILTER_STREAM,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamMacBinary))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamMacBinary,
+    mirage_filter_stream_macbinary,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamMacBinary)
+)
 
 void mirage_filter_stream_macbinary_type_register (GTypeModule *type_module)
 {
-    return mirage_filter_stream_macbinary_register_type(type_module);
+    mirage_filter_stream_macbinary_register_type(type_module);
 }
 
 
@@ -609,7 +611,7 @@ static void mirage_filter_stream_macbinary_finalize (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_filter_stream_macbinary_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_macbinary_parent_class)->finalize(gobject);
 }
 
 static void mirage_filter_stream_macbinary_class_init (MirageFilterStreamMacBinaryClass *klass)

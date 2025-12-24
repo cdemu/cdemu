@@ -182,7 +182,7 @@ static void mirage_plugin_finalize (GObject *gobject)
     g_free(self->priv->filename);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_plugin_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_plugin_parent_class)->finalize(gobject);
 }
 
 static void mirage_plugin_get_property (GObject *gobject, guint property_id, GValue *value, GParamSpec *pspec)

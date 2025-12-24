@@ -1558,7 +1558,7 @@ static void mirage_session_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_session_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_session_parent_class)->dispose(gobject);
 }
 
 static void mirage_session_finalize (GObject *gobject)
@@ -1571,7 +1571,7 @@ static void mirage_session_finalize (GObject *gobject)
     g_list_free(self->priv->languages_list);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_session_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_session_parent_class)->finalize(gobject);
 }
 
 static void mirage_session_class_init (MirageSessionClass *klass)

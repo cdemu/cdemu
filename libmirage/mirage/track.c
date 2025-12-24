@@ -368,7 +368,7 @@ void mirage_track_set_ctl (MirageTrack *self, gint ctl)
     if (ctl & 0x02) flags |= MIRAGE_TRACK_FLAG_COPYPERMITTED;
     if (ctl & 0x08) flags |= MIRAGE_TRACK_FLAG_FOURCHANNEL;
 
-    return mirage_track_set_flags(self, flags);
+    mirage_track_set_flags(self, flags);
 }
 
 /**
@@ -1625,7 +1625,7 @@ static void mirage_track_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_track_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_track_parent_class)->dispose(gobject);
 }
 
 static void mirage_track_finalize (GObject *gobject)
@@ -1639,7 +1639,7 @@ static void mirage_track_finalize (GObject *gobject)
     g_free(self->priv->isrc);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_track_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_track_parent_class)->finalize(gobject);
 }
 
 static void mirage_track_class_init (MirageTrackClass *klass)

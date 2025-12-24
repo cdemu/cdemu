@@ -368,15 +368,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserHd,
-                               mirage_parser_hd,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserHd))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserHd,
+    mirage_parser_hd,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserHd)
+)
 
 void mirage_parser_hd_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_hd_register_type(type_module);
+    mirage_parser_hd_register_type(type_module);
 }
 
 

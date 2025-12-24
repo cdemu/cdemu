@@ -386,7 +386,7 @@ static void mirage_parser_finalize (GObject *gobject)
     mirage_parser_info_free(&self->priv->info);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_class_init (MirageParserClass *klass)

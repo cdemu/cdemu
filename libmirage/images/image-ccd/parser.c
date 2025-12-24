@@ -1225,15 +1225,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserCcd,
-                               mirage_parser_ccd,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserCcd))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCcd,
+    mirage_parser_ccd,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCcd)
+)
 
 void mirage_parser_ccd_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_ccd_register_type(type_module);
+    mirage_parser_ccd_register_type(type_module);
 }
 
 
@@ -1275,7 +1277,7 @@ static void mirage_parser_ccd_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_ccd_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_ccd_parent_class)->dispose(gobject);
 }
 
 
@@ -1292,7 +1294,7 @@ static void mirage_parser_ccd_finalize (GObject *gobject)
     mirage_parser_ccd_cleanup_regex_parser(self);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_ccd_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_ccd_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_ccd_class_init (MirageParserCcdClass *klass)

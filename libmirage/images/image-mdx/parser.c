@@ -371,15 +371,17 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserMdx,
-                               mirage_parser_mdx,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserMdx))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserMdx,
+    mirage_parser_mdx,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserMdx)
+)
 
 void mirage_parser_mdx_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_mdx_register_type(type_module);
+    mirage_parser_mdx_register_type(type_module);
 }
 
 
@@ -407,7 +409,7 @@ static void mirage_parser_mdx_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_mdx_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_mdx_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_mdx_class_init (MirageParserMdxClass *klass)

@@ -500,15 +500,17 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamEcm,
-                               mirage_filter_stream_ecm,
-                               MIRAGE_TYPE_FILTER_STREAM,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamEcm))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamEcm,
+    mirage_filter_stream_ecm,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamEcm)
+)
 
 void mirage_filter_stream_ecm_type_register (GTypeModule *type_module)
 {
-    return mirage_filter_stream_ecm_register_type(type_module);
+    mirage_filter_stream_ecm_register_type(type_module);
 }
 
 
@@ -539,7 +541,7 @@ static void mirage_filter_stream_ecm_finalize (GObject *gobject)
     g_free(self->priv->parts);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_filter_stream_ecm_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_ecm_parent_class)->finalize(gobject);
 }
 
 static void mirage_filter_stream_ecm_class_init (MirageFilterStreamEcmClass *klass)

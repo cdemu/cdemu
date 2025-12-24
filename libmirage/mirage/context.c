@@ -650,7 +650,7 @@ static void mirage_context_finalize (GObject *gobject)
     g_hash_table_unref(self->priv->output_stream_cache);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_context_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_context_parent_class)->finalize(gobject);
 }
 
 static void mirage_context_class_init (MirageContextClass *klass)

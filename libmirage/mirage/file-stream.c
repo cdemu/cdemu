@@ -275,9 +275,13 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
 \**********************************************************************/
 static void mirage_file_stream_stream_init (MirageStreamInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE(MirageFileStream, mirage_file_stream, MIRAGE_TYPE_OBJECT,
+G_DEFINE_TYPE_WITH_CODE(
+    MirageFileStream,
+    mirage_file_stream,
+    MIRAGE_TYPE_OBJECT,
     G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_file_stream_stream_init)
-    G_ADD_PRIVATE(MirageFileStream))
+    G_ADD_PRIVATE(MirageFileStream)
+)
 
 static void mirage_file_stream_init (MirageFileStream *self)
 {
@@ -303,7 +307,7 @@ static void mirage_file_stream_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_stream_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_file_stream_parent_class)->dispose(gobject);
 }
 
 
@@ -315,7 +319,7 @@ static void mirage_file_stream_finalize (GObject *gobject)
     g_free(self->priv->filename);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_stream_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_file_stream_parent_class)->finalize(gobject);
 }
 
 static void mirage_file_stream_class_init (MirageFileStreamClass *klass)

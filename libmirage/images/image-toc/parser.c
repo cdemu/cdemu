@@ -158,7 +158,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
             }
         }
     }
-};
+}
 
 
 static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gint type, const gchar *filename_string, gint base_offset, gint start, gint length, GError **error)
@@ -294,7 +294,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
     g_object_unref(fragment);
 
     return TRUE;
-};
+}
 
 static void mirage_parser_toc_track_set_start (MirageParserToc *self, gint start)
 {
@@ -1317,15 +1317,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserToc,
-                               mirage_parser_toc,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserToc))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserToc,
+    mirage_parser_toc,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserToc)
+)
 
 void mirage_parser_toc_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_toc_register_type(type_module);
+    mirage_parser_toc_register_type(type_module);
 }
 
 
@@ -1351,7 +1353,7 @@ static void mirage_parser_toc_finalize (GObject *gobject)
     mirage_parser_toc_cleanup_regex_parser(self);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_toc_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_toc_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_toc_class_init (MirageParserTocClass *klass)

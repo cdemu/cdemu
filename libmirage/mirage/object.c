@@ -156,11 +156,13 @@ static MirageContext *mirage_object_get_context (MirageContextual *_self)
 \**********************************************************************/
 static void mirage_object_contextual_init (MirageContextualInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE(MirageObject,
-                        mirage_object,
-                        G_TYPE_OBJECT,
-                        G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init)
-                        G_ADD_PRIVATE(MirageObject))
+G_DEFINE_TYPE_WITH_CODE(
+    MirageObject,
+    mirage_object,
+    G_TYPE_OBJECT,
+    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init)
+    G_ADD_PRIVATE(MirageObject)
+)
 
 static void mirage_object_init (MirageObject *self)
 {
@@ -188,7 +190,7 @@ static void mirage_object_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_object_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_object_parent_class)->dispose(gobject);
 }
 
 static void mirage_object_class_init (MirageObjectClass *klass)

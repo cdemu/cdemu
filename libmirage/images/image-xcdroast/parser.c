@@ -218,7 +218,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     g_object_unref(track);
 
     return TRUE;
-};
+}
 
 
 /**********************************************************************\
@@ -875,15 +875,17 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, Mirag
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserXcdroast,
-                               mirage_parser_xcdroast,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserXcdroast))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserXcdroast,
+    mirage_parser_xcdroast,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserXcdroast)
+)
 
 void mirage_parser_xcdroast_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_xcdroast_register_type(type_module);
+    mirage_parser_xcdroast_register_type(type_module);
 }
 
 
@@ -926,7 +928,7 @@ static void mirage_parser_xcdroast_finalize (GObject *gobject)
     g_free(self->priv->xinf_track.cd_discid);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_xcdroast_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_xcdroast_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_xcdroast_class_init (MirageParserXcdroastClass *klass)

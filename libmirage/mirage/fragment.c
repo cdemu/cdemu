@@ -927,7 +927,7 @@ static void mirage_fragment_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_fragment_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_fragment_parent_class)->dispose(gobject);
 }
 
 static void mirage_fragment_class_init (MirageFragmentClass *klass)

@@ -77,7 +77,7 @@ static void mirage_compat_input_stream_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_compat_input_stream_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_compat_input_stream_parent_class)->dispose(gobject);
 }
 
 static void mirage_compat_input_stream_set_property (GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec)
@@ -92,7 +92,7 @@ static void mirage_compat_input_stream_set_property (GObject *gobject, guint pro
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_compat_input_stream_parent_class)->set_property(gobject, property_id, value, pspec);
+    G_OBJECT_CLASS(mirage_compat_input_stream_parent_class)->set_property(gobject, property_id, value, pspec);
 }
 
 

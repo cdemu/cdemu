@@ -260,7 +260,7 @@ static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number,
     self->priv->cur_pregap_set = FALSE;
 
     return TRUE;
-};
+}
 
 static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number, gint address, GError **error)
 {
@@ -1150,15 +1150,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserCue,
-                               mirage_parser_cue,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserCue))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCue,
+    mirage_parser_cue,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCue)
+)
 
 void mirage_parser_cue_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_cue_register_type(type_module);
+    mirage_parser_cue_register_type(type_module);
 }
 
 
@@ -1196,7 +1198,7 @@ static void mirage_parser_cue_finalize (GObject *gobject)
     mirage_parser_cue_cleanup_regex_parser(self);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_cue_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_cue_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_cue_class_init (MirageParserCueClass *klass)

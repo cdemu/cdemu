@@ -59,7 +59,7 @@
  */
 void mirage_contextual_set_context (MirageContextual *self, MirageContext *context)
 {
-    return MIRAGE_CONTEXTUAL_GET_INTERFACE(self)->set_context(self, context);
+    MIRAGE_CONTEXTUAL_GET_INTERFACE(self)->set_context(self, context);
 }
 
 /**

@@ -606,15 +606,17 @@ end:
 /******************************************************************************\
  *                                Object init                                 *
 \******************************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserC2d,
-                               mirage_parser_c2d,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserC2d))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserC2d,
+    mirage_parser_c2d,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserC2d)
+)
 
 void mirage_parser_c2d_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_c2d_register_type(type_module);
+    mirage_parser_c2d_register_type(type_module);
 }
 
 static void mirage_parser_c2d_init (MirageParserC2d *self)
@@ -642,7 +644,7 @@ static void mirage_parser_c2d_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_c2d_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_c2d_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_c2d_finalize (GObject *gobject)
@@ -652,7 +654,7 @@ static void mirage_parser_c2d_finalize (GObject *gobject)
     g_free(self->priv->c2d_data);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_c2d_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_c2d_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_c2d_class_init (MirageParserC2dClass *klass)

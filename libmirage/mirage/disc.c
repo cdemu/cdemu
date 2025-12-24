@@ -1606,7 +1606,7 @@ static void mirage_disc_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_disc_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_disc_parent_class)->dispose(gobject);
 }
 
 static void mirage_disc_finalize (GObject *gobject)
@@ -1620,7 +1620,7 @@ static void mirage_disc_finalize (GObject *gobject)
     g_free(self->priv->dpm_data);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_disc_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_disc_parent_class)->finalize(gobject);
 }
 
 static void mirage_disc_class_init (MirageDiscClass *klass)

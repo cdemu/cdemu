@@ -320,15 +320,17 @@ static gboolean mirage_writer_iso_finalize_image (MirageWriter *_self, MirageDis
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageWriterIso,
-                               mirage_writer_iso,
-                               MIRAGE_TYPE_WRITER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageWriterIso))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageWriterIso,
+    mirage_writer_iso,
+    MIRAGE_TYPE_WRITER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageWriterIso)
+)
 
 void mirage_writer_iso_type_register (GTypeModule *type_module)
 {
-    return mirage_writer_iso_register_type(type_module);
+    mirage_writer_iso_register_type(type_module);
 }
 
 static void mirage_writer_iso_init (MirageWriterIso *self)
@@ -379,7 +381,7 @@ static void mirage_writer_iso_dispose (GObject *gobject)
     self->priv->image_file_streams = NULL;
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_writer_iso_parent_class)->dispose(gobject);
 }
 
 static void mirage_writer_iso_finalize (GObject *gobject)
@@ -390,7 +392,7 @@ static void mirage_writer_iso_finalize (GObject *gobject)
     g_free(self->priv->image_file_basename);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_writer_iso_parent_class)->finalize(gobject);
 }
 
 static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)

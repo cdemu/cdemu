@@ -471,15 +471,17 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, MirageS
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserReadcd,
-                               mirage_parser_readcd,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserReadcd))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserReadcd,
+    mirage_parser_readcd,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserReadcd)
+)
 
 void mirage_parser_readcd_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_readcd_register_type(type_module);
+    mirage_parser_readcd_register_type(type_module);
 }
 
 
@@ -508,7 +510,7 @@ static void mirage_parser_readcd_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_readcd_finalize (GObject *gobject)
@@ -518,7 +520,7 @@ static void mirage_parser_readcd_finalize (GObject *gobject)
     g_free(self->priv->data_filename);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_readcd_class_init (MirageParserReadcdClass *klass)

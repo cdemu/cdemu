@@ -475,11 +475,13 @@ static goffset mirage_filter_stream_tell_impl (MirageFilterStream *self)
 \**********************************************************************/
 static void mirage_filter_stream_stream_init (MirageStreamInterface *iface);
 
-G_DEFINE_ABSTRACT_TYPE_WITH_CODE(MirageFilterStream,
-                                 mirage_filter_stream,
-                                 MIRAGE_TYPE_OBJECT,
-                                 G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_filter_stream_stream_init)
-                                 G_ADD_PRIVATE(MirageFilterStream))
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE(
+    MirageFilterStream,
+    mirage_filter_stream,
+    MIRAGE_TYPE_OBJECT,
+    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_filter_stream_stream_init)
+    G_ADD_PRIVATE(MirageFilterStream)
+)
 
 
 static void mirage_filter_stream_init (MirageFilterStream *self)
@@ -506,7 +508,7 @@ static void mirage_filter_stream_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_filter_stream_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_parent_class)->dispose(gobject);
 }
 
 
@@ -518,7 +520,7 @@ static void mirage_filter_stream_finalize (GObject *gobject)
     mirage_filter_stream_info_free(&self->priv->info);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_filter_stream_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_parent_class)->finalize(gobject);
 }
 
 static void mirage_filter_stream_class_init (MirageFilterStreamClass *klass)

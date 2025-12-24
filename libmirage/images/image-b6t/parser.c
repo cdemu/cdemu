@@ -1313,15 +1313,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserB6t,
-                               mirage_parser_b6t,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserB6t))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserB6t,
+    mirage_parser_b6t,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserB6t)
+)
 
 void mirage_parser_b6t_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_b6t_register_type(type_module);
+    mirage_parser_b6t_register_type(type_module);
 }
 
 
@@ -1359,7 +1361,7 @@ static void mirage_parser_b6t_finalize (GObject *gobject)
     g_free(self->priv->b6t_data);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_b6t_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_b6t_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_b6t_class_init (MirageParserB6tClass *klass)

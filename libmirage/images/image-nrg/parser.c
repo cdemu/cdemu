@@ -1087,15 +1087,17 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageParserNrg,
-                               mirage_parser_nrg,
-                               MIRAGE_TYPE_PARSER,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageParserNrg))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserNrg,
+    mirage_parser_nrg,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserNrg)
+)
 
 void mirage_parser_nrg_type_register (GTypeModule *type_module)
 {
-    return mirage_parser_nrg_register_type(type_module);
+    mirage_parser_nrg_register_type(type_module);
 }
 
 
@@ -1124,7 +1126,7 @@ static void mirage_parser_nrg_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->dispose(gobject);
 }
 
 
@@ -1135,7 +1137,7 @@ static void mirage_parser_nrg_finalize (GObject *gobject)
     g_free(self->priv->nrg_data);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_nrg_class_init (MirageParserNrgClass *klass)

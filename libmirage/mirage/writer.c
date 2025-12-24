@@ -819,7 +819,7 @@ static void mirage_writer_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_writer_parent_class)->dispose(gobject);
+    G_OBJECT_CLASS(mirage_writer_parent_class)->dispose(gobject);
 }
 
 static void mirage_writer_finalize (GObject *gobject)
@@ -839,7 +839,7 @@ static void mirage_writer_finalize (GObject *gobject)
     mirage_writer_info_free(&self->priv->info);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_writer_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_writer_parent_class)->finalize(gobject);
 }
 
 static void mirage_writer_class_init (MirageWriterClass *klass)

@@ -760,7 +760,7 @@ static void mirage_cdtext_coder_finalize (GObject *gobject)
     g_free(self->priv->blocks);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_cdtext_coder_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_cdtext_coder_parent_class)->finalize(gobject);
 }
 
 static void mirage_cdtext_coder_class_init (MirageCdTextCoderClass *klass)

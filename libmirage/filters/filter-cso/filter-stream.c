@@ -330,15 +330,17 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFilterStreamCso,
-                               mirage_filter_stream_cso,
-                               MIRAGE_TYPE_FILTER_STREAM,
-                               0,
-                               G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamCso))
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamCso,
+    mirage_filter_stream_cso,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamCso)
+)
 
 void mirage_filter_stream_cso_type_register (GTypeModule *type_module)
 {
-    return mirage_filter_stream_cso_register_type(type_module);
+    mirage_filter_stream_cso_register_type(type_module);
 }
 
 
@@ -373,7 +375,7 @@ static void mirage_filter_stream_cso_finalize (GObject *gobject)
     inflateEnd(&self->priv->zlib_stream);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_filter_stream_cso_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(mirage_filter_stream_cso_parent_class)->finalize(gobject);
 }
 
 static void mirage_filter_stream_cso_class_init (MirageFilterStreamCsoClass *klass)
