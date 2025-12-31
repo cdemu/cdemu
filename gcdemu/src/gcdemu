@@ -1377,8 +1377,8 @@ class gCDEMuPasswordDialog(Gtk.Dialog):
         entry = Gtk.Entry.new()
         entry.set_hexpand(True)
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
-        entry.connect("activate", lambda w: self.response(Gtk.ResponseType.OK))  # Allow the user to press enter for OK
         entry.set_visibility(False)
+        entry.set_activates_default(True)  # Activate default action (= accept) on ENTER key
         self.entry = entry
 
         self.vbox.show_all()
