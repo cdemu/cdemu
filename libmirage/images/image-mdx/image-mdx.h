@@ -79,6 +79,12 @@ typedef struct
 } MDX_EncryptionHeader;
 
 
+typedef enum
+{
+    MDX_MEDIUM_CD_ROM = 0, /* CD-ROM */
+    MDX_MEDIUM_DVD_ROM = 3, /* DVD-ROM */
+} MDX_MediumType;
+
 /* MDSv2/MDX descriptor header (96 bytes) */
 typedef struct
 {
@@ -86,10 +92,85 @@ typedef struct
     guint8 version_major; /* Format major version: 2 */
     guint8 version_minor; /* Format minor version: 0, 1 */
 
-    guint8 __unknown1__[70]; /* TODO */
-    guint32 encryption_header_offset; /* Offset to encryption header for encrypted track data. */
+    guint16 medium_type; /* Medium type */
+    guint16 num_sessions; /* Number of sessions */
+
+    guint8 __unknown1__[58]; /* TODO */
+
+    guint32 sessions_blocks_offset; /* Offset to session blocks */
     guint32 __unknown2__;
+    guint32 encryption_header_offset; /* Offset to encryption header for encrypted track data. */
+    guint32 __unknown3__;
 } MDX_DescriptorHeader;
+
+/* Session block (32 bytes) */
+typedef struct
+{
+    guint64 session_start; /* Session's start address */
+    guint16 session_number; /* Session number */
+    guint8 num_all_blocks; /* Number of all data blocks */
+    guint8 num_nontrack_blocks; /* Number of lead-in data blocks */
+    guint16 first_track; /* First track in session */
+    guint16 last_track; /* Last track in session */
+    guint32 __unknown1__;
+    guint32 tracks_blocks_offset; /* Offset of lead-in+regular track data blocks. */
+    guint64 session_end; /* Session's end address */
+} MDX_SessionBlock;
+
+/* Track block (80 bytes) */
+typedef struct
+{
+    guint8 mode;  /* Track mode */
+    guint8 subchannel;  /* Subchannel mode */
+
+    /* These are the fields from Sub-channel Q information, which are
+     * also returned in full TOC by READ TOC/PMA/ATIP command */
+    guint8 adr_ctl; /* Adr/Ctl */
+    guint8 tno; /* Track number field */
+    guint8 point; /* Point field (= track number for track entries) */
+    guint8 min; /* Min */
+    guint8 sec; /* Sec */
+    guint8 frame; /* Frame */
+    guint8 zero; /* Zero */
+    guint8 pmin; /* PMin */
+    guint8 psec; /* PSec */
+    guint8 pframe; /* PFrame */
+
+    guint32 extra_offset; /* Start offset of this track's extra block. */
+    guint16 sector_size; /* Sector size. */
+
+    guint8 __unknown1__[18];
+
+    guint32 start_sector; /* Track start sector (PLBA). */
+    guint64 start_offset; /* Track start offset. */
+    guint32 footer_count; /* Number of footer entries (= number of files when split) */
+    guint32 footer_offset; /* Start offset of footer. */
+
+    guint64 start_sector64; /* TODO - MDSv2 specific */
+    guint64 track_length64; /* TODO - MDSv2 specific */
+
+    guint8 __unknown2__[8];
+} MDX_TrackBlock;
+
+/* Extra track block (8 bytes) */
+typedef struct
+{
+    guint32 pregap; /* Number of sectors in pregap. */
+    guint32 length; /* Number of sectors in track. */
+} MDX_TrackExtraBlock;
+
+/* Footer block (32 bytes) */
+typedef struct
+{
+    guint32 filename_offset; /* Start offset of image filename. */
+    guint8 flags;
+    guint8 __unknown1__;
+    guint16 __unknown2__;
+    guint32 __unknown3__;
+    guint32 blocks_in_compression_group; /* Number of blocks in compression group */
+    guint64 track_data_length; /* Length of trackk */
+    guint64 compression_table_offset; /* Offset to compression table */
+} MDX_Footer;
 
 
 gboolean mdx_crypto_decipher_main_encryption_header (MDX_EncryptionHeader *header, GError **error);

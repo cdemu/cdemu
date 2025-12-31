@@ -38,6 +38,9 @@ struct _MirageParserMdxPrivate
     /* Descriptor file stream */
     MirageStream *stream;
 
+    /* MDX vs MDS+MDF */
+    gboolean is_mdx;
+
     /* Descriptor data (decrypted and uncompressed) */
     guint8 *descriptor_data;
     guint64 descriptor_size;
@@ -45,6 +48,8 @@ struct _MirageParserMdxPrivate
     /* Optional encryption header for encrypted track data; pointer into
      * descriptor data buffer. */
     const MDX_EncryptionHeader *data_encryption_header;
+
+    gint64 prev_session_end;
 };
 
 
@@ -67,9 +72,489 @@ void mirage_parser_mdx_type_register (GTypeModule *type_module)
 \**********************************************************************/
 static inline void mdx_descriptor_header_fix_endian (MDX_DescriptorHeader *header)
 {
+    header->medium_type = GUINT16_FROM_LE(header->medium_type);
+    header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
+    header->sessions_blocks_offset = GUINT32_FROM_LE(header->sessions_blocks_offset);
     header->encryption_header_offset = GUINT32_FROM_LE(header->encryption_header_offset);
 }
 
+static inline void mdx_session_block_fix_endian (MDX_SessionBlock *block)
+{
+    block->session_start = GUINT64_FROM_LE(block->session_start);
+    block->session_number = GUINT16_FROM_LE(block->session_number);
+    block->first_track = GUINT16_FROM_LE(block->first_track);
+    block->last_track = GUINT16_FROM_LE(block->last_track);
+    block->__unknown1__ = GUINT32_FROM_LE(block->__unknown1__);
+    block->tracks_blocks_offset = GUINT32_FROM_LE(block->tracks_blocks_offset);
+    block->session_end = GUINT64_FROM_LE(block->session_end);
+}
+
+static inline void mdx_track_block_fix_endian (MDX_TrackBlock *block)
+{
+    block->extra_offset = GUINT32_FROM_LE(block->extra_offset);
+    block->sector_size = GUINT16_FROM_LE(block->sector_size);
+
+    block->start_sector = GUINT32_FROM_LE(block->start_sector);
+    block->start_offset = GUINT64_FROM_LE(block->start_offset);
+    block->footer_count = GUINT32_FROM_LE(block->footer_count);
+    block->footer_offset = GUINT32_FROM_LE(block->footer_offset);
+
+    block->start_sector64 = GUINT64_FROM_LE(block->start_sector64);
+    block->track_length64 = GUINT64_FROM_LE(block->track_length64);
+}
+
+static inline void mdx_track_extra_block_fix_endian (MDX_TrackExtraBlock *block)
+{
+    block->pregap = GUINT32_FROM_LE(block->pregap);
+    block->length = GUINT32_FROM_LE(block->length);
+}
+
+
+static inline void mdx_footer_fix_endian (MDX_Footer *block)
+{
+    block->filename_offset = GUINT32_FROM_LE(block->filename_offset);
+    block->__unknown2__ = GUINT16_FROM_LE(block->__unknown2__);
+    block->__unknown3__ = GUINT32_FROM_LE(block->__unknown3__);
+    block->blocks_in_compression_group = GUINT32_FROM_LE(block->blocks_in_compression_group);
+    block->track_data_length = GUINT64_FROM_LE(block->track_data_length);
+    block->compression_table_offset = GUINT64_FROM_LE(block->compression_table_offset);
+}
+
+static inline void widechar_filename_fix_endian (gunichar2 *filename)
+{
+    for (guint i = 0; ; i++) {
+        filename[i] = GUINT16_FROM_LE(filename[i]);
+        if (!filename[i]) {
+            break;
+        }
+    }
+}
+
+
+/**********************************************************************\
+ *                         Parsing functions                          *
+\**********************************************************************/
+static gchar *_helper_find_binary_file (const gchar *declared_filename, const gchar *mds_filename)
+{
+    gchar *bin_filename;
+    gchar *bin_fullpath;
+
+    /* Is the filename in form of '*.mdf'? */
+    GRegex *ext_regex = g_regex_new("\\*\\.(?<ext>\\w+)", 0, 0, NULL);
+    GMatchInfo *match_info = NULL;
+    if (g_regex_match(ext_regex, declared_filename, 0, &match_info)) {
+        /* Replace the extension in mds_filename */
+        gchar *ext = g_match_info_fetch_named(match_info, "ext");
+        GRegex *mds_regex = g_regex_new("(?<ext>\\w+)$", 0, 0, NULL);
+        bin_filename = g_regex_replace(mds_regex, mds_filename, -1, 0, ext, 0, NULL);
+
+        g_regex_unref(mds_regex);
+        g_free(ext);
+    } else {
+        bin_filename = g_strdup(declared_filename);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(ext_regex);
+
+    bin_fullpath = mirage_helper_find_data_file(bin_filename, mds_filename);
+    g_free(bin_filename);
+
+    return bin_fullpath;
+}
+
+static gchar *mirage_parser_mdx_get_mdf_filename (MirageParserMdx *self, const gchar *descriptor_filename, const MDX_Footer *footer_block, GError **error)
+{
+    gchar *tmp_mdf_filename;
+    gchar *mdf_filename;
+
+    /* In contrast to MDSv1, MDX/MDSv2 always seems to be using 16-bit (wide)
+     * characters, and the field in footer block that used to denote whether
+     * wide characters are used or not now has a different meaning. */
+    gunichar2 *tmp_ptr = (gunichar2 *)(self->priv->descriptor_data + footer_block->filename_offset);
+    widechar_filename_fix_endian(tmp_ptr);
+    tmp_mdf_filename = g_utf16_to_utf8(tmp_ptr, -1, NULL, NULL, NULL);
+
+    /* Find binary file */
+    mdf_filename = _helper_find_binary_file(tmp_mdf_filename, descriptor_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDF filename: <%s> -> <%s>\n", __debug__, tmp_mdf_filename, mdf_filename);
+    g_free(tmp_mdf_filename);
+
+    if (!mdf_filename) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, Q_("Failed to find data file!"));
+        return NULL;
+    }
+
+    return mdf_filename;
+}
+
+
+static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MDX_SessionBlock *session_block, GError **error)
+{
+    MDX_TrackBlock *track_blocks;
+    MirageSession *session;
+    gint medium_type;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing track blocks\n", __debug__);
+
+    /* Fetch medium type, which we will need later */
+    medium_type = mirage_disc_get_medium_type(self->priv->disc);
+
+    /* Get current session */
+    session = mirage_disc_get_session_by_index(self->priv->disc, -1, error);
+    if (!session) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __debug__);
+        return FALSE;
+    }
+
+    /* Process track blocks */
+    track_blocks = (MDX_TrackBlock *)(self->priv->descriptor_data + session_block->tracks_blocks_offset);
+    for (guint i = 0; i < session_block->num_all_blocks; i++) {
+        MDX_TrackExtraBlock *extra_block = NULL;
+
+        /* Read main track block */
+        MDX_TrackBlock *track_block = &track_blocks[i];
+        mdx_track_block_fix_endian(track_block);
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __debug__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, track_block->mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n", __debug__, track_block->subchannel);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  adr/ctl: 0x%X\n", __debug__, track_block->adr_ctl);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  tno: 0x%X\n", __debug__, track_block->tno);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  point: 0x%X\n", __debug__, track_block->point);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  min: 0x%X\n", __debug__, track_block->min);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sec: 0x%X\n", __debug__, track_block->sec);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frame: 0x%X\n", __debug__, track_block->frame);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  zero: 0x%X\n", __debug__, track_block->zero);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pmin: 0x%X\n", __debug__, track_block->pmin);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  psec: 0x%X\n", __debug__, track_block->psec);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pframe: 0x%X\n", __debug__, track_block->pframe);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  extra offset: 0x%X\n", __debug__, track_block->extra_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, track_block->sector_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __debug__, track_block->start_sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, track_block->start_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer count: 0x%X\n", __debug__, track_block->footer_count);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n", __debug__, track_block->footer_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector (64-bit): 0x%" G_GINT64_MODIFIER "X\n", __debug__, track_block->start_sector64);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track length (64-bit): 0x%" G_GINT64_MODIFIER "X\n", __debug__, track_block->track_length64);
+
+        /* Read extra track block, if applicable; it seems that only CD images
+         * have extra blocks, though. For DVD images, extra_offset is set to 0. */
+        if (medium_type == MIRAGE_MEDIUM_CD && track_block->extra_offset) {
+            extra_block = (MDX_TrackExtraBlock *)(self->priv->descriptor_data + track_block->extra_offset);
+            mdx_track_extra_block_fix_endian(extra_block);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: extra block #%i:\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap: 0x%X\n", __debug__, extra_block->pregap);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __debug__, extra_block->length);
+        }
+
+        /* Read footer, if applicable */
+        if (track_block->footer_offset) {
+            MDX_Footer *footer_blocks = (MDX_Footer *)(self->priv->descriptor_data + track_block->footer_offset);
+            for (guint j = 0; j < track_block->footer_count; j++) {
+                MDX_Footer *footer_block = &footer_blocks[j];
+                mdx_footer_fix_endian(footer_block);
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i - %i:\n", __debug__, i, j);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __debug__, footer_block->filename_offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: 0x%X\n", __debug__, footer_block->flags);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown1: 0x%X\n", __debug__, footer_block->__unknown1__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown2: 0x%X\n", __debug__, footer_block->__unknown2__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown3: 0x%X\n", __debug__, footer_block->__unknown3__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks in compression group: 0x%X\n", __debug__, footer_block->blocks_in_compression_group);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track data length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, footer_block->track_data_length);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  compression table offset: 0x%" G_GINT64_MODIFIER "X\n", __debug__, footer_block->compression_table_offset);
+            }
+        }
+
+        if (track_block->point >= 99) {
+            /* Non-track block; skip */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track entry 0x%X\n", __debug__, track_block->point);
+            continue;
+        }
+
+        /* Track entry */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: entry is for track %i\n", __debug__, track_block->point);
+
+        /* Decode track mode */
+        /* It seems lowest three bytes encode the sector type, while higher
+         * bits are flags that denote availability of extra data (sync
+         * pattern, header, subheader, EDC/ECC). */
+        gint converted_mode;
+        guint expected_sector_size;
+
+        switch (track_block->mode & 0x07) {
+            case 1: {
+                converted_mode = MIRAGE_SECTOR_AUDIO;
+                expected_sector_size = 2352;
+                break;
+            }
+            case 2: {
+                converted_mode = MIRAGE_SECTOR_MODE1;
+                expected_sector_size = 2048;
+                break;
+            }
+            case 3: {
+                converted_mode = MIRAGE_SECTOR_MODE2;
+                expected_sector_size = 2336;
+                break;
+            }
+            case 4: {
+                converted_mode = MIRAGE_SECTOR_MODE2_FORM1;
+                expected_sector_size = 2048;
+                break;
+            }
+            case 5: {
+                converted_mode = MIRAGE_SECTOR_MODE2_FORM2;
+                expected_sector_size = 2324;
+                break;
+            }
+            default: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported track mode 0x%X!\n", __debug__, (track_block->mode & 0x07));
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported track mode!"));
+                g_object_unref(session);
+                return FALSE;
+            }
+        }
+
+        /* TODO: account for extra main-channel data and for subchannel data! */
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X\n", __debug__, converted_mode);
+        if (expected_sector_size != track_block->sector_size) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected sector size - expected 0x%X, found 0x%X!\n", __debug__, expected_sector_size, track_block->sector_size);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track sector size mismatch!"));
+            g_object_unref(session);
+            return FALSE;
+        }
+
+        /* Create track */
+        MirageTrack *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+        if (!mirage_session_add_track_by_number(session, track_block->point, track, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
+            g_object_unref(track);
+            g_object_unref(session);
+            return FALSE;
+        }
+
+        mirage_track_set_sector_type(track, converted_mode);
+
+        /* Flags: decoded from Ctl */
+        mirage_track_set_ctl(track, track_block->adr_ctl & 0x0F);
+
+        /* MDS format doesn't seem to store pregap data in its data file;
+         * therefore, we need to provide NULL fragment for pregap */
+        if (extra_block && extra_block->pregap) {
+            MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
+
+            mirage_fragment_set_length(fragment, extra_block->pregap);
+
+            mirage_track_add_fragment(track, -1, fragment);
+            g_object_unref(fragment);
+
+            mirage_track_set_track_start(track, extra_block->pregap);
+        }
+
+        /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
+         * files are split on sector boundary, which means we can simply represent them with multiple data
+         * fragments. Note that MDX does not seem to support splitting. */
+        if (!track_block->footer_offset) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track has no footer blocks!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track has no footer blocks!"));
+            return FALSE;
+        }
+
+        const MDX_Footer *footer_blocks = (MDX_Footer *)(self->priv->descriptor_data + track_block->footer_offset);
+        for (guint j = 0; j < track_block->footer_count; j++) {
+            const MDX_Footer *footer_block = &footer_blocks[j];
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment for footer block #%i\n", __debug__, j);
+
+            /* Data file */
+            gchar *data_filename = NULL;
+            if (self->priv->is_mdx) {
+                /* In MDX image, the data is included in MDX file; so filename offset is expected to be zero. */
+                if (footer_block->filename_offset != 0) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: non-zero filename offset in footer block of MDX image!\n", __debug__);
+                }
+                data_filename = g_strdup(mirage_stream_get_filename(self->priv->stream));
+            } else {
+                /* In MDSv2 image, the data is in external MDF file(s), so we need a valid filename offset. */
+                if (footer_block->filename_offset == 0) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: zero filename offset found in footer block of MDSv2 image!\n", __debug__);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Zero-valued filename offset found in footer block!"));
+                    return FALSE;
+                }
+
+                data_filename = mirage_parser_mdx_get_mdf_filename(self, mirage_stream_get_filename(self->priv->stream), footer_block, error);
+                if (!data_filename) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get MDF filename!\n", __debug__);
+                    g_object_unref(track);
+                    g_object_unref(session);
+                    return FALSE;
+                }
+            }
+
+            /* Data stream */
+            MirageStream *data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), data_filename, error);
+            if (!data_stream) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on data file: %s!\n", __debug__, data_filename);
+                g_free(data_filename);
+                g_object_unref(track);
+                g_object_unref(session);
+                return FALSE;
+            }
+            g_free(data_filename);
+
+            /* Fragment properties */
+            guint64 main_offset = 0; /* Corrected below, if needed */
+            gint main_size = track_block->sector_size;
+            gint main_format = 0;
+
+            gint subchannel_size = 0; /* TODO */
+            gint subchannel_format = 0; /* TODO */
+
+            if (j == 0) {
+                /* Apply offset only if it is the first file... */
+                main_offset = track_block->start_offset;
+            }
+
+            if (converted_mode == MIRAGE_SECTOR_AUDIO) {
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
+            } else {
+                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
+            }
+
+            /* Determine fragment's length */
+            gint64 fragment_len = 0;
+            if (medium_type == MIRAGE_MEDIUM_CD) {
+                /* For CDs, track lengths are stored in extra block... and we assume
+                 * this is the same as fragment's length */
+                fragment_len = extra_block->length;
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
+            } else {
+                /* For DVDs, -track- length seems to be stored in extra_offset;
+                 * however, since DVD images can have split MDF files, we need
+                 * to calculate the individual framgents' lengths ourselves... */
+                mirage_stream_seek(data_stream, 0, G_SEEK_END, NULL);
+                fragment_len = mirage_stream_tell(data_stream);
+
+                fragment_len = (fragment_len - main_offset)/(main_size + subchannel_size); /* We could've just divided by 2048, too :) */
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
+            }
+
+            /* Create data fragment */
+            MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+
+            mirage_fragment_set_length(fragment, fragment_len);
+
+            /* Set stream */
+            mirage_fragment_main_data_set_stream(fragment, data_stream);
+            g_object_unref(data_stream);
+
+            mirage_fragment_main_data_set_offset(fragment, main_offset);
+            mirage_fragment_main_data_set_size(fragment, main_size);
+            mirage_fragment_main_data_set_format(fragment, main_format);
+
+            mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
+            mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
+
+            mirage_track_add_fragment(track, -1, fragment);
+            g_object_unref(fragment);
+        }
+
+        g_object_unref(track);
+    }
+
+    g_object_unref(session);
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_mdx_parse_sessions (MirageParserMdx *self, GError **error)
+{
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+
+    MDX_SessionBlock *session_blocks;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing session blocks (%i)\n", __debug__, descriptor_header->num_sessions);
+
+    /* Process session blocks */
+    session_blocks = (MDX_SessionBlock *)(self->priv->descriptor_data + descriptor_header->sessions_blocks_offset);
+    for (gint i = 0; i < descriptor_header->num_sessions; i++) {
+        MDX_SessionBlock *session_block = &session_blocks[i];
+        mdx_session_block_fix_endian(session_block);
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session block #%i:\n", __debug__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start address: 0x%" G_GINT64_MODIFIER "X\n", __debug__, session_block->session_start);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number: %i\n", __debug__, session_block->session_number);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of all blocks: %i\n", __debug__, session_block->num_all_blocks);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of non-track block: %i\n", __debug__, session_block->num_nontrack_blocks);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first track: %i\n", __debug__, session_block->first_track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  last track: %i\n", __debug__, session_block->last_track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown1: 0x%X\n", __debug__, session_block->__unknown1__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track blocks offset: 0x%X\n", __debug__, session_block->tracks_blocks_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end address: 0x%" G_GINT64_MODIFIER "X\n", __debug__, session_block->session_end);
+
+        /* If this is first session, we'll use its start address as disc start address;
+           if not, we need to calculate previous session's leadout length, based on
+           this session's start address and previous session's end... */
+        if (i == 0) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting disc's start to 0x%" G_GINT64_MODIFIER "X (%" G_GINT64_MODIFIER "i)\n", __debug__, session_block->session_start, session_block->session_start);
+            mirage_disc_layout_set_start_sector(self->priv->disc, session_block->session_start);
+        } else {
+            guint32 leadout_length = session_block->session_start - self->priv->prev_session_end;
+            MirageSession *prev_session;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous session's leadout length: 0x%X (%i)\n", __debug__, leadout_length, leadout_length);
+
+            /* Use -1 as an index, since we still haven't added current session */
+            prev_session = mirage_disc_get_session_by_index(self->priv->disc, -1, error);
+            if (!prev_session) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get previous session!\n", __debug__);
+                return FALSE;
+            }
+
+            mirage_session_set_leadout_length(prev_session, leadout_length);
+
+            g_object_unref(prev_session);
+        }
+        /* Actually, we could've gotten that one from A2 track entry as well...
+           but I'm lazy, and this will hopefully work as well */
+        self->priv->prev_session_end = session_block->session_end;
+
+        /* Add session */
+        MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        if (!mirage_disc_add_session_by_number(self->priv->disc, session_block->session_number, session, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
+            g_object_unref(session);
+            return FALSE;
+        }
+        g_object_unref(session);
+
+        /* Load tracks */
+        if (!mirage_parser_mdx_parse_track_entries(self, session_block, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entries!\n", __debug__);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **error)
+{
+    /* Sessions */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing sessions...\n", __debug__);
+    if (!mirage_parser_mdx_parse_sessions(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n", __debug__);
+        return FALSE;
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing sessions\n", __debug__);
+
+    return TRUE;
+}
 
 /**********************************************************************\
  *             MDX descriptor decompression and decryption            *
@@ -79,7 +564,6 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
     GError *local_error = NULL;
     gssize read_bytes;
 
-    gboolean is_mdx = FALSE;
     guint64 mdx_footer_offset = -1;
     guint64 mdx_footer_length = -1;
 
@@ -91,14 +575,14 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
          * bytes of PKCS#5 salt data at the end of primary encryption header.
          * The remaining 448 bytes of the primary encryption header do not
          * seem to be covered by this length. */
-        is_mdx = TRUE;
+        self->priv->is_mdx = TRUE;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX file detected. Reading footer offset and length...!\n", __debug__);
 
         read_bytes = mirage_stream_read(self->priv->stream, &mdx_footer_offset, sizeof(mdx_footer_offset), NULL);
         if (read_bytes != sizeof(mdx_footer_offset)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read MDX footer offset!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read MDX footer offset..."));
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read MDX footer offset!"));
             return FALSE;
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX footer offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, mdx_footer_offset, mdx_footer_offset);
@@ -120,6 +604,8 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
             return FALSE;
         }
     } else {
+        self->priv->is_mdx = FALSE;
+
         /* In MDSv2 file, the MDSv2/MDX header is followed by compressed
          * and encrypted descriptor data, followed by primary encryption
          * header (512 bytes), which spans to the end of file. So here
@@ -163,7 +649,7 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
     guint64 descriptor_offset;
     guint64 descriptor_size;
 
-    if (is_mdx) {
+    if (self->priv->is_mdx) {
         /* In MDX, descriptor data is located at the start of the footer */
         descriptor_offset = mdx_footer_offset;
         descriptor_size = mdx_footer_length - MDX_PKCS5_SALT_SIZE;
@@ -305,6 +791,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
 
     gssize read_bytes;
     MDX_FileHeader mdx_header;
+    gboolean succeeded;
 
     /* Check if we can load the image */
     self->priv->stream = g_object_ref(streams[0]);
@@ -386,6 +873,9 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX descriptor header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.16s\n", __debug__, descriptor_header->media_descriptor);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u.%u\n", __debug__, descriptor_header->version_major, descriptor_header->version_minor);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  medium type: 0x%X\n", __debug__, descriptor_header->medium_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: 0x%X\n", __debug__, descriptor_header->num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, descriptor_header->sessions_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  encryption header offset: 0x%X\n", __debug__, descriptor_header->encryption_header_offset);
 
     /* Check if descriptor contains encryption header for track data */
@@ -393,9 +883,47 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
         return FALSE;
     }
 
-    /* TODO: parse descriptor */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Parser not yet implemented!"));
-    return NULL;
+    /* Create disc */
+    self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
+
+    mirage_disc_set_filename(self->priv->disc, mirage_stream_get_filename(self->priv->stream));
+
+    /* Parse descriptor */
+    switch (descriptor_header->medium_type) {
+        case MDX_MEDIUM_CD_ROM: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
+            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
+            succeeded = mirage_parser_mdx_load_disc(self, error);
+            break;
+        }
+        case MDX_MEDIUM_DVD_ROM: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __debug__);
+            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
+            succeeded = mirage_parser_mdx_load_disc(self, error);
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium of type 0x%X not supported yet!\n", __debug__, descriptor_header->medium_type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Medium of type 0x%X not supported yet!"), descriptor_header->medium_type);
+            succeeded = FALSE;
+            break;
+        }
+    }
+
+    /* Cleanup */
+    g_free(self->priv->descriptor_data);
+    self->priv->descriptor_data = NULL;
+
+    /* Return disc */
+    if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+        return self->priv->disc;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        g_object_unref(self->priv->disc);
+        return NULL;
+    }
 }
 
 
