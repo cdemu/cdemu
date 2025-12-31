@@ -3119,6 +3119,7 @@ class MainWindow(Gtk.ApplicationWindow):
         entry = Gtk.Entry.new()
         entry.set_hexpand(True)
         entry.set_visibility(False)
+        entry.set_activates_default(True)  # Activate default action (= accept) on ENTER key
         grid.attach_next_to(entry, label, Gtk.PositionType.RIGHT, 1, 1)
 
         grid.show_all()
