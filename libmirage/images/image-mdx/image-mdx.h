@@ -173,10 +173,20 @@ typedef struct
 } MDX_Footer;
 
 
-gboolean mdx_crypto_decipher_main_encryption_header (MDX_EncryptionHeader *header, GError **error);
-gboolean mdx_crypto_decipher_data_encryption_header (MDX_EncryptionHeader *header, const gchar *password, gsize password_length, GError **error);
+gboolean mdx_crypto_decipher_encryption_header (
+    MDX_EncryptionHeader *header,
+    const gchar *password,
+    const gsize password_length,
+    const gboolean main_header,
+    GError **error
+);
 
-guint8 *mdx_crypto_decipher_and_decompress_descriptor(guint8 *data, gsize length, const MDX_EncryptionHeader *header, GError **error);
+guint8 *mdx_crypto_decipher_and_decompress_descriptor(
+    guint8 *data,
+    const gsize length,
+    const MDX_EncryptionHeader *header,
+    GError **error
+);
 
 
 #pragma pack()

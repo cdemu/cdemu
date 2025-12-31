@@ -632,7 +632,7 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
 
     /* Decipher encryption header */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to decipher encryption header...\n", __debug__);
-    if (!mdx_crypto_decipher_main_encryption_header(&encryption_header, &local_error)) {
+    if (!mdx_crypto_decipher_encryption_header(&encryption_header, NULL, 0, TRUE, &local_error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decipher encryption header: %s\n", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to decipher encryption header: %s!"), local_error->message);
         g_error_free(local_error);
@@ -733,6 +733,7 @@ static gboolean mirage_parser_mdx_read_data_encryption_header (MirageParserMdx *
         *encryption_header_out = NULL;
         return TRUE;
     }
+    MDX_EncryptionHeader *encryption_header = (MDX_EncryptionHeader *)(self->priv->descriptor_data + descriptor_header->encryption_header_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains encrypted data!\n", __debug__);
 
@@ -743,6 +744,31 @@ static gboolean mirage_parser_mdx_read_data_encryption_header (MirageParserMdx *
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unexpected size of encryption header for image data!"));
         return FALSE;
     }
+
+    /* First, attempt to decipher without a password (i.e., derive password from
+     * salt data, same as with descriptor's encryption header). This seems to be
+     * used by some profiles, such as TAGES, for password-less encryption of track
+     * data. */
+
+    /* As decipher is attempted in-place, we need to create a backup copy of
+     * encryption header data, so we can restore it for the password-based attempt. */
+    MDX_EncryptionHeader *header_backup = g_new(MDX_EncryptionHeader, 1);
+    if (!header_backup) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate buffer for encryption header backup!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate buffer!"));
+        return FALSE;
+    }
+    memcpy(header_backup, encryption_header, sizeof(MDX_EncryptionHeader));
+
+    if (mdx_crypto_decipher_encryption_header(encryption_header, NULL, 0, FALSE, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: encryption header deciphered without user password!\n", __debug__);
+        g_free(header_backup);
+        *encryption_header_out = encryption_header;
+        return TRUE;
+    }
+
+    memcpy(encryption_header, header_backup, sizeof(MDX_EncryptionHeader));
+    g_free(header_backup);
 
     /* We need password... */
     gchar *password;
@@ -765,11 +791,10 @@ static gboolean mirage_parser_mdx_read_data_encryption_header (MirageParserMdx *
     }
 
     /* Decipher encryption header */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to decipher encryption header...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to decipher encryption header with user-supplied password...\n", __debug__);
 
     GError *local_error = NULL;
-    MDX_EncryptionHeader *encryption_header = (MDX_EncryptionHeader *)(self->priv->descriptor_data + descriptor_header->encryption_header_offset);
-    if (!mdx_crypto_decipher_data_encryption_header(encryption_header, password, password_length, &local_error)) {
+    if (!mdx_crypto_decipher_encryption_header(encryption_header, password, password_length, FALSE, &local_error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decipher encryption header: %s\n", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to decipher encryption header for image data! Incorrect password?"));
         g_error_free(local_error);

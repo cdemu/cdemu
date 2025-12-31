@@ -335,11 +335,24 @@ static gboolean _mdx_crypto_decipher_encryption_header (
     return TRUE;
 }
 
-gboolean mdx_crypto_decipher_main_encryption_header (MDX_EncryptionHeader *header, GError **error)
+gboolean mdx_crypto_decipher_encryption_header (
+    MDX_EncryptionHeader *header,
+    const gchar *password,
+    const gsize password_length,
+    const gboolean main_header,
+    GError **error)
 {
+    /* If password is supplied (track data encryption header), use it. */
+    if (password) {
+        return _mdx_crypto_decipher_encryption_header(header, (const guint8 *)password, password_length, main_header, error);
+    }
+
     /* The password for descriptor's encryption header is derived from
      * the salt data; see the unshuffle1() function in implementation
-     * from https://github.com/Marisa-Chan/mdsx. */
+     * from https://github.com/Marisa-Chan/mdsx.
+     *
+     * The same scheme seems to be used with certain profiles (e.g., TAGES)
+     * for "password-less" encryption of track data. */
     guint32 password_buffer[MDX_PKCS5_SALT_SIZE / 4]; /* We will process buffer in 32-bit chunks! */
     memcpy(password_buffer, header->salt, MDX_PKCS5_SALT_SIZE);
 
@@ -362,13 +375,7 @@ gboolean mdx_crypto_decipher_main_encryption_header (MDX_EncryptionHeader *heade
         password_buffer[i] = buffer_value;
     }
 
-    return _mdx_crypto_decipher_encryption_header(header, (guint8 *)password_buffer, MDX_PKCS5_SALT_SIZE, TRUE, error);
-}
-
-
-gboolean mdx_crypto_decipher_data_encryption_header (MDX_EncryptionHeader *header, const gchar *password, gsize password_length, GError **error)
-{
-    return _mdx_crypto_decipher_encryption_header(header, (const guint8 *)password, password_length, FALSE, error);
+    return _mdx_crypto_decipher_encryption_header(header, (guint8 *)password_buffer, MDX_PKCS5_SALT_SIZE, main_header, error);
 }
 
 
@@ -377,7 +384,7 @@ gboolean mdx_crypto_decipher_data_encryption_header (MDX_EncryptionHeader *heade
 \**********************************************************************/
 guint8 *mdx_crypto_decipher_and_decompress_descriptor(
     guint8 *data,
-    gsize length,
+    const gsize length,
     const MDX_EncryptionHeader *header,
     GError **error
 )
