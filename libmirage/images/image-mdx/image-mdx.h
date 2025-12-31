@@ -98,7 +98,7 @@ typedef struct
     guint8 __unknown1__[58]; /* TODO */
 
     guint32 sessions_blocks_offset; /* Offset to session blocks */
-    guint32 __unknown2__;
+    guint32 dpm_blocks_offset; /* Offset to DPM data blocks */
     guint32 encryption_header_offset; /* Offset to encryption header for encrypted track data. */
     guint32 __unknown3__;
 } MDX_DescriptorHeader;

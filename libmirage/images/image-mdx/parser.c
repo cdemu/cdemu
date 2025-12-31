@@ -75,6 +75,7 @@ static inline void mdx_descriptor_header_fix_endian (MDX_DescriptorHeader *heade
     header->medium_type = GUINT16_FROM_LE(header->medium_type);
     header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
     header->sessions_blocks_offset = GUINT32_FROM_LE(header->sessions_blocks_offset);
+    header->dpm_blocks_offset = GUINT32_FROM_LE(header->dpm_blocks_offset);
     header->encryption_header_offset = GUINT32_FROM_LE(header->encryption_header_offset);
 }
 
@@ -118,6 +119,13 @@ static inline void mdx_footer_fix_endian (MDX_Footer *block)
     block->blocks_in_compression_group = GUINT32_FROM_LE(block->blocks_in_compression_group);
     block->track_data_length = GUINT64_FROM_LE(block->track_data_length);
     block->compression_table_offset = GUINT64_FROM_LE(block->compression_table_offset);
+}
+
+static inline void dpm_data_fix_endian (guint32 *dpm_data, guint32 num_entries)
+{
+    for (guint i = 0; i < num_entries; i++) {
+        dpm_data[i] = GUINT32_FROM_LE(dpm_data[i]);
+    }
 }
 
 static inline void widechar_filename_fix_endian (gunichar2 *filename)
@@ -543,6 +551,80 @@ static gboolean mirage_parser_mdx_parse_sessions (MirageParserMdx *self, GError 
     return TRUE;
 }
 
+static void mirage_parser_mds_parse_dpm_block (MirageParserMdx *self, const guint32 dpm_block_offset)
+{
+    guint8 *cur_ptr;
+
+    guint32 dpm_block_number;
+    guint32 dpm_start_sector;
+    guint32 dpm_resolution;
+    guint32 dpm_num_entries;
+
+    guint32 *dpm_data;
+
+    cur_ptr = self->priv->descriptor_data + dpm_block_offset;
+
+    /* DPM information */
+    dpm_block_number = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
+    cur_ptr += sizeof(guint32);
+
+    dpm_start_sector = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
+    cur_ptr += sizeof(guint32);
+
+    dpm_resolution = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
+    cur_ptr += sizeof(guint32);
+
+    dpm_num_entries = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
+    cur_ptr += sizeof(guint32);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block number: %d\n", __debug__, dpm_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: start sector: 0x%X\n", __debug__, dpm_start_sector);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resolution: %d\n", __debug__, dpm_resolution);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of entries: %d\n", __debug__, dpm_num_entries);
+
+    /* Read all entries */
+    dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
+
+    dpm_data_fix_endian(dpm_data, dpm_num_entries);
+
+    /* Set DPM data */
+    mirage_disc_set_dpm_data(self->priv->disc, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data);
+}
+
+static void mirage_parser_mds_parse_dpm_data (MirageParserMdx *self)
+{
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+
+    if (!descriptor_header->dpm_blocks_offset) {
+        /* No DPM data, nothing to do */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no DPM data found.\n", __debug__);
+        return;
+    }
+
+    guint8 *cur_ptr = self->priv->descriptor_data + descriptor_header->dpm_blocks_offset;
+
+    /* It would seem the first field is number of DPM data sets, followed by
+     * appropriate number of offsets for those data sets. */
+    guint32 num_dpm_blocks = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
+    cur_ptr += sizeof(guint32);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of DPM data blocks: %d\n", __debug__, num_dpm_blocks);
+
+    if (num_dpm_blocks > 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot correctly handle more than 1 DPM block yet!\n", __debug__);
+    }
+
+    /* Read each block */
+    guint32 *dpm_block_offset = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
+    for (guint i = 0; i < num_dpm_blocks; i++) {
+        dpm_block_offset[i] = GUINT32_FROM_LE(dpm_block_offset[i]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __debug__, i, dpm_block_offset[i]);
+        mirage_parser_mds_parse_dpm_block(self, dpm_block_offset[i]);
+        /* FIXME: currently, only first DPM block is loaded */
+        break;
+    }
+}
+
 static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **error)
 {
     /* Sessions */
@@ -552,6 +634,11 @@ static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **err
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing sessions\n", __debug__);
+
+    /* DPM data */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing DPM data...\n", __debug__);
+    mirage_parser_mds_parse_dpm_data(self);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing DPM data\n", __debug__);
 
     return TRUE;
 }
@@ -901,6 +988,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  medium type: 0x%X\n", __debug__, descriptor_header->medium_type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: 0x%X\n", __debug__, descriptor_header->num_sessions);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, descriptor_header->sessions_blocks_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n", __debug__, descriptor_header->dpm_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  encryption header offset: 0x%X\n", __debug__, descriptor_header->encryption_header_offset);
 
     /* Check if descriptor contains encryption header for track data */
