@@ -350,19 +350,24 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         /* Flags: decoded from Ctl */
         mirage_track_set_ctl(track, track_block->adr_ctl & 0x0F);
 
-        /* MDS format doesn't seem to store pregap data in its data file;
-         * therefore, we need to provide NULL fragment for pregap */
+        /* MDS format does not seem to store pregap data for the first track in its data file; therefore, we need
+         * to provide a NULL fragment. For subsequent tracks, the pregap data does seem to be included, as evident
+         * from comparison of declared track length in the extra block vs. length(s) declared in footer block(s). */
         if (extra_block && extra_block->pregap) {
-            MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+            if (track_block->point == 1) {
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %d has pregap of %d (0x%X) sectors; creating NULL fragment\n", __debug__, track_block->point, extra_block->pregap, extra_block->pregap);
 
-            mirage_fragment_set_length(fragment, extra_block->pregap);
+                mirage_fragment_set_length(fragment, extra_block->pregap);
 
-            mirage_track_add_fragment(track, -1, fragment);
-            g_object_unref(fragment);
+                mirage_track_add_fragment(track, -1, fragment);
+                g_object_unref(fragment);
 
-            mirage_track_set_track_start(track, extra_block->pregap);
+                mirage_track_set_track_start(track, extra_block->pregap);
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %d has pregap of %d (0x%X) sectors; assuming data is included in image\n", __debug__, track_block->point, extra_block->pregap, extra_block->pregap);
+            }
         }
 
         /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
@@ -435,23 +440,12 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
                 main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             }
 
-            /* Determine fragment's length */
-            gint64 fragment_len = 0;
-            if (medium_type == MIRAGE_MEDIUM_CD) {
-                /* For CDs, track lengths are stored in extra block... and we assume
-                 * this is the same as fragment's length */
-                fragment_len = extra_block->length;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
-            } else {
-                /* For DVDs, -track- length seems to be stored in extra_offset;
-                 * however, since DVD images can have split MDF files, we need
-                 * to calculate the individual framgents' lengths ourselves... */
-                mirage_stream_seek(data_stream, 0, G_SEEK_END, NULL);
-                fragment_len = mirage_stream_tell(data_stream);
-
-                fragment_len = (fragment_len - main_offset)/(main_size + subchannel_size); /* We could've just divided by 2048, too :) */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
-            }
+            /* Determine fragment's length; this corresponds to the declared
+             * length in the footer block. In case a track has multiple footer
+             * blocks (for example, data file split across several files), the
+             * sum of all lengths in track's footer blocks should match the
+             * length in the track's extra block (minus pregap, if any). */
+            gint64 fragment_len = footer_block->track_data_length;
 
             /* Create data fragment */
             MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -471,6 +465,23 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
             mirage_track_add_fragment(track, -1, fragment);
             g_object_unref(fragment);
+        }
+
+        /* Validate the track size. In CD-ROM images, the total track length
+         * is stored in the extra block (we need to add the pregap length,
+         * also available in the extra block!) .In DVD-ROM images, it is
+         * stored in the track_length64 field in the main track block (and
+         * annoyingly enough, it seems to be set to 0 for CD-ROM images). */
+        guint64 declared_track_length = extra_block ? (extra_block->length + extra_block->pregap) : track_block->track_length64;
+        guint64 total_track_length = mirage_track_layout_get_length(track);
+
+        if (total_track_length != declared_track_length) {
+            gint track_number = mirage_track_layout_get_track_number(track);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track length validation failed for track #%d - declared length is %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X) sectors, actual length is %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X) sectors!\n", __debug__, track_number, declared_track_length, declared_track_length, total_track_length, total_track_length);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track length validation failed for track #%d!"), track_number);
+            g_object_unref(track);
+            g_object_unref(session);
+            return FALSE;
         }
 
         g_object_unref(track);

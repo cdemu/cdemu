@@ -168,7 +168,7 @@ typedef struct
     guint16 __unknown2__;
     guint32 __unknown3__;
     guint32 blocks_in_compression_group; /* Number of blocks in compression group */
-    guint64 track_data_length; /* Length of trackk */
+    guint64 track_data_length; /* Number of sectors covered by this footer block. */
     guint64 compression_table_offset; /* Offset to compression table */
 } MDX_Footer;
 
