@@ -19,8 +19,8 @@
 
 #pragma once
 
-#define CDEMU_ERROR (cdemu_error_quark ())
-#define CDEMU_TYPE_ERROR (cdemu_error_get_type ())
+#define CDEMU_ERROR (cdemu_error_quark())
+#define CDEMU_TYPE_ERROR (cdemu_error_get_type())
 
 /* Error codes */
 enum

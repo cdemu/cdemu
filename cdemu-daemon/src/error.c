@@ -32,7 +32,7 @@ GQuark cdemu_error_quark (void)
 }
 
 
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
+#define ENUM_ENTRY(NAME, DESC) {NAME, "" #NAME "", DESC}
 GType cdemu_error_get_type (void)
 {
     static GType type = 0;
@@ -42,7 +42,7 @@ GType cdemu_error_get_type (void)
             ENUM_ENTRY(CDEMU_ERROR_ALREADY_LOADED, "AlreadyLoaded"),
             ENUM_ENTRY(CDEMU_ERROR_DEVICE_LOCKED, "DeviceLocked"),
             ENUM_ENTRY(CDEMU_ERROR_DAEMON_ERROR, "DaemonError"),
-            { 0, 0, 0 }
+            {0, 0, 0}
         };
 
         type = g_enum_register_static("CDEmuDaemonError", values);

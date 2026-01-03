@@ -40,8 +40,8 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __debug__, ioctl_ret);
     } else {
         /* FIXME: until we figure how to get SCSI CD-ROM and SCSI Generic Device
-           device paths directly from kernel, we'll have to live with parsing of the
-           sysfs dir :/ */
+         * device paths directly from kernel, we'll have to live with parsing of the
+         * sysfs dir :/ */
         gchar *sysfs_dev_path = g_strdup_printf("/sys/bus/scsi/devices/%i:%i:%i:%i", id[0], id[1], id[2], id[3]);
         GDir *dir_dev = g_dir_open(sysfs_dev_path, 0, NULL);
 

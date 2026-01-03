@@ -28,7 +28,7 @@
 \**********************************************************************/
 static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint num_sectors)
 {
-    gdouble rps = 12000.0/60; /* Rotations per second; fixed at 12000 RPMs for now */
+    gdouble rps = 12000.0 / 60; /* Rotations per second; fixed at 12000 RPMs for now */
     gdouble dpm_angle = 0;
     gdouble dpm_density = 0;
 
@@ -38,45 +38,45 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
     }
 
     /* Seek delay; emulates the time the laser head needs to move to the sector
-       you want to read. Related to random access. Also the part that makes
-       certain copy protections believe they're dealing with the real disc.
-
-       Essentially, number of rotations needed to seek over certain amount of
-       sectors changes with the sector density. Therefore, reading time depends
-       on where on the disc the seek is performed, again, in the same way that
-       sector density changes.
-
-       Copy protections seem to issue a series of seeks (actually, it's READ 10
-       commands, but they skip over bunch of sectors) at different locations on
-       the disc. It seems to follow the following pattern: first seek is "short"
-       (~13 sectors), followed by a "long" seek (~300 sectors), and then the
-       whole thing is repeated. The times per-se don't matter (as they're
-       determined by drive speed and other factors), but the ratios between them
-       do - they represent sector density pattern. The catch is, the ratios seem
-       to be determined for "short" seeks and for "long" seeks, separately. And
-       it would seem that if one of ratio sequences is close enough to expected
-       sector density pattern, disc passes the test.
-
-       Now the problem is that for long seeks, the time doesn't seem to be
-       proportional to the amount of rotations. It makes sense, because to seek
-       from beginning to end of the disc, it would take alot of rotations. The
-       only logical conclusion would be that the laser head doesn't follow the
-       spiral, like it does in case of small seeks, but takes a shortcut instead,
-       thereby saving time.
-
-       So until I figure how exactly to emulate that shortcutting time, we're
-       doing it the following way: for all seeks that require less than 10
-       rotations, emulate delay time that's proportional to number of rotations
-       (~50 ms max). If seek requires more than 10 rotations, we "move" head so
-       that it requires less than 10 rotations; head moving always requires 20 ms.
-       This way, the delay shouldn't be getting longer than ~70 ms, and sector
-       density measurements should still pass. */
+     * you want to read. Related to random access. Also the part that makes
+     * certain copy protections believe they're dealing with the real disc.
+     *
+     * Essentially, number of rotations needed to seek over certain amount of
+     * sectors changes with the sector density. Therefore, reading time depends
+     * on where on the disc the seek is performed, again, in the same way that
+     * sector density changes.
+     *
+     * Copy protections seem to issue a series of seeks (actually, it's READ 10
+     * commands, but they skip over bunch of sectors) at different locations on
+     * the disc. It seems to follow the following pattern: first seek is "short"
+     * (~13 sectors), followed by a "long" seek (~300 sectors), and then the
+     * whole thing is repeated. The times per-se don't matter (as they're
+     * determined by drive speed and other factors), but the ratios between them
+     * do - they represent sector density pattern. The catch is, the ratios seem
+     * to be determined for "short" seeks and for "long" seeks, separately. And
+     * it would seem that if one of ratio sequences is close enough to expected
+     * sector density pattern, disc passes the test.
+     *
+     * Now the problem is that for long seeks, the time doesn't seem to be
+     * proportional to the amount of rotations. It makes sense, because to seek
+     * from beginning to end of the disc, it would take alot of rotations. The
+     * only logical conclusion would be that the laser head doesn't follow the
+     * spiral, like it does in case of small seeks, but takes a shortcut instead,
+     * thereby saving time.
+     *
+     * So until I figure how exactly to emulate that shortcutting time, we're
+     * doing it the following way: for all seeks that require less than 10
+     * rotations, emulate delay time that's proportional to number of rotations
+     * (~50 ms max). If seek requires more than 10 rotations, we "move" head so
+     * that it requires less than 10 rotations; head moving always requires 20 ms.
+     * This way, the delay shouldn't be getting longer than ~70 ms, and sector
+     * density measurements should still pass. */
     if (self->priv->dpm_emulation) {
         gdouble rotations = 0;
 
         /* Actually, if we were to read a sector we've just read, we'd have to
-           perform a full rotation... but I guess we could say we've cached the
-           data? */
+         * perform a full rotation... but I guess we could say we've cached the
+         * data? */
         rotations = fabs(dpm_angle - self->priv->current_angle);
         self->priv->current_angle = dpm_angle;
 
@@ -95,16 +95,15 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
     }
 
     /* Transfer delay; emulates the time needed to read all the sectors. Related
-       to sequential access. Not really a crucial thing to emulate, but it gives
-       a nice(r) CAV curve in Nero CDSpeed.
-
-       This works on the same principle as the seek delay emulation above. It
-       could've been done by emulating seek delay for every sector to be read,
-       but it takes less function calls to do it here this way...
-    */
+     * to sequential access. Not really a crucial thing to emulate, but it gives
+     * a nice(r) CAV curve in Nero CDSpeed.
+     *
+     * This works on the same principle as the seek delay emulation above. It
+     * could've been done by emulating seek delay for every sector to be read,
+     * but it takes less function calls to do it here this way... */
     if (self->priv->tr_emulation) {
-        gdouble spr = 360.0/dpm_density; /* Sectors per rotation */
-        gdouble sps = spr*rps; /* Sectors per second */
+        gdouble spr = 360.0 / dpm_density; /* Sectors per rotation */
+        gdouble sps = spr * rps; /* Sectors per second */
 
         CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: %d sectors at %f sectors/second\n", __debug__, num_sectors, sps);
         self->priv->delay_amount += num_sectors/sps*1000000; /* Delay, in microseconds */
@@ -118,7 +117,7 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
 void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors)
 {
     /* Simply get current time here; we'll need it to compensate for processing
-       time when performing actual delay */
+     * time when performing actual delay */
     self->priv->delay_begin = g_get_monotonic_time();
 
     /* Reset delay */

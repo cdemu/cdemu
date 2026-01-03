@@ -24,9 +24,9 @@
 
 
 /* Mode pages: we initialize three instances of each supported page; one to
-   store current values, one to store default values, and one to store mask
-   which indicates which values can be changed. Plus, we optionally define
-   a validator for validating mode page data set via MODE SELECT command */
+ * store current values, one to store default values, and one to store mask
+ * which indicates which values can be changed. Plus, we optionally define
+ * a validator for validating mode page data set via MODE SELECT command */
 
 
 /**********************************************************************\
@@ -72,7 +72,7 @@ static inline struct ModePageEntry *initialize_mode_page (gint code, gint size, 
     entry->validate_new_data = validator;
 
     /* Initialize default page and mask; current page is initialized in
-       append_mode_page() function */
+     * append_mode_page() function */
     struct ModePageGeneral *page_default = entry->page_default;
     struct ModePageGeneral *page_mask = entry->page_mask;
 
@@ -141,7 +141,7 @@ static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_d
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
 
     /* At the moment, we do not support incremental/packet recording, nor
-       layer-jump recording */
+     * layer-jump recording */
     if (new_page->write_type == 0x00 || new_page->write_type == 0x04) {
         return FALSE;
     }
@@ -195,10 +195,10 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode page 0x01: Read/Write Error Recovery Parameters Mode Page ***/
     /* IMPLEMENTATION NOTE: read retry is set to 1, because we're a virtual
-       device and as such don't need to do any retries (it's the value that
-       Alchohol 120% virtual device reports as well). We allow it to be changed,
-       though, since it makes no difference. We do allow DCR bit to be changed,
-       too, because according to INF8020 it affects the way subchannel is read */
+     * device and as such don't need to do any retries (it's the value that
+     * Alchohol 120% virtual device reports as well). We allow it to be changed,
+     * though, since it makes no difference. We do allow DCR bit to be changed,
+     * too, because according to INF8020 it affects the way subchannel is read */
     mode_page = initialize_mode_page(0x01, sizeof(struct ModePage_0x01), &mode_page_0x01_validator);
     if (mode_page) {
         struct ModePage_0x01 *page = mode_page->page_default;
@@ -270,8 +270,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode Page 0x0D: CD Device Parameters Mode Page ****/
     /* IMPLEMENTATION NOTE: this one is marked as reserved in ATAPI, but all
-       my drives return it anyway. We just set seconds per minutes and frames
-       per second values, with no option of changing anything */
+     * my drives return it anyway. We just set seconds per minutes and frames
+     * per second values, with no option of changing anything */
     mode_page = initialize_mode_page(0x0D, sizeof(struct ModePage_0x0D), NULL);
     if (mode_page) {
         struct ModePage_0x0D *page = mode_page->page_default;
@@ -284,9 +284,9 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode Page 0x0E: CD Audio Control Mode Page ***/
     /* IMPLEMENTATION NOTE: IMMED bit is set to 1 in accord with ATAPI, and SOTC
-       to 0. There is an obsolete field that is set to 75 according to ATAPI,
-       and two unmuted audio ports (1 and 2). We don't support changing of IMMED,
-       but SOTC can be changed, and so can all port-related fields */
+     * to 0. There is an obsolete field that is set to 75 according to ATAPI,
+     * and two unmuted audio ports (1 and 2). We don't support changing of IMMED,
+     * but SOTC can be changed, and so can all port-related fields */
     mode_page = initialize_mode_page(0x0E, sizeof(struct ModePage_0x0E), NULL);
     if (mode_page) {
         struct ModePage_0x0E *page = mode_page->page_default;
@@ -329,7 +329,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode Page 0x2A: CD/DVD Capabilities and Mechanical Status Mode Page ***/
     /* IMPLEMENTATION NOTE: We claim to do things we can (more or less),
-       and nothing can be changed, just like INF8090 says. */
+     * and nothing can be changed, just like INF8090 says. */
     mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A), NULL);
     if (mode_page) {
         struct ModePage_0x2A *page = mode_page->page_default;
@@ -387,8 +387,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
     /* We resize the "current" Mode Page 0x2A to provide space for
-       maximum of 6 Write Speed Performance Descriptors, which are then
-       dynamically loaded into the page when profile changes. */
+     * maximum of 6 Write Speed Performance Descriptors, which are then
+     * dynamically loaded into the page when profile changes. */
     if (1) {
         gint desc_length = MODE_PAGE_0x2A_MAX_DESCRIPTORS*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor);
         mode_page->page_current = g_realloc(mode_page->page_current, sizeof(struct ModePage_0x2A) + desc_length);

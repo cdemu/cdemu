@@ -52,7 +52,8 @@ static void device_mapping_ready_handler (CdemuDevice *device, CdemuDaemon *self
 /**********************************************************************\
  *                     Device restart on inactivity                   *
 \**********************************************************************/
-struct DaemonDevicePtr {
+struct DaemonDevicePtr
+{
     CdemuDaemon *daemon;
     CdemuDevice *device;
 };
@@ -79,8 +80,8 @@ static gboolean device_restart_callback (struct DaemonDevicePtr *data)
 }
 
 /* The signal handler; since the signal is emitted from the device's
-   I/O thread, this handler is also executed there... so we need to get
-   into our main thread first, which is done by scheduling an idle function */
+ * I/O thread, this handler is also executed there... so we need to get
+ * into our main thread first, which is done by scheduling an idle function */
 static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *self)
 {
     struct DaemonDevicePtr *data = g_new(struct DaemonDevicePtr, 1);
@@ -122,15 +123,15 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, const CdemuDaemon
     ao_initialize();
 
     /* Make sure the D-BUS name we're going to use isn't taken already (by another
-       instance of the server). We're actually going to claim it once we create
-       the devices, but we want to avoid the device creation if name claim is
-       already doomed to fail... */
+     * instance of the server). We're actually going to claim it once we create
+     * the devices, but we want to avoid the device creation if name claim is
+     * already doomed to fail... */
     if (!cdemu_daemon_dbus_check_if_name_is_available(self, self->priv->bus_type)) {
         return FALSE;
     }
 
     /* Try connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1
-       so we can stop/start devices when system enters/exits suspend/hibernation. */
+     * so we can stop/start devices when system enters/exits suspend/hibernation. */
     if (settings->use_system_sleep_handler) {
 #if ENABLE_LOGIND_SLEEP_HANDLER
         GError *error = NULL;
@@ -295,7 +296,7 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
     /* Don't set parent, as devices have their own debug contexts */
 
     /* Add handling for signals from the device... this allows us to
-       pass them on via DBUS */
+     * pass them on via DBUS */
     g_signal_connect(device, "status-changed", G_CALLBACK(device_status_changed_handler), self);
     g_signal_connect(device, "option-changed", G_CALLBACK(device_option_changed_handler), self);
     g_signal_connect(device, "kernel-io-error", G_CALLBACK(device_kernel_io_error_handler), self);

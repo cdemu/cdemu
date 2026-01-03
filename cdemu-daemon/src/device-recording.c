@@ -95,7 +95,7 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)\n", __debug__, self->priv->num_leadin_cdtext_packs);
 
             /* Copy all packs' data into single buffer, and decode it
-               into session */
+             * into session */
             gint cdtext_data_len = self->priv->num_leadin_cdtext_packs * 18;
             guint8 *cdtext_data = g_malloc0(cdtext_data_len);
             guint8 *ptr = cdtext_data;
@@ -182,9 +182,9 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
     guint8 *ptr = cdtext_data;
 
     for (gint i = 0; i < 96; i += 4) {
-        ptr[0] = ((subchannel[i] << 2) & 0xFC)     | ((subchannel[i + 1] >> 4) & 0x03);
+        ptr[0] = ((subchannel[i]     << 2) & 0xFC) | ((subchannel[i + 1] >> 4) & 0x03);
         ptr[1] = ((subchannel[i + 1] << 4) & 0xF0) | ((subchannel[i + 2] >> 2) & 0x0F);
-        ptr[2] = ((subchannel[i + 2] << 6) & 0xC0) | (subchannel[i + 3] & 0x3F);
+        ptr[2] = ((subchannel[i + 2] << 6) & 0xC0) |  (subchannel[i + 3]       & 0x3F);
         ptr += 3;
     }
 
@@ -197,7 +197,7 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
         }
 
         /* This assumes that CD-TEXT packs are ordered, which is hopefully
-           reasonable */
+         * reasonable */
         if (ptr[2] >= self->priv->num_leadin_cdtext_packs) {
 #if GLIB_CHECK_VERSION(2, 68, 0)
             self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup2(ptr, 18));
@@ -239,30 +239,30 @@ struct RECORDING_DataFormat
 
 static const struct RECORDING_DataFormat recording_data_formats[] = {
     /* 0: 2352 bytes - raw data */
-    { 2352, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
+    {2352, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
     /* 1: 2368 bytes - raw data with P-Q subchannel */
-    { 2352, 16, MIRAGE_SUBCHANNEL_Q, MIRAGE_SECTOR_RAW },
+    {2352, 16, MIRAGE_SUBCHANNEL_Q, MIRAGE_SECTOR_RAW},
     /* 2: 2448 bytes - raw data with cooked R-W subchannel */
-    { 2352, 96, MIRAGE_SUBCHANNEL_RW, MIRAGE_SECTOR_RAW },
+    {2352, 96, MIRAGE_SUBCHANNEL_RW, MIRAGE_SECTOR_RAW},
     /* 3: 2448 bytes - raw data with raw P-W subchannel */
-    { 2352, 96, MIRAGE_SUBCHANNEL_PW, MIRAGE_SECTOR_RAW },
+    {2352, 96, MIRAGE_SUBCHANNEL_PW, MIRAGE_SECTOR_RAW},
     /* 4-7: reserved */
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
+    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
     /* 8: 2048 bytes - Mode 1 user data */
-    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE1 },
+    {2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE1},
     /* 9: 2336 bytes - Mode 2 user data */
-    { 2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2 },
+    {2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2},
     /* 10: 2048 bytes - Mode 2 Form 1 user data */
-    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1 },
+    {2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1},
     /* 11: 2056 bytes - Mode 2 Form 1 with subheader */
-    { 2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1 },
+    {2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1},
     /* 2324 bytes - Mode 2 Form 2 user data */
-    { 2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM2 },
+    {2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM2},
     /* 2332 bytes - Mode 2 (Form 1, Form 2 or mixed) with subheader */
-    { 2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_MIXED },
+    {2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_MIXED},
 };
 
 
@@ -359,7 +359,7 @@ static gboolean cdemu_device_tao_recording_write_sector (CdemuDevice *self, Mira
     }
 
     /* Make sure sector has currently opened track set as a parent, in
-       case any of sector data needs to be generated */
+     * case any of sector data needs to be generated */
     mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
 
     cdemu_device_recording_write_sector(self, sector);
@@ -395,7 +395,7 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
         cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
 
         /* If we have a track open, we have already determined sector
-           type and do not have to do it again */
+         * type and do not have to do it again */
         if (sector_type == MIRAGE_SECTOR_RAW && self->priv->open_track) {
             sector_type = mirage_track_get_sector_type(self->priv->open_track);
         }
@@ -409,7 +409,7 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
         }
 
         /* If data type is 10 or 12, we need to copy subheader from
-           write parameters page */
+         * write parameters page */
         if (is_cd_rom && (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12)) {
             mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
         }
@@ -466,8 +466,8 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
     gint absolute_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(subchannel[7]), mirage_helper_bcd2hex(subchannel[8]), mirage_helper_bcd2hex(subchannel[9]), TRUE);
 
     /* Lead-in; contains TOC in Q and CD-TEXT in RW subchannel.
-       Unfortunately, the TOC is not detailed enough for our needs,
-       therefore we will infer session layout from sectors' data. */
+     * Unfortunately, the TOC is not detailed enough for our needs,
+     * therefore we will infer session layout from sectors' data. */
     if (tno == 0x00) {
         if (!self->priv->open_session) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first lead-in sector; opening session\n", __debug__);
@@ -482,7 +482,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
     }
 
     /* Lead-out; contains no useful data. It tells us when to officially
-       close the session, though */
+     * close the session, though */
     if (tno == 0xAA) {
         if (self->priv->open_session) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first lead-out sector; closing session\n", __debug__);
@@ -494,7 +494,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
 
 
     /* At this point, make sure we have an open session; if not, we are in
-       leadout, and probably trying to write sector containing MCN... */
+     * leadout, and probably trying to write sector containing MCN... */
     if (!self->priv->open_session) {
         return TRUE;
     }
@@ -590,7 +590,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
     }
 
     /* Make sure sector has currently opened track set as a parent, in
-       case any of sector data needs to be generated */
+     * case any of sector data needs to be generated */
     mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
 
     /* Write */
@@ -679,32 +679,32 @@ struct SAO_SubchannelFormat
 
 static const struct SAO_MainFormat sao_main_formats[] = {
     /* CD-DA */
-    { 0x00, MIRAGE_SECTOR_AUDIO, 2352, 0 },
-    { 0x01, MIRAGE_SECTOR_AUDIO,    0, 0 },
+    {0x00, MIRAGE_SECTOR_AUDIO, 2352, 0},
+    {0x01, MIRAGE_SECTOR_AUDIO, 0, 0},
     /* CD-ROM Mode 1 */
-    { 0x10, MIRAGE_SECTOR_MODE1, 2048, 0 },
-    { 0x11, MIRAGE_SECTOR_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
-    { 0x12, MIRAGE_SECTOR_MODE1, 2048, MIRAGE_VALID_DATA },
-    { 0x13, MIRAGE_SECTOR_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
-    { 0x14, MIRAGE_SECTOR_MODE1,    0, 0 },
+    {0x10, MIRAGE_SECTOR_MODE1, 2048, 0},
+    {0x11, MIRAGE_SECTOR_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC},
+    {0x12, MIRAGE_SECTOR_MODE1, 2048, MIRAGE_VALID_DATA},
+    {0x13, MIRAGE_SECTOR_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC},
+    {0x14, MIRAGE_SECTOR_MODE1, 0, 0},
     /* CD-ROM XA, CD-I */
-    { 0x20, MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_VALID_EDC_ECC },
-    { 0x21, MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
-    { 0x22, MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
-    { 0x23, MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
-    { 0x24, MIRAGE_SECTOR_MODE2_FORM2,    0, 0 },
+    {0x20, MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_VALID_EDC_ECC},
+    {0x21, MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC},
+    {0x22, MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC},
+    {0x23, MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC},
+    {0x24, MIRAGE_SECTOR_MODE2_FORM2, 0, 0},
     /* CD-ROM Mode 2*/
-    { 0x30, MIRAGE_SECTOR_MODE2, 2336, 0 },
-    { 0x31, MIRAGE_SECTOR_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER },
-    { 0x32, MIRAGE_SECTOR_MODE2, 2336, MIRAGE_VALID_DATA },
-    { 0x33, MIRAGE_SECTOR_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA },
-    { 0x34, MIRAGE_SECTOR_MODE2,    0, 0 },
+    {0x30, MIRAGE_SECTOR_MODE2, 2336, 0},
+    {0x31, MIRAGE_SECTOR_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER},
+    {0x32, MIRAGE_SECTOR_MODE2, 2336, MIRAGE_VALID_DATA},
+    {0x33, MIRAGE_SECTOR_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA},
+    {0x34, MIRAGE_SECTOR_MODE2, 0, 0},
 };
 
 static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
-    { 0x00, MIRAGE_SUBCHANNEL_NONE,  0 },
-    { 0x01, MIRAGE_SUBCHANNEL_PW,   96 },
-    { 0x03, MIRAGE_SUBCHANNEL_RW,   96 },
+    {0x00, MIRAGE_SUBCHANNEL_NONE, 0},
+    {0x01, MIRAGE_SUBCHANNEL_PW, 96},
+    {0x03, MIRAGE_SUBCHANNEL_RW, 96},
 };
 
 static const struct SAO_MainFormat *sao_main_formats_find (gint format)
@@ -930,7 +930,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
         /* Get sector type from CUE entry instead of main_format_ptr, as
-           it is more accurate, especially in case of RAW SAO recording */
+         * it is more accurate, especially in case of RAW SAO recording */
         gint sector_type = mirage_track_get_sector_type(self->priv->cue_entry);
 
         /* Feed the sector */
@@ -941,9 +941,9 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         }
 
         /* Check the set sector type of the track we are writing; if it
-           is MIRAGE_SECTOR_RAW_SCRAMBLED, we need to set actual sector
-           type to it. This situation will arise when we are recording
-           in RAW SAO mode and have just opened a track */
+         * is MIRAGE_SECTOR_RAW_SCRAMBLED, we need to set actual sector
+         * type to it. This situation will arise when we are recording
+         * in RAW SAO mode and have just opened a track */
         if (mirage_track_get_sector_type(self->priv->open_track) == MIRAGE_SECTOR_RAW_SCRAMBLED) {
             sector_type = mirage_sector_get_sector_type(sector);
 
@@ -957,7 +957,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         }
 
         /* Make sure sector has currently opened track set as a parent, in
-           case any of sector data needs to be generated */
+         * case any of sector data needs to be generated */
         mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
 
         /* Write */
@@ -1025,11 +1025,11 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
     CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: number of CUE sheet entries: %d\n", __debug__, num_entries);
 
     /* We build our internal representation of a CUE sheet inside a
-       MirageSession object. In order to minimize necessary book-keeping,
-       we process CUE sheet in several passes:
-       1. create all tracks
-       2. determine tracks' lengths and pregaps
-       3. determine indices and set MCN and ISRCs */
+     * MirageSession object. In order to minimize necessary book-keeping,
+     * we process CUE sheet in several passes:
+     * 1. create all tracks
+     * 2. determine tracks' lengths and pregaps
+     * 3. determine indices and set MCN and ISRCs */
 
     cdemu_device_sao_recording_create_cue_sheet(self);
 
@@ -1078,8 +1078,8 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
             if (self->priv->sao_leadin_format & 0xC0) {
                 /* In raw SAO, we set track's sector type to MIRAGE_SECTOR_RAW_SCRAMBLED;
-                   however, we can use CTL field to deduce if a track is
-                   an audio track and set MIRAGE_SECTOR_AUDIO directly */
+                 * however, we can use CTL field to deduce if a track is
+                 * an audio track and set MIRAGE_SECTOR_AUDIO directly */
                 if (ctl & 0x04) {
                     mirage_track_set_sector_type(track, MIRAGE_SECTOR_RAW_SCRAMBLED);
                 } else {
@@ -1099,7 +1099,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
     }
 
     /* Second pass; this one goes backwards, because it's easier to
-       compute lengths that way */
+     * compute lengths that way */
     CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: second pass: setting lengths and data formats...\n", __debug__);
     gint last_address = 0;
     for (gint i = num_entries - 1; i >= 0; i--) {
@@ -1271,7 +1271,7 @@ static gboolean cdemu_device_dao_recording_reserve_track (CdemuDevice *self, gui
 static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     /* At this point, the track should already be open due to a call to
-       RESERVE TRACK... if not, open one by reserving a track of length 0 */
+     * RESERVE TRACK... if not, open one by reserving a track of length 0 */
     if (!self->priv->open_track) {
         if (!cdemu_device_dao_recording_reserve_track(self, 0)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open track!\n", __debug__);
@@ -1280,7 +1280,7 @@ static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gin
     }
 
     /* DVD recording has only Mode 1 data, so data block type in mode
-       page 0x05 must be 8! */
+     * page 0x05 must be 8! */
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     if (p_0x05->data_block_type != 8) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: data block type in mode page 0x05 is not 8!\n", __debug__);

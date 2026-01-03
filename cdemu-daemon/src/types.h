@@ -20,7 +20,7 @@
 #pragma once
 
 /* For now, only definitions that are shared among several headers are
-   listed here, and the rest are kept in their corresponding headers. */
+ * listed here, and the rest are kept in their corresponding headers. */
 
 G_BEGIN_DECLS
 

@@ -155,7 +155,7 @@ struct ModePageEntry
 
 /* Some fields are of 3-byte size... */
 #define GUINT24_FROM_BE(x) (GUINT32_FROM_BE(x) >> 8)
-#define GUINT24_TO_BE(x)   (GUINT32_TO_BE(x) >> 8)
+#define GUINT24_TO_BE(x) (GUINT32_TO_BE(x) >> 8)
 
 /* Commands */
 gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb);

@@ -401,13 +401,13 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "EnumDaemonDebugMasks")) {
         /* *** EnumDaemonDebugMasks *** */
         static const MirageDebugMaskInfo dbg_masks[] = {
-            { "DAEMON_DEBUG_DEVICE", DAEMON_DEBUG_DEVICE },
-            { "DAEMON_DEBUG_MMC", DAEMON_DEBUG_MMC },
-            { "DAEMON_DEBUG_DELAY", DAEMON_DEBUG_DELAY },
-            { "DAEMON_DEBUG_AUDIOPLAY", DAEMON_DEBUG_AUDIOPLAY },
-            { "DAEMON_DEBUG_KERNEL_IO", DAEMON_DEBUG_KERNEL_IO },
-            { "DAEMON_DEBUG_RECORDING", DAEMON_DEBUG_RECORDING },
-            { "DAEMON_DEBUG_SLEEP_HANDLER", DAEMON_DEBUG_SLEEP_HANDLER },
+            {"DAEMON_DEBUG_DEVICE", DAEMON_DEBUG_DEVICE},
+            {"DAEMON_DEBUG_MMC", DAEMON_DEBUG_MMC},
+            {"DAEMON_DEBUG_DELAY", DAEMON_DEBUG_DELAY},
+            {"DAEMON_DEBUG_AUDIOPLAY", DAEMON_DEBUG_AUDIOPLAY},
+            {"DAEMON_DEBUG_KERNEL_IO", DAEMON_DEBUG_KERNEL_IO},
+            {"DAEMON_DEBUG_RECORDING", DAEMON_DEBUG_RECORDING},
+            {"DAEMON_DEBUG_SLEEP_HANDLER", DAEMON_DEBUG_SLEEP_HANDLER},
         };
 
         GVariantBuilder *masks = encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks));
@@ -500,7 +500,7 @@ static const GDBusInterfaceVTable dbus_interface_vtable = {
     (GDBusInterfaceMethodCallFunc)cdemu_daemon_dbus_handle_method_call,
     NULL,
     NULL,
-    { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+    {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 };
 
 
@@ -624,50 +624,85 @@ void cdemu_daemon_dbus_cleanup (CdemuDaemon *self)
 \**********************************************************************/
 void cdemu_daemon_dbus_emit_device_status_changed (CdemuDaemon *self, gint number)
 {
-    if (self->priv->connection) {
-        g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
-            "DeviceStatusChanged", g_variant_new("(i)", number),
-            NULL);
+    if (!self->priv->connection) {
+        return;
     }
+
+    g_dbus_connection_emit_signal(
+        self->priv->connection,
+        NULL,
+        "/Daemon",
+        CDEMU_DAEMON_DBUS_NAME,
+        "DeviceStatusChanged",
+        g_variant_new("(i)", number),
+        NULL
+    );
 }
 
 void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint number, const gchar *option)
 {
-    if (self->priv->connection) {
-        g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
-            "DeviceOptionChanged", g_variant_new("(is)", number, option),
-            NULL);
+    if (!self->priv->connection) {
+        return;
     }
+
+    g_dbus_connection_emit_signal(
+        self->priv->connection,
+        NULL,
+        "/Daemon",
+        CDEMU_DAEMON_DBUS_NAME,
+        "DeviceOptionChanged",
+        g_variant_new("(is)", number, option),
+        NULL
+    );
 }
 
 void cdemu_daemon_dbus_emit_device_mapping_ready (CdemuDaemon *self, gint number)
 {
-    if (self->priv->connection) {
-        g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
-            "DeviceMappingReady", g_variant_new("(i)", number),
-            NULL);
+    if (!self->priv->connection) {
+        return;
     }
+
+    g_dbus_connection_emit_signal(
+        self->priv->connection,
+        NULL,
+        "/Daemon",
+        CDEMU_DAEMON_DBUS_NAME,
+        "DeviceMappingReady",
+        g_variant_new("(i)", number),
+        NULL
+    );
 }
 
 void cdemu_daemon_dbus_emit_device_added (CdemuDaemon *self)
 {
-    if (self->priv->connection) {
-        g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
-            "DeviceAdded", NULL,
-            NULL);
+    if (!self->priv->connection) {
+        return;
     }
+
+    g_dbus_connection_emit_signal(
+        self->priv->connection,
+        NULL,
+        "/Daemon",
+        CDEMU_DAEMON_DBUS_NAME,
+        "DeviceAdded",
+        NULL,
+        NULL
+    );
 }
 
 void cdemu_daemon_dbus_emit_device_removed (CdemuDaemon *self)
 {
-    if (self->priv->connection) {
-        g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
-            "DeviceRemoved", NULL,
-            NULL);
+    if (!self->priv->connection) {
+        return;
     }
+
+    g_dbus_connection_emit_signal(
+        self->priv->connection,
+        NULL,
+        "/Daemon",
+        CDEMU_DAEMON_DBUS_NAME,
+        "DeviceRemoved",
+        NULL,
+        NULL
+    );
 }

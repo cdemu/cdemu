@@ -23,7 +23,6 @@ G_BEGIN_DECLS
 
 
 /* Daemon settings */
-typedef struct _CdemuDaemonSettings CdemuDaemonSettings;
 struct _CdemuDaemonSettings
 {
     GBusType bus_type;
@@ -38,6 +37,9 @@ struct _CdemuDaemonSettings
 
     gboolean use_system_sleep_handler;
 };
+
+typedef struct _CdemuDaemonSettings CdemuDaemonSettings;
+
 
 /**********************************************************************\
  *                        CdemuDaemon object                          *

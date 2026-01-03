@@ -105,20 +105,20 @@ static gboolean _collect_program_options (int argc, char **argv, struct _Program
     gboolean succeeded;
 
     const GOptionEntry option_entries[] = {
-        { "config-file", 0, 0, G_OPTION_ARG_FILENAME, &options->config_filename, N_("Config file"), N_("filename") },
-        { "num-devices", 'n', 0, G_OPTION_ARG_INT, &options->num_devices, N_("Number of devices"), N_("N") },
-        { "ctl-device", 'c', 0, G_OPTION_ARG_STRING, &options->ctl_device, N_("Control device"), N_("path") },
-        { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &options->audio_driver, N_("Audio driver"), N_("driver") },
-        { "bus", 'b', 0, G_OPTION_ARG_STRING, &options->bus, N_("Bus type to use"), N_("bus_type") },
-        { "logfile", 'l', 0, G_OPTION_ARG_FILENAME, &options->log_filename, N_("Logfile"), N_("logfile") },
-        { "default-cdemu-debug-mask", 0, 0, G_OPTION_ARG_INT, &options->cdemu_debug_mask, N_("Default debug mask for CDEmu devices"), N_("mask") },
-        { "default-mirage-debug-mask", 0, 0, G_OPTION_ARG_INT, &options->mirage_debug_mask, N_("Default debug mask for underlying libMirage"), N_("mask") },
-        { "system-sleep-handler", 0, 0, G_OPTION_ARG_INT, &options->use_system_sleep_handler, N_("Enable system sleep handler to stop devices before system enters suspend/hibernation (0=disable, 1=enable)"), "0|1" },
-        { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
+        {"config-file", 0, 0, G_OPTION_ARG_FILENAME, &options->config_filename, N_("Config file"), N_("filename")},
+        {"num-devices", 'n', 0, G_OPTION_ARG_INT, &options->num_devices, N_("Number of devices"), N_("N")},
+        {"ctl-device", 'c', 0, G_OPTION_ARG_STRING, &options->ctl_device, N_("Control device"), N_("path")},
+        {"audio-driver", 'a', 0, G_OPTION_ARG_STRING, &options->audio_driver, N_("Audio driver"), N_("driver")},
+        {"bus", 'b', 0, G_OPTION_ARG_STRING, &options->bus, N_("Bus type to use"), N_("bus_type")},
+        {"logfile", 'l', 0, G_OPTION_ARG_FILENAME, &options->log_filename, N_("Logfile"), N_("logfile")},
+        {"default-cdemu-debug-mask", 0, 0, G_OPTION_ARG_INT, &options->cdemu_debug_mask, N_("Default debug mask for CDEmu devices"), N_("mask")},
+        {"default-mirage-debug-mask", 0, 0, G_OPTION_ARG_INT, &options->mirage_debug_mask, N_("Default debug mask for underlying libMirage"), N_("mask")},
+        {"system-sleep-handler", 0, 0, G_OPTION_ARG_INT, &options->use_system_sleep_handler, N_("Enable system sleep handler to stop devices before system enters suspend/hibernation (0=disable, 1=enable)"), "0|1"},
+        {NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL}
     };
 
     /* Initialize config struct; NULL for pointers and -1 for numeric
-       values means un-specified */
+     * values means un-specified */
     options->config_filename = NULL;
     options->config_file_exists = FALSE;
 
@@ -146,8 +146,8 @@ static gboolean _collect_program_options (int argc, char **argv, struct _Program
     }
 
     /* For options that can be specified both in config file and on
-       command-line, the latter takes precedence. If the option is not
-       specified in either way, fall back to default value. */
+     * command-line, the latter takes precedence. If the option is not
+     * specified in either way, fall back to default value. */
 
     /* Try loading the key/value file */
     if (options->config_filename) {

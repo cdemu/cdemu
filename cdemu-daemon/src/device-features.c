@@ -95,7 +95,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0000: Profile List */
     /* IMPLEMENTATION NOTE: persistent; we support several profiles.
-       Version is left at 0x00, as per INF8090 */
+     * Version is left at 0x00, as per INF8090 */
     general_feature = initialize_feature(0x0000, sizeof(struct Feature_0x0000));
     if (general_feature) {
         struct Feature_0x0000 *feature = (struct Feature_0x0000 *)general_feature;
@@ -113,9 +113,9 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0001: Core Feature */
     /* IMPLEMENTATION NOTE: persistent; INF8090 requires us to set version to
-       0x02. We emulate ATAPI device, thus interface is set to ATAPI. We don't
-       support everything that's required for INQ2 bit (namely, vital product
-       information) and we don't support device busy event class */
+     * 0x02. We emulate ATAPI device, thus interface is set to ATAPI. We don't
+     * support everything that's required for INQ2 bit (namely, vital product
+     * information) and we don't support device busy event class */
     general_feature = initialize_feature(0x0001, sizeof(struct Feature_0x0001));
     if (general_feature) {
         struct Feature_0x0001 *feature = (struct Feature_0x0001 *)general_feature;
@@ -130,7 +130,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0002: Morphing Feature */
     /* IMPLEMENTATION NOTE: persistent; version set to 0x01 as per INF8090. Both
-       Async and OCEvent bits are left at 0. */
+     * Async and OCEvent bits are left at 0. */
     general_feature = initialize_feature(0x0002, sizeof(struct Feature_0x0002));
     if (general_feature) {
         struct Feature_0x0002 *feature = (struct Feature_0x0002 *)general_feature;
@@ -143,8 +143,8 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0003: Removable Medium Feature */
     /* IMPLEMENTATION NOTE: persistent; version left at 0x00 as there's none
-       specified in INF8090. Mechanism is set to 'Tray' (0x001), and we support
-       both eject and lock. Prevent jumper is not present. */
+     * specified in INF8090. Mechanism is set to 'Tray' (0x001), and we support
+     * both eject and lock. Prevent jumper is not present. */
     general_feature = initialize_feature(0x0003, sizeof(struct Feature_0x0003));
     if (general_feature) {
         struct Feature_0x0003 *feature = (struct Feature_0x0003 *)general_feature;
@@ -160,8 +160,8 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0010: Random Readable Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. Block size is
-       2048 bytes and we set blocking to 1 (as recommended for most CD-ROMs...
-       it's non-essential, really). Read-write error recovery page is present */
+     * 2048 bytes and we set blocking to 1 (as recommended for most CD-ROMs...
+     * it's non-essential, really). Read-write error recovery page is present */
     general_feature = initialize_feature(0x0010, sizeof(struct Feature_0x0010));
     if (general_feature) {
         struct Feature_0x0010 *feature = (struct Feature_0x0010 *)general_feature;
@@ -181,7 +181,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x001E: CD Read Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version set to 0x02 as per INF8090.
-       Both C2Flags and CDText bits are set, while DAP is not supported. */
+     * Both C2Flags and CDText bits are set, while DAP is not supported. */
     general_feature = initialize_feature(0x001E, sizeof(struct Feature_0x001E));
     if (general_feature) {
         struct Feature_0x001E *feature = (struct Feature_0x001E *)general_feature;
@@ -196,8 +196,8 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x001F: DVD Read Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version set to 0x01 as per INF8090.
-       We claim we conform to DVD Multi Specification Version 1.1 and that we
-       support dual-layer DVD-R */
+     * We claim we conform to DVD Multi Specification Version 1.1 and that we
+     * support dual-layer DVD-R */
     general_feature = initialize_feature(0x001F, sizeof(struct Feature_0x001F));
     if (general_feature) {
         struct Feature_0x001F *feature = (struct Feature_0x001F *)general_feature;
@@ -319,8 +319,8 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0103: CD External Audio Play Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. Separate volume
-       and separate channel mute are supported, and so is scan. Volume levels is
-       set to 0x100. */
+     * and separate channel mute are supported, and so is scan. Volume levels is
+     * set to 0x100. */
     general_feature = initialize_feature(0x0103, sizeof(struct Feature_0x0103));
     if (general_feature) {
         struct Feature_0x0103 *feature = (struct Feature_0x0103 *)general_feature;
@@ -335,7 +335,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0106: DVD CSS Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. CSS version is
-       set to 0x01 as per INF8090. */
+     * set to 0x01 as per INF8090. */
     general_feature = initialize_feature(0x0106, sizeof(struct Feature_0x0106));
     if (general_feature) {
         struct Feature_0x0106 *feature = (struct Feature_0x0106 *)general_feature;
@@ -347,7 +347,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0107: Real Time Streaming Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version is set to 0x03 as per INF8090.
-       We claim to support pretty much everything here. */
+     * We claim to support pretty much everything here. */
     general_feature = initialize_feature(0x0107, sizeof(struct Feature_0x0107));
     if (general_feature) {
         struct Feature_0x0107 *feature = (struct Feature_0x0107 *)general_feature;
@@ -364,7 +364,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x010A: Disc Control Blocks Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version is set to 0x00 as per MMC3.
-       We return same three DCB descriptors as my drive does. */
+     * We return same three DCB descriptors as my drive does. */
     general_feature = initialize_feature(0x010A, sizeof(struct Feature_0x010A) + 3*4);
     if (general_feature) {
         struct Feature_0x010A *feature = (struct Feature_0x010A *)general_feature;
@@ -423,33 +423,33 @@ struct PerformanceDescriptor
 };
 
 /* The values below are taken from my drive; NOTE: the amount of items
-   in this list must match the size of descriptor list in Mode Page 0x2A! */
+ * in this list must match the size of descriptor list in Mode Page 0x2A! */
 static const struct PerformanceDescriptor WriteDescriptors_CD[] = {
-    { FALSE, FALSE, 0, 0, 0x00001B90, 0x00001B90 },
-    { FALSE, FALSE, 0, 0, 0x0000160D, 0x0000160D },
-    { FALSE, FALSE, 0, 0, 0x0000108A, 0x0000108A },
-    { FALSE, FALSE, 0, 0, 0x00000B07, 0x00000B07 },
-    { FALSE, FALSE, 0, 0, 0x000006E4, 0x000006E4 },
-    { FALSE, FALSE, 0, 0, 0x000002C2, 0x000002C2 },
+    {FALSE, FALSE, 0, 0, 0x00001B90, 0x00001B90},
+    {FALSE, FALSE, 0, 0, 0x0000160D, 0x0000160D},
+    {FALSE, FALSE, 0, 0, 0x0000108A, 0x0000108A},
+    {FALSE, FALSE, 0, 0, 0x00000B07, 0x00000B07},
+    {FALSE, FALSE, 0, 0, 0x000006E4, 0x000006E4},
+    {FALSE, FALSE, 0, 0, 0x000002C2, 0x000002C2},
 };
 
 static const struct PerformanceDescriptor WriteDescriptors_DVD[] = {
-    { FALSE, FALSE, 0, 0, 0x00005690, 0x00005690 },
-    { FALSE, FALSE, 0, 0, 0x000040EC, 0x000040EC },
-    { FALSE, FALSE, 0, 0, 0x0000361A, 0x0000361A },
-    { FALSE, FALSE, 0, 0, 0x00002B48, 0x00002B48 },
-    { FALSE, FALSE, 0, 0, 0x00002076, 0x00002076 },
-    { FALSE, FALSE, 0, 0, 0x00001B0D, 0x00001B0D },
-    { FALSE, FALSE, 0, 0, 0x000015A4, 0x000015A4 },
-    { FALSE, FALSE, 0, 0, 0x000011DA, 0x000011DA },
-    { FALSE, FALSE, 0, 0, 0x0000103B, 0x0000103B },
-    { FALSE, FALSE, 0, 0, 0x00000CFC, 0x00000CFC },
-    { FALSE, FALSE, 0, 0, 0x00000AD2, 0x00000AD2 },
-    { FALSE, FALSE, 0, 0, 0x00000569, 0x00000569 },
+    {FALSE, FALSE, 0, 0, 0x00005690, 0x00005690},
+    {FALSE, FALSE, 0, 0, 0x000040EC, 0x000040EC},
+    {FALSE, FALSE, 0, 0, 0x0000361A, 0x0000361A},
+    {FALSE, FALSE, 0, 0, 0x00002B48, 0x00002B48},
+    {FALSE, FALSE, 0, 0, 0x00002076, 0x00002076},
+    {FALSE, FALSE, 0, 0, 0x00001B0D, 0x00001B0D},
+    {FALSE, FALSE, 0, 0, 0x000015A4, 0x000015A4},
+    {FALSE, FALSE, 0, 0, 0x000011DA, 0x000011DA},
+    {FALSE, FALSE, 0, 0, 0x0000103B, 0x0000103B},
+    {FALSE, FALSE, 0, 0, 0x00000CFC, 0x00000CFC},
+    {FALSE, FALSE, 0, 0, 0x00000AD2, 0x00000AD2},
+    {FALSE, FALSE, 0, 0, 0x00000569, 0x00000569},
 };
 
 static const struct PerformanceDescriptor WriteDescriptors_BD[] = {
-    { FALSE, FALSE, 0, 0, 0x0000231E, 0x0000231E },
+    {FALSE, FALSE, 0, 0, 0x0000231E, 0x0000231E},
 };
 
 static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, ProfileIndex profile_index)
@@ -545,10 +545,10 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
  *                              Profiles                              *
 \**********************************************************************/
 /* Here we define profiles and features associated with them. When we set a
-   certain profile, features get their 'current' bit reset (unless 'persistent'
-   bit is set), and then if they are associated with the profile, they are set
-   again */
-static guint32 ActiveFeatures_CDROM[] =
+ * certain profile, features get their 'current' bit reset (unless 'persistent'
+ * bit is set), and then if they are associated with the profile, they are set
+ * again */
+static const guint32 ActiveFeatures_CDROM[] =
 {
     /* 0x0000: Profile List; persistent */
     /* 0x0001: Core; persistent */
@@ -561,7 +561,7 @@ static guint32 ActiveFeatures_CDROM[] =
     0x0107, /* Real Time Streaming */
 };
 
-static guint32 ActiveFeatures_CDR[] =
+static const guint32 ActiveFeatures_CDR[] =
 {
     /* 0x0000: Profile List; persistent */
     /* 0x0001: Core; persistent */
@@ -576,7 +576,7 @@ static guint32 ActiveFeatures_CDR[] =
     0x0107, /* Real Time Streaming */
 };
 
-static guint32 ActiveFeatures_DVDROM[] =
+static const guint32 ActiveFeatures_DVDROM[] =
 {
     /* 0x0000: Profile List; persistent */
     /* 0x0001: Core; persistent */
@@ -588,7 +588,7 @@ static guint32 ActiveFeatures_DVDROM[] =
     0x0107, /* Real Time Streaming */
 };
 
-static guint32 ActiveFeatures_DVDPLUSR[] =
+static const guint32 ActiveFeatures_DVDPLUSR[] =
 {
     /* 0x0000: Profile List; persistent */
     /* 0x0001: Core; persistent */
@@ -602,7 +602,7 @@ static guint32 ActiveFeatures_DVDPLUSR[] =
     0x010A, /* DCBs */
 };
 
-static guint32 ActiveFeatures_BDROM[] =
+static const guint32 ActiveFeatures_BDROM[] =
 {
     /* 0x0000: Profile List; persistent */
     /* 0x0001: Core; persistent */
@@ -613,7 +613,7 @@ static guint32 ActiveFeatures_BDROM[] =
     0x0107, /* Real Time Streaming */
 };
 
-static guint32 ActiveFeatures_BDR_SRM[] =
+static const guint32 ActiveFeatures_BDR_SRM[] =
 {
     /* 0x0000: Profile List; persistent */
     /* 0x0001: Core; persistent */
@@ -627,10 +627,10 @@ static guint32 ActiveFeatures_BDR_SRM[] =
 };
 
 
-static void cdemu_device_set_current_features (CdemuDevice *self, guint32 *feats, gint feats_len)
+static void cdemu_device_set_current_features (CdemuDevice *self, const guint32 *feats, const gint feats_len)
 {
     /* Go over the features list and reset 'current' bits of features that
-       don't have 'persistent' bit set */
+     * don't have 'persistent' bit set */
     for (GList *entry = self->priv->features_list; entry; entry = entry->next) {
         struct FeatureGeneral *feature = entry->data;
 

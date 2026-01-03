@@ -229,14 +229,13 @@ static gboolean command_get_configuration (CdemuDevice *self, const guint8 *raw_
         struct FeatureGeneral *feature = entry->data;
 
         /* We want this feature copied if:
-            a) RT is 0x00 and feature's code >= SFN
-            b) RT is 0x01, feature's code >= SFN and feature has 'current' bit set
-            c) RT is 0x02 and feature's code == SFN
-
-           NOTE: because in case c) we break loop as soon as a feature is copied and
-           because we have features sorted in ascending order, we can use comparison
-           "feature's code >= SFN" in all cases.
-        */
+         *  a) RT is 0x00 and feature's code >= SFN
+         *  b) RT is 0x01, feature's code >= SFN and feature has 'current' bit set
+         *  c) RT is 0x02 and feature's code == SFN
+         *
+         * NOTE: because in case c) we break loop as soon as a feature is copied and
+         * because we have features sorted in ascending order, we can use comparison
+         * "feature's code >= SFN" in all cases. */
         if (GUINT16_FROM_BE(feature->code) >= GUINT16_FROM_BE(cdb->sfn)) {
             if ((cdb->rt == 0x00) ||
                 (cdb->rt == 0x01 && feature->cur) ||
@@ -317,10 +316,12 @@ static gboolean command_get_event_status_notification (CdemuDevice *self, const 
 }
 
 /* GET PERFORMANCE */
-static void __copy_performance_descriptors (struct GET_PERFORMANCE_00_Header *header,
-                                            struct GET_PERFORMANCE_00_Descriptor *descriptors,
-                                            gint num_descriptors,
-                                            gint max_descriptors)
+static void _copy_performance_descriptors (
+    struct GET_PERFORMANCE_00_Header *header,
+    struct GET_PERFORMANCE_00_Descriptor *descriptors,
+    gint num_descriptors,
+    gint max_descriptors
+)
 {
     /* Copy the descriptors behind header */
     gint total_descriptors = MIN(num_descriptors, max_descriptors);
@@ -332,7 +333,7 @@ static void __copy_performance_descriptors (struct GET_PERFORMANCE_00_Header *he
     header->data_length = GUINT32_TO_BE(4 + total_descriptors*sizeof(struct GET_PERFORMANCE_00_Descriptor));
 }
 
-static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFORMANCE_CDB *cdb)
+static gboolean _get_performance_00 (CdemuDevice *self, const struct GET_PERFORMANCE_CDB *cdb)
 {
     struct GET_PERFORMANCE_00_Header *ret_header = (struct GET_PERFORMANCE_00_Header *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct GET_PERFORMANCE_00_Header);
@@ -363,12 +364,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
             struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                 {
                     .start_lba = GUINT32_TO_BE(0),
-                    .start_performance =  GUINT32_TO_BE(0x00005690),
+                    .start_performance = GUINT32_TO_BE(0x00005690),
                     .end_lba = GUINT32_TO_BE(0),
                     .end_performance = GUINT32_TO_BE(0x00005690)
                 }
             };
-            __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+            _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
             return TRUE;
         }
 
@@ -384,17 +385,17 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
                 struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                     {
                         .start_lba = GUINT32_TO_BE(0),
-                        .start_performance =  GUINT32_TO_BE(0x00000B4E),
+                        .start_performance = GUINT32_TO_BE(0x00000B4E),
                         .end_lba = GUINT32_TO_BE(0x0004B0BA),
                         .end_performance = GUINT32_TO_BE(0x00001B90)
                     }, {
                         .start_lba = GUINT32_TO_BE(0x0004B0BA),
-                        .start_performance =  GUINT32_TO_BE(0x00001B90),
+                        .start_performance = GUINT32_TO_BE(0x00001B90),
                         .end_lba = GUINT32_TO_BE(self->priv->medium_capacity),
                         .end_performance = GUINT32_TO_BE(0x00001B90)
                     }
                 };
-                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
                 return TRUE;
             }
             case MIRAGE_MEDIUM_DVD: {
@@ -402,12 +403,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
                 struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                     {
                         .start_lba = GUINT32_TO_BE(0),
-                        .start_performance =  GUINT32_TO_BE(0x000015A4),
+                        .start_performance = GUINT32_TO_BE(0x000015A4),
                         .end_lba = GUINT32_TO_BE(self->priv->medium_capacity),
                         .end_performance = GUINT32_TO_BE(0x000015A4)
                     }
                 };
-                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
                 return TRUE;
             }
             case MIRAGE_MEDIUM_BD: {
@@ -415,12 +416,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
                 struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                     {
                         .start_lba = GUINT32_TO_BE(0),
-                        .start_performance =  GUINT32_TO_BE(0x0000231E),
+                        .start_performance = GUINT32_TO_BE(0x0000231E),
                         .end_lba = GUINT32_TO_BE(self->priv->medium_capacity),
                         .end_performance = GUINT32_TO_BE(0x0000231E)
                     }
                 };
-                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
                 return TRUE;
             }
             default: {
@@ -436,12 +437,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
             struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                 {
                     .start_lba = GUINT32_TO_BE(0),
-                    .start_performance =  GUINT32_TO_BE(0x00002383),
+                    .start_performance = GUINT32_TO_BE(0x00002383),
                     .end_lba = GUINT32_TO_BE(0),
                     .end_performance = GUINT32_TO_BE(0x00005690)
                 }
             };
-            __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+            _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
             return TRUE;
         }
 
@@ -457,12 +458,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
                 struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                     {
                         .start_lba = GUINT32_TO_BE(0),
-                        .start_performance =  GUINT32_TO_BE(0x00000B4E),
+                        .start_performance = GUINT32_TO_BE(0x00000B4E),
                         .end_lba = GUINT32_TO_BE(disc_length),
                         .end_performance = GUINT32_TO_BE(0x00001B90)
                     }
                 };
-                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
                 return TRUE;
             }
             case MIRAGE_MEDIUM_DVD: {
@@ -470,12 +471,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
                 struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                     {
                         .start_lba = GUINT32_TO_BE(0),
-                        .start_performance =  GUINT32_TO_BE(0x00001AA2),
+                        .start_performance = GUINT32_TO_BE(0x00001AA2),
                         .end_lba = GUINT32_TO_BE(disc_length),
                         .end_performance = GUINT32_TO_BE(0x000040EC)
                     }
                 };
-                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
                 return TRUE;
             }
             case MIRAGE_MEDIUM_BD: {
@@ -483,12 +484,12 @@ static gboolean __get_performance_00 (CdemuDevice *self, const struct GET_PERFOR
                 struct GET_PERFORMANCE_00_Descriptor descriptors[] = {
                     {
                         .start_lba = GUINT32_TO_BE(0),
-                        .start_performance =  GUINT32_TO_BE(0x000039A0),
+                        .start_performance = GUINT32_TO_BE(0x000039A0),
                         .end_lba = GUINT32_TO_BE(disc_length),
                         .end_performance = GUINT32_TO_BE(0x00008C78)
                     }
                 };
-                __copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
+                _copy_performance_descriptors(ret_header, descriptors, G_N_ELEMENTS(descriptors), cdb->descriptors);
                 return TRUE;
             }
             default: {
@@ -510,7 +511,7 @@ static gboolean command_get_performance (CdemuDevice *self, const guint8 *raw_cd
     switch (cdb->type) {
         case 0x00: {
             /* Performance */
-            if (!__get_performance_00(self, cdb)) {
+            if (!_get_performance_00(self, cdb)) {
                 return FALSE;
             }
 
@@ -542,9 +543,9 @@ static gboolean command_get_performance (CdemuDevice *self, const guint8 *raw_cd
             }
 
             /* INF8090: "[Write Speed Data Length] is not modified when the
-               maximum number of descriptors is insufficient to return all
-               the write speed data available" => hence we return size of
-               all descriptors */
+             * maximum number of descriptors is insufficient to return all
+             * the write speed data available" => hence we return size of
+             * all descriptors */
             ret_header->data_length = GUINT32_TO_BE(4 + num_descriptors*sizeof(struct GET_PERFORMANCE_03_Descriptor));
             break;
         }
@@ -596,10 +597,10 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
 
             /* Serial number */
             /* NOTE: g_strlcpy() should add a trailing NULL to destination.
-               This is not a problem, because a) it is not counted in the
-               return value, and b) because we are writing directly to
-               cache buffer, and hence this additional NULL is effectively
-               discarded from the response. */
+             * This is not a problem, because a) it is not counted in the
+             * return value, and b) because we are writing directly to
+             * cache buffer, and hence this additional NULL is effectively
+             * discarded from the response. */
             gchar *ret_serial = (gchar *)(ret_header + 1);
             gint serial_len = g_strlcpy(ret_serial, self->priv->device_serial, self->priv->buffer_capacity - self->priv->buffer_size);
 
@@ -633,8 +634,8 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
             gchar *vendor_id = (gchar *)(self->priv->buffer + self->priv->buffer_size);
 
             /* Fill with spaces and copy the vendor string; the lenght
-               of the latter is guaranteed not to exceed 8 characters
-               (see comment in command_inquiry()) */
+             * of the latter is guaranteed not to exceed 8 characters
+             * (see comment in command_inquiry()) */
             memset(vendor_id, 32, 8);
             memcpy(vendor_id, self->priv->id_vendor_id, strlen(self->priv->id_vendor_id));
 
@@ -644,9 +645,9 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
 
             /* Vendor-specific identifier */
             /* SPC: "A recommended method of constructing a unique
-               IDENTIFIER field is to concatenate the PRODUCT IDENTIFICATION
-               field from the standard INQUIRY data and the PRODUCT SERIAL
-               NUMBER field from the Unit Serial Number VPD page */
+             * IDENTIFIER field is to concatenate the PRODUCT IDENTIFICATION
+             * field from the standard INQUIRY data and the PRODUCT SERIAL
+             * NUMBER field from the Unit Serial Number VPD page */
             gchar *id_string = (gchar *)(self->priv->buffer + self->priv->buffer_size);
             gint id_len = g_snprintf(id_string, self->priv->buffer_capacity - self->priv->buffer_size, "%s %s", self->priv->id_product_id, self->priv->device_serial);
 
@@ -658,7 +659,7 @@ static gboolean command_inquiry_vpd (CdemuDevice *self, const struct INQUIRY_CDB
         }
         default: {
             /* Unsupported; as stated in SPC, return CHECK CONDITION,
-               ILLEGAL REQUEST and INVALID FIELD IN CDB */
+             * ILLEGAL REQUEST and INVALID FIELD IN CDB */
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: VPD page %02Xh not implemented!\n", __debug__, cdb->page_code);
             cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
@@ -693,7 +694,7 @@ static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
     }
 
     /* Values here are more or less what my DVD-ROM drive gives me
-       (and in accord with INF8090) */
+     * (and in accord with INF8090) */
     ret_data->per_dev = 0x05; /* CD-ROM device */
     ret_data->rmb = 1; /* Removable medium */
     ret_data->version = 0x0; /* Should be 0 according to INF8090 */
@@ -702,10 +703,10 @@ static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
     ret_data->length = sizeof(struct INQUIRY_Data) - 5;
 
     /* NOTE: the length of source strings is guaranteed to not exceed
-       the corresponding buffer size due to limits imposed during
-       storing procedure in cdemu_device_set_device_id()  */
+     * the corresponding buffer size due to limits imposed during
+     * storing procedure in cdemu_device_set_device_id()  */
     /* First, fill all bytes with whitespace, then copy the string
-       without terminating NULL */
+     * without terminating NULL */
     memset(ret_data->vendor_id, 32, 8);
     memcpy(ret_data->vendor_id, self->priv->id_vendor_id, strlen(self->priv->id_vendor_id));
 
@@ -826,7 +827,7 @@ static gboolean command_mode_sense (CdemuDevice *self, const guint8 *raw_cdb)
     }
 
     /* Go over *all* pages, and if we want all pages, copy 'em all, otherwise
-       copy just the one we've got request for and break the loop */
+     * copy just the one we've got request for and break the loop */
     gboolean page_found = FALSE;
     for (GList *entry = self->priv->mode_pages_list; entry; entry = entry->next) {
         struct ModePageEntry *page_entry = entry->data;
@@ -899,8 +900,8 @@ static gboolean command_pause_resume (CdemuDevice *self, const guint8 *raw_cdb)
     /* Resume */
     if (cdb->resume == 1) {
         /* MMC-3 says that if we request resume and operation can't be resumed,
-           we return error (if we're already playing, it doesn't count as an
-           error) */
+         * we return error (if we're already playing, it doesn't count as an
+         * error) */
         if ((audio_status != AUDIO_STATUS_PAUSED)
             && (audio_status != AUDIO_STATUS_PLAYING)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: resume requested while in invalid state!\n", __debug__);
@@ -917,7 +918,7 @@ static gboolean command_pause_resume (CdemuDevice *self, const guint8 *raw_cdb)
 
     if (cdb->resume == 0) {
         /* MMC-3 also says that we return error if pause is requested and the
-           operation can't be paused (being already paused doesn't count) */
+         * operation can't be paused (being already paused doesn't count) */
         if ((audio_status != AUDIO_STATUS_PAUSED)
             && (audio_status != AUDIO_STATUS_PLAYING)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: pause requested while in invalid state!\n", __debug__);
@@ -1045,11 +1046,11 @@ static gboolean command_read (CdemuDevice *self, const guint8 *raw_cdb)
         cdemu_device_flush_buffer(self);
 
         /* Here we do the emulation of "bad sectors"... if we're dealing with
-           a bad sector, then its EDC/ECC won't correspond to actual data. So
-           we verify sector's EDC and in case DCR (Disable Corrections) bit in
-           Mode Page 1 is not enabled, we report the read error. However, my
-           tests indicate this should be done only for Mode 1 or Mode 2 Form 1
-           sectors */
+         * a bad sector, then its EDC/ECC won't correspond to actual data. So
+         * we verify sector's EDC and in case DCR (Disable Corrections) bit in
+         * Mode Page 1 is not enabled, we report the read error. However, my
+         * tests indicate this should be done only for Mode 1 or Mode 2 Form 1
+         * sectors */
         if (self->priv->bad_sector_emulation && !p_0x01->dcr) {
             gint sector_type = mirage_sector_get_sector_type(sector);
 
@@ -1213,11 +1214,11 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
     }
 
     /* Verify the requested subchannel mode ('readcd:18' uses READ CD with transfer
-       length 0x00 to determine which subchannel modes are supported; without this
-       clause, call with R-W subchannel passes, causing app choke on it later (when
-       there's transfer length > 0x00 and thus subchannel is verified */
+     * length 0x00 to determine which subchannel modes are supported; without this
+     * clause, call with R-W subchannel passes, causing app choke on it later (when
+     * there's transfer length > 0x00 and thus subchannel is verified */
     if (subchannel_mode == 0x04) {
-        /* invalid subchannel requested (don't support R-W yet) */
+        /* Invalid subchannel requested (don't support R-W yet) */
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: R-W subchannel reading not supported yet\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
@@ -1261,9 +1262,9 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
         cdemu_device_flush_buffer(self);
 
         /* Expected sector stuff check... basically, if we have CDB->ExpectedSectorType
-           set, we compare its translated value with our sector type, period. However, if
-           it's 0, then "The Logical Unit shall always terminate a command at the sector
-           where a transition between CD-ROM and CD-DA data occurs." */
+         * set, we compare its translated value with our sector type, period. However, if
+         * it's 0, then "The Logical Unit shall always terminate a command at the sector
+         * where a transition between CD-ROM and CD-DA data occurs." */
         gint sector_type = mirage_sector_get_sector_type(sector);
 
         /* Break if current sector type doesn't match expected one*/
@@ -1277,7 +1278,7 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
         if (FALSE) {
             /* Break if mode (sector type) has changed */
             /* NOTE: if we're going to be doing this, we need to account for the
-               fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
+             * fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
             if (prev_sector_type != sector_type) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, sector_type);
                 g_object_unref(sector);
@@ -1287,11 +1288,11 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
         }
 
         /* Here we do the emulation of "bad sectors"... if we're dealing with
-           a bad sector, then its EDC/ECC won't correspond to actual data. So
-           we verify sector's EDC and in case DCR (Disable Corrections) bit in
-           Mode Page 1 is not enabled, we report the read error. However, my
-           tests indicate this should be done only for Mode 1 or Mode 2 Form 1
-           sectors */
+         * a bad sector, then its EDC/ECC won't correspond to actual data. So
+         * we verify sector's EDC and in case DCR (Disable Corrections) bit in
+         * Mode Page 1 is not enabled, we report the read error. However, my
+         * tests indicate this should be done only for Mode 1 or Mode 2 Form 1
+         * sectors */
         if (self->priv->bad_sector_emulation && !p_0x01->dcr) {
             if ((sector_type == MIRAGE_SECTOR_MODE1 || sector_type == MIRAGE_SECTOR_MODE2_FORM1)
                 && !mirage_sector_verify_lec(sector)) {
@@ -1583,12 +1584,12 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
 
     if (cdb->subq) {
         /* I think the subchannel data should be read from sectors, the way real
-           devices do it... if Mode-1 is requested, read subchannel from current
-           sector, and if it's Mode-2 or Mode-3, interpolate Mode-1 data for it.
-           To find Mode-2 or Mode-3, we need to loop over 100 sectors, and return
-           data if we find it. Note that even though libMirage's get functions
-           should do that for us, we'll do it manually, because we need the
-           information about sector where data was found. */
+         * devices do it... if Mode-1 is requested, read subchannel from current
+         * sector, and if it's Mode-2 or Mode-3, interpolate Mode-1 data for it.
+         * To find Mode-2 or Mode-3, we need to loop over 100 sectors, and return
+         * data if we find it. Note that even though libMirage's get functions
+         * should do that for us, we'll do it manually, because we need the
+         * information about sector where data was found. */
         switch (cdb->param_list) {
             case 0x01: {
                 /* Current position */
@@ -1613,16 +1614,16 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                 ret_data->index = mirage_helper_bcd2hex(tmp_buf[2]);
 
                 /* Now the address; if it happens that we got Mode-2 or Mode-3 Q
-                   here, we need to interpolate address from adjacent sector. The
-                   universal way to go here is: we take MSF address, convert it from
-                   BCD to HEX, then transform it in LBA and apply correction (in case of
-                   interpolation), and then convert it back to MSF if required.
-                   It's ugly, but safe. */
+                 * here, we need to interpolate address from adjacent sector. The
+                 * universal way to go here is: we take MSF address, convert it from
+                 * BCD to HEX, then transform it in LBA and apply correction (in case of
+                 * interpolation), and then convert it back to MSF if required.
+                 * It's ugly, but safe. */
                 /* NOTE: It would seem that Alchohol 120% virtual drive returns BCD
-                   data when read using READ CD, and HEX when read via READ SUBCHANNEL.
-                   We do the same, because at least 'grip' on linux seems to rely on
-                   data returned by READ SUBCHANNEL being HEX... (and it seems MMC3
-                   requires READ CD to return BCD data) */
+                 * data when read using READ CD, and HEX when read via READ SUBCHANNEL.
+                 * We do the same, because at least 'grip' on linux seems to rely on
+                 * data returned by READ SUBCHANNEL being HEX... (and it seems MMC3
+                 * requires READ CD to return BCD data) */
                 gint correction = 0;
                 while ((tmp_buf[0] & 0x0F) != 0x01) {
                     correction++;
@@ -1636,7 +1637,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                 }
 
                 /* In Q-subchannel, first MSF is relative, second absolute... in
-                   data we return, it's the other way around */
+                 * data we return, it's the other way around */
                 guint8 rmin = mirage_helper_bcd2hex(tmp_buf[3]);
                 guint8 rsec = mirage_helper_bcd2hex(tmp_buf[4]);
                 guint8 rframe = mirage_helper_bcd2hex(tmp_buf[5]);
@@ -1789,8 +1790,8 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
     MirageDisc *disc = self->priv->disc;
 
     /* Alcohol 120% was being a PITA claiming I was feeding it 'empty disc'...
-       upon checking INF-8020, it turns out what MMC-3 specifies as control byte
-       is actually used... so we do compatibility mapping here */
+     * upon checking INF-8020, it turns out what MMC-3 specifies as control byte
+     * is actually used... so we do compatibility mapping here */
     if (cdb->format == 0) {
         if (cdb->control == 0x40) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: compliance to INF-8020 obviously expected... playing along\n", __debug__);
@@ -1813,8 +1814,8 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
             MirageTrack *cur_track;
 
             /* "For multi-session discs, this command returns the TOC data for
-               all sessions and for Track number AAh only the Lead-out area of
-               the last complete session." (MMC-3) */
+             * all sessions and for Track number AAh only the Lead-out area of
+             * the last complete session." (MMC-3) */
 
             /* All tracks but lead-out */
             if (cdb->number != 0xAA) {
@@ -1867,7 +1868,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                         }
 
                         self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0_Descriptor);
-                        ret_desc++;    /* next descriptor */
+                        ret_desc++; /* next descriptor */
                     }
 
                     g_object_unref(cur_track);
@@ -2065,7 +2066,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                     }
 
                     /* If we're dealing with multisession disc, it'd probably be
-                       a good idea to come up with B0 descriptors... */
+                     * a good idea to come up with B0 descriptors... */
                     if (num_sessions > 1) {
                         gint leadout_length;
                         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a B0 descriptor for session %i!\n", __debug__, session_number);
@@ -2078,7 +2079,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                         ret_desc->point = 0xB0;
 
                         /* If this is last session, we set MSF to 0xFF, indicating
-                           disc is closed */
+                         * disc is closed */
                         if (session_number < num_sessions) {
                             mirage_helper_lba2msf(leadout_start + leadout_length, TRUE, &ret_desc->min, &ret_desc->sec, &ret_desc->frame);
                         } else {
@@ -2095,7 +2096,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                         }
 
                         /* FIXME: have disc provide it's max capacity (currently
-                           emulating 80 minute disc) */
+                         * emulating 80 minute disc) */
                         ret_desc->pmin = 0x4F;
                         ret_desc->psec = 0x3B;
                         ret_desc->pframe = 0x47;
@@ -2117,8 +2118,8 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                             ret_desc->frame = 0x00;
 
                             /* No idea what these are supposed to be... MMC-3 and INF8090 say it's a lead-in of first session,
-                               but it doesn't look like it; on internet, I came across a doc which claims that if min/sec/frame
-                               are not set to 0x00, and pmin/psec/pframe to the following pattern, the disc is CD-R/RW. */
+                             * but it doesn't look like it; on internet, I came across a doc which claims that if min/sec/frame
+                             * are not set to 0x00, and pmin/psec/pframe to the following pattern, the disc is CD-R/RW. */
                             ret_desc->pmin = 0x95;
                             ret_desc->psec = 0x00;
                             ret_desc->pframe = 0x00;
@@ -2129,7 +2130,6 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                     }
 
                     /* FIXME: Should we provide C0 and C1 as well? */
-
                 }
                 g_object_unref(cur_session);
             }
@@ -2174,7 +2174,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                 ret_descriptor->leadin_start_f = 0x17;
 
                 /* Last possible leadout; corresponds to capacity (on
-                   my drive, capacity minus two) */
+                 * my drive, capacity minus two) */
                 mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &ret_descriptor->last_leadout_m, &ret_descriptor->last_leadout_s, &ret_descriptor->last_leadout_f);
             }
 
@@ -2338,6 +2338,7 @@ static gboolean command_read_track_information (CdemuDevice *self, const guint8 
             }
             default: {
                 data_mode = 0x0F;
+                break;
             }
         }
 
@@ -2448,16 +2449,16 @@ static gboolean command_request_sense (CdemuDevice *self, const guint8 *raw_cdb)
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: returning sense data\n", __debug__);
 
     /* REQUEST SENSE is used for retrieving deferred errors; right now, we
-       don't support reporting those (actually, we don't generate them, either),
-       so we return empty sense here */
+     * don't support reporting those (actually, we don't generate them, either),
+     * so we return empty sense here */
     sense->res_code = 0x70; /* Current error */
     sense->valid = 0;
     sense->length = 0x0A; /* Additional sense length */
 
     /* MMC-3: the status of the play operation may be determined by issuing a
-       REQUEST SENSE command. The sense key is set to NO SENSE, the ASC is set
-       to NO ADDITIONAL SENSE DATA and the audio status is reported in
-       the additional sense code qualifier field. */
+     * REQUEST SENSE command. The sense key is set to NO SENSE, the ASC is set
+     * to NO ADDITIONAL SENSE DATA and the audio status is reported in
+     * the additional sense code qualifier field. */
     sense->sense_key = NO_SENSE;
     sense->asc = NO_ADDITIONAL_SENSE_INFORMATION;
     sense->ascq = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
@@ -2588,9 +2589,9 @@ static gboolean command_set_cd_speed (CdemuDevice *self, const guint8 *raw_cdb)
     struct ModePage_0x2A *p_0x2A = cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
 
     /* Set the value to mode page and do nothing else at the moment...
-       Note that we don't have to convert from BE neither for comparison (because
-       it's 0xFFFF and unsigned short) nor when setting value (because it's BE in
-       mode page anyway) */
+     * Note that we don't have to convert from BE neither for comparison (because
+     * it's 0xFFFF and unsigned short) nor when setting value (because it's BE in
+     * mode page anyway) */
     if (cdb->read_speed == 0xFFFF) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read speed to max\n", __debug__);
         p_0x2A->cur_read_speed = p_0x2A->max_read_speed;
@@ -2684,8 +2685,8 @@ static gboolean command_test_unit_ready (CdemuDevice *self, const guint8 *raw_cd
     }
 
     /* SCSI requires us to report UNIT ATTENTION with NOT READY TO READY CHANGE,
-       MEDIUM MAY HAVE CHANGED whenever medium changes... this is required for
-       linux SCSI layer to set medium block size properly upon disc insertion */
+     * MEDIUM MAY HAVE CHANGED whenever medium changes... this is required for
+     * linux SCSI layer to set medium block size properly upon disc insertion */
     if (self->priv->media_event == MEDIA_EVENT_NEW_MEDIA) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reporting media changed\n", __debug__);
         self->priv->media_event = MEDIA_EVENT_NOCHANGE;
@@ -2745,160 +2746,234 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         cdb[6], cdb[7], cdb[8], cdb[9], cdb[10], cdb[11]);
 
     /* Packet command table */
-    static struct {
+    static const struct {
         PacketCommand cmd;
         gchar *debug_name;
         gboolean (*implementation)(CdemuDevice *, const guint8 *);
         gboolean interrupt_audio_play;
     } packet_commands[] = {
-        { CLOSE_TRACK_SESSION,
-          "CLOSE TRACK/SESSION",
-          command_close_track_session,
-          TRUE },
-        { GET_EVENT_STATUS_NOTIFICATION,
-          "GET EVENT/STATUS NOTIFICATION",
-          command_get_event_status_notification,
-          FALSE },
-        { GET_CONFIGURATION,
-          "GET CONFIGURATION",
-          command_get_configuration,
-          FALSE, },
-        { GET_PERFORMANCE,
-          "GET PERFORMANCE",
-          command_get_performance,
-          FALSE, },
-        { INQUIRY,
-          "INQUIRY",
-          command_inquiry,
-          FALSE },
-        { MODE_SELECT_6,
-          "MODE SELECT (6)",
-          command_mode_select,
-          FALSE },
-        { MODE_SELECT_10,
-          "MODE SELECT (10)",
-          command_mode_select,
-          FALSE },
-        { MODE_SENSE_6,
-          "MODE SENSE (6)",
-          command_mode_sense,
-          FALSE },
-        { MODE_SENSE_10,
-          "MODE SENSE (10)",
-          command_mode_sense,
-          FALSE },
-        { PAUSE_RESUME,
-          "PAUSE/RESUME",
-          command_pause_resume,
-          FALSE /* Well, it does... but in it's own, unique way :P */ },
-        { PLAY_AUDIO_10,
-          "PLAY AUDIO (10)",
-          command_play_audio,
-          TRUE },
-        { PLAY_AUDIO_12,
-          "PLAY AUDIO (12)",
-          command_play_audio,
-          TRUE },
-        { PLAY_AUDIO_MSF,
-          "PLAY AUDIO MSF",
-          command_play_audio,
-          TRUE },
-        { PREVENT_ALLOW_MEDIUM_REMOVAL,
-          "PREVENT/ALLOW MEDIUM REMOVAL",
-          command_prevent_allow_medium_removal,
-          FALSE },
-        { READ_10,
-          "READ (10)",
-          command_read,
-          TRUE },
-        { READ_12,
-          "READ (12)",
-          command_read,
-          TRUE },
-        { READ_BUFFER_CAPACITY,
-          "READ BUFFER CAPACITY",
-          command_read_buffer_capacity,
-          FALSE },
-        { READ_CAPACITY,
-          "READ CAPACITY",
-          command_read_capacity,
-          FALSE },
-        { READ_CD,
-          "READ CD",
-          command_read_cd,
-          FALSE },
-        { READ_CD_MSF,
-          "READ CD MSF",
-          command_read_cd,
-          FALSE },
-        { READ_DISC_INFORMATION,
-          "READ DISC INFORMATION",
-          command_read_disc_information,
-          TRUE },
-        { READ_DISC_STRUCTURE,
-          "READ DISC STRUCTURE",
-          command_read_disc_structure,
-          TRUE },
-        { READ_TOC_PMA_ATIP,
-          "READ TOC/PMA/ATIP",
-          command_read_toc_pma_atip,
-          FALSE },
-        { READ_TRACK_INFORMATION,
-          "READ TRACK INFORMATION",
-          command_read_track_information,
-          TRUE },
-        { READ_SUBCHANNEL,
-          "READ SUBCHANNEL",
-          command_read_subchannel,
-          FALSE },
-        { REPORT_KEY,
-          "REPORT KEY",
-          command_report_key,
-          TRUE },
-        { REQUEST_SENSE,
-          "REQUEST SENSE",
-          command_request_sense,
-          FALSE },
-        { RESERVE_TRACK,
-          "RESERVE TRACK",
-          command_reserve_track,
-          TRUE },
-        { SEEK_10,
-          "SEEK (10)",
-          command_seek,
-          TRUE },
-        { SEND_CUE_SHEET,
-          "SEND CUE SHEET",
-          command_send_cue_sheet,
-          TRUE },
-        { SET_CD_SPEED,
-          "SET CD SPEED",
-          command_set_cd_speed,
-          TRUE },
-        { SET_STREAMING,
-          "SET STREAMING",
-          command_set_streaming,
-          TRUE },
-        { START_STOP_UNIT,
-          "START/STOP UNIT",
-          command_start_stop_unit,
-          TRUE },
-        { SYNCHRONIZE_CACHE,
-          "SYNCHRONIZE CACHE",
-          command_synchronize_cache,
-          FALSE },
-        { TEST_UNIT_READY,
-          "TEST UNIT READY",
-          command_test_unit_ready,
-          FALSE },
-        { WRITE_10,
-          "WRITE (10)",
-          command_write,
-          TRUE },
-        { WRITE_12,
-          "WRITE (12)",
-          command_write,
-          TRUE },
+        {
+            CLOSE_TRACK_SESSION,
+            "CLOSE TRACK/SESSION",
+            command_close_track_session,
+            TRUE,
+        },
+        {
+            GET_EVENT_STATUS_NOTIFICATION,
+            "GET EVENT/STATUS NOTIFICATION",
+            command_get_event_status_notification,
+            FALSE,
+        },
+        {
+            GET_CONFIGURATION,
+            "GET CONFIGURATION",
+            command_get_configuration,
+            FALSE,
+        },
+        {
+            GET_PERFORMANCE,
+            "GET PERFORMANCE",
+            command_get_performance,
+            FALSE,
+        },
+        {
+            INQUIRY,
+            "INQUIRY",
+            command_inquiry,
+            FALSE,
+        },
+        {
+            MODE_SELECT_6,
+            "MODE SELECT (6)",
+            command_mode_select,
+            FALSE,
+        },
+        {
+            MODE_SELECT_10,
+            "MODE SELECT (10)",
+            command_mode_select,
+            FALSE,
+        },
+        {
+            MODE_SENSE_6,
+            "MODE SENSE (6)",
+            command_mode_sense,
+            FALSE,
+        },
+        {
+            MODE_SENSE_10,
+            "MODE SENSE (10)",
+            command_mode_sense,
+            FALSE,
+        },
+        {
+            PAUSE_RESUME,
+            "PAUSE/RESUME",
+            command_pause_resume,
+            FALSE, /* Well, it does... but in its own, unique way :P */
+        },
+        {
+            PLAY_AUDIO_10,
+            "PLAY AUDIO (10)",
+            command_play_audio,
+            TRUE,
+        },
+        {
+            PLAY_AUDIO_12,
+            "PLAY AUDIO (12)",
+            command_play_audio,
+            TRUE,
+        },
+        {
+            PLAY_AUDIO_MSF,
+            "PLAY AUDIO MSF",
+            command_play_audio,
+            TRUE,
+        },
+        {
+            PREVENT_ALLOW_MEDIUM_REMOVAL,
+            "PREVENT/ALLOW MEDIUM REMOVAL",
+            command_prevent_allow_medium_removal,
+            FALSE,
+        },
+        {
+            READ_10,
+            "READ (10)",
+            command_read,
+            TRUE,
+        },
+        {
+            READ_12,
+            "READ (12)",
+            command_read,
+            TRUE,
+        },
+        {
+            READ_BUFFER_CAPACITY,
+            "READ BUFFER CAPACITY",
+            command_read_buffer_capacity,
+            FALSE,
+        },
+        {
+            READ_CAPACITY,
+            "READ CAPACITY",
+            command_read_capacity,
+            FALSE,
+        },
+        {
+            READ_CD,
+            "READ CD",
+            command_read_cd,
+            FALSE,
+        },
+        {
+            READ_CD_MSF,
+            "READ CD MSF",
+            command_read_cd,
+            FALSE,
+        },
+        {
+            READ_DISC_INFORMATION,
+            "READ DISC INFORMATION",
+            command_read_disc_information,
+            TRUE,
+        },
+        {
+            READ_DISC_STRUCTURE,
+            "READ DISC STRUCTURE",
+            command_read_disc_structure,
+            TRUE,
+        },
+        {
+            READ_TOC_PMA_ATIP,
+            "READ TOC/PMA/ATIP",
+            command_read_toc_pma_atip,
+            FALSE,
+        },
+        {
+            READ_TRACK_INFORMATION,
+            "READ TRACK INFORMATION",
+            command_read_track_information,
+            TRUE,
+        },
+        {
+            READ_SUBCHANNEL,
+            "READ SUBCHANNEL",
+            command_read_subchannel,
+            FALSE,
+        },
+        {
+            REPORT_KEY,
+            "REPORT KEY",
+            command_report_key,
+            TRUE,
+        },
+        {
+            REQUEST_SENSE,
+            "REQUEST SENSE",
+            command_request_sense,
+            FALSE,
+        },
+        {
+            RESERVE_TRACK,
+            "RESERVE TRACK",
+            command_reserve_track,
+            TRUE,
+        },
+        {
+            SEEK_10,
+            "SEEK (10)",
+            command_seek,
+            TRUE,
+        },
+        {
+            SEND_CUE_SHEET,
+            "SEND CUE SHEET",
+            command_send_cue_sheet,
+            TRUE,
+        },
+        {
+            SET_CD_SPEED,
+            "SET CD SPEED",
+            command_set_cd_speed,
+            TRUE,
+        },
+        {
+            SET_STREAMING,
+            "SET STREAMING",
+            command_set_streaming,
+            TRUE,
+        },
+        {
+            START_STOP_UNIT,
+            "START/STOP UNIT",
+            command_start_stop_unit,
+            TRUE,
+        },
+        {
+            SYNCHRONIZE_CACHE,
+            "SYNCHRONIZE CACHE",
+            command_synchronize_cache,
+            FALSE,
+        },
+        {
+            TEST_UNIT_READY,
+            "TEST UNIT READY",
+            command_test_unit_ready,
+            FALSE,
+        },
+        {
+            WRITE_10,
+            "WRITE (10)",
+            command_write,
+            TRUE,
+        },
+        {
+            WRITE_12,
+            "WRITE (12)",
+            command_write,
+            TRUE,
+        },
     };
 
     /* Find the command and execute its implementation handler */
@@ -2912,7 +2987,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
             g_mutex_lock(self->priv->device_mutex);
 
             /* FIXME: If there is deferred error sense available, return CHECK CONDITION
-               with that sense. We do not execute requested command. */
+             * with that sense. We do not execute requested command. */
 
             /* Stop audio play if command interrupts it */
             if (packet_commands[i].interrupt_audio_play) {

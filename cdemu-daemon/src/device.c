@@ -62,8 +62,8 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     self->priv->device_name = g_strdup_printf("cdemu%i", number);
 
     /* NOTE: self->priv->device_serial is generated in cdemu_device_start(),
-       once the control device is opened and global device number is
-       obtained from it */
+     * once the control device is opened and global device number is
+     * obtained from it */
 
     /* Init device mutex */
     self->priv->device_mutex = g_new(GMutex, 1);

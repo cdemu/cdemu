@@ -249,7 +249,7 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
     }
 
     /* Generate device serial number based on the global device number
-       obtained from the kernel */
+     * obtained from the kernel */
     if (TRUE) {
         gint ioctl_ret;
         gint32 device_number = self->priv->number; /* Use local device number as fallback */
@@ -308,7 +308,7 @@ void cdemu_device_stop (CdemuDevice *self)
     /* Unref thread */
     if (self->priv->io_thread) {
         /* Wait for the thread to finish (also releases the reference
-           to thread object) */
+         * to thread object) */
         g_thread_join(self->priv->io_thread);
 
         self->priv->io_thread = NULL;

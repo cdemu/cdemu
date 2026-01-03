@@ -60,8 +60,8 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 
     while (1) {
         /* Process sectors; we go over playing range, check sectors' type, keep
-           track of where we are and try to produce some sound. libao's play
-           function should keep our timing */
+         * track of where we are and try to produce some sound. libao's play
+         * function should keep our timing */
         MirageSector *sector;
         GError *error = NULL;
         const guint8 *tmp_buffer;
@@ -69,7 +69,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         gint type;
 
         /* Make playback thread interruptible (i.e. if status is changed, it's
-           going to end */
+         * going to end */
         if (self->priv->status != AUDIO_STATUS_PLAYING) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread interrupted\n", __debug__);
             break;
@@ -98,7 +98,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         }
 
         /* This one covers both sector not being an audio one and sector changing
-           from audio to data one */
+         * from audio to data one */
         type = mirage_sector_get_sector_type(sector);
         if (type != MIRAGE_SECTOR_AUDIO) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non-audio sector!\n", __debug__);
@@ -127,10 +127,10 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         }
 
         /* Hack: account for null driver's behaviour; for other libao drivers, ao_play
-           seems to return after the data is played, which is what we rely on for our
-           timing. However, null driver, as it has no device to write to, returns
-           immediately. Until this is fixed in libao, we'll have to emulate the delay
-           ourselves */
+         * seems to return after the data is played, which is what we rely on for our
+         * timing. However, null driver, as it has no device to write to, returns
+         * immediately. Until this is fixed in libao, we'll have to emulate the delay
+         * ourselves */
         if (self->priv->null_hack) {
             g_usleep(1*G_USEC_PER_SEC/75); /* One sector = 1/75th of second */
         }
@@ -149,8 +149,9 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 }
 
 static void cdemu_audio_join_thread(CdemuAudio *self) {
-    if (!self->priv->playback_thread)
+    if (!self->priv->playback_thread) {
         return;
+    }
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish\n", __debug__);
     g_thread_join(self->priv->playback_thread);
@@ -163,14 +164,14 @@ static void cdemu_audio_start_playing (CdemuAudio *self)
     GError *local_error = NULL;
 
     /* Wait for an old thread to finish before starting a new one; Otherwise we get
-       a race between audio setup and teardown. */
+     * a race between audio setup and teardown. */
     cdemu_audio_join_thread(self);
 
     /* Set the status */
     self->priv->status = AUDIO_STATUS_PLAYING;
 
     /* Start the playback thread; thread must be joinable, so we can wait for it
-       to end */
+     * to end */
     self->priv->playback_thread = g_thread_try_new("CDEmu Device Audio Play thread", (GThreadFunc)cdemu_audio_playback_thread, self, &local_error);
 
     if (!self->priv->playback_thread) {
@@ -182,7 +183,7 @@ static void cdemu_audio_start_playing (CdemuAudio *self)
 static void cdemu_audio_stop_playing (CdemuAudio *self, gint status)
 {
     /* We can't tell whether we're stopped or paused, so the upper layer needs
-       to provide us appropriate status */
+     * to provide us appropriate status */
     self->priv->status = status;
     cdemu_audio_join_thread(self);
 }
@@ -192,7 +193,7 @@ static void cdemu_audio_stop_playing (CdemuAudio *self, gint status)
  *                                 Public API                         *
 \**********************************************************************/
 /* NOTE: these functions are called from packet-command implementations,
-   and therefore with device_mutex held! */
+ * and therefore with device_mutex held! */
 void cdemu_audio_initialize (CdemuAudio *self, const gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr)
 {
     self->priv->cur_sector_ptr = cur_sector_ptr;
@@ -228,7 +229,7 @@ gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *
     /* Play is valid only if we're not playing already or paused */
     if (self->priv->status != AUDIO_STATUS_PLAYING && self->priv->status != AUDIO_STATUS_PAUSED) {
         /* Set start and end sector, and disc... We should have been stopped properly
-           before, which means we don't have to unref the previous disc reference */
+         * before, which means we don't have to unref the previous disc reference */
         self->priv->cur_sector = start;
         self->priv->end_sector = end;
         self->priv->disc = g_object_ref(disc); /* Reference disc for the time of playing */

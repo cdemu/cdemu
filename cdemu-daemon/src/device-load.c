@@ -112,7 +112,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
 {
     const gchar *writer_id = NULL;
     gint medium_type = MIRAGE_MEDIUM_CD;
-    gint medium_capacity = 80*60*75; /* 80 min */
+    gint medium_capacity = 80 * 60 * 75; /* 80 min */
     gint profile_index = ProfileIndex_NONE;
 
     /* Well, we won't do anything if we're already loaded */
@@ -138,22 +138,22 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
             if (!g_ascii_strcasecmp(medium_string, "cdr74")) {
                 /* 74-minute CD-R (650 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
-                medium_capacity = 74*60*75;
+                medium_capacity = 74 * 60 * 75;
                 profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "cdr80")) {
                 /* 80-minute CD-R (700 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
-                medium_capacity = 80*60*75;
+                medium_capacity = 80 * 60 * 75;
                 profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "cdr90")) {
                 /* 90-minute CD-R (800 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
-                medium_capacity = 90*60*75;
+                medium_capacity = 90 * 60 * 75;
                 profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "cdr99")) {
                 /* 99-minute CD-R (900 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
-                medium_capacity = 99*60*75;
+                medium_capacity = 99 * 60 * 75;
                 profile_index = ProfileIndex_CDR;
             } else if (!g_ascii_strcasecmp(medium_string, "dvd+r")) {
                 /* DVD+R Single-Layer */
@@ -174,7 +174,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
             }
         } else if (g_str_has_prefix(key, "writer.")) {
             /* Create a copy of key and ref the value, because of the
-               generic cleanup below. */
+             * generic cleanup below. */
             g_hash_table_insert(writer_parameters, g_strdup(key), g_variant_ref(value));
         }
 
@@ -338,11 +338,11 @@ gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
     g_mutex_lock(self->priv->device_mutex);
 
     /* This call is the equivalent of the user pressing the mechanical
-       switch on the logical unit to eject the disc, so it needs to
-       generate the media eject request event. The actual unload will
-       likely not happen at this point, due to device being locked;
-       instead, HAL/udev/udisksd2 may pick up the request, unlock the
-       device, and proceed with ejection again... */
+     * switch on the logical unit to eject the disc, so it needs to
+     * generate the media eject request event. The actual unload will
+     * likely not happen at this point, due to device being locked;
+     * instead, HAL/udev/udisksd2 may pick up the request, unlock the
+     * device, and proceed with ejection again... */
     self->priv->media_event = MEDIA_EVENT_EJECTREQUEST;
 
     /* Attempt the actual unload */
@@ -351,9 +351,9 @@ gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
     g_mutex_unlock(self->priv->device_mutex);
 
     /* Ignore the command's return value to avoid bothering the clients
-       with errors when device is most likely locked, and will be
-       unloaded by HAL/udev/udisksd2 upon reception of the above-set
-       eject request event ...*/
+     * with errors when device is most likely locked, and will be
+     * unloaded by HAL/udev/udisksd2 upon reception of the above-set
+     * eject request event ...*/
     succeeded = TRUE;
     return succeeded;
 }

@@ -30,98 +30,98 @@ struct DISC_STRUCTURE_ListEntry
 {
     guint8 format_code;
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 sds : 1;
-        guint8 rds : 1;
-        guint8 reserved1 : 6;
-    #else
-        guint8 reserved1 : 6;
-        guint8 rds : 1;
-        guint8 sds : 1;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 sds : 1;
+    guint8 rds : 1;
+    guint8 reserved1 : 6;
+#else
+    guint8 reserved1 : 6;
+    guint8 rds : 1;
+    guint8 sds : 1;
+#endif
 
     guint16 structure_length;
 };
 
 struct DVD_STRUCTURE_PhysicalFormat
 {
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 book_type : 4;
-        guint8 part_ver  : 4;
-    #else
-        guint8 part_ver  : 4;
-        guint8 book_type : 4;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 book_type : 4;
+    guint8 part_ver : 4;
+#else
+    guint8 part_ver : 4;
+    guint8 book_type : 4;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 disc_size : 4;
-        guint8 max_rate  : 4;
-    #else
-        guint8 max_rate  : 4;
-        guint8 disc_size : 4;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 disc_size : 4;
+    guint8 max_rate : 4;
+#else
+    guint8 max_rate : 4;
+    guint8 disc_size : 4;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 reserved1  : 1;
-        guint8 num_layers : 2;
-        guint8 track_path : 1;
-        guint8 layer_type : 4;
-    #else
-        guint8 layer_type : 4;
-        guint8 track_path : 1;
-        guint8 num_layers : 2;
-        guint8 reserved1  : 1;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 reserved1 : 1;
+    guint8 num_layers : 2;
+    guint8 track_path : 1;
+    guint8 layer_type : 4;
+#else
+    guint8 layer_type : 4;
+    guint8 track_path : 1;
+    guint8 num_layers : 2;
+    guint8 reserved1 : 1;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 linear_density : 4;
-        guint8 track_density  : 4;
-    #else
-        guint8 track_density  : 4;
-        guint8 linear_density : 4;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 linear_density : 4;
+    guint8 track_density : 4;
+#else
+    guint8 track_density : 4;
+    guint8 linear_density : 4;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint32 reserved2  : 8;
-        guint32 data_start : 24;
-    #else
-        guint32 data_start : 24;
-        guint32 reserved2  : 8;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint32 reserved2 : 8;
+    guint32 data_start : 24;
+#else
+    guint32 data_start : 24;
+    guint32 reserved2 : 8;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint32 reserved3 : 8;
-        guint32 data_end  : 24;
-    #else
-        guint32 data_end  : 24;
-        guint32 reserved3 : 8;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint32 reserved3 : 8;
+    guint32 data_end : 24;
+#else
+    guint32 data_end : 24;
+    guint32 reserved3 : 8;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint32 reserved4  : 8;
-        guint32 layer0_end : 24;
-    #else
-        guint32 layer0_end : 24;
-        guint32 reserved4  : 8;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint32 reserved4 : 8;
+    guint32 layer0_end : 24;
+#else
+    guint32 layer0_end : 24;
+    guint32 reserved4 : 8;
+#endif
 
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 bca       : 1;
-        guint8 reserved5 : 7;
-    #else
-        guint8 reserved5 : 7;
-        guint8 bca       : 1;
-    #endif
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 bca : 1;
+    guint8 reserved5 : 7;
+#else
+    guint8 reserved5 : 7;
+    guint8 bca : 1;
+#endif
 
     guint8 media_specific[2031];
 };
 
 struct DVD_STRUCTURE_Copyright
 {
-    guint8   copy_protection;
-    guint8   region_info;
-    guint8   reserved1;
-    guint8   reserved2;
+    guint8 copy_protection;
+    guint8 region_info;
+    guint8 reserved1;
+    guint8 reserved2;
 };
 
 #pragma pack()
@@ -212,41 +212,41 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
         }
         case 0xFF: {
             /* List of all supported disc structures; this appears to be
-               a capability list of the device rather than the list of
-               present structures on the disc. So we return a hard-coded
-               list based on what my phyical drive returns. */
+             * a capability list of the device rather than the list of
+             * present structures on the disc. So we return a hard-coded
+             * list based on what my physical drive returns. */
 
             /* Note: the lengths that are not mandated by the MMC are
-               taken from what my pyhical drive returns. */
+             * taken from what my physical drive returns. */
             const struct DISC_STRUCTURE_ListEntry entries[] = {
-                { .format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x01, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x02, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 188) },
-                { .format_code = 0x04, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x05, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x06, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 20) },
-                { .format_code = 0x07, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 24576) },
-                { .format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x09, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x0A, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 12) },
-                { .format_code = 0x0B, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0x0C, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 30720) },
-                { .format_code = 0x0D, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32772) },
-                { .format_code = 0x0E, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 64) },
-                { .format_code = 0x0F, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 18) },
-                { .format_code = 0x10, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048) },
-                { .format_code = 0x11, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 256) },
-                { .format_code = 0x20, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x21, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x22, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x23, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x24, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8) },
-                { .format_code = 0x30, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32768) },
-                { .format_code = 0x82, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32) },
-                { .format_code = 0x86, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 24576) },
-                { .format_code = 0xC0, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4) },
-                { .format_code = 0xFF, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 112) },
+                {.format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048)},
+                {.format_code = 0x01, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4)},
+                {.format_code = 0x02, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048)},
+                {.format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 188)},
+                {.format_code = 0x04, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048)},
+                {.format_code = 0x05, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4)},
+                {.format_code = 0x06, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 20)},
+                {.format_code = 0x07, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 24576)},
+                {.format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048)},
+                {.format_code = 0x09, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4)},
+                {.format_code = 0x0A, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 12)},
+                {.format_code = 0x0B, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4)},
+                {.format_code = 0x0C, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 30720)},
+                {.format_code = 0x0D, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32772)},
+                {.format_code = 0x0E, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 64)},
+                {.format_code = 0x0F, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 18)},
+                {.format_code = 0x10, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 2048)},
+                {.format_code = 0x11, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 256)},
+                {.format_code = 0x20, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8)},
+                {.format_code = 0x21, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8)},
+                {.format_code = 0x22, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8)},
+                {.format_code = 0x23, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8)},
+                {.format_code = 0x24, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 8)},
+                {.format_code = 0x30, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32768)},
+                {.format_code = 0x82, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 32)},
+                {.format_code = 0x86, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 24576)},
+                {.format_code = 0xC0, .sds = 1, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 4)},
+                {.format_code = 0xFF, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(4 + 112)},
             };
 
             *structure_buffer = g_malloc(sizeof(entries));
@@ -271,12 +271,12 @@ static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self G_GNUC
             /* Disc Information (DI) */
 
             /* The disc information structure consists of one or more
-               disc information (DI) units and emergency brake (EB) data
-               units. The structure of the former is only roughly
-               outlined in the MMC-5, while details are in BluRay specs
-               that are not publicly available.
-
-               Therefore, for now, we return only zeroed data buffer.*/
+             * disc information (DI) units and emergency brake (EB) data
+             * units. The structure of the former is only roughly
+             * outlined in the MMC-5, while details are in BluRay specs
+             * that are not publicly available.
+             *
+             * Therefore, for now, we return only zeroed data buffer.*/
             *structure_buffer = g_malloc0(4096);
             *structure_length = 4096;
 
@@ -285,20 +285,20 @@ static gboolean cdemu_device_generate_bluray_structure (CdemuDevice *self G_GNUC
         case 0xFF: {
             /* For some reason, my physical drive reports length of 0 for all ...*/
             const struct DISC_STRUCTURE_ListEntry entries[] = {
-                { .format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x09, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x0A, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x0F, .sds = 1, .rds = 0, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x12, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x30, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x80, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x81, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x82, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0x84, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0xC0, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
-                { .format_code = 0xFF, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0) },
+                {.format_code = 0x00, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x03, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x08, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x09, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x0A, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x0F, .sds = 1, .rds = 0, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x12, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x30, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x80, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x81, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x82, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0x84, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0xC0, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
+                {.format_code = 0xFF, .sds = 0, .rds = 1, .structure_length = GUINT16_TO_BE(0)},
             };
 
             *structure_buffer = g_malloc(sizeof(entries));
@@ -323,14 +323,17 @@ gboolean cdemu_device_generate_disc_structure (CdemuDevice *self, gint layer, gi
 {
     switch (self->priv->current_profile) {
         case PROFILE_DVDROM:
-        case PROFILE_DVDPLUSR:
+        case PROFILE_DVDPLUSR: {
             return cdemu_device_generate_dvd_structure(self, layer, format, structure_buffer, structure_length);
+        }
         case PROFILE_BDROM:
-        case PROFILE_BDR_SRM:
+        case PROFILE_BDR_SRM: {
             return cdemu_device_generate_bluray_structure(self, layer, format, structure_buffer, structure_length);
-        default:
+        }
+        default: {
             *structure_buffer = NULL;
             *structure_length = 0;
             return FALSE;
+        }
     }
 }
