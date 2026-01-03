@@ -42,14 +42,14 @@
  *
  * A 12-byte sync pattern, found at the beginning of non-audio sectors.
  */
-const guint8 mirage_pattern_sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+const guint8 mirage_pattern_sync[12] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
 
 /**
  * mirage_pattern_cd001:
  *
  * A 8-byte CD001 pattern, found at 16th sector of ISO data tracks.
  */
-const guint8 mirage_pattern_cd001[8] = { 0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00 };
+const guint8 mirage_pattern_cd001[8] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
 
 
 /**
@@ -57,7 +57,7 @@ const guint8 mirage_pattern_cd001[8] = { 0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x0
  *
  * A 8-byte BEA01 pattern, found at 16th sector of UDF data tracks.
  */
-const guint8 mirage_pattern_bea01[8] = { 0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00 };
+const guint8 mirage_pattern_bea01[8] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
 
 
 /**********************************************************************\
@@ -79,10 +79,10 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
     g_free(ret_filename);
 
     /* Do case-insensitive search among the files found in path. Match
-       only against beginning of the hypothesized filename, so that we
-       also get results with additional suffices. E.g., if we search
-       for file.dat, accept file.dat.gz as well. But always return the
-       shortest match. */
+     * only against beginning of the hypothesized filename, so that we
+     * also get results with additional suffices. E.g., if we search
+     * for file.dat, accept file.dat.gz as well. But always return the
+     * shortest match. */
     dir = g_dir_open(path, 0, NULL);
     if (!dir) {
         return NULL;
@@ -507,21 +507,23 @@ gboolean mirage_helper_validate_isrc (const gchar *isrc)
 {
     if (!isrc) return FALSE;
 
-    if (g_ascii_isalnum(isrc[ 0]) &&
-        g_ascii_isalnum(isrc[ 1]) &&
+    if (
+        g_ascii_isalnum(isrc[0]) &&
+        g_ascii_isalnum(isrc[1]) &&
 
-        g_ascii_isalnum(isrc[ 2]) &&
-        g_ascii_isalnum(isrc[ 3]) &&
-        g_ascii_isalnum(isrc[ 4]) &&
+        g_ascii_isalnum(isrc[2]) &&
+        g_ascii_isalnum(isrc[3]) &&
+        g_ascii_isalnum(isrc[4]) &&
 
-        g_ascii_isdigit(isrc[ 5]) &&
-        g_ascii_isdigit(isrc[ 6]) &&
+        g_ascii_isdigit(isrc[5]) &&
+        g_ascii_isdigit(isrc[6]) &&
 
-        g_ascii_isdigit(isrc[ 7]) &&
-        g_ascii_isdigit(isrc[ 8]) &&
-        g_ascii_isdigit(isrc[ 9]) &&
+        g_ascii_isdigit(isrc[7]) &&
+        g_ascii_isdigit(isrc[8]) &&
+        g_ascii_isdigit(isrc[9]) &&
         g_ascii_isdigit(isrc[10]) &&
-        g_ascii_isdigit(isrc[11]))
+        g_ascii_isdigit(isrc[11])
+    )
     {
         return TRUE;
     }
@@ -1196,16 +1198,16 @@ MirageSectorType mirage_helper_determine_sector_type (const guint8 *buf)
 /**********************************************************************\
  *                         Text data encoding                         *
 \**********************************************************************/
-static const guint8 bom_utf32be[] = { 0x00, 0x00, 0xFE, 0xFF };
+static const guint8 bom_utf32be[] = {0x00, 0x00, 0xFE, 0xFF};
 static const gchar utf32be[] = "utf-32be";
 
-static const guint8 bom_utf32le[] = { 0xFF, 0xFE, 0x00, 0x00 };
+static const guint8 bom_utf32le[] = {0xFF, 0xFE, 0x00, 0x00};
 static const gchar utf32le[] = "utf-32le";
 
-static const guint8 bom_utf16be[] = { 0xFE, 0xFF };
+static const guint8 bom_utf16be[] = {0xFE, 0xFF};
 static const gchar utf16be[] = "utf-16be";
 
-static const guint8 bom_utf16le[] = { 0xFF, 0xFE };
+static const guint8 bom_utf16le[] = {0xFF, 0xFE};
 static const gchar utf16le[] = "utf-16le";
 
 /**

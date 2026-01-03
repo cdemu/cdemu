@@ -76,7 +76,7 @@ static MirageTrack *mirage_session_find_track_with_subchannel (MirageSession *se
     MirageTrack *track = NULL;
 
     /* Go over all tracks, and find the first one with fragment that contains
-       subchannel... */
+     * subchannel... */
     gint num_tracks = mirage_session_get_number_of_tracks(self);
     for (gint i = 0; i < num_tracks; i++) {
         track = mirage_session_get_track_by_index(self, i, NULL);
@@ -107,8 +107,8 @@ static gchar *mirage_session_scan_for_mcn (MirageSession *self)
     }
 
     /* According to INF8090, MCN, if present, must be encoded in at least
-       one sector in 100 consequtive sectors. So we read first hundred
-       sectors' subchannel, and extract MCN if we find it. */
+     * one sector in 100 consequtive sectors. So we read first hundred
+     * sectors' subchannel, and extract MCN if we find it. */
     MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(track, NULL);
     gint start_address = mirage_fragment_get_address(fragment);
     g_object_unref(fragment);
@@ -328,8 +328,8 @@ MirageSessionType mirage_session_get_session_type (MirageSession *self)
 void mirage_session_set_mcn (MirageSession *self, const gchar *mcn)
 {
     /* MCN can be set only if none of the tracks have fragments that contain
-       subchannel; this is because MCN is encoded in the subchannel, and cannot
-       be altered... */
+     * subchannel; this is because MCN is encoded in the subchannel, and cannot
+     * be altered... */
     if (self->priv->mcn_fixed) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: MCN is already encoded in subchannel!\n", __debug__);
     } else {
@@ -531,9 +531,9 @@ void mirage_session_set_leadout_length (MirageSession *self, gint length)
     leadout = mirage_session_get_track_by_number(self, MIRAGE_TRACK_LEADOUT, NULL);
 
     /* Now, check if leadout already has a fragment... if it has (and it should
-       have only one, unless I screwed up somewhere), then we'll simply readjust
-       its length. If not, we need to create it... The simplest way is to try to
-       get the last fragment in track */
+     * have only one, unless I screwed up somewhere), then we'll simply readjust
+     * its length. If not, we need to create it... The simplest way is to try to
+     * get the last fragment in track */
     fragment = mirage_track_get_fragment_by_index(leadout, -1, NULL);
     if (!fragment) {
         /* Create NULL fragment */
@@ -638,7 +638,7 @@ void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageT
     mirage_object_set_parent(MIRAGE_OBJECT(track), self);
 
     /* Insert track into track list... take into account that lead-in has index 0,
-       thus all indexes should be increased by 1 */
+     * thus all indexes should be increased by 1 */
     self->priv->tracks_list = g_list_insert(self->priv->tracks_list, track, index + 1);
 
     /* Connect track modified signal */
@@ -820,8 +820,8 @@ MirageTrack *mirage_session_get_track_by_index (MirageSession *self, gint index,
     }
 
     /* Get index-th item from list... take into account the fact that index needs
-       to be increased by one, because first track we'll get with following function
-       will be the lead-in... */
+     * to be increased by one, because first track we'll get with following function
+     * will be the lead-in... */
     track = g_list_nth_data(self->priv->tracks_list, index + 1);
 
     if (!track) {
@@ -1337,8 +1337,8 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
     MirageCdTextCoder *encoder;
 
     /* Allocate space... technically, there could be 255 packs (each 18-byte long)
-       per every language... and spec says we support 8 of those. So we play safe
-       here; get number of languages and go for max number of packs */
+     * per every language... and spec says we support 8 of those. So we play safe
+     * here; get number of languages and go for max number of packs */
     num_languages = mirage_session_get_number_of_languages(self);
     num_tracks = mirage_session_get_number_of_tracks(self);
 

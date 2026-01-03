@@ -46,8 +46,9 @@ typedef struct
     gchar *file;
 } TOC_Track;
 
-typedef enum {
-    DATA  = 0,
+typedef enum
+{
+    DATA = 0,
     AUDIO = 1
 } TrackType;
 

@@ -21,9 +21,10 @@
 
 #include "adc.h"
 
-typedef enum {
-    PLAIN     = 1,
-    TWOBYTE   = 2,
+typedef enum
+{
+    PLAIN = 1,
+    TWOBYTE = 2,
     THREEBYTE = 3
 } ADC_ChunkType;
 
@@ -32,12 +33,13 @@ static inline ADC_ChunkType adc_chunk_type(guint8 byte)
 {
     ADC_ChunkType chunk_type;
 
-    if (byte & 0x80)
+    if (byte & 0x80) {
         chunk_type = PLAIN;
-    else if (byte & 0x40)
+    } else if (byte & 0x40) {
         chunk_type = THREEBYTE;
-    else
+    } else {
         chunk_type = TWOBYTE;
+    }
 
     return chunk_type;
 }
@@ -47,15 +49,18 @@ static inline guint8 adc_chunk_size(guint8 byte)
     guint8 chunk_size;
 
     switch (adc_chunk_type(byte)) {
-        case PLAIN:
+        case PLAIN: {
             chunk_size = (byte & 0x7F) + 1;
             break;
-        case TWOBYTE:
+        }
+        case TWOBYTE: {
             chunk_size = ((byte & 0x3F) >> 2) + 3;
             break;
-        case THREEBYTE:
+        }
+        case THREEBYTE: {
             chunk_size = (byte & 0x3F) + 4;
             break;
+        }
     }
 
     return chunk_size;
@@ -99,7 +104,7 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
     while ((gsize)(inp - input) < in_size) {
         chunk_type = adc_chunk_type(*inp);
         switch (chunk_type) {
-            case PLAIN:
+            case PLAIN: {
                 chunk_size = adc_chunk_size(*inp);
                 if ((gsize)(outp + chunk_size - output) > avail_size) {
                     output_full = TRUE;
@@ -109,8 +114,8 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
                 inp += chunk_size + 1;
                 outp += chunk_size;
                 break;
-
-            case TWOBYTE:
+            }
+            case TWOBYTE: {
                 chunk_size = adc_chunk_size(*inp);
                 offset = adc_chunk_offset(inp);
                 if ((gsize)(outp + chunk_size - output) > avail_size) {
@@ -129,8 +134,8 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
                     inp += 2;
                 }
                 break;
-
-            case THREEBYTE:
+            }
+            case THREEBYTE: {
                 chunk_size = adc_chunk_size(*inp);
                 offset = adc_chunk_offset(inp);
                 if ((gsize)(outp + chunk_size - output) > avail_size) {
@@ -149,10 +154,12 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
                     inp += 3;
                 }
                 break;
+            }
         }
 
-        if (output_full)
+        if (output_full) {
             break;
+        }
     }
 
     *bytes_written = outp - output;

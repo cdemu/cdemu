@@ -41,13 +41,15 @@ const gchar gbi_part_signature[16] = "GBI VOL";
 /**********************************************************************\
  *                  Object and its private structure                  *
 \**********************************************************************/
-typedef enum {
+typedef enum
+{
     COMPRESSION_NONE = 0x00,
     COMPRESSION_ZLIB = 0x10,
     COMPRESSION_LZMA = 0x20,
 } CompressionType;
 
-typedef enum {
+typedef enum
+{
     IMAGE_DAA = 0x00,
     IMAGE_GBI = 0x01,
 } ImageType;
@@ -593,7 +595,7 @@ static gboolean mirage_filter_stream_daa_read_part_header (MirageFilterStreamDaa
 static gboolean mirage_filter_stream_daa_read_from_stream (MirageFilterStreamDaa *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
 {
     /* A rather complex loop, thanks to the possibility that a chunk spans across
-       multiple part files... */
+     * multiple part files... */
     while (length > 0) {
         guint64 local_offset, file_offset;
         guint32 read_length;
@@ -679,9 +681,9 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_split (MirageFilterStr
     self->priv->num_parts = descriptor.num_parts; /* Set number of parts */
 
     /* Depending on the filename format, we have a fixed number of 5-byte
-       fields, in which part sizes are stored. We don't really need these,
-       as we can get same info from part descriptor of each part file.
-       However, it can help us determine the filename format. */
+     * fields, in which part sizes are stored. We don't really need these,
+     * as we can get same info from part descriptor of each part file.
+     * However, it can help us determine the filename format. */
     switch (descriptor_size / 5) {
         case 99: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part01.daa, volname.part02.daa, ...\n", __debug__);
@@ -737,8 +739,8 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_encryption (MirageFilt
 
 
     /* First, check if password has already been provided via context options
-       (separate code paths because if acquired via password function, the string
-       must be freed) */
+     * (separate code paths because if acquired via password function, the string
+     * must be freed) */
     GVariant *password_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "password");
     if (password_value) {
         mirage_filter_stream_daa_initialize_decryption(self, computed_key, g_variant_get_string(password_value, NULL), descriptor.daa_key);
@@ -780,7 +782,7 @@ static gboolean mirage_filter_stream_daa_parse_descriptors (MirageFilterStreamDa
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing descriptors (stream position: 0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, mirage_stream_tell(stream));
 
     /* Set number of parts to 1 (true for non-split images); if image consists
-       of multiple parts, this will be set accordingly by the code below */
+     * of multiple parts, this will be set accordingly by the code below */
     self->priv->num_parts = 1;
 
     /* Parse descriptors... they are located between header and chunk table */
@@ -866,7 +868,7 @@ static void deobfuscate_chunk_table_daa (guint8 *data, gint size, guint64 iso_si
 
 static inline guint read_bits (guint bits, guint8 *in, guint in_bits, gboolean bits_obfuscated, gint *bits_obfuscation_counter)
 {
-    static const guint8 obfuscation_mask[] = { 0x0A, 0x35, 0x2D, 0x3F, 0x08, 0x33, 0x09, 0x15 };
+    static const guint8 obfuscation_mask[] = {0x0A, 0x35, 0x2D, 0x3F, 0x08, 0x33, 0x09, 0x15};
     guint seek_bits;
     guint rem;
     guint seek = 0;
@@ -1006,7 +1008,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
         }
 
         /* Chunk compression type; format 0x100 uses zlib, while format 0x110
-           can use either only LZMA or combination of zlib and LZMA */
+         * can use either only LZMA or combination of zlib and LZMA */
         switch (tmp_compression_type) {
             case -1: {
                 tmp_compression_type = COMPRESSION_NONE;
@@ -1104,7 +1106,7 @@ static gboolean mirage_filter_stream_daa_build_part_table (MirageFilterStreamDaa
         part = &self->priv->part_table[i];
 
         /* If we have create_filename_func set, use it... otherwise we're a
-           non-split image and should be using self->priv->main_filename anyway */
+         * non-split image and should be using self->priv->main_filename anyway */
         if (self->priv->create_filename_func) {
             part_filename = self->priv->create_filename_func(self->priv->main_filename, i);
         } else {
@@ -1144,13 +1146,13 @@ static gboolean mirage_filter_stream_daa_build_part_table (MirageFilterStreamDaa
         }
 
         /* We could parse part descriptor here; it's present in both main and part
-           files, and it has same format. It appears to contain previous
-           and current part's index, and the length of current part (with some
-           other fields in between). However, those part lengths are literal part
-           files' lengths, and we actually need the lengths of zipped streams
-           they contain. So we'll calculate that ourselves and leave part descriptor
-           alone... Part indices aren't of any use to us either, because I
-           haven't seen any DAA image having them mixed up... */
+         * files, and it has same format. It appears to contain previous
+         * and current part's index, and the length of current part (with some
+         * other fields in between). However, those part lengths are literal part
+         * files' lengths, and we actually need the lengths of zipped streams
+         * they contain. So we'll calculate that ourselves and leave part descriptor
+         * alone... Part indices aren't of any use to us either, because I
+         * haven't seen any DAA image having them mixed up... */
         mirage_stream_seek(part->stream, 0, G_SEEK_END, NULL);
         part_length = mirage_stream_tell(part->stream);
 
@@ -1227,7 +1229,7 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: bit swap type: %d\n", __debug__, self->priv->bit_swap_type);
 
             /* We do not handle compressed chunk table yet, as I'd like
-               to have a test image first... */
+             * to have a test image first... */
             if (self->priv->compressed_chunk_table) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: compressed chunk table not supported yet!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Compressed chunk table not supported yet!"));

@@ -137,7 +137,7 @@ static gboolean mirage_filter_stream_gzip_append_part (MirageFilterStreamGzip *s
     self->priv->num_parts++;
 
     /* Check if we need to allocate more parts; if we do, double the
-       number of allocated parts to avoid reallocating often */
+     * number of allocated parts to avoid reallocating often */
     if (self->priv->num_parts > self->priv->allocated_parts) {
         self->priv->allocated_parts *= 2;
         self->priv->parts = g_try_renew(GZIP_Part, self->priv->parts, self->priv->allocated_parts);
@@ -168,7 +168,9 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     z_stream *zlib_stream = &self->priv->zlib_stream;
 
-    goffset totalIn, totalOut, last;
+    goffset total_in;
+    goffset total_out;
+    goffset last;
     gint ret;
 
 
@@ -207,7 +209,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     }
 
     /* Inflate the input and build an index */
-    totalIn = totalOut = last = 0;
+    total_in = total_out = last = 0;
     zlib_stream->avail_out = 0;
     do {
         /* Read some compressed data */
@@ -232,13 +234,13 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
             }
 
             /* Inflate until end of input or output, or until end of block */
-            totalIn += zlib_stream->avail_in;
-            totalOut += zlib_stream->avail_out;
+            total_in += zlib_stream->avail_in;
+            total_out += zlib_stream->avail_out;
 
             ret = inflate(zlib_stream, Z_BLOCK);
 
-            totalIn -= zlib_stream->avail_in;
-            totalOut -= zlib_stream->avail_out;
+            total_in -= zlib_stream->avail_in;
+            total_out -= zlib_stream->avail_out;
 
             if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to inflate!"));
@@ -250,13 +252,13 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
 
             /* If at end of block, add part entry */
             if ((zlib_stream->data_type & 128) && !(zlib_stream->data_type & 64) &&
-                (totalOut == 0 || totalOut - last > SPAN)) {
+                (total_out == 0 || total_out - last > SPAN)) {
 
-                if (!mirage_filter_stream_gzip_append_part(self, zlib_stream->data_type & 7, totalIn, totalOut, zlib_stream->avail_out, self->priv->window_buffer, error)) {
+                if (!mirage_filter_stream_gzip_append_part(self, zlib_stream->data_type & 7, total_in, total_out, zlib_stream->avail_out, self->priv->window_buffer, error)) {
                     return FALSE;
                 }
 
-                last = totalOut;
+                last = total_out;
             }
         } while (zlib_stream->avail_in);
     } while (ret != Z_STREAM_END);
@@ -273,13 +275,13 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     self->priv->parts = g_renew(GZIP_Part, self->priv->parts, self->priv->num_parts);
 
     /* Compute sizes of parts and allocate part buffer */
-    if (!mirage_filter_stream_gzip_compute_part_sizes(self, totalOut, error)) {
+    if (!mirage_filter_stream_gzip_compute_part_sizes(self, total_out, error)) {
         return FALSE;
     }
 
-    /* Store file size (= totalOut) */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, totalOut, totalOut);
-    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), totalOut);
+    /* Store file size (= total_out) */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, total_out, total_out);
+    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), total_out);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
 

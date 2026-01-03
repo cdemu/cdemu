@@ -210,7 +210,7 @@ gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stre
     gboolean succeeded = TRUE;
 
     /* Store reference to stream as our underlying stream for the time
-       of opening */
+     * of opening */
     self->priv->underlying_stream = g_object_ref(stream);
 
     /* Provided by implementation */
@@ -271,7 +271,7 @@ static const gchar *mirage_filter_stream_get_filename (MirageStream *_self)
     MirageFilterStream *self = MIRAGE_FILTER_STREAM(_self);
 
     /* Filter stream does not store filename information; filename should
-       be obtained from MirageFileFilter at the bottom of filter chain */
+     * be obtained from MirageFileFilter at the bottom of filter chain */
     if (!self->priv->underlying_stream) {
         return NULL;
     }
@@ -284,7 +284,7 @@ static gboolean mirage_filter_stream_is_writable (MirageStream *_self)
     MirageFilterStream *self = MIRAGE_FILTER_STREAM(_self);
 
     /* This filter stream is writable if it supports write, and if its
-       underlying stream is writable */
+     * underlying stream is writable */
     if (!self->priv->underlying_stream) {
         return FALSE;
     }
@@ -325,7 +325,7 @@ static gboolean mirage_filter_stream_move_file (MirageStream *_self, const gchar
     MirageFilterStream *self = MIRAGE_FILTER_STREAM(_self);
 
     /* We need an underlying stream, because only the file stream at
-       the bottom of filter chain can perform a move */
+     * the bottom of filter chain can perform a move */
     if (!self->priv->underlying_stream) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No underlying stream!"));
         return FALSE;

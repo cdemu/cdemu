@@ -24,7 +24,7 @@
 #define __debug__ "MDS-Parser"
 
 
-static const guint8 mds_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E', 'S', 'C', 'R', 'I', 'P', 'T', 'O', 'R', 0x01 };
+static const guint8 mds_signature[17] = {'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E', 'S', 'C', 'R', 'I', 'P', 'T', 'O', 'R', 0x01};
 
 
 /**********************************************************************\
@@ -149,13 +149,11 @@ static inline void widechar_filename_fix_endian (gunichar2 *filename)
 /**********************************************************************\
  *                         Parsing functions                          *
 \**********************************************************************/
-/*
-    I hexedited the track mode field with various values and fed it to Alchohol;
-    it seemed that high part of byte had no effect at all; only the lower one
-    affected the mode, in the following manner:
-    00: Mode 2, 01: Audio, 02: Mode 1, 03: Mode 2, 04: Mode 2 Form 1, 05: Mode 2 Form 2, 06: UKNONOWN, 07: Mode 2
-    08: Mode 2, 09: Audio, 0A: Mode 1, 0B: Mode 2, 0C: Mode 2 Form 1, 0D: Mode 2 Form 2, 0E: UKNONOWN, 0F: Mode 2
-*/
+/*  I hexedited the track mode field with various values and fed it to Alchohol;
+ *  it seemed that high part of byte had no effect at all; only the lower one
+ *  affected the mode, in the following manner:
+ *  00: Mode 2, 01: Audio, 02: Mode 1, 03: Mode 2, 04: Mode 2 Form 1, 05: Mode 2 Form 2, 06: UKNONOWN, 07: Mode 2
+ *  08: Mode 2, 09: Audio, 0A: Mode 1, 0B: Mode 2, 0C: Mode 2 Form 1, 0D: Mode 2 Form 2, 0E: UKNONOWN, 0F: Mode 2 */
 static gint mirage_parser_mds_convert_track_mode (MirageParserMds *self, gint mode)
 {
     /* convert between two values */
@@ -175,8 +173,10 @@ static gint mirage_parser_mds_convert_track_mode (MirageParserMds *self, gint mo
 
     /* Basically, do the test twice; once for value, and once for value + 8 */
     for (guint i = 0; i < G_N_ELEMENTS(modes); i++) {
-        if (((mode & 0x0F) == modes[i].mds_mode)
-            || ((mode & 0x0F) == modes[i].mds_mode + 8)) {
+        if (
+            ((mode & 0x0F) == modes[i].mds_mode) ||
+            ((mode & 0x0F) == modes[i].mds_mode + 8)
+        ) {
             return modes[i].mirage_mode;
         }
     }
@@ -270,7 +270,7 @@ static void mirage_parser_mds_parse_dpm_data (MirageParserMds *self)
     cur_ptr = self->priv->mds_data + self->priv->header->dpm_blocks_offset;
 
     /* It would seem the first field is number of DPM data sets, followed by
-       appropriate number of offsets for those data sets */
+     * appropriate number of offsets for those data sets */
     num_dpm_blocks = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
@@ -298,16 +298,16 @@ static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
 
     /* *** Disc structures *** */
     /* Disc structures: in lead-in areas of DVD and BD discs there are several
-       control structures that store various information about the media. There
-       are various formats defined in MMC-3 for these structures, and they are
-       retrieved from disc using READ DISC STRUCTURE command. Of all the structures,
-       MDS format seems to store only three types:
-        - 0x0001: DVD copyright information (4 bytes)
-        - 0x0004: DVD manufacturing information (2048 bytes)
-        - 0x0000: Physical format information (2048 bytes)
-       They are stored in that order, taking up 4100 bytes. If disc is dual-layer,
-       data consists of 8200 bytes, containing afore-mentioned sequence for each
-       layer. */
+     * control structures that store various information about the media. There
+     * are various formats defined in MMC-3 for these structures, and they are
+     * retrieved from disc using READ DISC STRUCTURE command. Of all the structures,
+     * MDS format seems to store only three types:
+     *  - 0x0001: DVD copyright information (4 bytes)
+     *  - 0x0004: DVD manufacturing information (2048 bytes)
+     *  - 0x0000: Physical format information (2048 bytes)
+     * They are stored in that order, taking up 4100 bytes. If disc is dual-layer,
+     * data consists of 8200 bytes, containing afore-mentioned sequence for each
+     * layer. */
     if (self->priv->header->disc_structures_offset) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc structures\n", __debug__);
 
@@ -358,7 +358,7 @@ static void mirage_parser_mds_parse_bca (MirageParserMds *self)
     guint8 *cur_ptr;
 
     /* It seems BCA (Burst Cutting Area) structure is stored as well, but in separate
-       place (kinda makes sense, because it doesn't have fixed length) */
+     * place (kinda makes sense, because it doesn't have fixed length) */
     if (self->priv->header->bca_len) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data (0x%X bytes)\n", __debug__, self->priv->header->bca_len);
 
@@ -373,8 +373,8 @@ static gchar *mirage_parser_mds_get_track_filename (MirageParserMds *self, MDS_F
     gchar *mdf_filename;
 
     /* Track file: it seems all tracks have the same extra block, and that
-       filename is located at the end of it... meaning filename's length is
-       from filename_offset to end of the file */
+     * filename is located at the end of it... meaning filename's length is
+     * from filename_offset to end of the file */
     if (!footer_block) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track block does not have a footer!"));
@@ -382,7 +382,7 @@ static gchar *mirage_parser_mds_get_track_filename (MirageParserMds *self, MDS_F
     }
 
     /* If footer_block->widechar_filename is set, filename is stored using 16-bit
-       (wide) characters, otherwise 8-bit characters are used. */
+     * (wide) characters, otherwise 8-bit characters are used. */
     if (footer_block->widechar_filename) {
         gunichar2 *tmp_ptr = MIRAGE_CAST_PTR(self->priv->mds_data, footer_block->filename_offset, gunichar2 *);
         widechar_filename_fix_endian(tmp_ptr);
@@ -460,8 +460,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n\n", __debug__, block->footer_offset);
 
         /* Read extra track block, if applicable; it seems that only CD images
-           have extra blocks, though. For DVD images, extra_offset seems to
-           contain track length */
+         * have extra blocks, though. For DVD images, extra_offset seems to
+         * contain track length */
         if (medium_type == MIRAGE_MEDIUM_CD && block->extra_offset) {
             extra_block = (MDS_TrackExtraBlock *)(self->priv->mds_data + block->extra_offset);
             mds_track_extra_block_fix_endian(extra_block);
@@ -506,7 +506,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
             mirage_track_set_ctl(track, block->adr_ctl & 0x0F);
 
             /* MDS format doesn't seem to store pregap data in its data file;
-               therefore, we need to provide NULL fragment for pregap */
+             * therefore, we need to provide NULL fragment for pregap */
             if (extra_block && extra_block->pregap) {
                 /* Create NULL fragment */
                 MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -522,8 +522,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
             }
 
             /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
-               files are split on (2048) sector boundary, which means we can simply represent them with multiple data
-               fragments */
+             * files are split on (2048) sector boundary, which means we can simply represent them with multiple data
+             * fragments */
             for (guint j = 0; j < block->number_of_files; j++) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment for file #%i\n", __debug__, j);
 
@@ -558,8 +558,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
 
                         /* We need to correct the data for track sector size...
-                           MDS format has already added 96 bytes to sector size,
-                           so we need to subtract it */
+                         * MDS format has already added 96 bytes to sector size,
+                         * so we need to subtract it */
                         main_size = block->sector_size - subchannel_size;
 
                         break;
@@ -599,13 +599,13 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 gint64 fragment_len = 0;
                 if (medium_type == MIRAGE_MEDIUM_CD) {
                     /* For CDs, track lengths are stored in extra block... and we assume
-                       this is the same as fragment's length */
+                     * this is the same as fragment's length */
                     fragment_len = extra_block->length;
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%" G_GINT64_MODIFIER "X\n", __debug__, fragment_len);
                 } else {
                     /* For DVDs, -track- length seems to be stored in extra_offset;
-                       however, since DVD images can have split MDF files, we need
-                       to calculate the individual framgents' lengths ourselves... */
+                     * however, since DVD images can have split MDF files, we need
+                     * to calculate the individual framgents' lengths ourselves... */
                     mirage_stream_seek(data_stream, 0, G_SEEK_END, NULL);
                     fragment_len = mirage_stream_tell(data_stream);
 
@@ -674,8 +674,8 @@ static gboolean mirage_parser_mds_parse_sessions (MirageParserMds *self, GError 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track blocks offset: 0x%X\n\n", __debug__, session_block->tracks_blocks_offset);
 
         /* If this is first session, we'll use its start address as disc start address;
-           if not, we need to calculate previous session's leadout length, based on
-           this session's start address and previous session's end... */
+         * if not, we need to calculate previous session's leadout length, based on
+         * this session's start address and previous session's end... */
         if (i == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting disc's start to 0x%X (%i)\n", __debug__, session_block->session_start, session_block->session_start);
             mirage_disc_layout_set_start_sector(self->priv->disc, session_block->session_start);
@@ -696,7 +696,7 @@ static gboolean mirage_parser_mds_parse_sessions (MirageParserMds *self, GError 
             g_object_unref(prev_session);
         }
         /* Actually, we could've gotten that one from A2 track entry as well...
-           but I'm lazy, and this will hopefully work as well */
+         * but I'm lazy, and this will hopefully work as well */
         self->priv->prev_session_end = session_block->session_end;
 
         /* Add session */

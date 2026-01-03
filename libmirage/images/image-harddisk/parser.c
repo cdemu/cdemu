@@ -110,7 +110,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, MirageStre
         return FALSE;
     }
 
-    mirage_ddm_block_fix_endian (&ddm);
+    mirage_ddm_block_fix_endian(&ddm);
 
     if (!memcmp(&ddm.signature, "ER", 2)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Image has a valid Driver Descriptor Map!\n", __debug__);
@@ -137,7 +137,9 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, MirageStre
 
             if (!memcmp(&pme.signature, "PM", 2)) {
                 mirage_print_apm_entry_block(MIRAGE_CONTEXTUAL(self), &pme);
-                if (p + 1 >= pme.map_entries) break; /* Last APM entry */
+                if (p + 1 >= pme.map_entries) {
+                    break; /* Last APM entry */
+                }
             } else {
                 break; /* Invalid Partition Map entry */
             }
@@ -218,7 +220,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, MirageStre
     }
 
     /* Macintosh HFS/HFS+ image check */
-    guint8  mac_buf[512];
+    guint8 mac_buf[512];
     guint16 mac_sectsize = 512;
     guint32 mac_dev_sectors = file_length / mac_sectsize;
 

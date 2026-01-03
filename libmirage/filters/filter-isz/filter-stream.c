@@ -22,7 +22,7 @@
 #define __debug__ "ISZ-FilterStream"
 
 
-static const guint8 isz_signature[4] = { 'I', 's', 'Z', '!' };
+static const guint8 isz_signature[4] = {'I', 's', 'Z', '!'};
 
 
 /**********************************************************************\
@@ -74,39 +74,39 @@ void mirage_filter_stream_isz_type_register (GTypeModule *type_module)
 /**********************************************************************\
  *                      Data conversion routines                      *
 \**********************************************************************/
-static void mirage_filter_stream_isz_fixup_header(ISZ_Header *header)
+static void mirage_filter_stream_isz_fixup_header (ISZ_Header *header)
 {
-    header->vol_sn        = GUINT32_FROM_LE(header->vol_sn);
+    header->vol_sn = GUINT32_FROM_LE(header->vol_sn);
     header->total_sectors = GUINT32_FROM_LE(header->total_sectors);
-    header->num_blocks    = GUINT32_FROM_LE(header->num_blocks);
-    header->block_size    = GUINT32_FROM_LE(header->block_size);
-    header->chunk_offs    = GUINT32_FROM_LE(header->chunk_offs);
-    header->seg_offs      = GUINT32_FROM_LE(header->seg_offs);
-    header->data_offs     = GUINT32_FROM_LE(header->data_offs);
+    header->num_blocks = GUINT32_FROM_LE(header->num_blocks);
+    header->block_size = GUINT32_FROM_LE(header->block_size);
+    header->chunk_offs = GUINT32_FROM_LE(header->chunk_offs);
+    header->seg_offs = GUINT32_FROM_LE(header->seg_offs);
+    header->data_offs = GUINT32_FROM_LE(header->data_offs);
 
-    header->sect_size     = GUINT16_FROM_LE(header->sect_size);
-    header->segment_size  = GUINT64_FROM_LE(header->segment_size);
+    header->sect_size = GUINT16_FROM_LE(header->sect_size);
+    header->segment_size = GUINT64_FROM_LE(header->segment_size);
 
     /* additional header data */
     if (header->header_size > 48) {
-        header->checksum1     = GUINT32_FROM_LE(header->checksum1);
-        header->data_size     = GUINT32_FROM_LE(header->data_size);
-        header->unknown       = GUINT32_FROM_LE(header->unknown);
-        header->checksum2     = GUINT32_FROM_LE(header->checksum2);
+        header->checksum1 = GUINT32_FROM_LE(header->checksum1);
+        header->data_size = GUINT32_FROM_LE(header->data_size);
+        header->unknown = GUINT32_FROM_LE(header->unknown);
+        header->checksum2 = GUINT32_FROM_LE(header->checksum2);
     }
 }
 
-static void mirage_filter_stream_isz_fixup_segment(ISZ_Segment *segment)
+static void mirage_filter_stream_isz_fixup_segment (ISZ_Segment *segment)
 {
-    segment->size            = GUINT64_FROM_LE(segment->size);
+    segment->size = GUINT64_FROM_LE(segment->size);
 
-    segment->num_chunks      = GUINT32_FROM_LE(segment->num_chunks);
+    segment->num_chunks = GUINT32_FROM_LE(segment->num_chunks);
     segment->first_chunk_num = GUINT32_FROM_LE(segment->first_chunk_num);
-    segment->chunk_offs      = GUINT32_FROM_LE(segment->chunk_offs);
-    segment->left_size       = GUINT32_FROM_LE(segment->left_size);
+    segment->chunk_offs = GUINT32_FROM_LE(segment->chunk_offs);
+    segment->left_size = GUINT32_FROM_LE(segment->left_size);
 }
 
-static inline void mirage_filter_stream_isz_deobfuscate(guint8 *data, gint length)
+static inline void mirage_filter_stream_isz_deobfuscate (guint8 *data, gint length)
 {
     /* XOR with the NOT'ed version of the ISZ signature */
     for (gint i = 0; i < length; i++) {
@@ -233,7 +233,7 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
 
         /* Fill in data for segments */
         for (gint s = 0; s < self->priv->num_segments; s++) {
-            ISZ_Segment *cur_segment  = &self->priv->segments[s];
+            ISZ_Segment *cur_segment = &self->priv->segments[s];
             ISZ_Segment *prev_segment = &self->priv->segments[s - 1];
 
             cur_segment->first_chunk_num = sector_count;
@@ -334,12 +334,12 @@ static inline void mirage_filter_stream_isz_decode_chunk_ptr(guint8 *chunk_ptr, 
     guint8  temp_buf[sizeof(guint32)] = {0};
     guint32 *temp_ptr = (guint32 *) temp_buf;
 
-    guint32 chunk_len_bits  = ptr_len * 8 - 2;
+    guint32 chunk_len_bits = ptr_len * 8 - 2;
     guint32 chunk_type_bits = 2;
-    guint32 chunk_len_mask  = (1 << chunk_len_bits) - 1;
+    guint32 chunk_len_mask = (1 << chunk_len_bits) - 1;
     guint32 chunk_type_mask = (1 << chunk_type_bits) - 1;
 
-    g_assert (ptr_len <= sizeof(guint32));
+    g_assert(ptr_len <= sizeof(guint32));
 
     for (gint b = 0; b < ptr_len; b++) {
         temp_buf[b] = chunk_ptr[b];
@@ -347,13 +347,13 @@ static inline void mirage_filter_stream_isz_decode_chunk_ptr(guint8 *chunk_ptr, 
     *temp_ptr = GUINT32_FROM_LE(*temp_ptr);
 
     *length = *temp_ptr & chunk_len_mask;
-    *type   = (*temp_ptr >> chunk_len_bits) & chunk_type_mask;
+    *type = (*temp_ptr >> chunk_len_bits) & chunk_type_mask;
 }
 
 static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self, GError **error)
 {
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
-    z_stream  *zlib_stream  = &self->priv->zlib_stream;
+    z_stream  *zlib_stream = &self->priv->zlib_stream;
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
 
     ISZ_Header *header = &self->priv->header;
@@ -388,7 +388,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     /* Do we have a chunk table? */
     if (header->chunk_offs) {
         guint8 *chunk_buffer = NULL;
-        gint   chunk_buf_size;
+        gint chunk_buf_size;
 
         /* Chunk pointer length > 4 not implemented */
         if (header->ptr_len > 4) {
@@ -426,7 +426,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
         /* Compute index from chunk table */
         for (guint i = 0; i < self->priv->num_parts; i++) {
             guint8 *chunk_ptr = &chunk_buffer[i * header->ptr_len];
-            ISZ_Chunk *cur_part  = &self->priv->parts[i];
+            ISZ_Chunk *cur_part = &self->priv->parts[i];
 
             /* Calculate index entry */
             mirage_filter_stream_isz_decode_chunk_ptr(chunk_ptr, header->ptr_len, &cur_part->type, &cur_part->length);
@@ -438,7 +438,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     /* We don't have a chunk table so initialize a part index */
     else {
         for (guint i = 0; i < self->priv->num_parts; i++) {
-            ISZ_Chunk *cur_part  = &self->priv->parts[i];
+            ISZ_Chunk *cur_part = &self->priv->parts[i];
 
             cur_part->type = DATA;
 
@@ -452,7 +452,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
 
     /* Compute offsets for index */
     for (guint i = 0; i < self->priv->num_parts; i++) {
-        ISZ_Chunk *cur_part  = &self->priv->parts[i];
+        ISZ_Chunk *cur_part = &self->priv->parts[i];
 
         /* Calculate input offset */
         if (i == 0) {
@@ -631,12 +631,13 @@ static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *se
     ISZ_Segment *segment = &self->priv->segments[part->segment];
     MirageStream *stream = self->priv->streams[part->segment];
 
-    gsize   to_read = part->length;
-    gsize   have_read = 0;
+    gsize to_read = part->length;
+    gsize have_read = 0;
     goffset part_offs = segment->chunk_offs + part->adj_offset;
-    gsize   part_avail = chunk_num < segment->first_chunk_num + segment->num_chunks - 1 ?
-                         part->length : part->length - segment->left_size;
-    gssize  ret;
+    gsize part_avail = (chunk_num < segment->first_chunk_num + segment->num_chunks - 1) ?
+        part->length :
+        part->length - segment->left_size;
+    gssize ret;
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
@@ -736,10 +737,10 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             }
 
             /* Uncompress whole part */
-            zlib_stream->avail_in  = part->length;
-            zlib_stream->next_in   = self->priv->io_buffer;
+            zlib_stream->avail_in = part->length;
+            zlib_stream->next_in = self->priv->io_buffer;
             zlib_stream->avail_out = self->priv->inflate_buffer_size;
-            zlib_stream->next_out  = self->priv->inflate_buffer;
+            zlib_stream->next_out = self->priv->inflate_buffer;
 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
@@ -769,10 +770,10 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             }
 
             /* Uncompress whole part */
-            bzip2_stream->avail_in  = part->length;
-            bzip2_stream->next_in   = (gchar *) self->priv->io_buffer;
+            bzip2_stream->avail_in = part->length;
+            bzip2_stream->next_in = (gchar *)self->priv->io_buffer;
             bzip2_stream->avail_out = self->priv->inflate_buffer_size;
-            bzip2_stream->next_out  = (gchar *) self->priv->inflate_buffer;
+            bzip2_stream->next_out = (gchar *)self->priv->inflate_buffer;
 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
@@ -782,7 +783,7 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             }
 
             /* Restore a correct header */
-            memcpy (self->priv->io_buffer, "BZh", 3);
+            memcpy(self->priv->io_buffer, "BZh", 3);
 
             /* Inflate */
             do {

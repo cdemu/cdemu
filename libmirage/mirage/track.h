@@ -41,9 +41,9 @@ G_BEGIN_DECLS
  */
 typedef enum _MirageTrackFlag
 {
-    MIRAGE_TRACK_FLAG_FOURCHANNEL   = 0x01,
+    MIRAGE_TRACK_FLAG_FOURCHANNEL = 0x01,
     MIRAGE_TRACK_FLAG_COPYPERMITTED = 0x02,
-    MIRAGE_TRACK_FLAG_PREEMPHASIS   = 0x04,
+    MIRAGE_TRACK_FLAG_PREEMPHASIS = 0x04,
 } MirageTrackFlag;
 
 /**
@@ -55,7 +55,7 @@ typedef enum _MirageTrackFlag
  */
 typedef enum _MirageTrackConstant
 {
-    MIRAGE_TRACK_LEADIN  = 0x00,
+    MIRAGE_TRACK_LEADIN = 0x00,
     MIRAGE_TRACK_LEADOUT = 0xAA,
 } MirageTrackConstant;
 

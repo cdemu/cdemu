@@ -29,18 +29,20 @@
 G_BEGIN_DECLS
 
 
-typedef enum {
-    COPYRIGHT   = 0x01, /* Copyright */
+typedef enum
+{
+    COPYRIGHT = 0x01, /* Copyright */
     PREEMPHASIS = 0x02, /* Pre-emphasis */
-    DATA        = 0x04, /* Set on data tracks. */
-    UNKNOWN     = 0x08, /* ? */
-    O           = 0x10 /* WinOnCD says it is the "O" flag. */
+    DATA = 0x04, /* Set on data tracks. */
+    UNKNOWN = 0x08, /* ? */
+    O = 0x10 /* WinOnCD says it is the "O" flag. */
 } C2D_Flag;
 
-typedef enum {
-    AUDIO  = 0x00, /* CD-DA */
-    MODE1  = 0x01, /* CD-ROM */
-    MODE2  = 0x02, /* CD-ROM XA */
+typedef enum
+{
+    AUDIO = 0x00, /* CD-DA */
+    MODE1 = 0x01, /* CD-ROM */
+    MODE2 = 0x02, /* CD-ROM XA */
     AUDIO2 = 0xFF /* CD-DA */
 } C2D_Mode;
 
@@ -75,7 +77,7 @@ typedef struct
 typedef struct
 {
     guint32 block_size; /* Length of this c2ck block (32) */
-    gchar   signature[4]; /* Signature string: "C2CK" */
+    gchar signature[4]; /* Signature string: "C2CK" */
     guint32 dummy1[2]; /* (unknown) */
     guint64 next_offset; /* Offset to the blocks after track data: WOCD, C2AW etc. */
     guint32 dummy2[2]; /* (unknown) */

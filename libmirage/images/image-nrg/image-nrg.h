@@ -91,35 +91,35 @@ typedef struct
 
 typedef enum
 {
-    MEDIA_NONE      = 0x00000, /* No media present (NeroAPI >= 5.5.9.4) */
-    MEDIA_CD        = 0x00001, /* CD-R/RW */
-    MEDIA_DDCD      = 0x00002, /* DDCD-R/RW */
-    MEDIA_DVD_M     = 0x00004, /* DVD-R/RW */
-    MEDIA_DVD_P     = 0x00008, /* DVD+RW */
-    MEDIA_DVD_RAM   = 0x00010, /* DVD-RAM */
-    MEDIA_ML        = 0x00020, /* ML (Multi Level disc) */
-    MEDIA_MRW       = 0x00040, /* Mt. Rainier */
+    MEDIA_NONE = 0x00000, /* No media present (NeroAPI >= 5.5.9.4) */
+    MEDIA_CD = 0x00001, /* CD-R/RW */
+    MEDIA_DDCD = 0x00002, /* DDCD-R/RW */
+    MEDIA_DVD_M = 0x00004, /* DVD-R/RW */
+    MEDIA_DVD_P = 0x00008, /* DVD+RW */
+    MEDIA_DVD_RAM = 0x00010, /* DVD-RAM */
+    MEDIA_ML = 0x00020, /* ML (Multi Level disc) */
+    MEDIA_MRW = 0x00040, /* Mt. Rainier */
 
     /* NeroAPI >= 5.5.9.4 */
-    MEDIA_NO_CDR    = 0x00080, /* Exclude CD-R */
-    MEDIA_NO_CDRW   = 0x00100, /* Exclude CD-RW */
-    MEDIA_CDRW      = MEDIA_CD|MEDIA_NO_CDR,  /* CD-RW */
-    MEDIA_CDR       = MEDIA_CD|MEDIA_NO_CDRW, /* CD-R */
-    MEDIA_DVD_ROM   = 0x00200, /* DVD-ROM (non writable) */
-    MEDIA_CDROM     = 0x00400, /* CD-ROM (non writable) */
+    MEDIA_NO_CDR = 0x00080, /* Exclude CD-R */
+    MEDIA_NO_CDRW = 0x00100, /* Exclude CD-RW */
+    MEDIA_CDRW = MEDIA_CD|MEDIA_NO_CDR,  /* CD-RW */
+    MEDIA_CDR = MEDIA_CD|MEDIA_NO_CDRW, /* CD-R */
+    MEDIA_DVD_ROM = 0x00200, /* DVD-ROM (non writable) */
+    MEDIA_CDROM = 0x00400, /* CD-ROM (non writable) */
 
     /* NeroAPI >= 5.5.9.10 */
-    MEDIA_NO_DVD_M_RW   = 0x00800, /* Exclude DVD-RW */
-    MEDIA_NO_DVD_M_R    = 0x01000, /* Exclude DVD-R */
-    MEDIA_NO_DVD_P_RW   = 0x02000, /* Exclude DVD+RW */
-    MEDIA_NO_DVD_P_R    = 0x04000, /* Exclude DVD+R */
-    MEDIA_DVD_M_R   = MEDIA_DVD_M|MEDIA_NO_DVD_M_RW, /* DVD-R */
-    MEDIA_DVD_M_RW  = MEDIA_DVD_M|MEDIA_NO_DVD_M_R, /* DVD-RW */
-    MEDIA_DVD_P_R   = MEDIA_DVD_P|MEDIA_NO_DVD_P_RW, /* DVD+R */
-    MEDIA_DVD_P_RW  = MEDIA_DVD_P|MEDIA_NO_DVD_P_R, /* DVD+RW */
-    MEDIA_FPACKET   = 0x08000, /* Fixed Packetwriting */
-    MEDIA_VPACKET   = 0x10000, /* Variable Packetwriting */
-    MEDIA_PACKETW   = MEDIA_MRW|MEDIA_FPACKET|MEDIA_VPACKET, /* a bit mask for packetwriting */
+    MEDIA_NO_DVD_M_RW = 0x00800, /* Exclude DVD-RW */
+    MEDIA_NO_DVD_M_R = 0x01000, /* Exclude DVD-R */
+    MEDIA_NO_DVD_P_RW = 0x02000, /* Exclude DVD+RW */
+    MEDIA_NO_DVD_P_R = 0x04000, /* Exclude DVD+R */
+    MEDIA_DVD_M_R = MEDIA_DVD_M|MEDIA_NO_DVD_M_RW, /* DVD-R */
+    MEDIA_DVD_M_RW = MEDIA_DVD_M|MEDIA_NO_DVD_M_R, /* DVD-RW */
+    MEDIA_DVD_P_R = MEDIA_DVD_P|MEDIA_NO_DVD_P_RW, /* DVD+R */
+    MEDIA_DVD_P_RW = MEDIA_DVD_P|MEDIA_NO_DVD_P_R, /* DVD+RW */
+    MEDIA_FPACKET = 0x08000, /* Fixed Packetwriting */
+    MEDIA_VPACKET = 0x10000, /* Variable Packetwriting */
+    MEDIA_PACKETW = MEDIA_MRW|MEDIA_FPACKET|MEDIA_VPACKET, /* a bit mask for packetwriting */
 
     /* NeroAPI >= 5.5.10.4 */
     MEDIA_HDB = 0x20000, /* HD-Burn */
@@ -128,23 +128,23 @@ typedef enum
     MEDIA_DVD_P_R9 = 0x40000, /* DVD+R Double Layer 9GB */
 
     /* NeroAPI >= 6.6.0.8 */
-    MEDIA_DVD_M_R9      = 0x80000, /* DVD-R Dual Layer 9GB */
+    MEDIA_DVD_M_R9 = 0x80000, /* DVD-R Dual Layer 9GB */
     MEDIA_DVD_ANY_R9 = MEDIA_DVD_P_R9|MEDIA_DVD_M_R9, /* Any DVD Dual/Double Layer 9GB */
-    MEDIA_DVD_ANY       = MEDIA_DVD_M|MEDIA_DVD_P|MEDIA_DVD_RAM|MEDIA_DVD_ANY_R9, /* Any DVD-Media */
+    MEDIA_DVD_ANY = MEDIA_DVD_M|MEDIA_DVD_P|MEDIA_DVD_RAM|MEDIA_DVD_ANY_R9, /* Any DVD-Media */
 
     /* NeroAPI >= 6.6.0.8 */
-    MEDIA_BD_ROM    = 0x100000, /* Blu-ray Disc ROM */
-    MEDIA_BD_R      = 0x200000, /* Blu-ray Disc Recordable */
-    MEDIA_BD_RE     = 0x400000, /* Blu-ray Disc Rewritable */
-    MEDIA_BD        = MEDIA_BD_R | MEDIA_BD_RE, /* Any recordable Blu-ray Disc media */
-    MEDIA_BD_ANY    = MEDIA_BD|MEDIA_BD_ROM, /* Any Blu-ray Disc media */
+    MEDIA_BD_ROM = 0x100000, /* Blu-ray Disc ROM */
+    MEDIA_BD_R = 0x200000, /* Blu-ray Disc Recordable */
+    MEDIA_BD_RE = 0x400000, /* Blu-ray Disc Rewritable */
+    MEDIA_BD = MEDIA_BD_R | MEDIA_BD_RE, /* Any recordable Blu-ray Disc media */
+    MEDIA_BD_ANY = MEDIA_BD|MEDIA_BD_ROM, /* Any Blu-ray Disc media */
 
     /* NeroAPI >= 6.6.0.1001 */
-    MEDIA_HD_DVD_ROM    = 0x0800000, /* HD DVD ROM */
-    MEDIA_HD_DVD_R      = 0x1000000, /* HD DVD Recordable */
-    MEDIA_HD_DVD_RW     = 0x2000000, /* HD DVD Rewritable */
-    MEDIA_HD_DVD        = MEDIA_HD_DVD_R|MEDIA_HD_DVD_RW, /* Any recordable HD DVD media */
-    MEDIA_HD_DVD_ANY    = MEDIA_HD_DVD|MEDIA_HD_DVD_ROM, /* Any HD DVD media */
+    MEDIA_HD_DVD_ROM = 0x0800000, /* HD DVD ROM */
+    MEDIA_HD_DVD_R = 0x1000000, /* HD DVD Recordable */
+    MEDIA_HD_DVD_RW = 0x2000000, /* HD DVD Rewritable */
+    MEDIA_HD_DVD = MEDIA_HD_DVD_R|MEDIA_HD_DVD_RW, /* Any recordable HD DVD media */
+    MEDIA_HD_DVD_ANY = MEDIA_HD_DVD|MEDIA_HD_DVD_ROM, /* Any HD DVD media */
 } NERO_MEDIA_TYPE;
 
 

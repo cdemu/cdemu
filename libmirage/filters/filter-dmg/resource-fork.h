@@ -22,31 +22,36 @@
 G_BEGIN_DECLS
 
 
-typedef enum {
-    map_changed  = 0x20,
-    map_compact  = 0x40,
+typedef enum
+{
+    map_changed = 0x20,
+    map_compact = 0x40,
     map_readonly = 0x80
 } res_fork_attr_t;
 
-typedef enum {
-    attr_changed   = 0x02,
-    attr_preload   = 0x04,
+typedef enum
+{
+    attr_changed = 0x02,
+    attr_preload = 0x04,
     attr_protected = 0x08,
-    attr_locked    = 0x10,
+    attr_locked = 0x10,
     attr_purgeable = 0x20,
-    attr_sysheap   = 0x40,
-    attr_sysref    = 0x80
+    attr_sysheap = 0x40,
+    attr_sysref = 0x80
 } rsrc_attr_t;
 
 #pragma pack(1)
-typedef struct {
+
+typedef struct
+{
     guint32 data_offset;
     guint32 map_offset;
     guint32 data_length;
     guint32 map_length;
 } rsrc_raw_header_t; /* length: 16 bytes */
 
-typedef struct {
+typedef struct
+{
     rsrc_raw_header_t header_copy;
 
     guint32 handle_next_map; /* reserved */
@@ -54,47 +59,53 @@ typedef struct {
     guint16 res_fork_attrs;
     guint16 type_list_offset;
     guint16 name_list_offset;
-    gint16  num_types_minus_one;
+    gint16 num_types_minus_one;
 } rsrc_raw_map_t; /* length: 30 bytes */
 
-typedef struct {
+typedef struct
+{
     union {
-        gchar   as_array[4];
+        gchar as_array[4];
         guint32 as_int;
     } type;
-    gint16  num_refs_minus_one;
+    gint16 num_refs_minus_one;
     guint16 ref_offset;
 } rsrc_raw_type_t; /* length: 8 bytes */
 
-typedef struct {
-    gint16  id;
-    gint16  name_offset; /* -1 means no name */
-    guint8  attrs;
-    guint8  data_offset[3];
+typedef struct
+{
+    gint16 id;
+    gint16 name_offset; /* -1 means no name */
+    guint8 attrs;
+    guint8 data_offset[3];
     guint32 handle; /* reserved */
 } rsrc_raw_ref_t; /* length: 12 bytes */
+
 #pragma pack()
 
-typedef struct {
-    gint16  id;
-    guint8  attrs;
+typedef struct
+{
+    gint16 id;
+    guint8 attrs;
     GString *name;
-    gchar   *data;
+    gchar *data;
     guint32 data_length;
 } rsrc_ref_t;
 
-typedef struct {
+typedef struct
+{
     union {
-        gchar   as_array[4];
+        gchar as_array[4];
         guint32 as_int;
     } type;
-    GArray     *ref_list;
+    GArray *ref_list;
 } rsrc_type_t;
 
-typedef struct {
-    guint16     file_ref_num;
-    guint16     res_fork_attrs;
-    GArray      *type_list;
+typedef struct
+{
+    guint16 file_ref_num;
+    guint16 res_fork_attrs;
+    GArray *type_list;
 } rsrc_fork_t;
 
 /* Forward declarations */

@@ -34,7 +34,7 @@ typedef struct
     gsize size;
 } ECM_Part;
 
-static const guint8 ecm_signature[4] = { 'E', 'C', 'M', 0x00 };
+static const guint8 ecm_signature[4] = {'E', 'C', 'M', 0x00};
 
 
 /**********************************************************************\
@@ -88,7 +88,7 @@ static gboolean mirage_filter_stream_ecm_append_part (MirageFilterStreamEcm *sel
     self->priv->num_parts++;
 
     /* Check if we need to allocate more parts; if we do, double the
-       number of allocated parts to avoid reallocating often */
+     * number of allocated parts to avoid reallocating often */
     if (self->priv->num_parts > self->priv->allocated_parts) {
         self->priv->allocated_parts *= 2;
         self->priv->parts = g_try_renew(ECM_Part, self->priv->parts, self->priv->allocated_parts);

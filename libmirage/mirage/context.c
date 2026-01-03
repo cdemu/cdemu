@@ -399,8 +399,8 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
             goto end;
         } else {
             /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable error
-               here; anything else indicates that parser attempted to
-               handle image and failed */
+             * here; anything else indicates that parser attempted to
+             * handle image and failed */
             if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
                 g_error_free(local_error);
             } else {
@@ -488,8 +488,8 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
                 g_object_unref(filter_stream);
 
                 /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable
-                   error here; anything else indicates that filter stream
-                   attempted to handle underlying stream and failed */
+                 * error here; anything else indicates that filter stream
+                 * attempted to handle underlying stream and failed */
                 if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
                     g_error_free(local_error);
                     local_error = NULL;

@@ -36,10 +36,10 @@ G_BEGIN_DECLS
  */
 typedef enum _MirageMediumType
 {
-    MIRAGE_MEDIUM_CD  = 0x01,
+    MIRAGE_MEDIUM_CD = 0x01,
     MIRAGE_MEDIUM_DVD = 0x02,
-    MIRAGE_MEDIUM_BD  = 0x03,
-    MIRAGE_MEDIUM_HD  = 0x04,
+    MIRAGE_MEDIUM_BD = 0x03,
+    MIRAGE_MEDIUM_HD = 0x04,
     MIRAGE_MEDIUM_HDD = 0x05
 } MirageMediumType;
 

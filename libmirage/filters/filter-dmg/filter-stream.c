@@ -22,17 +22,18 @@
 #define __debug__ "DMG-FilterStream"
 
 
-static const guint8 koly_signature[4] = { 'k', 'o', 'l', 'y' };
-/*static const guint8 mish_signature[4] = { 'm', 'i', 's', 'h' };*/
+static const guint8 koly_signature[4] = {'k', 'o', 'l', 'y'};
+/*static const guint8 mish_signature[4] = {'m', 'i', 's', 'h'};*/
 
-typedef struct {
+typedef struct
+{
     DMG_block_type type;
 
-    guint64  first_sector;
-    guint64  num_sectors;
-    gint     segment;
-    goffset  in_offset;
-    gsize    in_length;
+    guint64 first_sector;
+    guint64 num_sectors;
+    gint segment;
+    goffset in_offset;
+    gsize in_length;
 } DMG_Part;
 
 
@@ -92,19 +93,19 @@ static inline void mirage_filter_stream_dmg_koly_block_fix_endian (koly_block_t 
 {
     g_assert(koly_block);
 
-    koly_block->version       = GUINT32_FROM_BE(koly_block->version);
-    koly_block->header_size   = GUINT32_FROM_BE(koly_block->header_size);
-    koly_block->flags         = GUINT32_FROM_BE(koly_block->flags);
+    koly_block->version = GUINT32_FROM_BE(koly_block->version);
+    koly_block->header_size = GUINT32_FROM_BE(koly_block->header_size);
+    koly_block->flags = GUINT32_FROM_BE(koly_block->flags);
     koly_block->image_variant = GUINT32_FROM_BE(koly_block->image_variant);
 
     koly_block->running_data_fork_offset = GUINT64_FROM_BE(koly_block->running_data_fork_offset);
-    koly_block->data_fork_offset         = GUINT64_FROM_BE(koly_block->data_fork_offset);
-    koly_block->data_fork_length         = GUINT64_FROM_BE(koly_block->data_fork_length);
-    koly_block->rsrc_fork_offset         = GUINT64_FROM_BE(koly_block->rsrc_fork_offset);
-    koly_block->rsrc_fork_length         = GUINT64_FROM_BE(koly_block->rsrc_fork_length);
-    koly_block->xml_offset               = GUINT64_FROM_BE(koly_block->xml_offset);
-    koly_block->xml_length               = GUINT64_FROM_BE(koly_block->xml_length);
-    koly_block->sector_count             = GUINT64_FROM_BE(koly_block->sector_count);
+    koly_block->data_fork_offset = GUINT64_FROM_BE(koly_block->data_fork_offset);
+    koly_block->data_fork_length = GUINT64_FROM_BE(koly_block->data_fork_length);
+    koly_block->rsrc_fork_offset = GUINT64_FROM_BE(koly_block->rsrc_fork_offset);
+    koly_block->rsrc_fork_length = GUINT64_FROM_BE(koly_block->rsrc_fork_length);
+    koly_block->xml_offset = GUINT64_FROM_BE(koly_block->xml_offset);
+    koly_block->xml_length = GUINT64_FROM_BE(koly_block->xml_length);
+    koly_block->sector_count = GUINT64_FROM_BE(koly_block->sector_count);
 
     koly_block->segment_number = GUINT32_FROM_BE(koly_block->segment_number);
     koly_block->segment_count  = GUINT32_FROM_BE(koly_block->segment_count);
@@ -113,8 +114,8 @@ static inline void mirage_filter_stream_dmg_koly_block_fix_endian (koly_block_t 
 
     koly_block->data_fork_checksum.type = GUINT32_FROM_BE(koly_block->data_fork_checksum.type);
     koly_block->data_fork_checksum.size = GUINT32_FROM_BE(koly_block->data_fork_checksum.size);
-    koly_block->master_checksum.type    = GUINT32_FROM_BE(koly_block->master_checksum.type);
-    koly_block->master_checksum.size    = GUINT32_FROM_BE(koly_block->master_checksum.size);
+    koly_block->master_checksum.type = GUINT32_FROM_BE(koly_block->master_checksum.type);
+    koly_block->master_checksum.size = GUINT32_FROM_BE(koly_block->master_checksum.size);
 
     for (guint i = 0; i < 32; i++) {
         koly_block->master_checksum.data[i] = GUINT32_FROM_BE(koly_block->master_checksum.data[i]);
@@ -135,15 +136,15 @@ static inline void mirage_filter_stream_dmg_blkx_block_fix_endian (blkx_block_t 
     blkx_block->info_version = GUINT32_FROM_BE(blkx_block->info_version);
 
     blkx_block->first_sector_number = GUINT64_FROM_BE(blkx_block->first_sector_number);
-    blkx_block->sector_count        = GUINT64_FROM_BE(blkx_block->sector_count);
-    blkx_block->data_start          = GUINT64_FROM_BE(blkx_block->data_start);
+    blkx_block->sector_count = GUINT64_FROM_BE(blkx_block->sector_count);
+    blkx_block->data_start = GUINT64_FROM_BE(blkx_block->data_start);
 
     blkx_block->decompressed_buffer_requested = GUINT32_FROM_BE(blkx_block->decompressed_buffer_requested);
 
     blkx_block->blocks_descriptor = GINT32_FROM_BE(blkx_block->blocks_descriptor);
-    blkx_block->blocks_run_count  = GUINT32_FROM_BE(blkx_block->blocks_run_count);
-    blkx_block->checksum.type     = GUINT32_FROM_BE(blkx_block->checksum.type);
-    blkx_block->checksum.size     = GUINT32_FROM_BE(blkx_block->checksum.size);
+    blkx_block->blocks_run_count = GUINT32_FROM_BE(blkx_block->blocks_run_count);
+    blkx_block->checksum.type = GUINT32_FROM_BE(blkx_block->checksum.type);
+    blkx_block->checksum.size = GUINT32_FROM_BE(blkx_block->checksum.size);
 
     for (guint i = 0; i < 32; i++) {
         blkx_block->checksum.data[i] = GUINT32_FROM_BE(blkx_block->checksum.data[i]);
@@ -158,8 +159,8 @@ static inline void mirage_filter_stream_dmg_blkx_data_fix_endian (blkx_data_t *b
 
     blkx_data->block_type = GINT32_FROM_BE(blkx_data->block_type);
 
-    blkx_data->sector_offset     = GUINT64_FROM_BE(blkx_data->sector_offset);
-    blkx_data->sector_count      = GUINT64_FROM_BE(blkx_data->sector_count);
+    blkx_data->sector_offset = GUINT64_FROM_BE(blkx_data->sector_offset);
+    blkx_data->sector_count = GUINT64_FROM_BE(blkx_data->sector_count);
     blkx_data->compressed_offset = GUINT64_FROM_BE(blkx_data->compressed_offset);
     blkx_data->compressed_length = GUINT64_FROM_BE(blkx_data->compressed_length);
 }
@@ -169,23 +170,23 @@ static inline void mirage_filter_stream_dmg_csum_fix_endian (csum_block_t *csum_
     g_assert(csum_block);
 
     csum_block->version = GUINT16_FROM_LE(csum_block->version);
-    csum_block->type    = GUINT16_FROM_LE(csum_block->type);
-    csum_block->data    = GUINT32_FROM_LE(csum_block->data);
+    csum_block->type = GUINT16_FROM_LE(csum_block->type);
+    csum_block->data = GUINT32_FROM_LE(csum_block->data);
 }
 
 static inline void mirage_filter_stream_dmg_size_fix_endian (size_block_t *size_block)
 {
     g_assert(size_block);
 
-    size_block->version        = GUINT16_FROM_LE(size_block->version);
-    size_block->is_hfs         = GUINT32_FROM_LE(size_block->is_hfs);
-    size_block->unknown1       = GUINT32_FROM_LE(size_block->unknown1);
-    size_block->unknown2       = GUINT32_FROM_LE(size_block->unknown2);
-    size_block->unknown3       = GUINT32_FROM_LE(size_block->unknown3);
-    size_block->vol_modified   = GUINT32_FROM_LE(size_block->vol_modified);
-    size_block->unknown4       = GUINT32_FROM_LE(size_block->unknown4);
+    size_block->version = GUINT16_FROM_LE(size_block->version);
+    size_block->is_hfs = GUINT32_FROM_LE(size_block->is_hfs);
+    size_block->unknown1 = GUINT32_FROM_LE(size_block->unknown1);
+    size_block->unknown2 = GUINT32_FROM_LE(size_block->unknown2);
+    size_block->unknown3 = GUINT32_FROM_LE(size_block->unknown3);
+    size_block->vol_modified = GUINT32_FROM_LE(size_block->vol_modified);
+    size_block->unknown4 = GUINT32_FROM_LE(size_block->unknown4);
     size_block->vol_sig.as_int = GUINT16_FROM_BE(size_block->vol_sig.as_int);
-    size_block->size_present   = GUINT16_FROM_LE(size_block->size_present);
+    size_block->size_present = GUINT16_FROM_LE(size_block->size_present);
 }
 
 
@@ -312,12 +313,16 @@ static void mirage_filter_stream_dmg_print_size_block(MirageFilterStreamDmg *sel
 \**********************************************************************/
 static gchar *create_filename_func (const gchar *main_filename, gint index)
 {
-    if (!main_filename) return NULL;
+    if (!main_filename) {
+        return NULL;
+    }
 
     gint  main_fn_len = strlen(main_filename) - 7;
     gchar *ret_filename = g_try_malloc(main_fn_len + 12);
 
-    if (!ret_filename) return NULL;
+    if (!ret_filename) {
+        return NULL;
+    }
 
     /* Copy base filename without 'NNN.dmg' */
     memcpy(ret_filename, main_filename, main_fn_len);
@@ -337,7 +342,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
 {
     koly_block_t *koly_block = self->priv->koly_block;
     rsrc_fork_t  *rsrc_fork = NULL;
-    gchar        *rsrc_fork_data = NULL;
+    gchar *rsrc_fork_data = NULL;
 
     /* Read and parse resource-fork */
     if (koly_block->xml_offset && koly_block->xml_length) {
@@ -390,10 +395,8 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
         for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
             rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource Type: %.4s ID: %i Name: %s\n", __debug__,
-                         rsrc_type->type.as_array, rsrc_ref->id, rsrc_ref->name->str);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Data length: %i\n", __debug__,
-                         rsrc_ref->attrs, rsrc_ref->data_length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource Type: %.4s ID: %i Name: %s\n", __debug__, rsrc_type->type.as_array, rsrc_ref->id, rsrc_ref->name->str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Data length: %i\n", __debug__, rsrc_ref->attrs, rsrc_ref->data_length);
 
             /* Convert resource endianness */
             if (!memcmp(rsrc_type->type.as_array, "plst", 4)) {
@@ -417,12 +420,12 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
                 nsiz_data = g_string_new_len(rsrc_ref->data, rsrc_ref->data_length);
                 g_assert(nsiz_data);
 
-                g_printf("\n%s\n", nsiz_data->str);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: nsiz data: %s\n", __debug__, nsiz_data->str);
 
                 g_string_free(nsiz_data, TRUE);
             } else if (!memcmp(rsrc_type->type.as_array, "blkx", 4)) {
-                blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
-                blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
+                blkx_block_t *blkx_block = (blkx_block_t *)rsrc_ref->data;
+                blkx_data_t  *blkx_data  = (blkx_data_t *)(rsrc_ref->data + sizeof(blkx_block_t));
 
                 mirage_filter_stream_dmg_blkx_block_fix_endian(blkx_block);
                 for (guint d = 0; d < blkx_block->blocks_run_count; d++) {
@@ -458,12 +461,12 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
 
 static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self, GError **error)
 {
-    z_stream  *zlib_stream  = &self->priv->zlib_stream;
+    z_stream *zlib_stream  = &self->priv->zlib_stream;
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
 
     koly_block_t *koly_block = self->priv->koly_block;
-    rsrc_fork_t  *rsrc_fork = self->priv->rsrc_fork;
-    rsrc_type_t  *rsrc_type = NULL;
+    rsrc_fork_t *rsrc_fork = self->priv->rsrc_fork;
+    rsrc_type_t *rsrc_type = NULL;
 
     gint cur_part = 0;
     gint ret;
@@ -762,14 +765,14 @@ end:
 static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *self, guint8 *buffer, gint chunk_num)
 {
     const DMG_Part *part = &self->priv->parts[chunk_num];
-    MirageStream   *stream = self->priv->streams[part->segment];
-    koly_block_t   *koly_block = &self->priv->koly_block[part->segment];
+    MirageStream *stream = self->priv->streams[part->segment];
+    koly_block_t *koly_block = &self->priv->koly_block[part->segment];
 
-    gsize   to_read = part->in_length;
-    gsize   have_read = 0;
+    gsize to_read = part->in_length;
+    gsize have_read = 0;
     goffset part_offs = koly_block->data_fork_offset + part->in_offset - koly_block->running_data_fork_offset;
-    gsize   part_avail = koly_block->running_data_fork_offset + koly_block->data_fork_length - part->in_offset;
-    gssize  ret;
+    gsize part_avail = koly_block->running_data_fork_offset + koly_block->data_fork_length - part->in_offset;
+    gssize ret;
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
@@ -876,10 +879,10 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             }
 
             /* Uncompress whole part */
-            zlib_stream->avail_in  = part->in_length;
-            zlib_stream->next_in   = self->priv->io_buffer;
+            zlib_stream->avail_in = part->in_length;
+            zlib_stream->next_in = self->priv->io_buffer;
             zlib_stream->avail_out = self->priv->inflate_buffer_size;
-            zlib_stream->next_out  = self->priv->inflate_buffer;
+            zlib_stream->next_out = self->priv->inflate_buffer;
 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
@@ -909,10 +912,10 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             }
 
             /* Uncompress whole part */
-            bzip2_stream->avail_in  = part->in_length;
-            bzip2_stream->next_in   = (gchar *) self->priv->io_buffer;
+            bzip2_stream->avail_in = part->in_length;
+            bzip2_stream->next_in = (gchar *)self->priv->io_buffer;
             bzip2_stream->avail_out = self->priv->inflate_buffer_size;
-            bzip2_stream->next_out  = (gchar *) self->priv->inflate_buffer;
+            bzip2_stream->next_out = (gchar *)self->priv->inflate_buffer;
 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
@@ -970,7 +973,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
     /* Copy data */
     const DMG_Part *part = &self->priv->parts[part_idx];
 
-    gsize   part_size = part->num_sectors * DMG_SECTOR_SIZE;
+    gsize part_size = part->num_sectors * DMG_SECTOR_SIZE;
     guint64 part_offset = position - (part->first_sector * DMG_SECTOR_SIZE);
     count = MIN(count, part_size - part_offset);
 

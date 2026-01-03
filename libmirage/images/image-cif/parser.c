@@ -22,10 +22,10 @@
 #define __debug__ "CIF-Parser"
 
 
-static const guint8 riff_signature[4] = { 'R', 'I', 'F', 'F' };
-static const guint8 imag_signature[4] = { 'i', 'm', 'a', 'g' };
-static const guint8  ofs_signature[4] = { 'o', 'f', 's', ' ' };
-static const guint8 disc_signature[4] = { 'd', 'i', 's', 'c' };
+static const guint8 riff_signature[4] = {'R', 'I', 'F', 'F'};
+static const guint8 imag_signature[4] = {'i', 'm', 'a', 'g'};
+static const guint8  ofs_signature[4] = {'o', 'f', 's', ' '};
+static const guint8 disc_signature[4] = {'d', 'i', 's', 'c'};
 
 
 /**********************************************************************\
@@ -707,8 +707,8 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
     }
 
     /* Match "RIFF" at the beginning and "imag" that comes after length
-       field. We could probably also match length, since it appears to
-       be fixed, but this should be sufficient... */
+     * field. We could probably also match length, since it appears to
+     * be fixed, but this should be sufficient... */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image begins with 'RIFF'...\n", __debug__);
     if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: image does not begin with 'RIFF'!\n", __debug__);

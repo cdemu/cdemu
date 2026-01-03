@@ -24,8 +24,8 @@
 #define __debug__ "NRG-Parser"
 
 
-static const guint8 nero_signature[4] = { 'N', 'E', 'R', 'O' };
-static const guint8 ner5_signature[4] = { 'N', 'E', 'R', '5' };
+static const guint8 nero_signature[4] = {'N', 'E', 'R', 'O'};
+static const guint8 ner5_signature[4] = {'N', 'E', 'R', '5'};
 
 
 /**********************************************************************\
@@ -82,17 +82,17 @@ typedef struct
 
 /* NULL terminated list of valid block IDs and subblock offset + length */
 static NRG_BlockIDs NRGBlockID[] = {
-    { "CUEX", 0,  8  },
-    { "CUES", 0,  8  },
-    { "ETN2", 0,  32 },
-    { "ETNF", 0,  20 },
-    { "DAOX", 22, 42 },
-    { "DAOI", 22, 30 },
-    { "CDTX", 0,  0  },
-    { "SINF", 0,  0  },
-    { "MTYP", 0,  0  },
-    { "END!", 0,  0  },
-    { NULL,   0,  0  }
+    {"CUEX", 0,  8},
+    {"CUES", 0,  8},
+    {"ETN2", 0,  32},
+    {"ETNF", 0,  20},
+    {"DAOX", 22, 42},
+    {"DAOI", 22, 30},
+    {"CDTX", 0,  0},
+    {"SINF", 0,  0},
+    {"MTYP", 0,  0},
+    {"END!", 0,  0},
+    {NULL,   0,  0}
 };
 
 static gboolean mirage_parser_nrg_build_block_index (MirageParserNrg *self, GError **error)
@@ -251,8 +251,8 @@ static gboolean mirage_parser_nrg_load_medium_type (MirageParserNrg *self, GErro
 static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize)
 {
     /* The meaning of the following codes was determined experimentally; we're
-       missing mappings for Mode 2 Formless, but that doesn't seem a very common
-       format anyway */
+     * missing mappings for Mode 2 Formless, but that doesn't seem a very common
+     * format anyway */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mode code: %d\n", __debug__, code);
     switch (code) {
         case 0x00: {
@@ -359,7 +359,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MirageParserNrg *self, gint ses
     self->priv->num_etn_blocks = blockentry->num_subblocks;
 
     /* Allocate space and read ETN data (we need to copy data because we'll have
-       to modify it) */
+     * to modify it) */
     self->priv->etn_blocks = g_try_new0(NRG_ETN_Block, blockentry->num_subblocks);
     if (!self->priv->etn_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for ETN blocks!\n", __debug__);
@@ -418,7 +418,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MirageParserNrg *self, gint ses
     self->priv->num_cue_blocks = blockentry->num_subblocks;
 
     /* Allocate space and read CUE data (we need to copy data because we'll have
-       to modify it) */
+     * to modify it) */
     self->priv->cue_blocks = g_try_new0(NRG_CUE_Block, blockentry->num_subblocks);
     if (!self->priv->cue_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for CUE blocks!\n", __debug__);
@@ -496,7 +496,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MirageParserNrg *self, gint ses
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAO block #%i\n", __debug__, i);
 
         /* We read each block separately because the last fields are different
-           between formats */
+         * between formats */
         memcpy(block, MIRAGE_CAST_PTR(cur_ptr, 0, guint8 *), 18); /* First 18 bytes are common */
         cur_ptr += 18;
 
@@ -587,10 +587,9 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
         }
 
         /* Prepare data fragment: we use two fragments, one for pregap and one
-           for track itself; we could use only one that spans across both, but
-           I'm not sure why image file has the offsets separated - maybe they
-           don't have to be adjacent?
-        */
+         * for track itself; we could use only one that spans across both, but
+         * I'm not sure why image file has the offsets separated - maybe they
+         * don't have to be adjacent? */
         gint main_size;
         guint64 main_offset;
         guint64 main_format;
@@ -701,9 +700,9 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
         /* Track 0, index 0... lead-in */
         if (cue_block->track == 0 && cue_block->index == 0) {
             /* Try to get previous session; if we fail, it means this if first
-               session, so we use its lead-in block to set parser start; otherwise,
-               we calculate length of previous session's leadout based on this
-               session's start sector and length of parser so far */
+             * session, so we use its lead-in block to set parser start; otherwise,
+             * we calculate length of previous session's leadout based on this
+             * session's start sector and length of parser so far */
             MirageSession *prev_session;
 
             /* Index is -2, because current session has already been added */
@@ -803,10 +802,9 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
         mirage_track_set_sector_type(track, mode);
 
         /* Prepare data fragment: we use two fragments, one for pregap and one
-           for track itself; we could use only one that spans across both, but
-           I'm not sure why image file has the offsets separated - maybe they
-           don't have to be adjacent?
-        */
+         * for track itself; we could use only one that spans across both, but
+         * I'm not sure why image file has the offsets separated - maybe they
+         * don't have to be adjacent? */
         gint main_size;
         guint64 main_offset;
         guint64 main_format;
@@ -1003,7 +1001,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: NRG filename: %s\n", __debug__, nrg_filename);
 
     /* Set CD-ROM as default medium type, will be changed accordingly if there
-       is a MTYP block provided */
+     * is a MTYP block provided */
     mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
 
     /* Validate data length */
@@ -1034,8 +1032,8 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished building block index\n\n", __debug__);
 
     /* We'll have to set disc layout start to -150 at some point, so we might
-       as well do it here (loading CUEX/CUES session will change this, if ever
-       needed) */
+     * as well do it here (loading CUEX/CUES session will change this, if ever
+     * needed) */
     mirage_disc_layout_set_start_sector(self->priv->disc, -150);
 
     /* Load sessions */

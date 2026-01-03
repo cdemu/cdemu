@@ -35,8 +35,8 @@ struct IsoFileInfo
 };
 
 /* Nintendo ISO image patterns */
-static const guint8 pattern_nintendo_gamecube_iso[4] = { 0xC2, 0x33, 0x9F, 0x3D };
-static const guint8 pattern_nintendo_wii_iso[4] = { 0x5D, 0x1C, 0x9E, 0xA3 };
+static const guint8 pattern_nintendo_gamecube_iso[4] = {0xC2, 0x33, 0x9F, 0x3D};
+static const guint8 pattern_nintendo_wii_iso[4] = {0x5D, 0x1C, 0x9E, 0xA3};
 
 
 /**********************************************************************\
@@ -90,18 +90,18 @@ static gboolean mirage_parser_iso_read_data_from_offset (MirageParserIso *self, 
 
 static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, struct IsoFileInfo *file_info, GError **error)
 {
-    const struct {
+    static const struct {
         gint sector_size;
         gint data_offset;
     } valid_sector_sizes[] = {
-        { 2048,  0 }, /* 2048-byte Mode 1 / Mode 2 Form 1 sector; offset: 0 */
-        { 2332,  8 }, /* 2332-byte Mode 2 Form 1 sector; offset: 8 (sub-header) */
-        { 2336,  8 }, /* 2336-byte Mode 2 Form 1 sector: offset: 8 (sub-header) */
-        { 2352, 16 }, /* 2352-byte Mode 1 sector; offset: 16 (sync+header) */
-        { 2352, 24 }, /* 2352-byte Mode 2 Form 1 sector; offset: 24 (synch+header+sub-header */
+        {2048, 0}, /* 2048-byte Mode 1 / Mode 2 Form 1 sector; offset: 0 */
+        {2332, 8}, /* 2332-byte Mode 2 Form 1 sector; offset: 8 (sub-header) */
+        {2336, 8}, /* 2336-byte Mode 2 Form 1 sector: offset: 8 (sub-header) */
+        {2352, 16}, /* 2352-byte Mode 1 sector; offset: 16 (sync+header) */
+        {2352, 24}, /* 2352-byte Mode 2 Form 1 sector; offset: 24 (synch+header+sub-header */
     };
 
-    const gint valid_subchannel_sizes[] = { 0, 16, 96 };
+    const gint valid_subchannel_sizes[] = {0, 16, 96};
 
     MirageStream *stream = file_info->stream;
 
@@ -116,7 +116,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
     file_length = mirage_stream_tell(stream);
 
     /* Make sure the file is large enough; INF8090 requires a track to
-       be at least four seconds long */
+     * be at least four seconds long */
     if (file_length < 4*75*2048) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file is too small!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: file is too small!"));
@@ -124,14 +124,14 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
     }
 
     /* Mark track mode and subchannel format for auto-detection via
-       mirage_parser_iso_determine_track_type() and
-       mirage_parser_iso_determine_subchannel_type(). This is a general
-       case that may get overriden by some of the checks below */
+     * mirage_parser_iso_determine_track_type() and
+     * mirage_parser_iso_determine_subchannel_type(). This is a general
+     * case that may get overriden by some of the checks below */
     file_info->track_mode = -1;
     file_info->subchannel_format = -1;
 
     /* Assuming a data track with ISO9660 or UDF filesystem, check all
-       possible combinations of sector data and subchannel sizes */
+     * possible combinations of sector data and subchannel sizes */
     for (guint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
         for (guint j = 0; j < G_N_ELEMENTS(valid_sector_sizes); j++) {
             gint full_sector_size = valid_sector_sizes[j].sector_size + valid_subchannel_sizes[i];
@@ -168,8 +168,8 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
     }
 
     /* Check for Nintendo GameCube or Wii disc dump. These have 2048-byte
-       sector data, and contain a 4-byte signature at offset 0x1C or 0x18,
-       respectively. */
+     * sector data, and contain a 4-byte signature at offset 0x1C or 0x18,
+     * respectively. */
     if (file_length % 2048 == 0) {
         gboolean is_nintendo = FALSE;
 
@@ -208,8 +208,8 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
     }
 
     /* Now that we have ruled out any possible combination for a data
-       track, if the stream length is multiple of 2352, we assume that
-       we are dealing with audio track data */
+     * track, if the stream length is multiple of 2352, we assume that
+     * we are dealing with audio track data */
     if (file_length % 2352 == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size is multiple of 2352; assuming file contains audio track data...\n", __debug__);
         file_info->main_data_size = 2352;
@@ -291,9 +291,9 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
             }
 
             /* Determine whether subchannel data is linear or interleaved;
-               we assume it is linear, and validate CRC over Q-channel
-               data. An alternative would be to validate address stored in
-               subchannel data... */
+             * we assume it is linear, and validate CRC over Q-channel
+             * data. An alternative would be to validate address stored in
+             * subchannel data... */
             guint16 crc = mirage_helper_subchannel_q_calculate_crc(buf+12);
             if ((buf[22] << 8 | buf[23]) == crc) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data appears to be linear!\n", __debug__);
@@ -434,7 +434,7 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
         }
 
         /* Load track; in the complete absence of any relevant information,
-           we construct the image in TAO mode (pregaps between tracks) */
+         * we construct the image in TAO mode (pregaps between tracks) */
         if (!mirage_parser_iso_load_track(self, &file_info[i], i > 0, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load track!\n", __debug__);
             succeeded = FALSE;

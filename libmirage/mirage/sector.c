@@ -204,7 +204,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     *real_data |= MIRAGE_VALID_DATA;
 
                     /* We mark the rest as valid as well, so that we don't need
-                       additional checks in fake data generation code */
+                     * additional checks in fake data generation code */
                     *real_data |= MIRAGE_VALID_SYNC;
                     *real_data |= MIRAGE_VALID_HEADER;
                     *real_data |= MIRAGE_VALID_SUBHEADER;
@@ -221,7 +221,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
         }
         case MIRAGE_SECTOR_MODE0: {
             /* Mode 0 sector structue:
-                sync (12) + header (4) + data (2336) */
+             *  sync (12) + header (4) + data (2336) */
             switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
@@ -268,7 +268,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
         }
         case MIRAGE_SECTOR_MODE1: {
             /* Mode 1 sector structue:
-                sync (12) + header (4) + data (2048) + EDC/ECC (288) */
+             *  sync (12) + header (4) + data (2048) + EDC/ECC (288) */
             switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
@@ -348,7 +348,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
         }
         case MIRAGE_SECTOR_MODE2: {
             /* Mode 2 formless sector structue:
-                sync (12) + header (4) + data (2336) */
+             *  sync (12) + header (4) + data (2336) */
             switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
@@ -395,7 +395,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
         }
         case MIRAGE_SECTOR_MODE2_FORM1: {
             /* Mode 2 Form 1 sector structue:
-                sync (12) + header (4) + subheader (8) + data (2048) + EDC/ECC (280) */
+             *  sync (12) + header (4) + subheader (8) + data (2048) + EDC/ECC (280) */
             switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
@@ -500,7 +500,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
         }
         case MIRAGE_SECTOR_MODE2_FORM2: {
             /* Mode 2 Form 2 sector structue:
-                sync (12) + header (4) + subheader (8) + data (2324) + EDC/ECC (4) */
+             *  sync (12) + header (4) + subheader (8) + data (2324) + EDC/ECC (4) */
             switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
@@ -528,7 +528,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
 
                 #if FALSE
                 /* This one yields same size as subheader + data + EDC/ECC,
-                   which is actually used, while this one most likely isn't. */
+                 * which is actually used, while this one most likely isn't. */
                 case 2336: {
                     /* Header + subheader + data */
                     *data_offset = 12; /* Offset: sync */
@@ -611,10 +611,10 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
         }
         case MIRAGE_SECTOR_MODE2_MIXED: {
             /* Mode 2 Mixed consists of both Mode 2 Form 1 and Mode 2 Form 2
-               sectors, which are distinguished by subheader. In addition to
-               having to provide subheader data, both Form 1 and Form 2 sectors
-               must be of same size; this is true only if at least subheader,
-               data and EDC/ECC are provided */
+             * sectors, which are distinguished by subheader. In addition to
+             * having to provide subheader data, both Form 1 and Form 2 sectors
+             * must be of same size; this is true only if at least subheader,
+             * data and EDC/ECC are provided */
             switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
@@ -622,10 +622,10 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                 }
                 case 2332:
                     /* This one's a special case; it is same as 2336, except
-                       that last four bytes (for Form 2 sectors, that's optional
-                       EDC, and for Form 1 sectors, it's last four bytes of ECC)
-                       are omitted. Therefore, we need to re-generate
-                       the EDC/ECC code */
+                     * that last four bytes (for Form 2 sectors, that's optional
+                     * EDC, and for Form 1 sectors, it's last four bytes of ECC)
+                     * are omitted. Therefore, we need to re-generate
+                     * the EDC/ECC code */
 
                     /* Subheader + data (+ EDC/ECC) */
                     *data_offset = 12 + 4; /* Offset: sync + header */
@@ -799,7 +799,7 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
     switch (self->priv->type) {
         case MIRAGE_SECTOR_MODE1: {
             /* EDC/ECC are generated over sync, header and data in Mode 1 sectors...
-               so make sure we have those */
+             * so make sure we have those */
             if (!(self->priv->valid_data & MIRAGE_VALID_SYNC)) {
                 mirage_sector_generate_sync(self);
             }
@@ -818,7 +818,7 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
         case MIRAGE_SECTOR_MODE2_FORM1: {
             guint8 tmp_header[4];
             /* Zero the header, because it is not supposed to be included in the
-               calculation; copy, calculate, then copy back */
+             * calculation; copy, calculate, then copy back */
             memcpy(tmp_header, self->priv->sector_data+12, 4);
             memset(self->priv->sector_data+12, 0, 4);
             /* Generate EDC */
@@ -885,8 +885,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
     self->priv->type = type;
 
     /* If type is raw or scrambled raw, we copy data first and determine
-       sector type from it. Then we use the main switch to fill in the
-       valid data flags for us, and avoid copying the data again. */
+     * sector type from it. Then we use the main switch to fill in the
+     * valid data flags for us, and avoid copying the data again. */
     if (type == MIRAGE_SECTOR_RAW || type == MIRAGE_SECTOR_RAW_SCRAMBLED) {
         if (main_data_length != 2352) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: raw sectors require 2352 bytes of data!\n", __debug__);
@@ -898,7 +898,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
         memcpy(self->priv->sector_data, main_data, main_data_length);
 
         /* We can easily recognise an audio sector by the lack of sync
-           pattern at the beginning */
+         * pattern at the beginning */
         if (!memcmp(self->priv->sector_data, mirage_pattern_sync, sizeof(mirage_pattern_sync))) {
             /* Data sector; unscramble if necessary */
             if (type == MIRAGE_SECTOR_RAW_SCRAMBLED) {
@@ -924,7 +924,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
     }
 
     /* Now, if we had Mode 2 Mixed, we can determine whether we have
-       Mode 2 Form 1 or Mode 2 Form 2 */
+     * Mode 2 Form 1 or Mode 2 Form 2 */
     if (self->priv->type == MIRAGE_SECTOR_MODE2_MIXED) {
         /* Check the subheader... */
         if (self->priv->sector_data[18] & 0x20) {
@@ -935,13 +935,13 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
     }
 
     /* Mask the real_data with ignore_data_mask, to force re-generation
-       of masked parts of sector data */
+     * of masked parts of sector data */
     self->priv->real_data &= ~ignore_data_mask;
 
     /* At this point, real_data field indicates which parts of sector
-       data were provided by the image file; make a copy of this field
-       in valid_data field, which will be modified when the missing data
-       is generated */
+     * data were provided by the image file; make a copy of this field
+     * in valid_data field, which will be modified when the missing data
+     * is generated */
     self->priv->valid_data = self->priv->real_data;
 
     /* Subchannel; use sector's function to set it */
@@ -1069,7 +1069,7 @@ gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gin
     gint offset = 0, length = 0;
 
     /* Generate sync if it's not provided; generation routine takes care of
-       incompatible sector types */
+     * incompatible sector types */
     if (!(self->priv->valid_data & MIRAGE_VALID_SYNC)) {
         mirage_sector_generate_sync(self);
     }
@@ -1146,7 +1146,7 @@ gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, g
     gint offset = 0, length = 0;
 
     /* Generate header if it's not provided; generation routine takes care of
-       incompatible sector types */
+     * incompatible sector types */
     if (!(self->priv->valid_data & MIRAGE_VALID_HEADER)) {
         mirage_sector_generate_header(self);
     }
@@ -1223,7 +1223,7 @@ gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf
     gint offset = 0, length = 0;
 
     /* Generate subheader if it's not provided; generation routine takes care of
-       incompatible sector types */
+     * incompatible sector types */
     if (!(self->priv->valid_data & MIRAGE_VALID_SUBHEADER)) {
         mirage_sector_generate_subheader(self);
     }
@@ -1377,7 +1377,7 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
     gint offset = 0, length = 0;
 
     /* Generate EDC/ECC if it's not provided; generation routine takes care of
-       incompatible sector types */
+     * incompatible sector types */
     if (!(self->priv->valid_data & MIRAGE_VALID_EDC_ECC)) {
         mirage_sector_generate_edc_ecc(self);
     }
@@ -1535,10 +1535,10 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
             mirage_helper_subchannel_interleave(SUBCHANNEL_Q, buf, self->priv->subchan_pw);
 
             /* Byte 15 actually has P state in its most-significant bit
-               (but only if sectors are fed from recording code; when
-               reading, P bit is not returned) */
+             * (but only if sectors are fed from recording code; when
+             * reading, P bit is not returned) */
             if (buf[15]) {
-                const guint8 p_subchannel[12] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+                const guint8 p_subchannel[12] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
                 mirage_helper_subchannel_interleave(SUBCHANNEL_P, p_subchannel, self->priv->subchan_pw);
             }
 
@@ -1585,17 +1585,17 @@ gboolean mirage_sector_verify_lec (MirageSector *self)
     gboolean valid = TRUE;
 
     /* Validation is possible only if EDC/ECC data was provided by the
-       image file; if it is missing, it is generated by same algorithm
-       as used in verification. */
+     * image file; if it is missing, it is generated by same algorithm
+     * as used in verification. */
     if (self->priv->real_data & MIRAGE_VALID_EDC_ECC) {
         /* I believe calculating EDC suffices for this test; ECC should
-           not really be needed, since we won't be doing any corrections */
+         * not really be needed, since we won't be doing any corrections */
         guint8 computed_edc[4];
 
         switch (self->priv->type) {
             case MIRAGE_SECTOR_MODE1: {
                 /* We assume sync and header data are available, which is probably
-                   a reasonable assumption at this point... */
+                 * a reasonable assumption at this point... */
                 mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x00, 0x810, computed_edc);
                 valid = !memcmp(computed_edc, self->priv->sector_data+0x810, 4);
                 break;
@@ -1644,8 +1644,8 @@ gboolean mirage_sector_verify_subchannel_crc (MirageSector *self)
     gboolean valid = TRUE;
 
     /* Validation is possible only if subchannel data was provided by the
-       image file; if it is missing, it is generated by same algorithm
-       as used in verification. */
+     * image file; if it is missing, it is generated by same algorithm
+     * as used in verification. */
     if (self->priv->real_data & MIRAGE_VALID_SUBCHAN) {
         guint16 computed_crc;
         const guint8 *buf;
@@ -1754,12 +1754,11 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
     relative_address = self->priv->address - mirage_track_layout_get_start_sector(track);
 
     /* We support Mode-1, Mode-2 and Mode-3 Q; according to INF8090 and MMC-3,
-       "if used, they shall exist in at least one out of 100 consecutive sectors".
-       So we put MCN in every 25th sector and ISRC in every 50th sector */
+     * "if used, they shall exist in at least one out of 100 consecutive sectors".
+     * So we put MCN in every 25th sector and ISRC in every 50th sector */
 
     /* Track number, index, absolute and relative track adresses are converted
-       from HEX to BCD */
-
+     * from HEX to BCD */
     switch (relative_address % 100) {
         case 25: {
             /* MCN is to be returned; check if we actually have it */
@@ -1779,7 +1778,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
         }
         case 50: {
             /* ISRC is to be returned; verify that this is an audio track and
-               that it actually has ISRC set */
+             * that it actually has ISRC set */
             gint mode = mirage_sector_get_sector_type(self);
 
             if (mode != MIRAGE_SECTOR_AUDIO) {
@@ -1817,7 +1816,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             buf[1] = mirage_helper_hex2bcd(track_number); /* Track number */
 
             /* Index: try getting index object by address; if it's not found, we
-               check if sector lies before track start... */
+             * check if sector lies before track start... */
             index = mirage_track_get_index_by_address(track, relative_address, NULL);
             if (index) {
                 gint index_number = mirage_index_get_number(index);
@@ -1912,7 +1911,7 @@ static void mirage_sector_generate_subchannel (MirageSector *self)
     guint8 tmp_buf[12];
 
     /* Generate subchannel: only P/Q can be generated at the moment
-       (other subchannels are set to 0) */
+     * (other subchannels are set to 0) */
 
     memset(self->priv->subchan_pw, 0, sizeof(self->priv->subchan_pw));
 

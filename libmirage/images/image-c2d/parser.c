@@ -22,8 +22,8 @@
 #define __debug__ "C2D-Parser"
 
 
-static guint8 c2d_signature1[] = { 'A', 'd', 'a', 'p', 't', 'e', 'c', ' ', 'C', 'e', 'Q', 'u', 'a', 'd', 'r', 'a', 't', ' ', 'V', 'i', 'r', 't', 'u', 'a', 'l', 'C', 'D', ' ', 'F', 'i', 'l', 'e' };
-static guint8 c2d_signature2[] = { 'R', 'o', 'x', 'i', 'o', ' ', 'I', 'm', 'a', 'g', 'e', ' ', 'F', 'i', 'l', 'e', ' ', 'F', 'o', 'r', 'm', 'a', 't', ' ', '3', '.', '0' };
+static guint8 c2d_signature1[] = {'A', 'd', 'a', 'p', 't', 'e', 'c', ' ', 'C', 'e', 'Q', 'u', 'a', 'd', 'r', 'a', 't', ' ', 'V', 'i', 'r', 't', 'u', 'a', 'l', 'C', 'D', ' ', 'F', 'i', 'l', 'e'};
+static guint8 c2d_signature2[] = {'R', 'o', 'x', 'i', 'o', ' ', 'I', 'm', 'a', 'g', 'e', ' ', 'F', 'i', 'l', 'e', ' ', 'F', 'o', 'r', 'm', 'a', 't', ' ', '3', '.', '0'};
 
 
 /**********************************************************************\
@@ -370,8 +370,8 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
                 mirage_fragment_subchannel_data_set_format(data_fragment, subchannel_format);
 
                 /* We need to correct the data for track sector size...
-                   C2D format has already added 96 bytes to sector size,
-                   so we need to subtract it */
+                 * C2D format has already added 96 bytes to sector size,
+                 * so we need to subtract it */
                 main_size = track_entry->sector_size - subchannel_size;
                 mirage_fragment_main_data_set_size(data_fragment, main_size);
 

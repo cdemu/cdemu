@@ -25,7 +25,8 @@
 /**********************************************************************\
  *                  Object and its private structure                  *
 \**********************************************************************/
-struct _MirageParserReadcdPrivate {
+struct _MirageParserReadcdPrivate
+{
     MirageDisc *disc;
 
     gint cur_lba;
@@ -70,7 +71,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
     }
 
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
-       the length */
+     * the length */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: reading 4-byte header...\n", __debug__);
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, &toc_len, sizeof(toc_len), NULL) != sizeof(toc_len)) {
@@ -80,7 +81,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
     toc_len = GUINT16_FROM_BE(toc_len);
 
     /* Does TOC length match? (the TOC file actually contains TOC plus two bytes
-       that indicate sector types) */
+     * that indicate sector types) */
     mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
     file_size = mirage_stream_tell(stream);
 
@@ -89,8 +90,8 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, Mi
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  actual data file size: %" G_GINT64_MODIFIER "d\n", __debug__, file_size);
 
     /* readcd from cdrdtools appears to pad odd TOC lengths to make them
-       even, whereas readcd from cdrkit does not. So we account for both
-       cases. */
+     * even, whereas readcd from cdrkit does not. So we account for both
+     * cases. */
     if (
         (file_size == (guint16)(2 + toc_len + 2)) ||
         (file_size == (guint16)(2 + toc_len + 3))
@@ -299,7 +300,7 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, Mirage
     const gchar *suffix;
 
     /* NOTE: the mirage_parser_readcd_is_file_valid() check guarantees that the
-       image filename has a valid suffix... */
+     * image filename has a valid suffix... */
     tmp_data_filename = g_strdup(self->priv->toc_filename);
     suffix = mirage_helper_get_suffix(tmp_data_filename);
     tmp_data_filename[suffix-tmp_data_filename] = '\0'; /* Skip the suffix */
@@ -444,7 +445,7 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, MirageS
 
     if (succeeded) {
         /* If it's a multisession disc, fix up the lead-in/lead-out lengths
-           (NOTE: last session is left out for readibility; but it's irrelevant) */
+         * (NOTE: last session is left out for readibility; but it's irrelevant) */
         gint num_sessions = mirage_disc_get_number_of_sessions(self->priv->disc);
         for (gint i = 0; i < num_sessions - 1; i++) {
             MirageSession *session = mirage_disc_get_session_by_index(self->priv->disc, i, NULL);

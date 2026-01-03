@@ -150,7 +150,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
     if (writable) {
         /* If we are creating the stream (read/write mode), we need to
-           provide format data ourselves */
+         * provide format data ourselves */
         const gchar *filename = mirage_stream_get_filename(stream);
         const gchar *suffix = mirage_helper_get_suffix(filename);
 
@@ -177,9 +177,9 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         const gchar *suffix = mirage_helper_get_suffix(filename);
 
         /* Prevent this filter stream from operating on .BIN files, as
-           those are most likely raw PCM data, but depending on the
-           initial pattern, could be mistaken for a different stream.
-           See: https://github.com/cdemu/cdemu/issues/26 */
+         * those are most likely raw PCM data, but depending on the
+         * initial pattern, could be mistaken for a different stream.
+         * See: https://github.com/cdemu/cdemu/issues/26 */
         if (!g_ascii_strcasecmp(suffix, ".bin")) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: .BIN files are not supported."));
             return FALSE;
@@ -200,7 +200,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     sf_command(self->priv->sndfile, SFC_SET_UPDATE_HEADER_AUTO, NULL, SF_TRUE);
 
     /* Print audio file info, but only if we are not opening in write
-       mode (because then we already know) */
+     * mode (because then we already know) */
     if (!writable) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %" G_GINT64_MODIFIER "d\n", __debug__, self->priv->format.frames);
@@ -293,7 +293,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     gint block;
 
     /* Find the block of frames corresponding to current position; this
-       is within the final, possibly resampled, stream */
+     * is within the final, possibly resampled, stream */
     block = position / self->priv->buflen;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%d (cached: #%d)\n", __debug__, position, position, block, self->priv->cached_block);
 
@@ -322,7 +322,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
             sf_count_t offset = block*NUM_FRAMES*self->priv->io_ratio;
 
             /* Seek to beginning of block; this is in original,
-               non-resampled, stream */
+             * non-resampled, stream */
             if (sf_seek(self->priv->sndfile, offset, SEEK_SET) < 0) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, offset);
                 return -1;
@@ -336,7 +336,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
             }
 
             /* Set fields in data structure; most are static and have
-               not changed since initialization */
+             * not changed since initialization */
             self->priv->resampler_data.input_frames = read_length;
             self->priv->resampler_data.end_of_input = 1;
 
@@ -389,7 +389,7 @@ static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_s
     bytes_written = write_length * self->priv->format.channels * sizeof(guint16);
 
     /* If we happen to cache a block for reading and we just overwrote
-       it, we should not be caching it anymore */
+     * it, we should not be caching it anymore */
     gint start_block = position / self->priv->buflen;
     gint end_block = (position + bytes_written) / self->priv->buflen;
     if (self->priv->cached_block >= start_block && self->priv->cached_block < end_block) {

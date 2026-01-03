@@ -88,8 +88,8 @@ static gint find_redundant_entries (CCD_Entry *entry, gconstpointer not_used G_G
 static gint sort_entries (CCD_Entry *entry1, CCD_Entry *entry2)
 {
     /* We sort entries by session; then, we put 0xA0 before 1-99, and we put
-       0xA2 at the end. NOTE: the function compares newly added entry1 to already
-       existing entry2... */
+     * 0xA2 at the end. NOTE: the function compares newly added entry1 to already
+     * existing entry2... */
     if (entry2->Session == entry1->Session) {
         if (entry1->Point == 0xA0) {
             /* Put entry1 (0xA0) before entry2 */
@@ -314,7 +314,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             mirage_track_add_fragment(track, -1, fragment);
 
             /* Always determine track mode manually, because I've come across some images with
-               [Track] entry containing wrong mode... */
+             * [Track] entry containing wrong mode... */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining track mode\n", __debug__);
             mirage_parser_ccd_determine_track_mode(self, track, NULL);
 
@@ -332,16 +332,16 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             }
 
             /* Pregap of current track; note that first track in the session does
-               not seem to need Index 0 entry. Another thing to note: Index addresses
-               seem to be relative to session start; so we use their difference
-               to calculate the pregap and then subtract it from PLBA, which is
-               relative to disc start */
+             * not seem to need Index 0 entry. Another thing to note: Index addresses
+             * seem to be relative to session start; so we use their difference
+             * to calculate the pregap and then subtract it from PLBA, which is
+             * relative to disc start */
             gint cur_pregap = 0;
             gint num_tracks = mirage_session_get_number_of_tracks(session);
             if ((num_tracks == 1 && ccd_cur_entry->Index1) ||
                 (ccd_cur_entry->Index0 && ccd_cur_entry->Index1)) {
                 /* If Index 0 is not set (first track in session), it's 0 and
-                   the formula still works */
+                 * the formula still works */
                 cur_pregap = ccd_cur_entry->Index1 - ccd_cur_entry->Index0;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: pregap determined to be 0x%X (%i)\n", __debug__, cur_pregap, cur_pregap);
@@ -349,8 +349,8 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             }
 
             /* Pregap of next track; this one is needed to properly calculate
-               fragment length (otherwise pregap of next track gets appended
-               to current track) */
+             * fragment length (otherwise pregap of next track gets appended
+             * to current track) */
             gint next_pregap = 0;
             if (ccd_next_entry->Index0 && ccd_next_entry->Index1) {
                 next_pregap = ccd_next_entry->Index1 - ccd_next_entry->Index0;
@@ -881,8 +881,8 @@ static gboolean mirage_parser_ccd_callback_cdtext_entries (MirageParserCcd *self
     self->priv->cdtext_entries = g_strtod(value_str, NULL);
 
     /* Validate declared CD-TEXT length against declared number of entries;
-       each entry corresponds to an 18-byte pack with last two bytes (CRC)
-       removed, so it contains 16 bytes */
+     * each entry corresponds to an 18-byte pack with last two bytes (CRC)
+     * removed, so it contains 16 bytes */
     if (self->priv->disc_data->CDTextLength != self->priv->cdtext_entries * 18) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: declared CD-TEXT size (%d) does not match declared number of entries (%d)!\n", __debug__, self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Declared CD-TEXT size (%d) does not match declared number of entries (%d)!"), self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);

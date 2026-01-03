@@ -85,16 +85,22 @@ static void mirage_writer_iso_rename_track_image_files (MirageWriterIso *self, M
             extension = mirage_helper_get_suffix(original_filename) + 1; /* +1 to skip the '.' */
 
             if (num_sessions == 1) {
-                new_filename = mirage_helper_format_string(image_file_format,
+                new_filename = mirage_helper_format_string(
+                    image_file_format,
                     "b", g_variant_new_string(self->priv->image_file_basename),
                     "t", g_variant_new_int16(track),
-                    "e", g_variant_new_string(extension), NULL);
+                    "e", g_variant_new_string(extension),
+                    NULL
+                );
             } else {
-                new_filename = mirage_helper_format_string(image_file_format,
+                new_filename = mirage_helper_format_string(
+                    image_file_format,
                     "b", g_variant_new_string(self->priv->image_file_basename),
                     "s", g_variant_new_int16(1),
                     "t", g_variant_new_int16(track),
-                    "e", g_variant_new_string(extension), NULL);
+                    "e", g_variant_new_string(extension),
+                    NULL
+                );
             }
 
             /* Move */
@@ -277,23 +283,32 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
 
     if (session_number > 1) {
         /* If session number is greater than one, we need to specify
-           both session and track number */
-        filename = mirage_helper_format_string(image_file_format,
+         * both session and track number */
+        filename = mirage_helper_format_string(
+            image_file_format,
             "b", g_variant_new_string(self->priv->image_file_basename),
             "s", g_variant_new_int16(session_number),
             "t", g_variant_new_int16(track_number),
-            "e", g_variant_new_string(extension), NULL);
+            "e", g_variant_new_string(extension),
+            NULL
+        );
     } else if (track_number > 1) {
         /* If track number is greater than one, we need to specify it */
-        filename = mirage_helper_format_string(image_file_format,
+        filename = mirage_helper_format_string(
+            image_file_format,
             "b", g_variant_new_string(self->priv->image_file_basename),
             "t", g_variant_new_int16(track_number),
-            "e", g_variant_new_string(extension), NULL);
+            "e", g_variant_new_string(extension),
+            NULL
+        );
     } else {
         /* First track of first session; specify only basename and extension */
-        filename = mirage_helper_format_string(image_file_format,
+        filename = mirage_helper_format_string(
+            image_file_format,
             "b", g_variant_new_string(self->priv->image_file_basename),
-            "e", g_variant_new_string(extension), NULL);
+            "e", g_variant_new_string(extension),
+            NULL
+        );
     }
 
     /* I/O stream */
@@ -308,7 +323,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
     mirage_fragment_main_data_set_stream(fragment, stream);
 
     /* We keep a list of streams for images of tracks in first session,
-       because we might need to rename them */
+     * because we might need to rename them */
     if (session_number == 1) {
         self->priv->image_file_streams = g_list_append(self->priv->image_file_streams, g_object_ref(stream));
     }

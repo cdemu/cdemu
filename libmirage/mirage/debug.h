@@ -64,10 +64,10 @@
 typedef enum _MirageDebugMask
 {
     /* Debug types */
-    MIRAGE_DEBUG_ERROR    = -1,
-    MIRAGE_DEBUG_WARNING  = -2,
+    MIRAGE_DEBUG_ERROR = -1,
+    MIRAGE_DEBUG_WARNING = -2,
     /* Debug masks */
-    MIRAGE_DEBUG_PARSER  = 0x1,
+    MIRAGE_DEBUG_PARSER = 0x1,
     MIRAGE_DEBUG_DISC = 0x2,
     MIRAGE_DEBUG_SESSION = 0x4,
     MIRAGE_DEBUG_TRACK = 0x8,

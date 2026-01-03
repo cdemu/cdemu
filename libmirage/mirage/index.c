@@ -40,7 +40,7 @@
 \**********************************************************************/
 struct _MirageIndexPrivate
 {
-    gint number;  /* Index' number */
+    gint number; /* Index' number */
     gint address; /* Index' start address (relative to track start) */
 };
 

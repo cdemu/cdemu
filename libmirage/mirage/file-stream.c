@@ -50,7 +50,7 @@ struct _MirageFileStreamPrivate
     GOutputStream *output_stream;
 
     /* Actual stream object; either GFileIOStream or GFileInputStream,
-       depending on whether stream is read-write or read-only */
+     * depending on whether stream is read-write or read-only */
     gpointer stream;
 
     /* Filename the stream was opened on */
@@ -226,10 +226,10 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
     }
 
     /* We implement move using g_file_move(), which uses either native
-       move operation (if supported) or copy + delete fallback. Thus,
-       just to be sure, we close the original stream, move the file,
-       and then open the new stream again, restoring the original's
-       stream position */
+     * move operation (if supported) or copy + delete fallback. Thus,
+     * just to be sure, we close the original stream, move the file,
+     * and then open the new stream again, restoring the original's
+     * stream position */
     GFile *original_file = g_file_new_for_path(self->priv->filename);
     GFile *new_file = g_file_new_for_path(new_filename);
 

@@ -22,7 +22,7 @@
 #define __debug__ "MDX-Parser"
 
 
-static const guint8 mdx_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E', 'S', 'C', 'R', 'I', 'P', 'T', 'O', 'R', 0x02 };
+static const guint8 mdx_signature[17] = {'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E', 'S', 'C', 'R', 'I', 'P', 'T', 'O', 'R', 0x02};
 
 
 /**********************************************************************\

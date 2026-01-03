@@ -106,7 +106,7 @@ struct _MirageWriter
 
     /*< private >*/
     MirageWriterPrivate *priv;
-} ;
+};
 
 /**
  * MirageWriterClass:

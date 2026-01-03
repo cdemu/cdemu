@@ -55,20 +55,19 @@ void mirage_parser_cdi_type_register (GTypeModule *type_module)
 
 
 /* NOTE: as far as my experiments show, descriptor has the following structure:
-    - number of sessions: first byte
-    - session descriptor: 15 bytes; one for every session, followed by track
-        descriptors for tracks in that session
-    - track descriptor: 228 bytes; this is "bare" track descriptor length,
-        meaning it doesn't account for filename length, nor for index descriptors,
-        nor CD-Text block... even though, it should be noted that seemingly there
-        are always at least two index entries present
-    - at the end of session/track descriptors, there seems to be another session
-      descriptor, with 0 tracks
-    - disc descriptor: 114 bytes; located at the end; this is also "bare" length,
-        and it does include the descriptor lenght field at the end of file
-
-    -- Rok
-*/
+ *  - number of sessions: first byte
+ *  - session descriptor: 15 bytes; one for every session, followed by track
+ *    descriptors for tracks in that session
+ *  - track descriptor: 228 bytes; this is "bare" track descriptor length,
+ *    meaning it doesn't account for filename length, nor for index descriptors,
+ *    nor CD-Text block... even though, it should be noted that seemingly there
+ *    are always at least two index entries present
+ *  - at the end of session/track descriptors, there seems to be another session
+ *    descriptor, with 0 tracks
+ *  - disc descriptor: 114 bytes; located at the end; this is also "bare" length,
+ *    and it does include the descriptor lenght field at the end of file
+ *
+ *  -- Rok */
 
 /* Self-explanatory */
 const gboolean WHINE_ON_UNEXPECTED = TRUE;
@@ -115,7 +114,7 @@ static void mirage_parser_cdi_decode_medium_type (MirageParserCdi *self, gint me
 static gboolean mirage_parser_cdi_decode_track_mode (MirageParserCdi *self, gint raw_mode, gint *decoded_mode, gint *main_format, GError **error)
 {
     /* Simple; raw mode represents track mode. And if it happens to be audio, guess
-       what the data format will be? */
+     * what the data format will be? */
     switch (raw_mode) {
         case 0: {
             *decoded_mode = MIRAGE_SECTOR_AUDIO;
@@ -198,7 +197,7 @@ static gint mirage_parser_cdi_decode_session_type (MirageParserCdi *self, gint r
 }
 
 /* Function for parsing header that appears at the beginning of every track block
-   and at the beginning of the disc block */
+ * and at the beginning of the disc block */
 static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **error G_GNUC_UNUSED)
 {
     /* Recongised fields */
@@ -209,32 +208,32 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
     gint medium_type = 0;
 
     /* The header seems to consist of following:
-        - 16 bytes forming what seems a fixed pattern
-        - 1 byte representing filename length
-        - filename of variable length
-        - 29 bytes with fixed values
-        - 2 bytes that form up medium type */
+     *  - 16 bytes forming what seems a fixed pattern
+     *  - 1 byte representing filename length
+     *  - filename of variable length
+     *  - 29 bytes with fixed values
+     *  - 2 bytes that form up medium type */
 
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0xFF },
-            {  1, 0xFF },
-            {  2, 0x00 },
-            {  3, 0x00 },
-            {  4, 0x01 },
-            {  5, 0x00 },
-            {  6, 0x00 },
-            {  7, 0x00 },
-            {  8, 0xFF },
-            {  9, 0xFF },
-            { 10, 0xFF },
-            { 11, 0xFF },
+            {0, 0xFF},
+            {1, 0xFF},
+            {2, 0x00},
+            {3, 0x00},
+            {4, 0x01},
+            {5, 0x00},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0xFF},
+            {9, 0xFF},
+            {10, 0xFF},
+            {11, 0xFF},
             /* The following values vary; the last one is positively number of all
                tracks on the disc */
-            /*{ 12, 0x64 },
-            { 13, 0x05 },
-            { 14, 0x2A },
-            { 15, 0x06 }*/
+            /*{12, 0x64},
+            {13, 0x05},
+            {14, 0x2A},
+            {15, 0x06}*/
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Pre-filename fields");
@@ -249,8 +248,8 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
     self->priv->cur_ptr += sizeof(guint8);
 
     /* At 18th byte, filename starts (NOTE: it seems that the filename
-       can be in any encoding (e.g. Japanese), so priting here could
-       cause a crash... */
+     * can be in any encoding (e.g. Japanese), so priting here could
+     * cause a crash... */
     //filename = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
     //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename length: %d\n", __debug__, filename_length);
     //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename: %s\n\n", __debug__, tmp_filename);
@@ -260,36 +259,36 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
 
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
-            {  1, 0x00 },
-            {  2, 0x00 },
-            {  3, 0x00 },
-            {  4, 0x00 },
-            {  5, 0x00 },
-            {  6, 0x00 },
-            {  7, 0x00 },
-            {  8, 0x00 },
-            {  9, 0x00 },
-            { 10, 0x00 },
-            { 11, 0x02 },
-            { 12, 0x00 },
-            { 13, 0x00 },
-            { 14, 0x00 },
-            { 15, 0x00 },
-            { 16, 0x00 },
-            { 17, 0x00 },
-            { 18, 0x00 },
-            { 19, 0x00 },
-            { 20, 0x00 },
-            { 21, 0x00 },
-            { 22, 0x80 },
+            {0, 0x00},
+            {1, 0x00},
+            {2, 0x00},
+            {3, 0x00},
+            {4, 0x00},
+            {5, 0x00},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0x00},
+            {9, 0x00},
+            {10, 0x00},
+            {11, 0x02},
+            {12, 0x00},
+            {13, 0x00},
+            {14, 0x00},
+            {15, 0x00},
+            {16, 0x00},
+            {17, 0x00},
+            {18, 0x00},
+            {19, 0x00},
+            {20, 0x00},
+            {21, 0x00},
+            {22, 0x80},
             /* Following fields almost positively represent disc capacity */
-            /*{ 23, 0x40 },
-            { 24, 0x7E },
-            { 25, 0x05 },
-            { 26, 0x00 },*/
-            { 27, 0x00 },
-            { 28, 0x00 },
+            /*{23, 0x40},
+            {24, 0x7E},
+            {25, 0x05},
+            {26, 0x00},*/
+            {27, 0x00},
+            {28, 0x00},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Post-filename fields");
@@ -312,8 +311,8 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
 static void mirage_parser_cdi_parse_cdtext (MirageParserCdi *self)
 {
     /* It seems that each CD-TEXT block for track consists of 18 bytes, each (?)
-       denoting length of field it represents; if it's non-zero, it's followed by declared
-       size of bytes... */
+     * denoting length of field it represents; if it's non-zero, it's followed by declared
+     * size of bytes... */
     for (gint i = 0; i < 18; i++) {
         gint length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint8);
         self->priv->cur_ptr += sizeof(guint8);
@@ -328,7 +327,7 @@ static void mirage_parser_cdi_parse_cdtext (MirageParserCdi *self)
 
 static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **error)
 {
-    /* Recongised fields */
+    /* Recognized fields */
     gint num_indices = 0;
     gint *indices = NULL;
     gint track_mode = 0;
@@ -383,8 +382,8 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            { 0, 0x00 },
-            { 1, 0x00 },
+            {0, 0x00},
+            {1, 0x00},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "2 bytes after CD-TEXT");
@@ -402,10 +401,10 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
-            {  1, 0x00 },
-            {  2, 0x00 },
-            {  3, 0x00 },
+            {0, 0x00},
+            {1, 0x00},
+            {2, 0x00},
+            {3, 0x00},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "4 bytes after track mode");
@@ -439,22 +438,22 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
-            {  1, 0x00 },
-            {  2, 0x00 },
-            {  3, 0x00 },
-            {  4, 0x00 },
-            {  5, 0x00 },
-            {  6, 0x00 },
-            {  7, 0x00 },
-            {  8, 0x00 },
-            {  9, 0x00 },
-            { 10, 0x00 },
-            { 11, 0x00 },
-            { 12, 0x00 },
-            { 13, 0x00 },
-            { 14, 0x00 },
-            { 15, 0x00 },
+            {0, 0x00},
+            {1, 0x00},
+            {2, 0x00},
+            {3, 0x00},
+            {4, 0x00},
+            {5, 0x00},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0x00},
+            {9, 0x00},
+            {10, 0x00},
+            {11, 0x00},
+            {12, 0x00},
+            {13, 0x00},
+            {14, 0x00},
+            {15, 0x00},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "16 bytes after track length");
@@ -478,17 +477,17 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     /* 9 undeciphered bytes */
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
+            {0, 0x00},
             /* These seem to be a repeated track length */
-            {  1, (track_length & 0x000000FF) >>  0 },
-            {  2, (track_length & 0x0000FF00) >>  8 },
-            {  3, (track_length & 0x00FF0000) >> 16 },
-            {  4, (track_length & 0xFF000000) >> 24 },
+            {1, (track_length & 0x000000FF) >> 0},
+            {2, (track_length & 0x0000FF00) >> 8},
+            {3, (track_length & 0x00FF0000) >> 16},
+            {4, (track_length & 0xFF000000) >> 24},
 
-            {  5, 0x00 },
-            {  6, 0x00 },
-            {  7, 0x00 },
-            {  8, 0x00 },
+            {5, 0x00},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0x00},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "9 bytes after track CTL");
@@ -512,109 +511,109 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     /* Remaining 99 undeciphered bytes */
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
-            {  1, 0xFF },
-            {  2, 0xFF },
-            {  3, 0xFF },
-            {  4, 0xFF },
-            {  5, 0xFF },
-            {  6, 0xFF },
-            {  7, 0xFF },
-            {  8, 0xFF },
-            {  9, 0x01 },
-            { 10, 0x00 },
-            { 11, 0x00 },
-            { 12, 0x00 },
-            { 13, 0x80 },
-            { 14, 0x00 },
-            { 15, 0x00 },
-            { 16, 0x00 },
-            { 17, 0x02 },
-            { 18, 0x00 },
-            { 19, 0x00 },
-            { 20, 0x00 },
-            { 21, 0x10 },
-            { 22, 0x00 },
-            { 23, 0x00 },
-            { 24, 0x00 },
-            { 25, 0x44 },
-            { 26, 0xAC },
-            { 27, 0x00 },
-            { 28, 0x00 },
-            { 29, 0x00 },
-            { 30, 0x00 },
-            { 31, 0x00 },
-            { 32, 0x00 },
-            { 33, 0x00 },
-            { 34, 0x00 },
-            { 35, 0x00 },
-            { 36, 0x00 },
-            { 37, 0x00 },
-            { 38, 0x00 },
-            { 39, 0x00 },
-            { 40, 0x00 },
-            { 41, 0x00 },
-            { 42, 0x00 },
-            { 43, 0x00 },
-            { 44, 0x00 },
-            { 45, 0x00 },
-            { 46, 0x00 },
-            { 47, 0x00 },
-            { 48, 0x00 },
-            { 49, 0x00 },
-            { 50, 0x00 },
-            { 51, 0x00 },
-            { 52, 0x00 },
-            { 53, 0x00 },
-            { 54, 0x00 },
-            { 55, 0x00 },
-            { 56, 0x00 },
-            { 57, 0x00 },
-            { 58, 0x00 },
-            { 59, 0x00 },
-            { 60, 0x00 },
-            { 61, 0x00 },
-            { 62, 0x00 },
-            { 63, 0x00 },
-            { 64, 0x00 },
-            { 65, 0x00 },
-            { 66, 0x00 },
-            { 67, 0x00 },
-            { 68, 0x00 },
-            { 69, 0x00 },
-            { 70, 0x00 },
-            { 71, 0xFF },
-            { 72, 0xFF },
-            { 73, 0xFF },
-            { 74, 0xFF },
-            { 75, 0x00 },
-            { 76, 0x00 },
-            { 77, 0x00 },
-            { 78, 0x00 },
-            { 79, 0x00 },
-            { 80, 0x00 },
-            { 81, 0x00 },
-            { 82, 0x00 },
-            { 83, 0x00 },
-            { 84, 0x00 },
-            { 85, 0x00 },
-            { 86, 0x00 },
+            {0, 0x00},
+            {1, 0xFF},
+            {2, 0xFF},
+            {3, 0xFF},
+            {4, 0xFF},
+            {5, 0xFF},
+            {6, 0xFF},
+            {7, 0xFF},
+            {8, 0xFF},
+            {9, 0x01},
+            {10, 0x00},
+            {11, 0x00},
+            {12, 0x00},
+            {13, 0x80},
+            {14, 0x00},
+            {15, 0x00},
+            {16, 0x00},
+            {17, 0x02},
+            {18, 0x00},
+            {19, 0x00},
+            {20, 0x00},
+            {21, 0x10},
+            {22, 0x00},
+            {23, 0x00},
+            {24, 0x00},
+            {25, 0x44},
+            {26, 0xAC},
+            {27, 0x00},
+            {28, 0x00},
+            {29, 0x00},
+            {30, 0x00},
+            {31, 0x00},
+            {32, 0x00},
+            {33, 0x00},
+            {34, 0x00},
+            {35, 0x00},
+            {36, 0x00},
+            {37, 0x00},
+            {38, 0x00},
+            {39, 0x00},
+            {40, 0x00},
+            {41, 0x00},
+            {42, 0x00},
+            {43, 0x00},
+            {44, 0x00},
+            {45, 0x00},
+            {46, 0x00},
+            {47, 0x00},
+            {48, 0x00},
+            {49, 0x00},
+            {50, 0x00},
+            {51, 0x00},
+            {52, 0x00},
+            {53, 0x00},
+            {54, 0x00},
+            {55, 0x00},
+            {56, 0x00},
+            {57, 0x00},
+            {58, 0x00},
+            {59, 0x00},
+            {60, 0x00},
+            {61, 0x00},
+            {62, 0x00},
+            {63, 0x00},
+            {64, 0x00},
+            {65, 0x00},
+            {66, 0x00},
+            {67, 0x00},
+            {68, 0x00},
+            {69, 0x00},
+            {70, 0x00},
+            {71, 0xFF},
+            {72, 0xFF},
+            {73, 0xFF},
+            {74, 0xFF},
+            {75, 0x00},
+            {76, 0x00},
+            {77, 0x00},
+            {78, 0x00},
+            {79, 0x00},
+            {80, 0x00},
+            {81, 0x00},
+            {82, 0x00},
+            {83, 0x00},
+            {84, 0x00},
+            {85, 0x00},
+            {86, 0x00},
             /* Session type, in case it's last track of a session */
-            /*{ 87, 0x00 },*/
-            { 88, 0x00 },
-            { 89, 0x00 },
-            { 90, 0x00 },
-            { 91, 0x00 },
-            { 92, 0x00 },
+            /*{87, 0x00},*/
+            {88, 0x00},
+            {89, 0x00},
+            {90, 0x00},
+            {91, 0x00},
+            {92, 0x00},
             /* This one's set to 0 in last track for any session; otherwise it's 1 */
-            /*{ 93, 0x01 },*/
-            { 94, 0x00 },
+            /*{93, 0x01},*/
+            {94, 0x00},
             /* These seem to be some sort of an address for last track of a session...
-               otherwise, they're set to 00 00 FF FF */
-            /*{ 95, 0x00 },
-            { 96, 0x00 },
-            { 97, 0xFF },
-            { 98, 0xFF },*/
+             * otherwise, they're set to 00 00 FF FF */
+            /*{95, 0x00},
+            {96, 0x00},
+            {97, 0xFF},
+            {98, 0xFF},*/
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "99 bytes at the end");
@@ -700,17 +699,17 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     /* Set ISRC */
     if (isrc_valid) {
         /* Don't check for error here; if fragment was created with subchannel
-           data, then this call will fail, but it doesn't matter anyway... */
+         * data, then this call will fail, but it doesn't matter anyway... */
         mirage_track_set_isrc(track, isrc);
     }
 
     /* Indices; each entry represents length of corresponding index, whereas
-       libMirage uses index starting points to denote indices. In CDI, there
-       always seem to be at least two entries present; first one is for track
-       start (or rather, length of start pregap), and the second is for index 1.
-       So here we loop over everything in between first and last entry; first
-       entry is used to set track start outside the loop, whereas the last entry
-       isn't needed, because it spans to the end of the track, anyway */
+     * libMirage uses index starting points to denote indices. In CDI, there
+     * always seem to be at least two entries present; first one is for track
+     * start (or rather, length of start pregap), and the second is for index 1.
+     * So here we loop over everything in between first and last entry; first
+     * entry is used to set track start outside the loop, whereas the last entry
+     * isn't needed, because it spans to the end of the track, anyway */
     gint index_address = indices[0];
     mirage_track_set_track_start(track, indices[0]);
     for (gint i = 1; i < num_indices - 1; i++) {
@@ -746,21 +745,21 @@ static gboolean mirage_parser_cdi_load_session (MirageParserCdi *self, GError **
 
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
+            {0, 0x00},
             /* 1: Known */
-            {  2, 0x00 },
-            {  3, 0x00 },
-            {  4, 0x00 },
-            {  5, 0x00 },
-            {  6, 0x00 },
-            {  7, 0x00 },
-            {  8, 0x00 },
-            {  9, 0x01 },
-            { 10, 0x00 },
-            { 11, 0x00 },
-            { 12, 0x00 },
-            { 13, 0xFF },
-            { 14, 0xFF },
+            {2, 0x00},
+            {3, 0x00},
+            {4, 0x00},
+            {5, 0x00},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0x00},
+            {9, 0x01},
+            {10, 0x00},
+            {11, 0x00},
+            {12, 0x00},
+            {13, 0xFF},
+            {14, 0xFF},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Session fields");
@@ -785,7 +784,7 @@ static gboolean mirage_parser_cdi_load_session (MirageParserCdi *self, GError **
         }
     } else {
         /* This is expected; it would seem that the session block that follows
-           last track in last session has 0 tracks... so we do nothing here */
+         * last track in last session has 0 tracks... so we do nothing here */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of tracks in session is 0... this is alright if this is the descriptor that follows last track entry in last session... otherwise we might have a problem, Dave...\n", __debug__);
     }
 
@@ -802,7 +801,7 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of sessions: %d\n", __debug__, num_sessions);
 
     /* Load sessions (note that the equal sign in for loop is there to account
-       for the last, empty session) */
+     * for the last, empty session) */
     self->priv->cur_ptr += 1; /* Set pointer at start of first session descriptor */
     for (gint i = 0; i <= num_sessions; i++) {
         /* Load session */
@@ -840,7 +839,7 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length: 0x%X\n", __debug__, disc_length);
 
     /* One byte that follows is length of volume identifier... this is ISO9660
-       volume identifier, found on data discs */
+     * volume identifier, found on data discs */
     volume_id_length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint8);
     self->priv->cur_ptr += sizeof(guint8);
 
@@ -855,15 +854,15 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
     /* 14 undeciphered bytes */
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            { 0, 0x00 },
-            { 1, 0x01 },
-            { 2, 0x00 },
-            { 3, 0x00 },
-            { 4, 0x00 },
-            { 5, 0x01 },
-            { 6, 0x00 },
-            { 7, 0x00 },
-            { 8, 0x00 },
+            {0, 0x00},
+            {1, 0x01},
+            {2, 0x00},
+            {3, 0x00},
+            {4, 0x00},
+            {5, 0x01},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0x00},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "9 bytes after volume ID");
@@ -904,18 +903,18 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
     /* Last 12 bytes are undeciphered as well */
     if (WHINE_ON_UNEXPECTED) {
         ExpectedField fields[] = {
-            {  0, 0x00 },
-            {  1, 0x00 },
-            {  2, 0x00 },
-            {  3, 0x00 },
-            {  4, 0x00 },
-            {  5, 0x00 },
-            {  6, 0x00 },
-            {  7, 0x00 },
-            {  8, 0x06 },
-            {  9, 0x00 },
-            { 10, 0x00 },
-            { 11, 0x80 },
+            {0, 0x00},
+            {1, 0x00},
+            {2, 0x00},
+            {3, 0x00},
+            {4, 0x00},
+            {5, 0x00},
+            {6, 0x00},
+            {7, 0x00},
+            {8, 0x06},
+            {9, 0x00},
+            {10, 0x00},
+            {11, 0x80},
         };
 
         mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Last 12 bytes");
@@ -967,7 +966,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI filename: %s\n", __debug__, cdi_filename);
 
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
-       last four bytes represent length of descriptor data */
+     * last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
     mirage_stream_seek(self->priv->cdi_stream, offset, G_SEEK_END, NULL);
     if (mirage_stream_read(self->priv->cdi_stream, &descriptor_length, sizeof(descriptor_length), NULL) != sizeof(descriptor_length)) {
@@ -994,7 +993,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     succeeded = mirage_parser_cdi_load_disc(self, error);
 
     /* Dirty test: check if size of parsed descriptor equals to declared size
-       (minus 4 bytes which make up declared size...) */
+     * (minus 4 bytes which make up declared size...) */
     if (self->priv->cur_ptr - self->priv->cdi_data != descriptor_length - 4) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch! Expect trouble... (%" G_GINTPTR_MODIFIER "d != %d)\n", __debug__, (gintptr)self->priv->cur_ptr - (gintptr)self->priv->cdi_data, descriptor_length);
     } else {
@@ -1002,7 +1001,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStre
     }
 
     /* Make disc start at -150... it seems both CD and DVD images start at -150
-       in CDI (regardless of medium, there's 150 sectors pregap at the beginning) */
+     * in CDI (regardless of medium, there's 150 sectors pregap at the beginning) */
     mirage_disc_layout_set_start_sector(self->priv->disc, -150);
 
 end:

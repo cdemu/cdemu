@@ -244,7 +244,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
             guint32 *dpm_data;
 
             /* First three fields seem to have fixed values; probably some sort of
-               header? */
+             * header? */
             __dummy1__ = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
@@ -259,7 +259,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
             WHINE_ON_UNEXPECTED(__dummy3__, 0x00000001);
 
             /* The next three fields are start sector, resolution and number
-               of entries */
+             * of entries */
             dpm_start_sector = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
@@ -328,7 +328,7 @@ static void mirage_parser_b6t_parse_internal_dpm_data (MirageParserB6t *self)
         WHINE_ON_UNEXPECTED(__dummy4__, 0x00000000);
 
         /* Next two fields seem to have same value, which appears to be length
-           of DPM data */
+         * of DPM data */
         block_len1 = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
         cur_ptr += sizeof(guint32);
         block_len2 = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
@@ -345,7 +345,7 @@ static void mirage_parser_b6t_parse_internal_dpm_data (MirageParserB6t *self)
         WHINE_ON_UNEXPECTED(__dummy6__, 0x00000001);
 
         /* The next three fields are start sector, resolution and number
-            of entries */
+         * of entries */
         dpm_start_sector = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
         cur_ptr += sizeof(guint32);
 
@@ -383,16 +383,16 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting up data blocks for track starting at sector 0x%X (%i), length 0x%X\n", __debug__, start_sector, start_sector, length);
 
     /* Data blocks are nice concept that's similar to libMirage's fragments; they
-       are chunks of continuous data, stored in the same file and read in the same
-       mode. To illustrate how it goes, consider a disc with single Mode 1 data track
-       and three Audio tracks - data track will be stored in one data block, and the
-       three audio tracks in another, but both data blocks will be stored in the same
-       file, just at different offsets. Note that since they are separated, one data
-       block could include subchannel and the other not. On the other hand, consider
-       now a couple-of-GB DVD image. It will get split into 2 GB files, each being
-       its own block. But all the blocks will make up a single track. So contrary to
-       libMirage's fragments, where fragments are subunits of tracks, it is possible
-       for single data block to contain data for multiple tracks. */
+     * are chunks of continuous data, stored in the same file and read in the same
+     * mode. To illustrate how it goes, consider a disc with single Mode 1 data track
+     * and three Audio tracks - data track will be stored in one data block, and the
+     * three audio tracks in another, but both data blocks will be stored in the same
+     * file, just at different offsets. Note that since they are separated, one data
+     * block could include subchannel and the other not. On the other hand, consider
+     * now a couple-of-GB DVD image. It will get split into 2 GB files, each being
+     * its own block. But all the blocks will make up a single track. So contrary to
+     * libMirage's fragments, where fragments are subunits of tracks, it is possible
+     * for single data block to contain data for multiple tracks. */
     for (GList *entry = self->priv->data_blocks_list; entry; entry = entry->next) {
         B6T_DataBlock *data_block = entry->data;
 
@@ -558,7 +558,7 @@ static gboolean mirage_parser_b6t_parse_cdtext_data (MirageParserB6t *self, GErr
     if (self->priv->disc_block_1->cdtext_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading CD-TEXT data; 0x%X bytes\n", __debug__, self->priv->disc_block_1->cdtext_data_length);
         /* Read; we don't set data here, because at this point we don't have
-           parser layout set up yet */
+         * parser layout set up yet */
         self->priv->cdtext_data = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, guint8 *);
         self->priv->cur_ptr += self->priv->disc_block_1->cdtext_data_length;
     }
@@ -596,11 +596,10 @@ static void mirage_parser_b6t_parse_dvd_structures (MirageParserB6t *self)
 
     while (length < self->priv->disc_block_1->dvdrom_structures_length) {
         /* It seems DVD structures are stored in following format:
-             - 2 bytes, holding structure number
-             - 4 bytes, holding data header as returned by READ PARSER STRUCTURE
-               command (i.e. 2 bytes of data length and 2 reserved bytes)
-             - actual data
-        */
+         *   - 2 bytes, holding structure number
+         *   - 4 bytes, holding data header as returned by READ PARSER STRUCTURE
+         *     command (i.e. 2 bytes of data length and 2 reserved bytes)
+         *   - actual data */
         guint16 struct_number;
         guint16 struct_length;
         guint16 struct_reserved;
@@ -611,7 +610,7 @@ static void mirage_parser_b6t_parse_dvd_structures (MirageParserB6t *self)
         self->priv->cur_ptr += sizeof(guint16);
 
         /* Length in header is big-endian; and it also includes two reserved
-           bytes following it, so make sure this is accounted for */
+         * bytes following it, so make sure this is accounted for */
         struct_length = GUINT16_FROM_BE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint16));
         self->priv->cur_ptr += sizeof(guint16);
         struct_length -= 2;
@@ -644,10 +643,11 @@ static gboolean mirage_parser_b6t_decode_disc_type (MirageParserB6t *self, GErro
         case CDRW:
         case DDCDROM:
         case DDCDR:
-        case DDCDRW:
+        case DDCDRW: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM disc (0x%x)\n", __debug__, disc_type);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
             break;
+        }
         case DVDROM:
         case DVDR:
         case DVDRAM:
@@ -658,20 +658,23 @@ static gboolean mirage_parser_b6t_decode_disc_type (MirageParserB6t *self, GErro
         case DVDPLUSRW:
         case DVDPLUSR:
         case DLDVDPLUSRW:
-        case DLDVDPLUSR:
+        case DLDVDPLUSR: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM disc (0x%x)\n", __debug__, disc_type);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
             break;
+        }
         case BDROM:
         case BDR:
-        case BDRE:
+        case BDRE: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Blueray disc (0x%x)\n", __debug__, disc_type);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_BD);
             break;
-        default:
+        }
+        default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown or unhandled disc type: 0x%X!\n", __debug__, disc_type);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown or unhandled disc type 0x%X!"), disc_type);
             return FALSE;
+        }
     }
 
     return TRUE;
@@ -686,7 +689,7 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
     self->priv->cur_ptr += sizeof(B6T_DiscBlock_1);
 
     /* Since most of these fields are not deciphered yet, watch out for
-       deviations from 'usual' values */
+     * deviations from 'usual' values */
     WHINE_ON_UNEXPECTED(self->priv->disc_block_1->__dummy1__, 0x00000002);
     WHINE_ON_UNEXPECTED(self->priv->disc_block_1->__dummy2__, 0x00000002);
     WHINE_ON_UNEXPECTED(self->priv->disc_block_1->__dummy3__, 0x00000006);
@@ -743,7 +746,7 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
 
 
     /* Next 28 bytes are drive identifiers; these are part of data returned by
-       INQUIRY command */
+     * INQUIRY command */
     B6T_DriveIdentifiers *inquiry_id = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_DriveIdentifiers *);
     /* Note: only strings, nothing to fix endian-wise */
     self->priv->cur_ptr += sizeof(B6T_DriveIdentifiers);
@@ -754,15 +757,15 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
 
 
     /* Then there's 32 bytes of ISO volume descriptor; they represent volume ID,
-       if it is a data CD, or they're set to AUDIO CD in case of audio CD */
+     * if it is a data CD, or they're set to AUDIO CD in case of audio CD */
     gchar *volume_id = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
     self->priv->cur_ptr += 32;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: volume ID: %.32s\n\n", __debug__, volume_id);
 
 
     /* What comes next is 20 bytes that are seemingly organised into 32-bit
-       integers... experimenting with different layouts show that these are
-       indeed lengths of blocks that follow */
+     * integers... experimenting with different layouts show that these are
+     * indeed lengths of blocks that follow */
     self->priv->disc_block_2 = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_DiscBlock_2 *);
     b6t_disc_block_2_fix_endian(self->priv->disc_block_2);
     self->priv->cur_ptr += sizeof(B6T_DiscBlock_2);
@@ -776,22 +779,22 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
 
 
     /* Right, you thought so far everything was pretty much straightforward? Well,
-       fear not... It would seem that data to follow are blocks whose lengths were
-       defined in both disc_block_1 and disc_block_2 - and to make things worse,
-       they're mixed... */
+     * fear not... It would seem that data to follow are blocks whose lengths were
+     * defined in both disc_block_1 and disc_block_2 - and to make things worse,
+     * they're mixed... */
 
 
     /* Mode Page 0x2A: CD/DVD Capabilities and Mechanical Status Mode Page...
-       this one is returned in response to MODE SENSE (10) that Blindwrite issues;
-       note that the page per-se doesn't have any influence on image data, and it's
-       probably included just for diagnostics or somesuch. Therefore we won't be
-       reading it (maybe later, just to dump the data...) */
+     * this one is returned in response to MODE SENSE (10) that Blindwrite issues;
+     * note that the page per-se doesn't have any influence on image data, and it's
+     * probably included just for diagnostics or somesuch. Therefore we won't be
+     * reading it (maybe later, just to dump the data...) */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping Mode Page 0x2A (0x%X bytes)\n\n", __debug__, self->priv->disc_block_2->mode_page_2a_length);
     self->priv->cur_ptr += self->priv->disc_block_2->mode_page_2a_length;
 
     /* Unknown data block #1... this one seems to be 4 bytes long in all images
-       I've tested with, and set to 0. For now, skip it, but print a warning if
-       it's not 4 bytes long */
+     * I've tested with, and set to 0. For now, skip it, but print a warning if
+     * it's not 4 bytes long */
     WHINE_ON_UNEXPECTED(self->priv->disc_block_2->unknown1_length, 4);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping Unknown data block #1 (0x%X bytes)\n\n", __debug__, self->priv->disc_block_2->unknown1_length);
     self->priv->cur_ptr += self->priv->disc_block_2->unknown1_length;
@@ -817,9 +820,9 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing CD-TEXT data\n\n", __debug__);
 
     /* If we're dealing with DVD-ROM image, this is where BCA is stored, followed
-       by parser structures... Since I don't think PMA/ATIP/CD-TEXT can be obtained
-       from DVD-ROMs, it doesn't really matter which should come first (though,
-       judging by order of length integers, I'd say this is correct order...) */
+     * by parser structures... Since I don't think PMA/ATIP/CD-TEXT can be obtained
+     * from DVD-ROMs, it doesn't really matter which should come first (though,
+     * judging by order of length integers, I'd say this is correct order...) */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing BCA data...\n", __debug__);
     mirage_parser_b6t_parse_bca(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing BCA data\n\n", __debug__);
@@ -829,11 +832,11 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing DVD structures\n\n", __debug__);
 
     /* Next 56 bytes (0x38) seem to be the block whose length seems to be declared
-       in disc_block_1... The block is present in both CD-ROM and DVD-ROM images, but
-       its length seems to be declared in different positions. I can't make much out
-       of the data itself, expect that the last 8 bytes are verbatim copy of data
-       returned by READ CAPACITY command. Again, this data is not really relevant,
-       so we're skipping it... */
+     * in disc_block_1... The block is present in both CD-ROM and DVD-ROM images, but
+     * its length seems to be declared in different positions. I can't make much out
+     * of the data itself, expect that the last 8 bytes are verbatim copy of data
+     * returned by READ CAPACITY command. Again, this data is not really relevant,
+     * so we're skipping it... */
     if (self->priv->disc_block_1->disc_type == 0x08 || self->priv->disc_block_1->disc_type == 0x09 || self->priv->disc_block_1->disc_type == 0x0A) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping CD-ROM disc info block (0x%X bytes)\n\n", __debug__, self->priv->disc_block_1->cdrom_info_length);
         self->priv->cur_ptr += self->priv->disc_block_1->cdrom_info_length;
@@ -870,14 +873,14 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MirageParserB6t *self, GErr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of data blocks: %i\n", __debug__, num_data_blocks);
 
     /* Then there's drive path; it seems it's awfully important to B6T image which
-       drive it's been created on... it's irrelevant to us, so skip it */
+     * drive it's been created on... it's irrelevant to us, so skip it */
     guint32 drive_path_length = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping 0x%X bytes of drive path\n\n", __debug__, drive_path_length);
     self->priv->cur_ptr += drive_path_length;
 
     /* Now, the actual blocks; we need to copy these, because filename field
-       needs to be changed */
+     * needs to be changed */
     for (guint i = 0; i < num_data_blocks; i++) {
         B6T_DataBlock *data_block = g_new0(B6T_DataBlock, 1);
 
@@ -896,7 +899,7 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MirageParserB6t *self, GErr
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename_length: %i\n", __debug__, data_block->filename_length);
 
         /* Temporary UTF-16 filename... note that filename_length is actual
-           length in bytes, not characters! */
+         * length in bytes, not characters! */
         gunichar2 *tmp_filename = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gunichar2 *);
         widechar_filename_fix_endian(tmp_filename, data_block->filename_length/2);
         self->priv->cur_ptr += data_block->filename_length;
@@ -997,14 +1000,13 @@ static gboolean mirage_parser_b6t_parse_track_entry (MirageParserB6t *self, GErr
     }
 
     /* Track mode... Seems type field for track descriptor determines that:
-        - 0: non-track descriptor
-        - 1: Audio track
-        - 2: Mode 1 track
-        - 3: Mode 2 Formless track
-        - 4: Mode 2 Form 1 track
-        - 5: Mode 2 Form 2 track
-        - 6: DVD track
-    */
+     *  - 0: non-track descriptor
+     *  - 1: Audio track
+     *  - 2: Mode 1 track
+     *  - 3: Mode 2 Formless track
+     *  - 4: Mode 2 Form 1 track
+     *  - 5: Mode 2 Form 2 track
+     *  - 6: DVD track */
     switch (track_entry->type) {
         case 1: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track\n", __debug__);
@@ -1076,8 +1078,8 @@ static gboolean mirage_parser_b6t_parse_session (MirageParserB6t *self, GError *
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   end track: 0x%X\n\n", __debug__, session_entry->last_track);
 
     /* If this is the first session, its starting address is also the starting address
-       of the parser... if not, we need to set the length of lead-out of previous session
-       (which would equal difference between previous end and current start address) */
+     * of the parser... if not, we need to set the length of lead-out of previous session
+     * (which would equal difference between previous end and current start address) */
     if (session_entry->number == 1) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting parser's start to 0x%X (%i)\n", __debug__, session_entry->session_start, session_entry->session_start);
         mirage_disc_layout_set_start_sector(self->priv->disc, session_entry->session_start);
@@ -1222,10 +1224,10 @@ static gboolean mirage_parser_b6t_load_disc (MirageParserB6t *self, GError **err
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing footer\n\n", __debug__);
 
     /* Try to load external BWA file; the internal DPM data does not necessarily
-       contain entries for whole disc, but rather just for beginning of the disc
-       (which is usually checked by copy protection). BWA file, on the other hand,
-       usually contains DPM data for the whole disc. So, if we have both internal
-       DPM data and a BWA available, we'll use the latter... */
+     * contain entries for whole disc, but rather just for beginning of the disc
+     * (which is usually checked by copy protection). BWA file, on the other hand,
+     * usually contains DPM data for the whole disc. So, if we have both internal
+     * DPM data and a BWA available, we'll use the latter... */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing external DPM data...\n", __debug__);
     if (!mirage_parser_b6t_load_bwa_file(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n", __debug__);
@@ -1256,7 +1258,7 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying 16-byte signature at the beginning of image file...\n", __debug__);
 
     /* Read and verify header; we could also check the footer, but I think
-       header check only is sufficient */
+     * header check only is sufficient */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, header, 16, NULL) != 16) {
         g_object_unref(stream);

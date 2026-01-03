@@ -268,7 +268,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
         g_object_unref(fragment);
 
         /* Track starts at 150... well, unless it already has a pregap, in
-           which case they should stack */
+         * which case they should stack */
         track_start = mirage_track_get_track_start(track);
         track_start += 150;
         mirage_track_set_track_start(track, track_start);
@@ -310,7 +310,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
         //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
     } else {
         /* Detect encoding */
-        guint8 bom[4] = { 0 };
+        guint8 bom[4] = {0};
 
         mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
         mirage_stream_read(stream, bom, sizeof(bom), NULL);

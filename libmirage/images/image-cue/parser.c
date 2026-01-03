@@ -44,8 +44,8 @@ struct _MirageParserCuePrivate
     gint leadout_correction;
 
     /* Pointers to current session and current track object, so that we don't
-       have to retrieve them all the time; note that no reference is not kept
-       for them */
+     * have to retrieve them all the time; note that no reference is not kept
+     * for them */
     MirageSession *cur_session;
     MirageTrack *cur_track;
     MirageTrack *prev_track;
@@ -115,8 +115,8 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GErr
     }
 
     /* Get last fragment and set its length... (actually, since there can be
-       postgap fragment stuck at the end, we look for first data fragment that's
-       not NULL... and of course, we go from behind) */
+     * postgap fragment stuck at the end, we look for first data fragment that's
+     * not NULL... and of course, we go from behind) */
     /* FIXME: implement the latter part */
     fragment = mirage_track_get_fragment_by_index(self->priv->cur_track, -1, NULL);
     if (fragment) {
@@ -189,9 +189,9 @@ static gboolean mirage_parser_cue_set_new_file (MirageParserCue *self, const gch
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file: %s\n", __debug__, filename_string);
 
     /* We got new file; either we got it for the first time, which means we don't
-       have any tracks yet and don't have to do anything. If we got new file, it
-       means means we already have some tracks and the last one needs to be
-       finished */
+     * have any tracks yet and don't have to do anything. If we got new file, it
+     * means means we already have some tracks and the last one needs to be
+     * finished */
     if (self->priv->cur_track && !mirage_parser_cue_finish_last_track(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to finish last track!\n", __debug__);
         return FALSE;
@@ -286,7 +286,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
     }
 
     /* Both indexes 0 and 1 can mean we have start of a track... if there's 0,
-       we have a pregap, if there's just 1, we don't have pregap */
+     * we have a pregap, if there's just 1, we don't have pregap */
     if (number == 0 || number == 1) {
         /* If index is 0, mark that we have a pregap */
         if (number == 0) {
@@ -295,24 +295,24 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
 
         if (number == 1 && self->priv->cur_pregap_set) {
             /* If we have a pregap and this is index 1, we just need to
-               set the address where the track really starts */
+             * set the address where the track really starts */
             gint track_start = mirage_track_get_track_start(self->priv->cur_track);
             track_start += address - self->priv->cur_track_start;
             mirage_track_set_track_start(self->priv->cur_track, track_start);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track with pregap; setting track start to 0x%X\n", __debug__, track_start);
         } else {
             /* Otherwise, we need to set up fragment... beginning with the
-               last fragment of the previous track (which we might need to
-               set length to) */
+             * last fragment of the previous track (which we might need to
+             * set length to) */
             if (!self->priv->prev_track) {
                 /* This is first track on the disc; first track doesn't seem to
-                   have index 0, so if its index 1 is non-zero, it indicates pregap */
+                 * have index 0, so if its index 1 is non-zero, it indicates pregap */
                 if (number == 1 && address != 0) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first track has pregap; setting track start to 0x%X\n", __debug__, address);
                     mirage_track_set_track_start(self->priv->cur_track, address);
                     /* address is used later to determine the offset within track file;
-                       in this case, we need to reset it to 0, as pregap seems to be
-                       included in the track file */
+                     * in this case, we need to reset it to 0, as pregap seems to be
+                     * included in the track file */
                     address = 0;
                 }
             } else {
@@ -323,15 +323,15 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                     gint fragment_length = mirage_fragment_get_length(fragment);
 
                     /* If length is not set, we need to calculate it now; the
-                       length will be already set if file has changed in between
-                       or anything else happened that might've resulted in call
-                       of mirage_session_cue_finish_last_track() */
+                     * length will be already set if file has changed in between
+                     * or anything else happened that might've resulted in call
+                     * of mirage_session_cue_finish_last_track() */
                     if (!fragment_length) {
                         fragment_length = address - self->priv->cur_track_start;
 
                         /* In case we're dealing with UltraISO/IsoBuster's
-                           multisession, we need this because index addresses
-                           differences includes the leadout length */
+                         * multisession, we need this because index addresses
+                         * differences includes the leadout length */
                         if (self->priv->leadout_correction) {
                             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using leadout correction %d\n", __debug__, self->priv->leadout_correction);
                             fragment_length -= self->priv->leadout_correction;
@@ -342,8 +342,8 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                         mirage_fragment_set_length(fragment, fragment_length);
 
                         /* Since sector size can vary between the tracks,
-                           we need to keep track of binary offset within
-                           the file... */
+                         * we need to keep track of binary offset within
+                         * the file... */
                         gint main_size = mirage_fragment_main_data_get_size(fragment);
                         gint subchannel_size = mirage_fragment_subchannel_data_get_size(fragment);
 
@@ -370,7 +370,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 gint subchannel_size = 0;
 
                 /* Take into account possibility of having subchannel
-                   (only for CD+G tracks, though) */
+                 * (only for CD+G tracks, though) */
                 if (self->priv->cur_data_sectsize == 2448) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data present...\n", __debug__);
                     main_size = 2352;
@@ -404,8 +404,8 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
             mirage_track_add_fragment(self->priv->cur_track, -1, fragment);
 
             /* Store the current address... it is location at which the current
-               track starts, and it will be used to calculate fragment's length
-               (if file won't change) */
+             * track starts, and it will be used to calculate fragment's length
+             * (if file won't change) */
             self->priv->cur_track_start = address;
 
             g_object_unref(data_stream);
@@ -527,9 +527,9 @@ static void mirage_parser_cue_add_session (MirageParserCue *self, gint number)
     mirage_parser_cue_restore_cdtext_for_current_session(self);
 
     /* UltraISO/IsoBuster store leadout data in the binary file. We'll need to
-       account for this when we're setting fragment length, which we calculate
-       from index addresses... (150 sectors are added to account for pregap,
-       which isn't indicated because only index 01 is used) */
+     * account for this when we're setting fragment length, which we calculate
+     * from index addresses... (150 sectors are added to account for pregap,
+     * which isn't indicated because only index 01 is used) */
     self->priv->leadout_correction = leadout_length + 150;
 
     GError *local_error = NULL;
@@ -598,7 +598,7 @@ static gchar *strip_quotes (gchar *str)
     gint len = strlen(str);
 
     /* Due to UTF-8 being multi-byte, we need to deal with string on byte level,
-       not character level */
+     * not character level */
 
     /* Skip leading quote and trailing quote, but only if both are present */
     if (str[0] == '"' && str[len-1] == '"') {
@@ -706,7 +706,7 @@ static gboolean mirage_parser_cue_callback_cdtextfile (MirageParserCue *self, GM
     }
 
     /* Store the data to parser; we can only apply it once all tracks
-       are created! */
+     * are created! */
     g_free(self->priv->cdtext_data); /* Free any data we may already be holding */
 
     self->priv->cdtext_length = cdt_length;
@@ -954,7 +954,7 @@ static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
     append_regex_rule(&self->priv->regex_rules, "^\\s*$", NULL);
 
     /* "Extensions" that are embedded in the comments must appear before general
-       comment rule */
+     * comment rule */
     append_regex_rule(&self->priv->regex_rules, "^\\s*REM\\s+SESSION\\s+(?<number>\\d+)$", mirage_parser_cue_callback_session);
 
     append_regex_rule(&self->priv->regex_rules, "^\\s*REM\\s+(?<comment>.+)$", mirage_parser_cue_callback_comment);
@@ -1107,8 +1107,8 @@ static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CUE filename: %s\n", __debug__, self->priv->cue_filename);
 
     /* First session is created manually (in case we're dealing with normal
-       CUE file, which doesn't have session definitions anyway); note that we
-       store only pointer, but release reference */
+     * CUE file, which doesn't have session definitions anyway); note that we
+     * store only pointer, but release reference */
     self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
     mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->cur_session);
     g_object_unref(self->priv->cur_session);

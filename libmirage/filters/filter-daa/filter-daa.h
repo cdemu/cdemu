@@ -41,7 +41,8 @@ typedef enum
     FORMAT_VERSION2 = 0x110,
 } DAA_FormatVersion;
 
-typedef struct {
+typedef struct
+{
     guint8 profile; /* PowerISO compression setting: 1 = "better", 2 = "best" */
     guint32 chunk_table_compressed; /*  */
     guint8 chunk_table_bit_settings; /* Bit sizes for chunk table entries */

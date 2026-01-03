@@ -53,9 +53,9 @@ struct _MirageDiscPrivate
     MirageMediumType medium_type;
 
     /* Layout settings */
-    gint start_sector;  /* Start sector */
+    gint start_sector; /* Start sector */
     gint first_session; /* Number of the first session on disc */
-    gint first_track;   /* Number of the first track on disc */
+    gint first_track; /* Number of the first track on disc */
     gint length;
 
     GHashTable *disc_structures;
@@ -129,22 +129,22 @@ static void mirage_disc_commit_bottomup_change (MirageDisc *self)
 
 static void mirage_disc_session_layout_changed_handler (MirageDisc *self, MirageSession *session)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: start\n", __debug__, __func__);
 
     /* If session has been emptied, remove it (it'll do bottom-up change automatically);
-       otherwise, signal bottom-up change */
+     * otherwise, signal bottom-up change */
     if (!mirage_session_get_number_of_tracks(session)) {
         mirage_disc_remove_session(self, session);
     } else {
         mirage_disc_commit_bottomup_change(self);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: end\n", __debug__, __func__);
 }
 
 static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: start\n", __debug__, __func__);
 
     /* Disconnect signal handler (find it by handler function and user data) */
     mirage_signal_handlers_disconnect_by_func(session, G_CALLBACK(mirage_disc_session_layout_changed_handler), self);
@@ -154,10 +154,10 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
     g_object_unref(session);
 
     /* Bottom-up change */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: committing bottom-up change\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: committing bottom-up change\n", __debug__, __func__);
     mirage_disc_commit_bottomup_change(self);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: end\n", __debug__, __func__);
 }
 
 static gint sort_sessions_by_number (MirageSession *session1, MirageSession *session2)
@@ -924,7 +924,7 @@ gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTra
     gint count;
 
     /* If disc layout is empty (if there are no sessions), we should create
-       a session... and then track will be added to this one */
+     * a session... and then track will be added to this one */
     if (!mirage_disc_get_number_of_sessions(self)) {
         MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
         mirage_disc_add_session_by_index(self, 0, session);
@@ -946,7 +946,7 @@ gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTra
     }
 
     /* Iterate over all the sessions and determine the one where track with
-       desired index should be in */
+     * desired index should be in */
     count = 0;
     for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         MirageSession *session = entry->data;
@@ -1010,12 +1010,12 @@ gboolean mirage_disc_add_track_by_number (MirageDisc *self, gint number, MirageT
 
     if (!mirage_disc_get_number_of_sessions(self)) {
         /* If disc layout is empty (if there are no sessions), we should create
-           a session... and then track will be added to this one */
+         * a session... and then track will be added to this one */
         session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
         mirage_disc_add_session_by_index(self, 0, session);
     } else if (number > last_number) {
         /* If track number surpasses the number of last track on disc, then it
-           means we need to add the track into last session */
+         * means we need to add the track into last session */
         session = mirage_disc_get_session_by_index(self, -1, error);
     } else {
         /* Try to get the session by track number */
@@ -1278,7 +1278,7 @@ void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, co
     }
 
     /* Store the data in a GByteArray (FIXME someday, we'll migrate
-       this to GBytes, which requires GLib 2.32) */
+     * this to GBytes, which requires GLib 2.32) */
     array = g_byte_array_new();
     array = g_byte_array_append(array, data, len);
 
@@ -1399,8 +1399,8 @@ gboolean mirage_disc_put_sector (MirageDisc *self, MirageSector *sector, GError 
     track = mirage_disc_get_track_by_address(self, address, NULL);
     if (!track) {
         /* We also allow data to be appended to the last track; for this,
-           however, the sector's address is allowed to be one more than
-           the last valid address of the last layout... */
+         * however, the sector's address is allowed to be one more than
+         * the last valid address of the last layout... */
         track = mirage_disc_get_track_by_address(self, address - 1, error);
         if (!track) {
             return FALSE;
@@ -1440,7 +1440,7 @@ void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gi
     self->priv->dpm_resolution = resolution;
     self->priv->dpm_num_entries = num_entries;
     /* Allocate and copy data only if number of entries is positive (otherwise
-       the data is simply reset) */
+     * the data is simply reset) */
     if (self->priv->dpm_num_entries > 0) {
         self->priv->dpm_data = g_new0(guint32, self->priv->dpm_num_entries);
         memcpy(self->priv->dpm_data, data, sizeof(guint32)*self->priv->dpm_num_entries);
@@ -1506,7 +1506,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
     rel_address = address - self->priv->dpm_start;
 
     /* Check if relative address is out of range (account for possibility of
-       sectors lying behind last DPM entry) */
+     * sectors lying behind last DPM entry) */
     if (rel_address < 0 || rel_address >= (self->priv->dpm_num_entries+1)*self->priv->dpm_resolution) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, Q_("Sector address %d out of range!"), address);
         return FALSE;
@@ -1516,25 +1516,25 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
     idx_bottom = rel_address/self->priv->dpm_resolution;
 
     /* Three possibilities; in all three cases we calculate tmp_density as the
-       difference between top and bottom angle, converted to rotations and
-       divided by resolution. Because our DPM data entries don't contain entry
-       for address 0, but start with 1*dpm_resolution instead, we'll have to
-       readjust bottom index... (actual entry index is bottom index minus 1) */
+     * difference between top and bottom angle, converted to rotations and
+     * divided by resolution. Because our DPM data entries don't contain entry
+     * for address 0, but start with 1*dpm_resolution instead, we'll have to
+     * readjust bottom index... (actual entry index is bottom index minus 1) */
     if (idx_bottom == 0) {
         /* If bottom index is 0, we have address between 0 and 1*dpm_resolution;
-           this means bottom angle is 0 and top angle is first DPM entry (with
-           index 0, which equals idx_bottom). */
+         * this means bottom angle is 0 and top angle is first DPM entry (with
+         * index 0, which equals idx_bottom). */
         tmp_density = self->priv->dpm_data[idx_bottom];
     } else if (idx_bottom == self->priv->dpm_num_entries) {
         /* Special case; we allow addresses past last DPM entry's address, but
-           only as long as they don't get past the address that would belong to
-           next DPM entry. This is because resolution is not a factor of disc
-           length and therefore some sectors might remain past last DPM entry.
-           In this case, we use angles from previous interval. */
+         * only as long as they don't get past the address that would belong to
+         * next DPM entry. This is because resolution is not a factor of disc
+         * length and therefore some sectors might remain past last DPM entry.
+         * In this case, we use angles from previous interval. */
         tmp_density = (self->priv->dpm_data[idx_bottom-1] - self->priv->dpm_data[idx_bottom-2]);
     } else {
         /* Regular case; top angle minus bottom angle, where we need to decrease
-           idx_bottom by one to account for index difference as described above */
+         * idx_bottom by one to account for index difference as described above */
         tmp_density = (self->priv->dpm_data[idx_bottom] - self->priv->dpm_data[idx_bottom-1]);
     }
     tmp_density /= 256.0; /* Convert hex degrees into rotations */
@@ -1543,7 +1543,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
     if (angle) {
         tmp_angle = (rel_address - idx_bottom*self->priv->dpm_resolution)*tmp_density; /* Angle difference */
         /* Add base angle, but only if it's not 0 (which is the case when
-           idx_bottom is 0) */
+         * idx_bottom is 0) */
         if (idx_bottom > 0) {
             tmp_angle += self->priv->dpm_data[idx_bottom-1]/256.0; /* Add bottom angle */
         }

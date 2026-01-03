@@ -21,14 +21,15 @@
 
 #define __debug__ "MACBINARY-FilterStream"
 
-typedef struct {
+typedef struct
+{
     bcem_type_t type;
 
-    guint32  first_sector;
-    guint32  num_sectors;
-    gint     segment;
-    goffset  in_offset;
-    gsize    in_length;
+    guint32 first_sector;
+    guint32 num_sectors;
+    gint segment;
+    goffset in_offset;
+    gsize in_length;
 } NDIF_Part;
 
 
@@ -80,41 +81,41 @@ void mirage_filter_stream_macbinary_type_register (GTypeModule *type_module)
    Unix time's 1970 epoch. This is the difference between the two. */
 #define MAC_TIME_OFFSET 2082844800
 
-static void mirage_filter_stream_macbinary_fixup_header(macbinary_header_t *header)
+static void mirage_filter_stream_macbinary_fixup_header (macbinary_header_t *header)
 {
     g_assert(header);
 
-    header->vert_pos      = GUINT16_FROM_BE(header->vert_pos);
-    header->horiz_pos     = GUINT16_FROM_BE(header->horiz_pos);
-    header->window_id     = GUINT16_FROM_BE(header->window_id);
-    header->getinfo_len   = GUINT16_FROM_BE(header->getinfo_len);
+    header->vert_pos = GUINT16_FROM_BE(header->vert_pos);
+    header->horiz_pos = GUINT16_FROM_BE(header->horiz_pos);
+    header->window_id = GUINT16_FROM_BE(header->window_id);
+    header->getinfo_len = GUINT16_FROM_BE(header->getinfo_len);
     header->secondary_len = GUINT16_FROM_BE(header->secondary_len);
-    header->crc16         = GUINT16_FROM_BE(header->crc16);
+    header->crc16 = GUINT16_FROM_BE(header->crc16);
 
     header->datafork_len = GUINT32_FROM_BE(header->datafork_len);
-    header->resfork_len  = GUINT32_FROM_BE(header->resfork_len);
-    header->created      = GUINT32_FROM_BE(header->created) - MAC_TIME_OFFSET;
-    header->modified     = GUINT32_FROM_BE(header->modified) - MAC_TIME_OFFSET;
+    header->resfork_len = GUINT32_FROM_BE(header->resfork_len);
+    header->created = GUINT32_FROM_BE(header->created) - MAC_TIME_OFFSET;
+    header->modified = GUINT32_FROM_BE(header->modified) - MAC_TIME_OFFSET;
     header->unpacked_len = GUINT32_FROM_BE(header->unpacked_len);
 }
 
-static void mirage_filter_stream_macbinary_fixup_bcem_block(bcem_block_t *bcem_block)
+static void mirage_filter_stream_macbinary_fixup_bcem_block (bcem_block_t *bcem_block)
 {
     g_assert(bcem_block);
 
-    bcem_block->version_major  = GUINT16_FROM_BE(bcem_block->version_major);
-    bcem_block->version_minor  = GUINT16_FROM_BE(bcem_block->version_minor);
-    bcem_block->num_sectors    = GUINT32_FROM_BE(bcem_block->num_sectors);
-    bcem_block->chunk_size     = GUINT32_FROM_BE(bcem_block->chunk_size);
+    bcem_block->version_major = GUINT16_FROM_BE(bcem_block->version_major);
+    bcem_block->version_minor = GUINT16_FROM_BE(bcem_block->version_minor);
+    bcem_block->num_sectors = GUINT32_FROM_BE(bcem_block->num_sectors);
+    bcem_block->chunk_size = GUINT32_FROM_BE(bcem_block->chunk_size);
     bcem_block->bs_zero_offset = GUINT32_FROM_BE(bcem_block->bs_zero_offset);
-    bcem_block->crc32          = GUINT32_FROM_BE(bcem_block->crc32);
-    bcem_block->is_segmented   = GUINT32_FROM_BE(bcem_block->is_segmented);
-    bcem_block->num_blocks     = GUINT32_FROM_BE(bcem_block->num_blocks);
+    bcem_block->crc32 = GUINT32_FROM_BE(bcem_block->crc32);
+    bcem_block->is_segmented = GUINT32_FROM_BE(bcem_block->is_segmented);
+    bcem_block->num_blocks = GUINT32_FROM_BE(bcem_block->num_blocks);
 
     /* ignoring unknown1 and reserved */
 }
 
-static void mirage_filter_stream_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
+static void mirage_filter_stream_macbinary_fixup_bcem_data (bcem_data_t *bcem_data)
 {
     guint8 temp;
 
@@ -128,12 +129,12 @@ static void mirage_filter_stream_macbinary_fixup_bcem_data(bcem_data_t *bcem_dat
     bcem_data->length = GUINT32_FROM_BE(bcem_data->length);
 }
 
-static void mirage_filter_stream_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
+static void mirage_filter_stream_macbinary_fixup_bcm_block (bcm_block_t *bcm_block)
 {
     g_assert(bcm_block);
 
-    bcm_block->part     = GUINT16_FROM_BE(bcm_block->part);
-    bcm_block->parts    = GUINT16_FROM_BE(bcm_block->parts);
+    bcm_block->part = GUINT16_FROM_BE(bcm_block->part);
+    bcm_block->parts = GUINT16_FROM_BE(bcm_block->parts);
     bcm_block->unknown1 = GUINT32_FROM_BE(bcm_block->unknown1);
 
     for (guint i = 0; i < 4; i++) {
@@ -141,13 +142,13 @@ static void mirage_filter_stream_macbinary_fixup_bcm_block(bcm_block_t *bcm_bloc
     }
 }
 
-static void mirage_filter_stream_macbinary_print_header(MirageFilterStreamMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
+static void mirage_filter_stream_macbinary_print_header (MirageFilterStreamMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
 {
-    GString   *filename = NULL;
+    GString *filename = NULL;
     GDateTime *created = NULL;
     GDateTime *modified = NULL;
-    gchar     *created_str = NULL;
-    gchar     *modified_str = NULL;
+    gchar *created_str = NULL;
+    gchar *modified_str = NULL;
 
     g_assert(self && header);
 
@@ -192,7 +193,7 @@ static void mirage_filter_stream_macbinary_print_header(MirageFilterStreamMacBin
     g_free(modified_str);
 }
 
-static void mirage_filter_stream_macbinary_print_bcem_block(MirageFilterStreamMacBinary *self, bcem_block_t *bcem_block)
+static void mirage_filter_stream_macbinary_print_bcem_block (MirageFilterStreamMacBinary *self, bcem_block_t *bcem_block)
 {
     GString *imagename = NULL;
 
@@ -227,7 +228,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
     MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(_self);
 
     macbinary_header_t *header = &self->priv->header;
-    rsrc_fork_t        *rsrc_fork = NULL;
+    rsrc_fork_t *rsrc_fork = NULL;
 
     guint16 calculated_crc = 0;
 
@@ -272,8 +273,8 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
     /* Read the resource fork if any exists */
     if (header->resfork_len) {
-        goffset     rsrc_fork_pos = 0;
-        gchar       *rsrc_fork_data = NULL;
+        goffset rsrc_fork_pos = 0;
+        gchar *rsrc_fork_data = NULL;
 
         rsrc_fork_pos = sizeof(macbinary_header_t) + header->datafork_len;
         if (header->datafork_len % 128) {
@@ -312,8 +313,8 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
         rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcem", 128);
 
         if (rsrc_ref) {
-            bcem_block_t *bcem_block = (bcem_block_t *) rsrc_ref->data;
-            bcem_data_t  *bcem_data = (bcem_data_t *) (rsrc_ref->data + sizeof(bcem_block_t));
+            bcem_block_t *bcem_block = (bcem_block_t *)rsrc_ref->data;
+            bcem_data_t *bcem_data = (bcem_data_t *)(rsrc_ref->data + sizeof(bcem_block_t));
 
             mirage_filter_stream_macbinary_fixup_bcem_block(bcem_block);
 
@@ -337,22 +338,22 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
             for (guint b = 0; b < bcem_block->num_blocks; b++) {
                 NDIF_Part *cur_part = &self->priv->parts[b];
-                guint32   start_sector, end_sector;
+                guint32 start_sector, end_sector;
 
-                start_sector  = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
-                end_sector    = (bcem_data[b+1].sector[2] << 16) + (bcem_data[b+1].sector[1] << 8) + bcem_data[b+1].sector[0];
+                start_sector = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
+                end_sector = (bcem_data[b+1].sector[2] << 16) + (bcem_data[b+1].sector[1] << 8) + bcem_data[b+1].sector[0];
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%3u] Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n",
                              __debug__, b, start_sector, bcem_data[b].type, bcem_data[b].offset, bcem_data[b].length, bcem_data[b].length);
 
                 if (bcem_data[b].type == BCEM_ADC || bcem_data[b].type == BCEM_ZERO || bcem_data[b].type == BCEM_RAW) {
                     /* Fill in part table entry */
-                    cur_part->type         = bcem_data[b].type;
+                    cur_part->type = bcem_data[b].type;
                     cur_part->first_sector = start_sector;
-                    cur_part->num_sectors  = end_sector - start_sector;
-                    cur_part->segment      = -1; /* uninitialized default */
-                    cur_part->in_offset    = bcem_data[b].offset;
-                    cur_part->in_length    = bcem_data[b].length;
+                    cur_part->num_sectors = end_sector - start_sector;
+                    cur_part->segment = -1; /* uninitialized default */
+                    cur_part->in_offset = bcem_data[b].offset;
+                    cur_part->in_length = bcem_data[b].length;
 
                     /* Update buffer sizes */
                     if (cur_part->type == BCEM_ADC) {
@@ -431,15 +432,15 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
 static gssize mirage_filter_stream_macbinary_read_raw_chunk (MirageFilterStreamMacBinary *self, guint8 *buffer, gint chunk_num)
 {
-    const NDIF_Part    *part = &self->priv->parts[chunk_num];
-    MirageStream       *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
+    const NDIF_Part *part = &self->priv->parts[chunk_num];
+    MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     macbinary_header_t *header = &self->priv->header;
 
-    gsize   to_read = part->in_length;
-    gsize   have_read = 0;
+    gsize to_read = part->in_length;
+    gsize have_read = 0;
     goffset part_offs = sizeof(macbinary_header_t) + part->in_offset;
-    gsize   part_avail = MIN(part->in_length, header->datafork_len - part->in_offset);
-    gint    ret;
+    gsize part_avail = MIN(part->in_length, header->datafork_len - part->in_offset);
+    gint ret;
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
@@ -479,7 +480,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(_self);
 
     goffset position = mirage_filter_stream_simplified_get_position(MIRAGE_FILTER_STREAM(self));
-    gint    part_idx = -1;
+    gint part_idx = -1;
 
     /* Find part that corresponds to current position */
     for (gint p = 0; p < self->priv->num_parts; p++) {
@@ -547,7 +548,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     /* Copy data */
     const NDIF_Part *part = &self->priv->parts[part_idx];
 
-    gsize   part_size = part->num_sectors * 512;
+    gsize part_size = part->num_sectors * 512;
     guint64 part_offset = position - (part->first_sector * 512);
     count = MIN(count, part_size - part_offset);
 

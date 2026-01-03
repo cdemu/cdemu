@@ -30,8 +30,8 @@ struct _MirageParserTocPrivate
     MirageDisc *disc;
 
     /* Pointers to current session and current track object, so that we don't
-       have to retrieve them all the time; note that no reference is not kept
-       for them */
+     * have to retrieve them all the time; note that no reference is not kept
+     * for them */
     MirageSession *cur_session;
     MirageTrack *cur_track;
 
@@ -123,7 +123,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
     self->priv->cur_subchannel_format = 0;
 
     /* Decipher mode */
-    struct {
+    static const struct {
         gchar *str;
         gint mode;
         gint sectsize;
@@ -154,13 +154,13 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
 
     if (subchan_string) {
         /* Decipher subchannel (if provided) */
-        static struct {
+        static const struct {
             gchar *str;
             gint format;
             gint sectsize;
         } subchan_modes[] = {
-            {"RW_RAW", MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96 },
-            {"RW", MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96 },
+            {"RW_RAW", MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96},
+            {"RW", MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96},
         };
 
         for (guint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
@@ -202,9 +202,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
         }
 
         /* BINARY can be either explicitly requested, or it can be assumed from
-           *.bin suffix (with TOC_DATA_TYPE_AUDIO). Note that we check 'filename_string',
-           which is the original filename, and not the 'filename', which is result of
-           our search. */
+         * *.bin suffix (with TOC_DATA_TYPE_AUDIO). Note that we check 'filename_string',
+         * which is the original filename, and not the 'filename', which is result of
+         * our search. */
         if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating fragment for binary data\n", __debug__);
@@ -221,10 +221,10 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             main_size = self->priv->cur_main_size;
 
             /* If we're dealing with BINARY AUDIO data, we need to swap it...
-               (type == TOC_DATA_TYPE_AUDIO) is not sufficient check, because
-               apparently when .bin file contains subchannel data, it automatically
-               gets listed as DATAFILE (hence type = TOC_DATA_TYPE_DATA); thus,
-               we simply check whether we have an audio track or not... */
+             * (type == TOC_DATA_TYPE_AUDIO) is not sufficient check, because
+             * apparently when .bin file contains subchannel data, it automatically
+             * gets listed as DATAFILE (hence type = TOC_DATA_TYPE_DATA); thus,
+             * we simply check whether we have an audio track or not... */
             gint mode = mirage_track_get_sector_type(self->priv->cur_track);
             if (mode == MIRAGE_SECTOR_AUDIO) {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP;
@@ -233,12 +233,12 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             }
 
             /* Some TOC files don't seem to contain #base_offset entries that
-               are used in case of mixed mode CD... which means we have to
-               calculate base_offset ourselves :( */
+             * are used in case of mixed mode CD... which means we have to
+             * calculate base_offset ourselves :( */
             if (!base_offset) {
                 /* If we don't have mixed mode BIN filename set yet or if it
-                   differs from  the one currently set, we're dealing with new
-                   file... so we reset offset and store the filename */
+                 * differs from  the one currently set, we're dealing with new
+                 * file... so we reset offset and store the filename */
                 if (!self->priv->mixed_mode_bin || mirage_helper_strcasecmp(self->priv->mixed_mode_bin, filename)) {
                     self->priv->mixed_mode_offset = 0;
                     g_free(self->priv->mixed_mode_bin);
@@ -248,8 +248,8 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                 base_offset = self->priv->mixed_mode_offset;
 
                 /* I guess it's safe to calculate this here; if length isn't
-                   provided, it means whole file is used, so most likely we'll
-                   get file changed next time we're called...*/
+                 * provided, it means whole file is used, so most likely we'll
+                 * get file changed next time we're called...*/
                 if (type == TOC_DATA_TYPE_DATA) {
                     /* Increase only if it's data... */
                     self->priv->mixed_mode_offset += length * (self->priv->cur_main_size + self->priv->cur_subchannel_size);
@@ -419,22 +419,22 @@ static gboolean mirage_parser_toc_cdtext_parse_language (MirageParserToc *self, 
 {
     GMatchInfo *match_info;
 
-    static struct {
+    static const struct {
         gchar *pack_id;
         gint pack_type;
     } packs[] = {
-        { "TITLE", MIRAGE_LANGUAGE_PACK_TITLE },
-        { "PERFORMER", MIRAGE_LANGUAGE_PACK_PERFORMER },
-        { "SONGWRITER", MIRAGE_LANGUAGE_PACK_SONGWRITER },
-        { "COMPOSER", MIRAGE_LANGUAGE_PACK_COMPOSER },
-        { "ARRANGER", MIRAGE_LANGUAGE_PACK_ARRANGER },
-        { "MESSAGE", MIRAGE_LANGUAGE_PACK_MESSAGE },
-        { "DISC_ID", MIRAGE_LANGUAGE_PACK_DISC_ID },
-        { "GENRE", MIRAGE_LANGUAGE_PACK_GENRE },
-        { "TOC_INFO1", MIRAGE_LANGUAGE_PACK_TOC },
-        { "TOC_INFO2", MIRAGE_LANGUAGE_PACK_TOC2 },
-        { "UPC_EAN", MIRAGE_LANGUAGE_PACK_UPC_ISRC },
-        { "SIZE_INFO", MIRAGE_LANGUAGE_PACK_SIZE },
+        {"TITLE", MIRAGE_LANGUAGE_PACK_TITLE},
+        {"PERFORMER", MIRAGE_LANGUAGE_PACK_PERFORMER},
+        {"SONGWRITER", MIRAGE_LANGUAGE_PACK_SONGWRITER},
+        {"COMPOSER", MIRAGE_LANGUAGE_PACK_COMPOSER},
+        {"ARRANGER", MIRAGE_LANGUAGE_PACK_ARRANGER},
+        {"MESSAGE", MIRAGE_LANGUAGE_PACK_MESSAGE},
+        {"DISC_ID", MIRAGE_LANGUAGE_PACK_DISC_ID},
+        {"GENRE", MIRAGE_LANGUAGE_PACK_GENRE},
+        {"TOC_INFO1", MIRAGE_LANGUAGE_PACK_TOC},
+        {"TOC_INFO2", MIRAGE_LANGUAGE_PACK_TOC2},
+        {"UPC_EAN", MIRAGE_LANGUAGE_PACK_UPC_ISRC},
+        {"SIZE_INFO", MIRAGE_LANGUAGE_PACK_SIZE},
     };
 
     g_regex_match(self->priv->regex_langdata, data_str, 0, &match_info);
@@ -921,52 +921,60 @@ static void mirage_parser_toc_init_regex_parser (MirageParserToc *self)
     /* *** Special CD-TEXT block handling rules... *** */
 
     /* The one rule to match them all; matches the whole CD-TEXT block, and
-       returns two (big) chunks of text; language maps and languages; both need
-       to be further parsed by additional rules... (P.S.: there's groups everywhere
-       because G_REGEX_MATCH_PARTIAL requires them) */
-    self->priv->regex_cdtext = g_regex_new("CD_TEXT(\\s)*"
-                                      "{(\\s)*"
-                                      "("
-                                       "LANGUAGE_MAP(\\s)*"
-                                       "{(\\s)*"
-                                      "(?<langmaps>((\\d)+([ \\t])*:([ \\t])*(\\w)+(\\s)*)+(\\s)*)"
-                                       "}(\\s)*"
-                                      ")?"
-                                      "(?<languages>"
-                                      "(LANGUAGE(\\s)*(\\d)+(\\s)*"
-                                      "{(\\s)*"
-                                       "("
-                                        "("
-                                         "((\\w)+( )*\"(.)*\"(\\s)*)" /* PACK_TYPE "DATA_STR" */
-                                        "|"
-                                         "((\\w)+( )*{([\\d,\\s])*}(\\s)*)" /* PACK_TYPE "DATA_STR" */
-                                        ")"
-                                       ")*"
-                                      "}(\\s)*)*"
-                                      ")"
-                                      "}", G_REGEX_OPTIMIZE|G_REGEX_MULTILINE, 0, NULL);
+     * returns two (big) chunks of text; language maps and languages; both need
+     * to be further parsed by additional rules... (P.S.: there's groups everywhere
+     * because G_REGEX_MATCH_PARTIAL requires them) */
+    self->priv->regex_cdtext = g_regex_new(
+        "CD_TEXT(\\s)*"
+        "{(\\s)*"
+            "("
+                "LANGUAGE_MAP(\\s)*"
+                "{(\\s)*"
+                    "(?<langmaps>((\\d)+([ \\t])*:([ \\t])*(\\w)+(\\s)*)+(\\s)*)"
+                "}(\\s)*"
+            ")?"
+            "(?<languages>"
+                "(LANGUAGE(\\s)*(\\d)+(\\s)*"
+                "{(\\s)*"
+                    "("
+                        "("
+                            "((\\w)+( )*\"(.)*\"(\\s)*)" /* PACK_TYPE "DATA_STR" */
+                        "|"
+                            "((\\w)+( )*{([\\d,\\s])*}(\\s)*)" /* PACK_TYPE "DATA_STR" */
+                        ")"
+                    ")*"
+                "}(\\s)*)*"
+            ")"
+        "}",
+        G_REGEX_OPTIMIZE|G_REGEX_MULTILINE, 0, NULL);
 
     /* Used for parsing language maps */
     self->priv->regex_langmap = g_regex_new("\\s*(?<lang_idx>\\d+)[ \\t]*:[ \\t]*(?<lang_code>\\w+)\\s*", G_REGEX_OPTIMIZE, 0, NULL);
 
     /* Used for parsing languages */
-    self->priv->regex_language = g_regex_new("\\s*LANGUAGE\\s*(?<lang_idx>\\d+)\\s*"
-                                        "{\\s*"
-                                        "(?<lang_data>"
-                                         "("
-                                          "(\\w+[ \\t]*\".*\"\\s*)" /* PACK_TYPE "DATA_STR" */
-                                         "|"
-                                          "(\\w+[ \\t]*{[\\d,\\s]*}\\s*)" /* PACK_TYPE "DATA_STR" */
-                                         ")*"
-                                        ")"
-                                        "}\\s*",  G_REGEX_OPTIMIZE, 0, NULL);
+    self->priv->regex_language = g_regex_new(
+        "\\s*LANGUAGE\\s*(?<lang_idx>\\d+)\\s*"
+        "{\\s*"
+            "(?<lang_data>"
+                "("
+                    "(\\w+[ \\t]*\".*\"\\s*)" /* PACK_TYPE "DATA_STR" */
+                "|"
+                    "(\\w+[ \\t]*{[\\d,\\s]*}\\s*)" /* PACK_TYPE "DATA_STR" */
+                ")*"
+            ")"
+        "}\\s*",
+        G_REGEX_OPTIMIZE, 0, NULL
+    );
 
     /* Used for parsing individual data fields */
-    self->priv->regex_langdata = g_regex_new("("
-                                          "((?<type1>\\w+)[ \\t]*\"(?<data1>.*)\"\\s*)"
-                                        "|"
-                                          "((?<type2>\\w+)[ \\t]*{(?<data2>[\\d,\\s]*)}\\s*)"
-                                        ")",  G_REGEX_OPTIMIZE, 0, NULL);
+    self->priv->regex_langdata = g_regex_new(
+        "("
+            "((?<type1>\\w+)[ \\t]*\"(?<data1>.*)\"\\s*)"
+        "|"
+            "((?<type2>\\w+)[ \\t]*{(?<data2>[\\d,\\s]*)}\\s*)"
+        ")",
+        G_REGEX_OPTIMIZE, 0, NULL
+    );
 
     /* Used for splitting binary data string */
     self->priv->regex_binary = g_regex_new("\\s*,\\s*", G_REGEX_OPTIMIZE, 0, NULL);
@@ -1036,7 +1044,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
         }
 
         /* If we're not in the middle of CD-TEXT parsing, use GRegex matching
-           engine, otherwise do the custom stuff */
+         * engine, otherwise do the custom stuff */
         if (!parsing_cdtext) {
             /* Go over all matching rules */
             for (GList *entry = self->priv->regex_rules; entry; entry = entry->next) {
@@ -1061,7 +1069,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
             }
 
             /* Try to partially match CDTEXT; this one should *never* match in
-               full, unless *everything* was in a single line... */
+             * full, unless *everything* was in a single line... */
             if (!matched) {
                 g_regex_match(self->priv->regex_cdtext, line_string, G_REGEX_MATCH_PARTIAL, &match_info);
                 if (g_match_info_is_partial_match(match_info)) {
@@ -1161,9 +1169,9 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, MirageS
     }
 
     /* *** Additional check ***
-       Because X-CD Roast also uses .toc for its images, we need to make
-       sure this one was created by cdrdao... for that, we check for presence
-       of CD_DA/CD_ROM_XA/CD_ROM/CD_I directive. */
+     * Because X-CD Roast also uses .toc for its images, we need to make
+     * sure this one was created by cdrdao... for that, we check for presence
+     * of CD_DA/CD_ROM_XA/CD_ROM/CD_I directive. */
     data_stream = mirage_parser_create_text_stream(MIRAGE_PARSER(self), stream, NULL);
     if (!data_stream) {
         return FALSE;
@@ -1263,9 +1271,9 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
         mirage_parser_toc_init_session_data(self);
 
         /* There's slight problem with multi-session TOC images, namely that each
-           TOC can be used independently... in order words, there's no way to determine
-           the length of leadouts for sessions (since all sessions start at sector 0).
-           So we use what multisession FAQ from cdrecord docs tells us... */
+         * TOC can be used independently... in order words, there's no way to determine
+         * the length of leadouts for sessions (since all sessions start at sector 0).
+         * So we use what multisession FAQ from cdrecord docs tells us... */
         if (i > 0) {
             MirageSession *prev_session;
             gint leadout_length = 0;

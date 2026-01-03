@@ -24,13 +24,14 @@
 #include "resource-fork.h"
 
 /* Local typedefs */
-typedef struct {
+typedef struct
+{
     /* XML parsing state */
     gboolean in_key;
     gboolean in_string;
     gboolean in_data;
 
-    gint  nesting_level;
+    gint nesting_level;
     gchar *last_key;
 
     /* Resource Fork */
@@ -43,9 +44,9 @@ static inline void rsrc_raw_fixup_header(rsrc_raw_header_t *rsrc_raw_header)
     g_assert(rsrc_raw_header);
 
     rsrc_raw_header->data_offset = GUINT32_FROM_BE(rsrc_raw_header->data_offset);
-    rsrc_raw_header->map_offset  = GUINT32_FROM_BE(rsrc_raw_header->map_offset);
+    rsrc_raw_header->map_offset = GUINT32_FROM_BE(rsrc_raw_header->map_offset);
     rsrc_raw_header->data_length = GUINT32_FROM_BE(rsrc_raw_header->data_length);
-    rsrc_raw_header->map_length  = GUINT32_FROM_BE(rsrc_raw_header->map_length);
+    rsrc_raw_header->map_length = GUINT32_FROM_BE(rsrc_raw_header->map_length);
 }
 
 static inline void rsrc_raw_fixup_map(rsrc_raw_map_t *rsrc_raw_map)
@@ -54,11 +55,11 @@ static inline void rsrc_raw_fixup_map(rsrc_raw_map_t *rsrc_raw_map)
 
     rsrc_raw_fixup_header(&rsrc_raw_map->header_copy);
 
-    rsrc_raw_map->handle_next_map     = GUINT32_FROM_BE(rsrc_raw_map->handle_next_map);
-    rsrc_raw_map->file_ref_num        = GUINT16_FROM_BE(rsrc_raw_map->file_ref_num);
-    rsrc_raw_map->res_fork_attrs      = GUINT16_FROM_BE(rsrc_raw_map->res_fork_attrs);
-    rsrc_raw_map->type_list_offset    = GUINT16_FROM_BE(rsrc_raw_map->type_list_offset);
-    rsrc_raw_map->name_list_offset    = GUINT16_FROM_BE(rsrc_raw_map->name_list_offset);
+    rsrc_raw_map->handle_next_map = GUINT32_FROM_BE(rsrc_raw_map->handle_next_map);
+    rsrc_raw_map->file_ref_num = GUINT16_FROM_BE(rsrc_raw_map->file_ref_num);
+    rsrc_raw_map->res_fork_attrs = GUINT16_FROM_BE(rsrc_raw_map->res_fork_attrs);
+    rsrc_raw_map->type_list_offset = GUINT16_FROM_BE(rsrc_raw_map->type_list_offset);
+    rsrc_raw_map->name_list_offset = GUINT16_FROM_BE(rsrc_raw_map->name_list_offset);
     rsrc_raw_map->num_types_minus_one = GUINT16_FROM_BE(rsrc_raw_map->num_types_minus_one);
 }
 
@@ -67,7 +68,7 @@ static inline void rsrc_raw_fixup_type(rsrc_raw_type_t *rsrc_raw_type)
     g_assert(rsrc_raw_type);
 
     rsrc_raw_type->num_refs_minus_one = GUINT16_FROM_BE(rsrc_raw_type->num_refs_minus_one);
-    rsrc_raw_type->ref_offset         = GUINT16_FROM_BE(rsrc_raw_type->ref_offset);
+    rsrc_raw_type->ref_offset = GUINT16_FROM_BE(rsrc_raw_type->ref_offset);
 }
 
 static inline void rsrc_raw_fixup_ref(rsrc_raw_ref_t *rsrc_raw_ref)
@@ -76,19 +77,24 @@ static inline void rsrc_raw_fixup_ref(rsrc_raw_ref_t *rsrc_raw_ref)
 
     g_assert(rsrc_raw_ref);
 
-    rsrc_raw_ref->id          = GINT16_FROM_BE(rsrc_raw_ref->id);
+    rsrc_raw_ref->id = GINT16_FROM_BE(rsrc_raw_ref->id);
     rsrc_raw_ref->name_offset = GINT16_FROM_BE(rsrc_raw_ref->name_offset);
-    rsrc_raw_ref->handle      = GUINT32_FROM_BE(rsrc_raw_ref->handle);
+    rsrc_raw_ref->handle = GUINT32_FROM_BE(rsrc_raw_ref->handle);
 
     temp = rsrc_raw_ref->data_offset[0];
     rsrc_raw_ref->data_offset[0] = rsrc_raw_ref->data_offset[2];
     rsrc_raw_ref->data_offset[2] = temp;
 }
 
-static void xml_start_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, const gchar **attribute_names G_GNUC_UNUSED,
-                           const gchar **attribute_values G_GNUC_UNUSED, gpointer user_data, GError **error G_GNUC_UNUSED)
+static void xml_start_element (
+    GMarkupParseContext *context G_GNUC_UNUSED,
+    const gchar *element_name,
+    const gchar **attribute_names G_GNUC_UNUSED,
+    const gchar **attribute_values G_GNUC_UNUSED,
+    gpointer user_data, GError **error G_GNUC_UNUSED
+)
 {
-    xml_user_data_t *xml_user_data = (xml_user_data_t *) user_data;
+    xml_user_data_t *xml_user_data = (xml_user_data_t *)user_data;
 
     xml_user_data->nesting_level++;
 
@@ -114,9 +120,14 @@ static void xml_start_element (GMarkupParseContext *context G_GNUC_UNUSED, const
     }
 }
 
-static void xml_end_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, gpointer user_data, GError **error G_GNUC_UNUSED)
+static void xml_end_element (
+    GMarkupParseContext *context G_GNUC_UNUSED,
+    const gchar *element_name,
+    gpointer user_data,
+    GError **error G_GNUC_UNUSED
+)
 {
-    xml_user_data_t *xml_user_data = (xml_user_data_t *) user_data;
+    xml_user_data_t *xml_user_data = (xml_user_data_t *)user_data;
 
     if (!strncmp(element_name, "key", strlen("key"))) {
         xml_user_data->in_key = FALSE;
@@ -137,16 +148,13 @@ static void xml_end_element (GMarkupParseContext *context G_GNUC_UNUSED, const g
             g_assert(rsrc_type);
             rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, rsrc_type->ref_list->len - 1);
             g_assert(rsrc_ref);
-
-            //g_message("Resource Type: %.4s ID: %i Name: %s", rsrc_type->type, rsrc_ref->id, rsrc_ref->name->str);
-            //g_message(" Attrs: 0x%02x Data length: %u", rsrc_ref->attrs, rsrc_ref->data_length);
         }
     }
 
     xml_user_data->nesting_level--;
 }
 
-static GString *rsrc_data_strip_and_decode_base64(const gchar *text, gsize text_length)
+static GString *rsrc_data_strip_and_decode_base64 (const gchar *text, gsize text_length)
 {
     GString *dest_str = g_string_sized_new(text_length);
 
@@ -158,12 +166,14 @@ static GString *rsrc_data_strip_and_decode_base64(const gchar *text, gsize text_
             case '\n':
             case '\r':
             case '\t':
-            case ' ':
+            case ' ': {
                 /* Discard CR, LF, TAB and whitespace */
                 break;
-            default:
+            }
+            default: {
                 /* Save everything else */
                 g_string_append_c(dest_str, *source_pos);
+            }
         }
     }
 
@@ -173,9 +183,15 @@ static GString *rsrc_data_strip_and_decode_base64(const gchar *text, gsize text_
     return dest_str;
 }
 
-static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *text, gsize text_len, gpointer user_data, GError **error G_GNUC_UNUSED)
+static void xml_text (
+    GMarkupParseContext *context G_GNUC_UNUSED,
+    const gchar *text,
+    gsize text_len,
+    gpointer user_data,
+    GError **error G_GNUC_UNUSED
+)
 {
-    xml_user_data_t *xml_user_data = (xml_user_data_t *) user_data;
+    xml_user_data_t *xml_user_data = (xml_user_data_t *)user_data;
 
     if (xml_user_data->in_key) {
         if (xml_user_data->last_key) g_free(xml_user_data->last_key);
@@ -218,8 +234,8 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
             rsrc_fork_t *rsrc_fork = xml_user_data->rsrc_fork;
             rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, rsrc_fork->type_list->len - 1);
             rsrc_ref_t  *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, rsrc_type->ref_list->len -1);
-            gchar       *last_key = xml_user_data->last_key;
-            gint        res;
+            gchar *last_key = xml_user_data->last_key;
+            gint res;
 
             g_assert(rsrc_type && rsrc_ref);
 
@@ -248,8 +264,8 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
         if (xml_user_data->nesting_level == 6) {
             rsrc_fork_t *rsrc_fork = xml_user_data->rsrc_fork;
             rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, rsrc_fork->type_list->len - 1);
-            rsrc_ref_t  *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, rsrc_type->ref_list->len - 1);
-            GString     *dest_str = NULL;
+            rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, rsrc_type->ref_list->len - 1);
+            GString *dest_str = NULL;
 
             g_assert(rsrc_type && rsrc_ref);
 
@@ -278,7 +294,7 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
 rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length)
 {
     xml_user_data_t *xml_user_data = NULL;
-    rsrc_fork_t     *rsrc_fork = NULL;
+    rsrc_fork_t *rsrc_fork = NULL;
 
     const GMarkupParser res_fork_xml_parser = {
         xml_start_element,
@@ -297,7 +313,9 @@ rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length)
     if (!xml_user_data) return NULL;
 
     GMarkupParseContext *context = g_markup_parse_context_new (&res_fork_xml_parser, 0, xml_user_data, NULL);
-    if (!context) return NULL;
+    if (!context) {
+        return NULL;
+    }
 
     /* Parse the properties list */
     if (!g_markup_parse_context_parse (context, xml_data, xml_length, NULL)) {
@@ -317,7 +335,9 @@ rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length)
 
 rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type)
 {
-    if (!rsrc_fork || !type) return NULL;
+    if (!rsrc_fork || !type) {
+        return NULL;
+    }
 
     for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
         rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
@@ -332,10 +352,14 @@ rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type)
 
 rsrc_ref_t *rsrc_find_ref_by_type_and_id(rsrc_fork_t *rsrc_fork, const gchar *type, gint16 id)
 {
-    if (!rsrc_fork || !type) return NULL;
+    if (!rsrc_fork || !type) {
+        return NULL;
+    }
 
     rsrc_type_t *rsrc_type = rsrc_find_type(rsrc_fork, type);
-    if (!rsrc_type) return NULL;
+    if (!rsrc_type) {
+        return NULL;
+    }
 
     for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
         rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
@@ -350,61 +374,75 @@ rsrc_ref_t *rsrc_find_ref_by_type_and_id(rsrc_fork_t *rsrc_fork, const gchar *ty
 
 rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 {
-    rsrc_fork_t       *rsrc_fork = NULL;
+    rsrc_fork_t *rsrc_fork = NULL;
     rsrc_raw_header_t *rsrc_raw_header = NULL;
-    rsrc_raw_map_t    *rsrc_raw_map = NULL;
+    rsrc_raw_map_t *rsrc_raw_map = NULL;
 
     gchar *raw_data = NULL;
 
     /* Sanity check */
-    if (!bin_data || bin_length < 1) return NULL;
+    if (!bin_data || bin_length < 1) {
+        return NULL;
+    }
 
     rsrc_fork = g_try_new0(rsrc_fork_t, 1);
-    if (!rsrc_fork) return NULL;
+    if (!rsrc_fork) {
+        return NULL;
+    }
 
 #if GLIB_CHECK_VERSION(2, 68, 0)
     raw_data = g_memdup2(bin_data, bin_length);
 #else
     raw_data = g_memdup(bin_data, bin_length);
 #endif
-    if (!raw_data) return NULL;
+    if (!raw_data) {
+        return NULL;
+    }
 
     /* Read and fixup header */
-    rsrc_raw_header = (rsrc_raw_header_t *) raw_data;
+    rsrc_raw_header = (rsrc_raw_header_t *)raw_data;
     rsrc_raw_fixup_header(rsrc_raw_header);
 
     /* Read and fixup resource map */
-    rsrc_raw_map = (rsrc_raw_map_t *) (raw_data + rsrc_raw_header->map_offset);
+    rsrc_raw_map = (rsrc_raw_map_t *)(raw_data + rsrc_raw_header->map_offset);
     rsrc_raw_fixup_map(rsrc_raw_map);
 
     rsrc_fork->file_ref_num = rsrc_raw_map->file_ref_num;
     rsrc_fork->res_fork_attrs = rsrc_raw_map->res_fork_attrs;
 
     rsrc_fork->type_list = g_array_sized_new(FALSE, TRUE, sizeof(rsrc_type_t), rsrc_raw_map->num_types_minus_one + 1);
-    if (!rsrc_fork->type_list) return NULL;
+    if (!rsrc_fork->type_list) {
+        return NULL;
+    }
 
     /* Loop through resource types */
     for (gint t = 0; t < rsrc_raw_map->num_types_minus_one + 1; t++) {
-        rsrc_raw_type_t *rsrc_raw_type = (rsrc_raw_type_t *) (raw_data + rsrc_raw_header->map_offset +
-                                         rsrc_raw_map->type_list_offset + 2 /* note: needed */ +
-                                         sizeof(rsrc_raw_type_t) * t);
-        rsrc_type_t     type_entry;
+        rsrc_raw_type_t *rsrc_raw_type = (rsrc_raw_type_t *)(
+            raw_data + rsrc_raw_header->map_offset +
+            rsrc_raw_map->type_list_offset + 2 /* note: needed */ +
+            sizeof(rsrc_raw_type_t) * t
+        );
+        rsrc_type_t type_entry;
 
         rsrc_raw_fixup_type(rsrc_raw_type);
 
         type_entry.type.as_int = rsrc_raw_type->type.as_int;
 
         type_entry.ref_list = g_array_sized_new(FALSE, TRUE, sizeof(rsrc_ref_t), rsrc_raw_type->num_refs_minus_one + 1);
-        if (!type_entry.ref_list) return NULL;
+        if (!type_entry.ref_list) {
+            return NULL;
+        }
 
         g_array_append_val(rsrc_fork->type_list, type_entry);
 
         /* Loop through resource references */
         for (gint r = 0; r < rsrc_raw_type->num_refs_minus_one + 1; r++) {
-            rsrc_raw_ref_t *rsrc_raw_ref = (rsrc_raw_ref_t *) (raw_data + rsrc_raw_header->map_offset +
-                                           rsrc_raw_map->type_list_offset + rsrc_raw_type->ref_offset +
-                                           sizeof(rsrc_raw_ref_t) * r);
-            rsrc_ref_t     ref_entry;
+            rsrc_raw_ref_t *rsrc_raw_ref = (rsrc_raw_ref_t *)(
+                raw_data + rsrc_raw_header->map_offset +
+                rsrc_raw_map->type_list_offset + rsrc_raw_type->ref_offset +
+                sizeof(rsrc_raw_ref_t) * r
+            );
+            rsrc_ref_t ref_entry;
 
             rsrc_raw_fixup_ref(rsrc_raw_ref);
 
@@ -412,21 +450,27 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
             ref_entry.attrs = rsrc_raw_ref->attrs;
 
             if (rsrc_raw_ref->name_offset != -1) {
-                gchar *rsrc_raw_name = (gchar *) (raw_data + rsrc_raw_header->map_offset +
-                                       rsrc_raw_map->name_list_offset + rsrc_raw_ref->name_offset);
+                gchar *rsrc_raw_name = (gchar *)(
+                    raw_data + rsrc_raw_header->map_offset +
+                    rsrc_raw_map->name_list_offset + rsrc_raw_ref->name_offset
+                );
 
                 ref_entry.name = g_string_new_len(rsrc_raw_name + 1, *rsrc_raw_name);
             } else {
                 ref_entry.name = g_string_new("");
             }
-            if (!ref_entry.name) return NULL;
+            if (!ref_entry.name) {
+                return NULL;
+            }
 
-            guint32 rsrc_data_offset = (rsrc_raw_ref->data_offset[2] << 16) +
-                                       (rsrc_raw_ref->data_offset[1] << 8) +
-                                       rsrc_raw_ref->data_offset[0];
+            guint32 rsrc_data_offset = (
+                (rsrc_raw_ref->data_offset[2] << 16) +
+                (rsrc_raw_ref->data_offset[1] << 8) +
+                rsrc_raw_ref->data_offset[0]
+            );
 
-            guint32 *rsrc_data_length = (guint32 *) (raw_data + rsrc_raw_header->data_offset + rsrc_data_offset);
-            gchar   *rsrc_data_ptr = (gchar *) (rsrc_data_length + 1);
+            guint32 *rsrc_data_length = (guint32 *)(raw_data + rsrc_raw_header->data_offset + rsrc_data_offset);
+            gchar *rsrc_data_ptr = (gchar *)(rsrc_data_length + 1);
 
             *rsrc_data_length = GUINT32_FROM_BE(*rsrc_data_length);
             ref_entry.data_length = *rsrc_data_length;
@@ -440,7 +484,9 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 #else
                 ref_entry.data = g_memdup(rsrc_data_ptr, *rsrc_data_length);
 #endif
-                if (!ref_entry.data) return NULL;
+                if (!ref_entry.data) {
+                    return NULL;
+                }
             } else {
                 ref_entry.data = NULL;
             }
@@ -456,7 +502,9 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 
 gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork)
 {
-    if (!rsrc_fork) return FALSE;
+    if (!rsrc_fork) {
+        return FALSE;
+    }
 
     for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
         rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);

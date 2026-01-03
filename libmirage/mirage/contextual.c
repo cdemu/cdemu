@@ -111,7 +111,7 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
     }
 
     /* Error, warning or debug; in any case, if name is set, print it
-       before the actual message */
+     * before the actual message */
     if (level == MIRAGE_DEBUG_ERROR) {
         if (name) {
             g_log(domain, G_LOG_LEVEL_ERROR, "%s: ", name);
@@ -375,15 +375,15 @@ GType mirage_contextual_get_type (void) {
     if (iface_type == 0) {
         static const GTypeInfo info = {
             sizeof(MirageContextualInterface),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            NULL,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            NULL, /* class_init */
+            NULL, /* class_finalize */
+            NULL, /* class_data */
             0,
-            0,      /* n_preallocs */
-            NULL,   /* instance_init */
-            NULL    /* value_table */
+            0, /* n_preallocs */
+            NULL, /* instance_init */
+            NULL  /* value_table */
         };
 
         iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageContextual", &info, 0);

@@ -25,17 +25,17 @@ void mirage_ddm_block_fix_endian (driver_descriptor_map_t *ddm_block)
 {
     g_assert(ddm_block);
 
-    ddm_block->block_size   = GUINT16_FROM_BE(ddm_block->block_size);
-    ddm_block->block_count  = GUINT32_FROM_BE(ddm_block->block_count);
-    ddm_block->device_type  = GUINT16_FROM_BE(ddm_block->device_type);
-    ddm_block->device_id    = GUINT16_FROM_BE(ddm_block->device_id);
-    ddm_block->driver_data  = GUINT32_FROM_BE(ddm_block->driver_data);
+    ddm_block->block_size = GUINT16_FROM_BE(ddm_block->block_size);
+    ddm_block->block_count = GUINT32_FROM_BE(ddm_block->block_count);
+    ddm_block->device_type = GUINT16_FROM_BE(ddm_block->device_type);
+    ddm_block->device_id = GUINT16_FROM_BE(ddm_block->device_id);
+    ddm_block->driver_data = GUINT32_FROM_BE(ddm_block->driver_data);
     ddm_block->driver_count = GUINT16_FROM_BE(ddm_block->driver_count);
 
     for (gint i = 0; i < 8; i++) {
         ddm_block->driver_map[i].block = GUINT32_FROM_BE(ddm_block->driver_map[i].block);
-        ddm_block->driver_map[i].size  = GUINT16_FROM_BE(ddm_block->driver_map[i].size);
-        ddm_block->driver_map[i].type  = GUINT16_FROM_BE(ddm_block->driver_map[i].type);
+        ddm_block->driver_map[i].size = GUINT16_FROM_BE(ddm_block->driver_map[i].size);
+        ddm_block->driver_map[i].type = GUINT16_FROM_BE(ddm_block->driver_map[i].type);
     }
 
     /* skip reserved */
@@ -45,17 +45,17 @@ void mirage_apm_entry_block_fix_endian (apm_entry_t *pme_block)
 {
     g_assert(pme_block);
 
-    pme_block->map_entries   = GUINT32_FROM_BE(pme_block->map_entries);
-    pme_block->pblock_start  = GUINT32_FROM_BE(pme_block->pblock_start);
-    pme_block->pblock_count  = GUINT32_FROM_BE(pme_block->pblock_count);
-    pme_block->lblock_start  = GUINT32_FROM_BE(pme_block->lblock_start);
-    pme_block->lblock_count  = GUINT32_FROM_BE(pme_block->lblock_count);
-    pme_block->flags         = GUINT32_FROM_BE(pme_block->flags);
-    pme_block->boot_block    = GUINT32_FROM_BE(pme_block->boot_block);
-    pme_block->boot_bytes    = GUINT32_FROM_BE(pme_block->boot_bytes);
-    pme_block->load_address  = GUINT32_FROM_BE(pme_block->load_address);
+    pme_block->map_entries = GUINT32_FROM_BE(pme_block->map_entries);
+    pme_block->pblock_start = GUINT32_FROM_BE(pme_block->pblock_start);
+    pme_block->pblock_count = GUINT32_FROM_BE(pme_block->pblock_count);
+    pme_block->lblock_start = GUINT32_FROM_BE(pme_block->lblock_start);
+    pme_block->lblock_count = GUINT32_FROM_BE(pme_block->lblock_count);
+    pme_block->flags = GUINT32_FROM_BE(pme_block->flags);
+    pme_block->boot_block = GUINT32_FROM_BE(pme_block->boot_block);
+    pme_block->boot_bytes = GUINT32_FROM_BE(pme_block->boot_bytes);
+    pme_block->load_address = GUINT32_FROM_BE(pme_block->load_address);
     pme_block->load_address2 = GUINT32_FROM_BE(pme_block->load_address2);
-    pme_block->goto_address  = GUINT32_FROM_BE(pme_block->goto_address);
+    pme_block->goto_address = GUINT32_FROM_BE(pme_block->goto_address);
     pme_block->goto_address2 = GUINT32_FROM_BE(pme_block->goto_address2);
     pme_block->boot_checksum = GUINT32_FROM_BE(pme_block->boot_checksum);
 
@@ -66,22 +66,22 @@ void mirage_gpt_header_fix_endian (gpt_header_t *gpt_header)
 {
     g_assert(gpt_header);
 
-    gpt_header->revision    = GUINT32_FROM_LE(gpt_header->revision);
+    gpt_header->revision = GUINT32_FROM_LE(gpt_header->revision);
     gpt_header->header_size = GUINT32_FROM_LE(gpt_header->header_size);
-    gpt_header->header_crc  = GUINT32_FROM_LE(gpt_header->header_crc);
-    gpt_header->reserved    = GUINT32_FROM_LE(gpt_header->reserved);
-    gpt_header->lba_header  = GUINT64_FROM_LE(gpt_header->lba_header);
-    gpt_header->lba_backup  = GUINT64_FROM_LE(gpt_header->lba_backup);
-    gpt_header->lba_start   = GUINT64_FROM_LE(gpt_header->lba_start);
-    gpt_header->lba_end     = GUINT64_FROM_LE(gpt_header->lba_end);
+    gpt_header->header_crc = GUINT32_FROM_LE(gpt_header->header_crc);
+    gpt_header->reserved = GUINT32_FROM_LE(gpt_header->reserved);
+    gpt_header->lba_header = GUINT64_FROM_LE(gpt_header->lba_header);
+    gpt_header->lba_backup = GUINT64_FROM_LE(gpt_header->lba_backup);
+    gpt_header->lba_start = GUINT64_FROM_LE(gpt_header->lba_start);
+    gpt_header->lba_end = GUINT64_FROM_LE(gpt_header->lba_end);
 
     gpt_header->guid.as_int[0] = GUINT64_FROM_LE(gpt_header->guid.as_int[0]);
     gpt_header->guid.as_int[1] = GUINT64_FROM_LE(gpt_header->guid.as_int[1]);
 
-    gpt_header->lba_gpt_table  = GUINT64_FROM_LE(gpt_header->lba_gpt_table);
-    gpt_header->gpt_entries    = GUINT32_FROM_LE(gpt_header->gpt_entries);
+    gpt_header->lba_gpt_table = GUINT64_FROM_LE(gpt_header->lba_gpt_table);
+    gpt_header->gpt_entries = GUINT32_FROM_LE(gpt_header->gpt_entries);
     gpt_header->gpt_entry_size = GUINT32_FROM_LE(gpt_header->gpt_entry_size);
-    gpt_header->crc_gpt_table  = GUINT32_FROM_LE(gpt_header->crc_gpt_table);
+    gpt_header->crc_gpt_table = GUINT32_FROM_LE(gpt_header->crc_gpt_table);
 }
 
 void mirage_gpt_entry_fix_endian (gpt_entry_t *gpt_entry)
@@ -93,8 +93,8 @@ void mirage_gpt_entry_fix_endian (gpt_entry_t *gpt_entry)
     gpt_entry->guid.as_int[0] = GUINT64_FROM_LE(gpt_entry->guid.as_int[0]);
     gpt_entry->guid.as_int[1] = GUINT64_FROM_LE(gpt_entry->guid.as_int[1]);
 
-    gpt_entry->lba_start  = GUINT64_FROM_LE(gpt_entry->lba_start);
-    gpt_entry->lba_end    = GUINT64_FROM_LE(gpt_entry->lba_end);
+    gpt_entry->lba_start = GUINT64_FROM_LE(gpt_entry->lba_start);
+    gpt_entry->lba_end = GUINT64_FROM_LE(gpt_entry->lba_end);
     gpt_entry->attributes = GUINT64_FROM_LE(gpt_entry->attributes);
 }
 

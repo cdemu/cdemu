@@ -54,12 +54,12 @@ typedef enum _MirageSectorSubchannelFormat
  */
 typedef enum _MirageSectorValidData
 {
-    MIRAGE_VALID_SYNC      = 0x01,
-    MIRAGE_VALID_HEADER    = 0x02,
+    MIRAGE_VALID_SYNC = 0x01,
+    MIRAGE_VALID_HEADER = 0x02,
     MIRAGE_VALID_SUBHEADER = 0x04,
-    MIRAGE_VALID_DATA      = 0x08,
-    MIRAGE_VALID_EDC_ECC   = 0x10,
-    MIRAGE_VALID_SUBCHAN   = 0x20,
+    MIRAGE_VALID_DATA = 0x08,
+    MIRAGE_VALID_EDC_ECC = 0x10,
+    MIRAGE_VALID_SUBCHAN = 0x20,
 } MirageSectorValidData;
 
 

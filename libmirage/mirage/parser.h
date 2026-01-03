@@ -74,7 +74,7 @@ struct _MirageParser
 
     /*< private >*/
     MirageParserPrivate *priv;
-} ;
+};
 
 /**
  * MirageParserClass:

@@ -30,34 +30,37 @@ G_BEGIN_DECLS
 
 
 /* Image type */
-typedef enum {
-    DATA      = 0x01,
-    MIXED     = 0x02,
-    MUSIC     = 0x03,
+typedef enum
+{
+    DATA = 0x01,
+    MIXED = 0x02,
+    MUSIC = 0x03,
     ENCHANCED = 0x04,
-    VIDEO     = 0x05,
-    BOOTABLE  = 0x06,
-    MP3       = 0x07
+    VIDEO = 0x05,
+    BOOTABLE = 0x06,
+    MP3 = 0x07
 } CIF_Image;
 
 /* Session type */
-typedef enum {
-    CDDA    = 0x00,
-    CDROM   = 0x01,
+typedef enum
+{
+    CDDA = 0x00,
+    CDROM = 0x01,
     CDROMXA = 0x03
 } CIF_Session;
 
 /* Track type */
-typedef enum {
-    AUDIO       = 0x00, /* Audio */
-    MODE1       = 0x01, /* Mode 1 */
+typedef enum
+{
+    AUDIO = 0x00, /* Audio */
+    MODE1 = 0x01, /* Mode 1 */
     MODE2_FORM1 = 0x02, /* Mode 2 Form 1 (not verified!) */
     MODE2_MIXED = 0x04  /* Mode 2 Mixed */
 } CIF_Track;
 
 /* The CIF file format is compatible with the joint IBM/Microsoft
-Resource Interchange File Format (RIFF) standard of 1991, see references:
-http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
+ * Resource Interchange File Format (RIFF) standard of 1991, see references:
+ * http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
 */
 
 #define CIF_MIN_TRACK_LEN 300 /* Minimum amount of frames per track */

@@ -370,10 +370,8 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
     gint size_full;
 
     /* Calculate 'full' sector size:
-        -> track data + subchannel data, if there's internal subchannel
-        -> track data, if there's external or no subchannel
-    */
-
+     *  - track data + subchannel data, if there's internal subchannel
+     *  - track data, if there's external or no subchannel */
     size_full = self->priv->main_size;
     if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, adding %d to sector size %d\n", __debug__, self->priv->subchannel_size, size_full);
@@ -382,7 +380,7 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
 
     /* We assume address is relative address */
     /* guint64 casts are required so that the product us 64-bit; product of two
-       32-bit integers would be 32-bit, which would be truncated at overflow... */
+     * 32-bit integers would be 32-bit, which would be truncated at overflow... */
     return self->priv->main_offset + (guint64)address * (guint64)size_full;
 }
 
@@ -415,7 +413,7 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
     }
 
     /* We need a stream to read data from... but if it's missing, we
-       don't read anything and this is not considered an error */
+     * don't read anything and this is not considered an error */
     if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no main channel data input stream!\n", __debug__);
         return TRUE;
@@ -483,7 +481,7 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     }
 
     /* Validate the size of data we are given with our set main channel
-       data size */
+     * data size */
     if (length != self->priv->main_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: mismatch between given data (%d) and set main channel data size (%d)!\n", __debug__, length, self->priv->main_size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Mismatch between given data (%d) and set main channel data size (%d)!"), length, self->priv->main_size);
@@ -491,7 +489,7 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     }
 
     /* We need a stream to write data... but if it's missing, we don't
-       write anything and this is not considered an error */
+     * write anything and this is not considered an error */
     if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no main channel data output stream!\n", __debug__);
         return TRUE;
@@ -684,14 +682,14 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
     if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __debug__);
         /* Subchannel is contained in track file; get position in track file
-           for that sector, and add to it length of track data sector */
+         * for that sector, and add to it length of track data sector */
         offset = mirage_fragment_main_data_get_position(self, address);
         offset += self->priv->main_size;
     } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __debug__);
         /* We assume address is relative address */
         /* guint64 casts are required so that the product us 64-bit; product of two
-           32-bit integers would be 32-bit, which would be truncated at overflow... */
+         * 32-bit integers would be 32-bit, which would be truncated at overflow... */
         offset = self->priv->subchannel_offset + (guint64)address * (guint64)self->priv->subchannel_size;
     }
 
@@ -733,7 +731,7 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
     }
 
     /* We need a stream to read data from... but if it's missing, we
-       don't read anything and this is not considered an error */
+     * don't read anything and this is not considered an error */
     if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using main channel stream\n", __debug__);
         stream = self->priv->main_stream;
@@ -762,7 +760,7 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
         /* We read into temporary buffer, because we might need to perform some
-           magic on the data */
+         * magic on the data */
         mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
         read_len = mirage_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL);
 
@@ -774,10 +772,10 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
         }
 
         /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
-           we transform it into that here... less fuss for upper level stuff this way */
+         * we transform it into that here... less fuss for upper level stuff this way */
         if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR) {
             /* 96-byte deinterleaved PW; grab each subchannel and interleave it
-               into destination buffer */
+             * into destination buffer */
             for (gint i = 0; i < 8; i++) {
                 mirage_helper_subchannel_interleave(7 - i, raw_buffer + i*12, data_buffer);
             }
@@ -824,7 +822,7 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     }
 
     /* Validate the size of data we are given with 96, which is what
-       we accept here */
+     * we accept here */
     if (length != 96) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: mismatch between given data (%d) and accepted subchannel size (%d)!\n", __debug__, length, 96);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Mismatch between given data (%d) and accepted subchannel size (%d)!"), length, 96);
@@ -832,7 +830,7 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     }
 
     /* We need a stream to write data to... but if it's missing, we
-       don't write anything and this is not considered an error */
+     * don't write anything and this is not considered an error */
     if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using main channel stream\n", __debug__);
         stream = self->priv->main_stream;

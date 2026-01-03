@@ -31,32 +31,36 @@
 G_BEGIN_DECLS
 
 
-typedef enum {
-    CD          = 0x00, /* CD-ROM */
-    CD_R        = 0x01, /* CD-R */
-    CD_RW       = 0x02, /* CD-RW */
-    DVD         = 0x10, /* DVD-ROM */
-    DVD_MINUS_R = 0x12  /* DVD-R */
+typedef enum
+{
+    CD = 0x00, /* CD-ROM */
+    CD_R = 0x01, /* CD-R */
+    CD_RW = 0x02, /* CD-RW */
+    DVD = 0x10, /* DVD-ROM */
+    DVD_MINUS_R = 0x12 /* DVD-R */
 } MDS_Medium;
 
-typedef enum {
-    UNKNOWN     = 0x00,
-    AUDIO       = 0xA9, /* sector size = 2352 */
-    MODE1       = 0xAA, /* sector size = 2048 */
-    MODE2       = 0xAB, /* sector size = 2336 */
+typedef enum
+{
+    UNKNOWN = 0x00,
+    AUDIO = 0xA9, /* sector size = 2352 */
+    MODE1 = 0xAA, /* sector size = 2048 */
+    MODE2 = 0xAB, /* sector size = 2336 */
     MODE2_FORM1 = 0xAC, /* sector size = 2048 */
-    MODE2_FORM2 = 0xAD  /* sector size = 2324 (+4) */
+    MODE2_FORM2 = 0xAD /* sector size = 2324 (+4) */
 } MDS_TrackMode;
 
-typedef enum {
-    NONE           = 0x00, /* no subchannel */
-    PW_INTERLEAVED = 0x08  /* 96-byte PW subchannel, interleaved */
+typedef enum
+{
+    NONE = 0x00, /* no subchannel */
+    PW_INTERLEAVED = 0x08 /* 96-byte PW subchannel, interleaved */
 } MDS_SubChan;
 
-typedef enum {
-    TRACK_FIRST   = 0xA0, /* info about first track */
-    TRACK_LAST    = 0xA1, /* info about last track  */
-    TRACK_LEADOUT = 0xA2  /* info about lead-out    */
+typedef enum
+{
+    TRACK_FIRST = 0xA0, /* info about first track */
+    TRACK_LAST = 0xA1, /* info about last track  */
+    TRACK_LEADOUT = 0xA2 /* info about lead-out    */
 } MDS_Point;
 
 #pragma pack(1)
@@ -99,7 +103,7 @@ typedef struct
     guint8 subchannel; /* Subchannel mode */
 
     /* These are the fields from Sub-channel Q information, which are
-       also returned in full TOC by READ TOC/PMA/ATIP command */
+     * also returned in full TOC by READ TOC/PMA/ATIP command */
     guint8 adr_ctl; /* Adr/Ctl */
     guint8 tno; /* Track number field */
     guint8 point; /* Point field (= track number for track entries) */

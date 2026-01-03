@@ -49,7 +49,7 @@ struct _MiragePluginPrivate
 
     void (*mirage_plugin_load_plugin) (MiragePlugin *module);
     void (*mirage_plugin_unload_plugin) (MiragePlugin *module);
-} ;
+};
 
 typedef enum
 {
@@ -98,8 +98,8 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
     }
 
     /* Note: we bind locally to avoid potential name clashes, and we
-       do *not* do lazy bind, because if there are unresolved symbols
-       in the plugin, we want the loading to fail immediately */
+     * do *not* do lazy bind, because if there are unresolved symbols
+     * in the plugin, we want the loading to fail immediately */
     self->priv->library = g_module_open(self->priv->filename, G_MODULE_BIND_LOCAL);
     if (!self->priv->library) {
         g_warning("%s: plugin %s\n", __func__, g_module_error());
@@ -107,9 +107,9 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
     }
 
     /* Make sure that the loaded library contains the 'mirage_plugin_soversion_major'
-       and 'mirage_plugin_soversion_minor' symbols, which represent the
-       ABI version that plugin was built against; make sure it is compatible
-       with ABI version provided by the lib */
+     * and 'mirage_plugin_soversion_minor' symbols, which represent the
+     * ABI version that plugin was built against; make sure it is compatible
+     * with ABI version provided by the lib */
     if (!g_module_symbol(self->priv->library, "mirage_plugin_soversion_major", (gpointer *)&plugin_soversion_major)) {
         g_warning("%s: plugin %s: does not contain 'mirage_plugin_soversion_major'!\n", __func__, self->priv->filename);
         g_module_close(self->priv->library);
@@ -123,7 +123,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
     }
 
     /* Major versions must match, and plugin's minor version must be less
-       or equal to library's minor version */
+     * or equal to library's minor version */
     if (*plugin_soversion_major != mirage_soversion_major || *plugin_soversion_minor > mirage_soversion_minor) {
         g_warning("%s: plugin %s: is built against incompatible ABI (%d.%d vs. %d.%d)!\n", __func__, self->priv->filename, *plugin_soversion_major, *plugin_soversion_minor, mirage_soversion_major, mirage_soversion_minor);
         g_module_close(self->priv->library);

@@ -220,7 +220,6 @@ static void add_crc_to_pack (CDTextEncodedPack *pack)
 static void mirage_cdtext_encoder_initialize_pack (MirageCdTextCoder *self, gint block, gint type, gint track, gint carry_len)
 {
     if (!self->priv->cur_pack->pack_type) {
-        /*g_debug("%s: Empty pack, initializing\n", __debug__);*/
         self->priv->cur_pack->pack_type = type;
         if (type != MIRAGE_LANGUAGE_PACK_SIZE) {
             self->priv->cur_pack->track_number = track;
@@ -241,18 +240,15 @@ static void mirage_cdtext_encoder_initialize_pack (MirageCdTextCoder *self, gint
         self->priv->blocks[block].seq_count++;
         self->priv->blocks[block].pack_count[type-0x80]++;
         self->priv->length++;
-    } else {
-        /*g_debug("%s: Pack already initialized (0x%X)\n", __debug__, encoder->cur_pack->pack_type);*/
     }
 }
 
 static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDecodedPack *pack) {
     /* If current pack is already initialized and the data we're trying to pack
-       is if different type, open new pack; this way, we don't have to check if
-       the language has changed (if it has, so has the pack type... from 0x8F
-       to 0x8X */
+     * is if different type, open new pack; this way, we don't have to check if
+     * the language has changed (if it has, so has the pack type... from 0x8F
+     * to 0x8X */
     if (self->priv->cur_pack->pack_type && (pack->pack_type != self->priv->cur_pack->pack_type)) {
-        /*g_debug("%s: Different pack type, open new pack!\n", __debug__);*/
         self->priv->cur_pack++;
         self->priv->cur_pack_fill = 0;
     }
@@ -265,7 +261,6 @@ static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDe
 
         /* If the current pack is full, open a new one */
         if (self->priv->cur_pack_fill == 12) {
-            /*g_debug("%s: Current pack full, moving to next!\n", __debug__);*/
             /* Open new pack */
             self->priv->cur_pack++;
             self->priv->cur_pack_fill = 0;
@@ -274,7 +269,6 @@ static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDe
         mirage_cdtext_encoder_initialize_pack(self, pack->block_number, pack->pack_type, pack->track_number, carry_len);
 
         copy_len = MIN(12 - self->priv->cur_pack_fill, cur_len);
-        /*g_debug("%s: Copying %i bytes (cur_len = %i, cur_fill = %i)\n", __debug__, copy_len, cur_len, encoder->cur_pack_fill);*/
 
         memcpy(self->priv->cur_pack->data+self->priv->cur_pack_fill, ptr, copy_len);
 
@@ -427,8 +421,8 @@ void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint code, gint ty
     self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
 
     /* Set the number of first track that has language... this is not
-       very reliable, but I do believe all tracks from now on are
-       required by specs to have language block? */
+     * very reliable, but I do believe all tracks from now on are
+     * required by specs to have language block? */
     if (!self->priv->blocks[block].first_track) {
         self->priv->blocks[block].first_track = track;
     }
@@ -605,7 +599,6 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
 
         while (self->priv->cur_pack < self->priv->blocks[block].size_info) {
             if (self->priv->cur_pack->pack_type != (self->priv->cur_pack - 1)->pack_type) {
-                /*g_debug("%s: new pack type, resetting strings...\n", __debug__);*/
                 memset(tmp_buffer, 0xFF, sizeof(tmp_buffer));
                 tmp_len = 0;
                 ptr = tmp_buffer;
@@ -624,9 +617,9 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
             tmp_len += copy_len;
 
             /* The way of the lazy programmer (TM)... we set whole string to 0xFF
-               and then wait 'till we get terminating 0 at the end :D (we also need
-               to check whether string doesn't contain just "\0", which keeps getting
-               returned once we hit the padding at the end of a pack types...) */
+             * and then wait 'till we get terminating 0 at the end :D (we also need
+             * to check whether string doesn't contain just "\0", which keeps getting
+             * returned once we hit the padding at the end of a pack types...) */
             if (!tmp_buffer[tmp_len-1] && strlen(tmp_buffer)) {
                 /* Pack the data and add it to the list; as simple as that... */
                 CDTextDecodedPack *pack_data = g_new0(CDTextDecodedPack, 1);
@@ -648,13 +641,12 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
                 ptr = tmp_buffer;
 
                 /* Increase track number; this is to account for strings too short
-                   to cause switch to next pack, whose track number is consequently
-                   stored nowhere... */
+                 * to cause switch to next pack, whose track number is consequently
+                 * stored nowhere... */
                 cur_track++;
             }
 
             if (self->priv->cur_pack_fill == 12) {
-                /*g_debug("%s: reached the end of packet, going to the next one\n");*/
                 self->priv->cur_pack_fill = 0;
                 self->priv->cur_pack++;
                 /* Set current track number */
@@ -688,7 +680,6 @@ gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint blo
         return FALSE;
     }
     if (!self->priv->blocks[block].code) {
-        /* FIXME: error */
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Requested block %d has no language code set!"), block);
         return FALSE;
     }

@@ -153,10 +153,10 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
 
                 /* Data track size mismatch is usually found on mixed-mode
-                   CDs... it seems to be around 152 sectors. 150 come from
-                   the pregap between data and following audio tracks. No
-                   idea where the 2 come from, though (we'll put it all into
-                   next track's pregap) */
+                 * CDs... it seems to be around 152 sectors. 150 come from
+                 * the pregap between data and following audio tracks. No
+                 * idea where the 2 come from, though (we'll put it all into
+                 * next track's pregap) */
                 self->priv->set_pregap = track_info->size - fragment_length;
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compensating data track size difference with %d sector pregap to next track\n", __debug__, self->priv->set_pregap);
             }
@@ -213,7 +213,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             if (self->priv->xinf_track.preemp) flags |= MIRAGE_TRACK_FLAG_PREEMPHASIS;
 
             /* This is valid only for audio track (because data track in non-stereo
-               by default */
+             * by default */
             if ((TrackType) track_info->type == AUDIO && !self->priv->xinf_track.stereo) {
                 flags |= MIRAGE_TRACK_FLAG_FOURCHANNEL;
             }
@@ -240,7 +240,8 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
 \**********************************************************************/
 typedef gboolean (*XCDROAST_RegexCallback) (MirageParserXcdroast *self, GMatchInfo *match_info, GError **error);
 
-typedef struct {
+typedef struct
+{
     GRegex *regex;
     XCDROAST_RegexCallback callback_func;
 } XCDROAST_RegexRule;
@@ -758,9 +759,9 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
     }
 
     /* *** Additional check ***
-       Because cdrdao also uses .toc for its images, we need to make
-       sure this one was created by X-CD-Roast... for that, we check for
-       of comment containing "X-CD-Roast" */
+     * Because cdrdao also uses .toc for its images, we need to make
+     * sure this one was created by X-CD-Roast... for that, we check for
+     * of comment containing "X-CD-Roast" */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking for comment containing \"X-CD-Roast\"...\n", __debug__);
 
     data_stream = mirage_parser_create_text_stream(MIRAGE_PARSER(self), stream, NULL);
@@ -858,7 +859,7 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, Mirag
     succeeded = mirage_parser_xcdroast_parse_toc_file(self, streams[0], error);
     if (succeeded) {
         /* Verify layout length (this has to be done before Red Book pregap
-           is added... */
+         * is added... */
         gint layout_length = mirage_disc_layout_get_length(self->priv->disc);
         if (layout_length != self->priv->disc_info.cdsize) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: layout size mismatch! Declared %d sectors, actual layout size: %d\n", __debug__, self->priv->disc_info.cdsize, layout_length);

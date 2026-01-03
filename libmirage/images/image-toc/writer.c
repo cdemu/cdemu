@@ -84,16 +84,22 @@ static void mirage_writer_toc_rename_track_image_files (MirageWriterToc *self, M
             extension = mirage_helper_get_suffix(original_filename) + 1; /* +1 to skip the '.' */
 
             if (num_sessions == 1) {
-                new_filename = mirage_helper_format_string(data_file_format,
+                new_filename = mirage_helper_format_string(
+                    data_file_format,
                     "b", g_variant_new_string(self->priv->image_file_basename),
                     "t", g_variant_new_int16(track),
-                    "e", g_variant_new_string(extension), NULL);
+                    "e", g_variant_new_string(extension),
+                    NULL
+                );
             } else {
-                new_filename = mirage_helper_format_string(data_file_format,
+                new_filename = mirage_helper_format_string(
+                    data_file_format,
                     "b", g_variant_new_string(self->priv->image_file_basename),
                     "s", g_variant_new_int16(1),
                     "t", g_variant_new_int16(track),
-                    "e", g_variant_new_string(extension), NULL);
+                    "e", g_variant_new_string(extension),
+                    NULL
+                );
             }
 
             /* Move */
@@ -116,22 +122,22 @@ static void mirage_writer_toc_rename_track_image_files (MirageWriterToc *self, M
 
 static void dump_language (GString *toc_contents, gint index, MirageLanguage *language)
 {
-    static struct {
+    static const struct {
         gchar *pack_id;
         gint pack_type;
     } packs[] = {
-        { "TITLE", MIRAGE_LANGUAGE_PACK_TITLE },
-        { "PERFORMER", MIRAGE_LANGUAGE_PACK_PERFORMER },
-        { "SONGWRITER", MIRAGE_LANGUAGE_PACK_SONGWRITER },
-        { "COMPOSER", MIRAGE_LANGUAGE_PACK_COMPOSER },
-        { "ARRANGER", MIRAGE_LANGUAGE_PACK_ARRANGER },
-        { "MESSAGE", MIRAGE_LANGUAGE_PACK_MESSAGE },
-        { "DISC_ID", MIRAGE_LANGUAGE_PACK_DISC_ID },
-        /*{ "GENRE", MIRAGE_LANGUAGE_PACK_GENRE },*/
-        /*{ "TOC_INFO1", MIRAGE_LANGUAGE_PACK_TOC },*/
-        /*{ "TOC_INFO2", MIRAGE_LANGUAGE_PACK_TOC2 },*/
-        { "UPC_EAN", MIRAGE_LANGUAGE_PACK_UPC_ISRC },
-        /*{ "SIZE_INFO", MIRAGE_LANGUAGE_PACK_SIZE },*/
+        {"TITLE", MIRAGE_LANGUAGE_PACK_TITLE},
+        {"PERFORMER", MIRAGE_LANGUAGE_PACK_PERFORMER},
+        {"SONGWRITER", MIRAGE_LANGUAGE_PACK_SONGWRITER},
+        {"COMPOSER", MIRAGE_LANGUAGE_PACK_COMPOSER},
+        {"ARRANGER", MIRAGE_LANGUAGE_PACK_ARRANGER},
+        {"MESSAGE", MIRAGE_LANGUAGE_PACK_MESSAGE},
+        {"DISC_ID", MIRAGE_LANGUAGE_PACK_DISC_ID},
+        /*{"GENRE", MIRAGE_LANGUAGE_PACK_GENRE},*/
+        /*{"TOC_INFO1", MIRAGE_LANGUAGE_PACK_TOC},*/
+        /*{"TOC_INFO2", MIRAGE_LANGUAGE_PACK_TOC2},*/
+        {"UPC_EAN", MIRAGE_LANGUAGE_PACK_UPC_ISRC},
+        /*{"SIZE_INFO", MIRAGE_LANGUAGE_PACK_SIZE},*/
     };
 
     g_string_append_printf(toc_contents, "  LANGUAGE %d {\n", index);
@@ -346,8 +352,8 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
                 /* Pregap fragment */
                 if (i == 0 && j == 0) {
                     /* TOC does not list first track's pregap. Unless it
-                       is greater than standard 150? But the first fragment
-                       (j == 0) always model the standard pregap */
+                     * is greater than standard 150? But the first fragment
+                     * (j == 0) always model the standard pregap */
                     g_free(length_msf);
                     g_object_unref(fragment);
                     continue;
@@ -368,7 +374,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
         if (track_start) {
             if (i == 0) {
                 /* First track is a special case, since TOC does not list
-                   its standard 150-sector pregap */
+                 * its standard 150-sector pregap */
                 if (track_start <= 150) {
                     g_object_unref(track);
                     continue;
@@ -401,14 +407,20 @@ static gboolean mirage_writer_toc_create_toc_files (MirageWriterToc *self, Mirag
         /* Format TOC filename */
         if (num_sessions > 1) {
             /* If we have more than one session, we put session number
-               in TOC file name */
-            filename = mirage_helper_format_string(toc_file_format,
+             * in TOC file name */
+            filename = mirage_helper_format_string(
+                toc_file_format,
                 "b", g_variant_new_string(self->priv->image_file_basename),
-                "s", g_variant_new_int16(mirage_session_layout_get_session_number(session)), NULL);
+                "s", g_variant_new_int16(mirage_session_layout_get_session_number(session)),
+                NULL
+            );
         } else {
             /* Single session */
-            filename = mirage_helper_format_string(toc_file_format,
-                "b", g_variant_new_string(self->priv->image_file_basename), NULL);
+            filename = mirage_helper_format_string(
+                toc_file_format,
+                "b", g_variant_new_string(self->priv->image_file_basename),
+                NULL
+            );
         }
 
         /* Store in our array */
@@ -560,23 +572,32 @@ static MirageFragment *mirage_writer_toc_create_fragment (MirageWriter *_self, M
 
     if (session_number > 1) {
         /* If session number is greater than one, we need to specify
-           both session and track number */
-        filename = mirage_helper_format_string(data_file_format,
+         * both session and track number */
+        filename = mirage_helper_format_string(
+            data_file_format,
             "b", g_variant_new_string(self->priv->image_file_basename),
             "s", g_variant_new_int16(session_number),
             "t", g_variant_new_int16(track_number),
-            "e", g_variant_new_string(extension), NULL);
+            "e", g_variant_new_string(extension),
+            NULL
+        );
     } else if (track_number > 1) {
         /* If track number is greater than one, we need to specify it */
-        filename = mirage_helper_format_string(data_file_format,
+        filename = mirage_helper_format_string(
+            data_file_format,
             "b", g_variant_new_string(self->priv->image_file_basename),
             "t", g_variant_new_int16(track_number),
-            "e", g_variant_new_string(extension), NULL);
+            "e", g_variant_new_string(extension),
+            NULL
+        );
     } else {
         /* First track of first session; specify only basename and extension */
-        filename = mirage_helper_format_string(data_file_format,
+        filename = mirage_helper_format_string(
+            data_file_format,
             "b", g_variant_new_string(self->priv->image_file_basename),
-            "e", g_variant_new_string(extension), NULL);
+            "e", g_variant_new_string(extension),
+            NULL
+        );
     }
 
     /* I/O stream */
@@ -590,7 +611,7 @@ static MirageFragment *mirage_writer_toc_create_fragment (MirageWriter *_self, M
     mirage_fragment_main_data_set_stream(fragment, stream);
 
     /* We keep a list of streams for images of tracks in first session,
-       because we might need to rename them */
+     * because we might need to rename them */
     if (session_number == 1) {
         self->priv->image_file_streams = g_list_append(self->priv->image_file_streams, g_object_ref(stream));
     }

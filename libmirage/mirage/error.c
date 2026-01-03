@@ -56,7 +56,7 @@ GQuark mirage_error_quark (void)
 }
 
 
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
+#define ENUM_ENTRY(NAME, DESC) {NAME, "" #NAME "", DESC}
 GType mirage_error_get_type (void)
 {
     static GType type = 0;
@@ -76,7 +76,7 @@ GType mirage_error_get_type (void)
             ENUM_ENTRY(MIRAGE_ERROR_CANNOT_HANDLE, "CannotHandle"),
             ENUM_ENTRY(MIRAGE_ERROR_ENCRYPTED_IMAGE, "EncryptedImage"),
             ENUM_ENTRY(MIRAGE_ERROR_WRITER_ERROR, "WriterError"),
-            { 0, 0, 0 }
+            {0, 0, 0}
         };
 
         type = g_enum_register_static("MirageError", values);

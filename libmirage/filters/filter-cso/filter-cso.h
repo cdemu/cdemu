@@ -31,16 +31,18 @@ G_BEGIN_DECLS
 
 
 #pragma pack(1)
+
 typedef struct
 {
-    gchar   magic[4];       /* "CISO" signature                   */
-    guint32 header_size;    /* One tool fail to set this value    */
-    guint64 total_bytes;    /* Uncompressed data size             */
-    guint32 block_size;     /* Uncompressed sector size           */
-    guint8  version;        /* Version                            */
-    guint8  idx_align;      /* Alignment of index value = 2^align */
-    guint16 reserved;       /* Reserved                           */
-} ciso_header_t;            /* Length: 24 bytes                   */
+    gchar magic[4]; /* "CISO" signature */
+    guint32 header_size; /* One tool fail to set this value */
+    guint64 total_bytes; /* Uncompressed data size */
+    guint32 block_size; /* Uncompressed sector size */
+    guint8 version; /* Version */
+    guint8 idx_align; /* Alignment of index value = 2^align */
+    guint16 reserved; /* Reserved */
+} ciso_header_t; /* Length: 24 bytes */
+
 #pragma pack()
 
 

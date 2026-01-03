@@ -109,10 +109,13 @@ typedef gboolean (*MirageEnumFilterStreamInfoCallback) (const MirageFilterStream
  *
  * Structure containing debug mask information.
  */
-typedef struct {
+struct _MirageDebugMaskInfo
+{
     gchar *name;
     gint value;
-} MirageDebugMaskInfo;
+};
+
+typedef struct _MirageDebugMaskInfo MirageDebugMaskInfo;
 
 
 /* *** libMirage API *** */

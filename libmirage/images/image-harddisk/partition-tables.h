@@ -30,36 +30,38 @@ G_BEGIN_DECLS
 
 
 /* APM Partition Map Flags */
-#define APM_VALID         0x00000001
-#define APM_ALLOCATED     0x00000002
-#define APM_IN_USE        0x00000004
-#define APM_BOOTABLE      0x00000008
-#define APM_READABLE      0x00000010
-#define APM_WRITABLE      0x00000020
-#define APM_OS_PIC_CODE   0x00000040
+#define APM_VALID 0x00000001
+#define APM_ALLOCATED 0x00000002
+#define APM_IN_USE 0x00000004
+#define APM_BOOTABLE 0x00000008
+#define APM_READABLE 0x00000010
+#define APM_WRITABLE 0x00000020
+#define APM_OS_PIC_CODE 0x00000040
 #define APM_OS_SPECIFIC_2 0x00000080
 #define APM_OS_SPECIFIC_1 0x00000100
 /* bits 9..31 are reserved */
 
 /* GPT Partition Map Attributes */
-#define GPT_SYSTEM_PARTITION     0x0000000000000001
+#define GPT_SYSTEM_PARTITION 0x0000000000000001
 #define GPT_LEGACY_BIOS_BOOTABLE 0x0000000000000004
-#define GPT_READ_ONLY            0x1000000000000000
-#define GPT_SHADOW_COPY          0x2000000000000000
-#define GPT_HIDDEN               0x4000000000000000
-#define GPT_DO_NOT_AUTOMOUNT     0x8000000000000000
+#define GPT_READ_ONLY 0x1000000000000000
+#define GPT_SHADOW_COPY 0x2000000000000000
+#define GPT_HIDDEN 0x4000000000000000
+#define GPT_DO_NOT_AUTOMOUNT 0x8000000000000000
 
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     guint32 block; /* driver's block start, block_size-blocks */
     guint16 size; /* driver's block count, 512-blocks */
     guint16 type; /* driver's system type */
 } driver_descriptor_table_t; /* length: 8 bytes */
 
-typedef struct {
-    gchar   signature[2]; /* "ER" */
+typedef struct
+{
+    gchar signature[2]; /* "ER" */
     guint16 block_size; /* block size for this device */
     guint32 block_count; /* block count for this device */
     guint16 device_type; /* device type */
@@ -69,17 +71,18 @@ typedef struct {
 
     driver_descriptor_table_t driver_map[8]; /* driver_descriptor_table */
 
-    guint8  reserved[430]; /* reserved for future use */
+    guint8 reserved[430]; /* reserved for future use */
 } driver_descriptor_map_t; /* length: 512 bytes */
 
-typedef struct {
-    gchar   signature[2]; /* "PM" */
+typedef struct
+{
+    gchar signature[2]; /* "PM" */
     guint16 reserved1; /* zero padding */
     guint32 map_entries; /* number of partition entries */
     guint32 pblock_start; /* physical block start of partition */
     guint32 pblock_count; /* physical block count of partition */
-    gchar   part_name[32]; /* name of partition */
-    gchar   part_type[32]; /* type of partition, eg. Apple_HFS */
+    gchar part_name[32]; /* name of partition */
+    gchar part_type[32]; /* type of partition, eg. Apple_HFS */
     guint32 lblock_start; /* logical block start of partition */
     guint32 lblock_count; /* logical block count of partition */
     guint32 flags; /* See APM_* macros */
@@ -90,53 +93,56 @@ typedef struct {
     guint32 goto_address; /* jump address in memory of boot code */
     guint32 goto_address2; /* reserved for future use */
     guint32 boot_checksum; /* checksum of boot code */
-    gchar   processor_id[16]; /* processor type */
+    gchar processor_id[16]; /* processor type */
     guint32 reserved2[32]; /* reserved for future use */
     guint32 reserved3[62]; /* reserved for future use */
 } apm_entry_t; /* length: 512 bytes */
 
-typedef struct {
-	guint32 time_low;
-	guint16 time_mid;
-	guint16 time_hi_and_version;
-	guint8  clock_seq_hi_and_reserved;
-	guint8  clock_seq_low;
-	guint8  node[6];
+typedef struct
+{
+    guint32 time_low;
+    guint16 time_mid;
+    guint16 time_hi_and_version;
+    guint8 clock_seq_hi_and_reserved;
+    guint8 clock_seq_low;
+    guint8 node[6];
 } guid_t; /* length: 16 bytes */
 
-typedef struct {
-	gchar   signature[8]; /* "EFI PART" */
-	guint32 revision;
-	guint32 header_size;
-	guint32 header_crc;
-	guint32 reserved;
-	guint64 lba_header;
-	guint64 lba_backup;
-	guint64 lba_start;
-	guint64 lba_end;
-	union {
-	    guid_t  as_guid;
-	    guint64 as_int[2];
+typedef struct
+{
+    gchar signature[8]; /* "EFI PART" */
+    guint32 revision;
+    guint32 header_size;
+    guint32 header_crc;
+    guint32 reserved;
+    guint64 lba_header;
+    guint64 lba_backup;
+    guint64 lba_start;
+    guint64 lba_end;
+    union {
+        guid_t as_guid;
+        guint64 as_int[2];
     } guid;
-	guint64 lba_gpt_table;
-	guint32 gpt_entries;
-	guint32 gpt_entry_size;
-	guint32 crc_gpt_table;
+    guint64 lba_gpt_table;
+    guint32 gpt_entries;
+    guint32 gpt_entry_size;
+    guint32 crc_gpt_table;
 } gpt_header_t; /* length: 92 bytes */
 
-typedef struct {
+typedef struct
+{
     union {
-        guid_t  as_guid; /* Zero indicates unused entry */
+        guid_t as_guid; /* Zero indicates unused entry */
         guint64 as_int[2];
     } type;
     union {
-    	guid_t  as_guid;
-    	guint64 as_int[2];
+        guid_t as_guid;
+        guint64 as_int[2];
     } guid;
-	guint64 lba_start;
-	guint64 lba_end;
-	guint64 attributes; /* See GPT_* macros */
-	guint16 name[36]; /* UTF-16 */
+    guint64 lba_start;
+    guint64 lba_end;
+    guint64 attributes; /* See GPT_* macros */
+    guint16 name[36]; /* UTF-16 */
 } gpt_entry_t; /* length: 128 bytes */
 
 #pragma pack()

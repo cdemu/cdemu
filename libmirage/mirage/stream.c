@@ -187,15 +187,15 @@ GType mirage_stream_get_type (void) {
     if (iface_type == 0) {
         static const GTypeInfo info = {
             sizeof(MirageStreamInterface),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            NULL,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
+            NULL, /* base_init */
+            NULL, /* base_finalize */
+            NULL, /* class_init */
+            NULL, /* class_finalize */
+            NULL, /* class_data */
             0,
-            0,      /* n_preallocs */
-            NULL,   /* instance_init */
-            NULL    /* value_table */
+            0, /* n_preallocs */
+            NULL, /* instance_init */
+            NULL /* value_table */
         };
 
         iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageStream", &info, 0);
