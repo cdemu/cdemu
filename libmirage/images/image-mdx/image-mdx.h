@@ -28,6 +28,8 @@
 
 #include <glib/gi18n-lib.h>
 
+#include <gcrypt.h>
+
 #include "parser.h"
 
 G_BEGIN_DECLS
@@ -185,6 +187,15 @@ guint8 *mdx_crypto_decipher_and_decompress_descriptor(
     guint8 *data,
     const gsize length,
     const MDX_EncryptionHeader *header,
+    GError **error
+);
+
+gboolean mdx_crypto_decipher_buffer_lrw (
+    gcry_cipher_hd_t crypt_handle,
+    guint8 *data,
+    gsize len,
+    const guint8 *tweak_key,
+    guint64 sector_number,
     GError **error
 );
 

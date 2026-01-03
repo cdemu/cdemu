@@ -11,6 +11,7 @@ pkg_check_modules(LIBGCRYPT REQUIRED libgcrypt IMPORTED_TARGET)
 if(ZLIB_FOUND AND LIBGCRYPT_FOUND)
     add_library(${image_name} MODULE
         crypto.c
+        fragment.c
         parser.c
         plugin.c
     )

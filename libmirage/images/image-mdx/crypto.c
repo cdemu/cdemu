@@ -103,7 +103,7 @@ static void gf_mul_128 (const guint128_bbe *a, const guint128_bbe *b, guint128_b
 /**********************************************************************\
  *                         AES-256 with LRW                           *
 \**********************************************************************/
-static gboolean
+gboolean
 mdx_crypto_decipher_buffer_lrw (
     gcry_cipher_hd_t crypt_handle,
     guint8 *data,

@@ -22,8 +22,7 @@
  */
 
 #include "image-mdx.h"
-
-#include <gcrypt.h>
+#include "fragment.h"
 
 #define __debug__ "MDX-Parser"
 
@@ -447,23 +446,38 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
              * length in the track's extra block (minus pregap, if any). */
             gint64 fragment_len = footer_block->track_data_length;
 
-            /* Create data fragment */
-            MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+            /* Create custom MDX data fragment */
+            GError *local_error = NULL;
+            gboolean succeeded;
 
-            mirage_fragment_set_length(fragment, fragment_len);
+            MirageFragmentMdx *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_MDX, NULL);
 
-            /* Set stream */
-            mirage_fragment_main_data_set_stream(fragment, data_stream);
+            succeeded = mirage_fragment_mdx_setup(
+                fragment,
+                fragment_len,
+                data_stream,
+                main_offset,
+                main_size,
+                main_format,
+                subchannel_size,
+                subchannel_format,
+                self->priv->data_encryption_header,
+                &local_error
+            );
+
             g_object_unref(data_stream);
 
-            mirage_fragment_main_data_set_offset(fragment, main_offset);
-            mirage_fragment_main_data_set_size(fragment, main_size);
-            mirage_fragment_main_data_set_format(fragment, main_format);
+            if (!succeeded) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up MDX data fragment: %s!\n", __debug__, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up MDX data fragment: %s!"), local_error->message);
+                g_error_free(local_error);
+                g_object_unref(fragment);
+                g_object_unref(track);
+                g_object_unref(session);
+                return FALSE;
+            }
 
-            mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
-            mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
-
-            mirage_track_add_fragment(track, -1, fragment);
+            mirage_track_add_fragment(track, -1, MIRAGE_FRAGMENT(fragment));
             g_object_unref(fragment);
         }
 
