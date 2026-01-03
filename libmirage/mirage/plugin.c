@@ -53,7 +53,8 @@ struct _MiragePluginPrivate
 
 typedef enum
 {
-    PROPERTY_FILENAME = 1,
+    PROP_0,
+    PROP_FILENAME,
 } MiragePluginProperties;
 
 
@@ -189,7 +190,7 @@ static void mirage_plugin_get_property (GObject *gobject, guint property_id, GVa
 {
     MiragePlugin *self = MIRAGE_PLUGIN(gobject);
     switch (property_id) {
-        case PROPERTY_FILENAME: {
+        case PROP_FILENAME: {
             g_value_set_string(value, self->priv->filename);
             break;
         }
@@ -205,7 +206,7 @@ static void mirage_plugin_set_property (GObject *gobject, guint property_id, con
 {
     MiragePlugin *self = MIRAGE_PLUGIN(gobject);
     switch (property_id) {
-        case PROPERTY_FILENAME: {
+        case PROP_FILENAME: {
             g_free(self->priv->filename);
             self->priv->filename = g_value_dup_string(value);
             break;
@@ -223,6 +224,7 @@ static void mirage_plugin_class_init (MiragePluginClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GTypeModuleClass *gmodule_class = G_TYPE_MODULE_CLASS(klass);
+    GParamSpec *pspec;
 
     gobject_class->finalize = mirage_plugin_finalize;
     gobject_class->get_property = mirage_plugin_get_property;
@@ -232,5 +234,12 @@ static void mirage_plugin_class_init (MiragePluginClass *klass)
     gmodule_class->unload = mirage_plugin_unload_module;
 
     /* Install properties */
-    g_object_class_install_property(gobject_class, PROPERTY_FILENAME, g_param_spec_string("filename", "Filename", "The filename of the module", NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+    pspec = g_param_spec_string(
+        "filename", /* name */
+        NULL, /* nick */
+        "The filename of the plugin/module.", /* blurb */
+        NULL, /* default_value */
+        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY /* flags */
+    );
+    g_object_class_install_property(gobject_class, PROP_FILENAME, pspec);
 }

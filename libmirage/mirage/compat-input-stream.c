@@ -32,6 +32,12 @@ struct _MirageCompatInputStreamPrivate
     MirageStream *stream;
 };
 
+enum
+{
+    PROP_0,
+    PROP_STREAM,
+};
+
 
 G_DEFINE_TYPE_WITH_PRIVATE(MirageCompatInputStream, mirage_compat_input_stream, G_TYPE_INPUT_STREAM)
 
@@ -49,18 +55,6 @@ static gssize mirage_compat_input_stream_read (GInputStream *_self, void *buffer
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-enum {
-    PROP_0,
-
-    PROP_STREAM,
-
-    N_PROPERTIES
-};
-
-static GParamSpec *mirage_compat_input_stream_properties[N_PROPERTIES] = {
-    NULL,
-};
-
 static void mirage_compat_input_stream_init (MirageCompatInputStream *self)
 {
     self->priv = mirage_compat_input_stream_get_instance_private(self);
@@ -89,7 +83,7 @@ static void mirage_compat_input_stream_set_property (GObject *gobject, guint pro
 
     switch (property_id) {
         case PROP_STREAM: {
-            self->priv->stream = g_object_ref(g_value_get_pointer(value));
+            self->priv->stream = MIRAGE_STREAM(g_object_ref(g_value_get_object(value)));
             return;
         }
     }
@@ -103,18 +97,24 @@ static void mirage_compat_input_stream_class_init (MirageCompatInputStreamClass 
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS(klass);
+    GParamSpec *pspec;
 
     gobject_class->dispose = mirage_compat_input_stream_dispose;
     gobject_class->set_property = mirage_compat_input_stream_set_property;
 
     ginputstream_class->read_fn = mirage_compat_input_stream_read;
 
-    /* Register properties */
-    mirage_compat_input_stream_properties[PROP_STREAM] = g_param_spec_pointer(
-        "stream",
-        "mirage-stream",
-        "Base MirageStream object.",
-        G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE);
-
-    g_object_class_install_properties(gobject_class, N_PROPERTIES, mirage_compat_input_stream_properties);
+    /* Install properties */
+    /* NOTE: we cannot use MIRAGE_TYPE_STREAM with `g_param_spec_object()`,
+     * because it defines an interface rather than the object type; use
+     * G_TYPE_OBJECT instead, as we expect the passed object to be derived
+     * from GObject. */
+    pspec = g_param_spec_object(
+        "stream", /* name */
+        NULL, /* nick */
+        "Base MirageStream object.", /* blurb */
+        G_TYPE_OBJECT, /* object_type - see note above */
+        G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE /* flags */
+    );
+    g_object_class_install_property(gobject_class, PROP_STREAM, pspec);
 }
