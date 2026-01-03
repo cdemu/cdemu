@@ -26,7 +26,7 @@ static const guint8 mdx_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E'
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserMdxPrivate
 {
@@ -35,6 +35,20 @@ struct _MirageParserMdxPrivate
     const gchar *mdx_filename;
     MirageStream *stream;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserMdx,
+    mirage_parser_mdx,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserMdx)
+)
+
+void mirage_parser_mdx_type_register (GTypeModule *type_module)
+{
+    mirage_parser_mdx_register_type(type_module);
+}
 
 
 static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, MirageStream *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
@@ -371,20 +385,6 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserMdx,
-    mirage_parser_mdx,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserMdx)
-)
-
-void mirage_parser_mdx_type_register (GTypeModule *type_module)
-{
-    mirage_parser_mdx_register_type(type_module);
-}
-
-
 static void mirage_parser_mdx_init (MirageParserMdx *self)
 {
     self->priv = mirage_parser_mdx_get_instance_private(self);

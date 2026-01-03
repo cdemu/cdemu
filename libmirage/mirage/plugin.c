@@ -40,7 +40,7 @@
 
 
 /**********************************************************************\
- *                         Private structure                          *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MiragePluginPrivate
 {
@@ -55,6 +55,9 @@ typedef enum
 {
     PROPERTY_FILENAME = 1,
 } MiragePluginProperties;
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MiragePlugin, mirage_plugin, G_TYPE_TYPE_MODULE)
 
 
 /**********************************************************************\
@@ -162,9 +165,6 @@ static void mirage_plugin_unload_module (GTypeModule *_self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MiragePlugin, mirage_plugin, G_TYPE_TYPE_MODULE)
-
-
 static void mirage_plugin_init (MiragePlugin *self)
 {
     self->priv = mirage_plugin_get_instance_private(self);
@@ -232,5 +232,5 @@ static void mirage_plugin_class_init (MiragePluginClass *klass)
     gmodule_class->unload = mirage_plugin_unload_module;
 
     /* Install properties */
-    g_object_class_install_property(gobject_class, PROPERTY_FILENAME, g_param_spec_string ("filename", "Filename", "The filename of the module", NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+    g_object_class_install_property(gobject_class, PROPERTY_FILENAME, g_param_spec_string("filename", "Filename", "The filename of the module", NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 }

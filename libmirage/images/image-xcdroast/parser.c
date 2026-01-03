@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                           Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserXcdroastPrivate
 {
@@ -45,6 +45,20 @@ struct _MirageParserXcdroastPrivate
 
     gint set_pregap;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserXcdroast,
+    mirage_parser_xcdroast,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserXcdroast)
+)
+
+void mirage_parser_xcdroast_type_register (GTypeModule *type_module)
+{
+    mirage_parser_xcdroast_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -875,20 +889,6 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, Mirag
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserXcdroast,
-    mirage_parser_xcdroast,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserXcdroast)
-)
-
-void mirage_parser_xcdroast_type_register (GTypeModule *type_module)
-{
-    mirage_parser_xcdroast_register_type(type_module);
-}
-
-
 static void mirage_parser_xcdroast_init (MirageParserXcdroast *self)
 {
     self->priv = mirage_parser_xcdroast_get_instance_private(self);

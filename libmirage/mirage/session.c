@@ -39,7 +39,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageSessionPrivate
 {
@@ -62,7 +62,10 @@ struct _MirageSessionPrivate
 
     /* CD-Text list */
     GList *languages_list;
-} ;
+};
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageSession, mirage_session, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -1499,9 +1502,6 @@ MirageSession *mirage_session_get_next (MirageSession *self, GError **error)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageSession, mirage_session, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_session_init (MirageSession *self)
 {
     MirageTrack *track;

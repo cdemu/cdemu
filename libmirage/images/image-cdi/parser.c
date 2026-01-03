@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserCdiPrivate
 {
@@ -38,6 +38,20 @@ struct _MirageParserCdiPrivate
     guint8 *cdi_data;
     guint8 *cur_ptr;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCdi,
+    mirage_parser_cdi,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCdi)
+)
+
+void mirage_parser_cdi_type_register (GTypeModule *type_module)
+{
+    mirage_parser_cdi_register_type(type_module);
+}
 
 
 /* NOTE: as far as my experiments show, descriptor has the following structure:
@@ -1007,20 +1021,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserCdi,
-    mirage_parser_cdi,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserCdi)
-)
-
-void mirage_parser_cdi_type_register (GTypeModule *type_module)
-{
-    mirage_parser_cdi_register_type(type_module);
-}
-
-
 static void mirage_parser_cdi_init (MirageParserCdi *self)
 {
     self->priv = mirage_parser_cdi_get_instance_private(self);

@@ -48,7 +48,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFragmentPrivate
 {
@@ -65,6 +65,9 @@ struct _MirageFragmentPrivate
     gint subchannel_format; /* Subchannel data format */
     guint64 subchannel_offset; /* Offset in subchannel data file */
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageFragment, mirage_fragment, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -894,9 +897,6 @@ gboolean mirage_fragment_is_writable (MirageFragment *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageFragment, mirage_fragment, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_fragment_init (MirageFragment *self)
 {
     self->priv = mirage_fragment_get_instance_private(self);

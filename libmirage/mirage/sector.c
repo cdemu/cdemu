@@ -37,7 +37,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageSectorPrivate
 {
@@ -50,6 +50,9 @@ struct _MirageSectorPrivate
     guint8 subchan_pw[96]; /* Buffer for interleaved PW subchannel */
     guint8 subchan_q[16]; /* Buffer for deinterleaved Q subchannel */
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageSector, mirage_sector, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -1687,9 +1690,6 @@ void mirage_sector_scramble (MirageSector *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageSector, mirage_sector, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_sector_init (MirageSector *self)
 {
     self->priv = mirage_sector_get_instance_private(self);

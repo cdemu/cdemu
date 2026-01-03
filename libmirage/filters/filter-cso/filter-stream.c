@@ -28,11 +28,11 @@ typedef struct
     gboolean raw;
 } CSO_Part;
 
-static const guint8 ciso_signature[4] = { 'C', 'I', 'S', 'O' };
+static const guint8 ciso_signature[4] = {'C', 'I', 'S', 'O'};
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamCsoPrivate
 {
@@ -55,6 +55,20 @@ struct _MirageFilterStreamCsoPrivate
     /* Zlib stream */
     z_stream zlib_stream;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamCso,
+    mirage_filter_stream_cso,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamCso)
+)
+
+void mirage_filter_stream_cso_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_cso_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -330,20 +344,6 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamCso,
-    mirage_filter_stream_cso,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamCso)
-)
-
-void mirage_filter_stream_cso_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_cso_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_cso_init (MirageFilterStreamCso *self)
 {
     self->priv = mirage_filter_stream_cso_get_instance_private(self);

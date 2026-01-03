@@ -29,7 +29,7 @@ static const guint8 disc_signature[4] = { 'd', 'i', 's', 'c' };
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserCifPrivate
 {
@@ -53,6 +53,20 @@ struct _MirageParserCifPrivate
 
     gint prev_track_mode;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCif,
+    mirage_parser_cif,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCif)
+)
+
+void mirage_parser_cif_type_register (GTypeModule *type_module)
+{
+    mirage_parser_cif_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -738,20 +752,6 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserCif,
-    mirage_parser_cif,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserCif)
-)
-
-void mirage_parser_cif_type_register (GTypeModule *type_module)
-{
-    mirage_parser_cif_register_type(type_module);
-}
-
-
 static void mirage_parser_cif_init (MirageParserCif *self)
 {
     self->priv = mirage_parser_cif_get_instance_private(self);

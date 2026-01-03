@@ -23,6 +23,10 @@
 #define __debug__ "Device"
 
 
+/* Object definition */
+G_DEFINE_TYPE_WITH_PRIVATE(CdemuDevice, cdemu_device, MIRAGE_TYPE_OBJECT)
+
+
 /**********************************************************************\
  *                              Device ID                             *
 \**********************************************************************/
@@ -321,8 +325,6 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(CdemuDevice, cdemu_device, MIRAGE_TYPE_OBJECT)
-
 static void cdemu_device_init (CdemuDevice *self)
 {
     self->priv = cdemu_device_get_instance_private(self);

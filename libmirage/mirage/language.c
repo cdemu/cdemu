@@ -38,7 +38,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 typedef struct
 {
@@ -55,6 +55,9 @@ struct _MirageLanguagePrivate
     gint packs_number;
     MirageLanguage_Pack *packs;
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageLanguage, mirage_language, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -204,9 +207,6 @@ gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePack
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageLanguage, mirage_language, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_language_init (MirageLanguage *self)
 {
     self->priv = mirage_language_get_instance_private(self);

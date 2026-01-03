@@ -39,7 +39,7 @@ const gchar gbi_part_signature[16] = "GBI VOL";
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 typedef enum {
     COMPRESSION_NONE = 0x00,
@@ -123,10 +123,37 @@ struct _MirageFilterStreamDaaPrivate
 };
 
 
-/* Allocator for LZMA decoder */
-static void *lzma_alloc (void *p G_GNUC_UNUSED, size_t size) { return g_malloc0(size); }
-static void lzma_free (void *p G_GNUC_UNUSED, void *address) { g_free(address); }
-static ISzAlloc lzma_allocator = { lzma_alloc, lzma_free };
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamDaa,
+    mirage_filter_stream_daa,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamDaa)
+)
+
+void mirage_filter_stream_daa_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_daa_register_type(type_module);
+}
+
+
+/**********************************************************************\
+ *                  Memory allocator for LZMA decoder                 *
+\**********************************************************************/
+static void *lzma_alloc (void *p G_GNUC_UNUSED, size_t size)
+{
+    return g_malloc0(size);
+}
+
+static void lzma_free (void *p G_GNUC_UNUSED, void *address)
+{
+    g_free(address);
+}
+
+static ISzAlloc lzma_allocator = {
+    lzma_alloc,
+    lzma_free
+};
 
 
 /**********************************************************************\
@@ -1416,20 +1443,6 @@ static gssize mirage_filter_stream_daa_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamDaa,
-    mirage_filter_stream_daa,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamDaa)
-)
-
-void mirage_filter_stream_daa_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_daa_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_daa_init (MirageFilterStreamDaa *self)
 {
     self->priv = mirage_filter_stream_daa_get_instance_private(self);

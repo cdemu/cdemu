@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserCcdPrivate
 {
@@ -61,6 +61,20 @@ struct _MirageParserCcdPrivate
     GList *regex_rules_track;
     GList *regex_rules_cdtext;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCcd,
+    mirage_parser_ccd,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCcd)
+)
+
+void mirage_parser_ccd_type_register (GTypeModule *type_module)
+{
+    mirage_parser_ccd_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -1225,20 +1239,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserCcd,
-    mirage_parser_ccd,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserCcd)
-)
-
-void mirage_parser_ccd_type_register (GTypeModule *type_module)
-{
-    mirage_parser_ccd_register_type(type_module);
-}
-
-
 static void mirage_parser_ccd_init (MirageParserCcd *self)
 {
     self->priv = mirage_parser_ccd_get_instance_private(self);

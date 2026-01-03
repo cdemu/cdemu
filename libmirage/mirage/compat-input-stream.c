@@ -25,12 +25,15 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageCompatInputStreamPrivate
 {
     MirageStream *stream;
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageCompatInputStream, mirage_compat_input_stream, G_TYPE_INPUT_STREAM)
 
 
 /**********************************************************************\
@@ -46,8 +49,6 @@ static gssize mirage_compat_input_stream_read (GInputStream *_self, void *buffer
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageCompatInputStream, mirage_compat_input_stream, G_TYPE_INPUT_STREAM)
-
 enum {
     PROP_0,
 
@@ -56,7 +57,9 @@ enum {
     N_PROPERTIES
 };
 
-static GParamSpec *mirage_compat_input_stream_properties[N_PROPERTIES] = { NULL, };
+static GParamSpec *mirage_compat_input_stream_properties[N_PROPERTIES] = {
+    NULL,
+};
 
 static void mirage_compat_input_stream_init (MirageCompatInputStream *self)
 {

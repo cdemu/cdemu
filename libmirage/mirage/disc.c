@@ -44,7 +44,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageDiscPrivate
 {
@@ -71,6 +71,9 @@ struct _MirageDiscPrivate
     gint dpm_num_entries;
     guint32 *dpm_data;
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageDisc, mirage_disc, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -1561,9 +1564,6 @@ gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gd
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageDisc, mirage_disc, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_disc_init (MirageDisc *self)
 {
     self->priv = mirage_disc_get_instance_private(self);

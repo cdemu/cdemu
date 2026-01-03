@@ -26,7 +26,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamSndfilePrivate
 {
@@ -45,6 +45,20 @@ struct _MirageFilterStreamSndfilePrivate
     SRC_STATE *resampler;
     SRC_DATA resampler_data;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamSndfile,
+    mirage_filter_stream_sndfile,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamSndfile)
+)
+
+void mirage_filter_stream_sndfile_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_sndfile_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -389,20 +403,6 @@ static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_s
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamSndfile,
-    mirage_filter_stream_sndfile,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamSndfile)
-)
-
-void mirage_filter_stream_sndfile_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_sndfile_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_sndfile_init (MirageFilterStreamSndfile *self)
 {
     self->priv = mirage_filter_stream_sndfile_get_instance_private(self);

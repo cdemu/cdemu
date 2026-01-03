@@ -41,7 +41,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFileStreamPrivate
 {
@@ -56,6 +56,17 @@ struct _MirageFileStreamPrivate
     /* Filename the stream was opened on */
     gchar *filename;
 };
+
+
+static void mirage_file_stream_stream_init (MirageStreamInterface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(
+    MirageFileStream,
+    mirage_file_stream,
+    MIRAGE_TYPE_OBJECT,
+    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_file_stream_stream_init)
+    G_ADD_PRIVATE(MirageFileStream)
+)
 
 
 /**********************************************************************\
@@ -273,16 +284,6 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-static void mirage_file_stream_stream_init (MirageStreamInterface *iface);
-
-G_DEFINE_TYPE_WITH_CODE(
-    MirageFileStream,
-    mirage_file_stream,
-    MIRAGE_TYPE_OBJECT,
-    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_file_stream_stream_init)
-    G_ADD_PRIVATE(MirageFileStream)
-)
-
 static void mirage_file_stream_init (MirageFileStream *self)
 {
     self->priv = mirage_file_stream_get_instance_private(self);

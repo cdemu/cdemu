@@ -26,12 +26,12 @@
     if (field != expected) MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected value in field %s: expected 0x%X, got 0x%X\n", __debug__, #field, expected, field);
 
 
-static const guint8 b6t_signature[16] = { 'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'S', 'I', 'G', 'N' } ;
-static const guint8 b6t_footer[16]    = { 'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'F', 'O', 'O', 'T' } ;
+static const guint8 b6t_signature[16] = {'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'S', 'I', 'G', 'N'};
+static const guint8 b6t_footer[16] = {'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'F', 'O', 'O', 'T'};
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserB6tPrivate
 {
@@ -50,7 +50,21 @@ struct _MirageParserB6tPrivate
     gint32 prev_session_end;
 
     GList *data_blocks_list;
-} ;
+};
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserB6t,
+    mirage_parser_b6t,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserB6t)
+)
+
+void mirage_parser_b6t_type_register (GTypeModule *type_module)
+{
+    mirage_parser_b6t_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -1313,20 +1327,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserB6t,
-    mirage_parser_b6t,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserB6t)
-)
-
-void mirage_parser_b6t_type_register (GTypeModule *type_module)
-{
-    mirage_parser_b6t_register_type(type_module);
-}
-
-
 static void mirage_parser_b6t_init (MirageParserB6t *self)
 {
     self->priv = mirage_parser_b6t_get_instance_private(self);

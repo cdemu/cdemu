@@ -27,7 +27,7 @@ static guint8 c2d_signature2[] = { 'R', 'o', 'x', 'i', 'o', ' ', 'I', 'm', 'a', 
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserC2dPrivate
 {
@@ -42,6 +42,20 @@ struct _MirageParserC2dPrivate
     guint8 *c2d_data;
     gint c2d_data_length;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserC2d,
+    mirage_parser_c2d,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserC2d)
+)
+
+void mirage_parser_c2d_type_register (GTypeModule *type_module)
+{
+    mirage_parser_c2d_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -606,19 +620,6 @@ end:
 /******************************************************************************\
  *                                Object init                                 *
 \******************************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserC2d,
-    mirage_parser_c2d,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserC2d)
-)
-
-void mirage_parser_c2d_type_register (GTypeModule *type_module)
-{
-    mirage_parser_c2d_register_type(type_module);
-}
-
 static void mirage_parser_c2d_init (MirageParserC2d *self)
 {
     self->priv = mirage_parser_c2d_get_instance_private(self);

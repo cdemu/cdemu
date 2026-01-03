@@ -38,11 +38,11 @@ typedef struct
 } GZIP_Part;
 
 
-static const guint8 gzip_signature[2] = { 0x1F, 0x8B };
+static const guint8 gzip_signature[2] = {0x1F, 0x8B};
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamGzipPrivate
 {
@@ -66,6 +66,20 @@ struct _MirageFilterStreamGzipPrivate
     /* Zlib stream */
     z_stream zlib_stream;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamGzip,
+    mirage_filter_stream_gzip,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamGzip)
+)
+
+void mirage_filter_stream_gzip_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_gzip_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -471,20 +485,6 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamGzip,
-    mirage_filter_stream_gzip,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamGzip)
-)
-
-void mirage_filter_stream_gzip_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_gzip_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_gzip_init (MirageFilterStreamGzip *self)
 {
     self->priv = mirage_filter_stream_gzip_get_instance_private(self);

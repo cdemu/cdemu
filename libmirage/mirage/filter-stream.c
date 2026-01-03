@@ -56,7 +56,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamPrivate
 {
@@ -68,6 +68,17 @@ struct _MirageFilterStreamPrivate
     guint64 stream_length;
     goffset position;
 };
+
+
+static void mirage_filter_stream_stream_init (MirageStreamInterface *iface);
+
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE(
+    MirageFilterStream,
+    mirage_filter_stream,
+    MIRAGE_TYPE_OBJECT,
+    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_filter_stream_stream_init)
+    G_ADD_PRIVATE(MirageFilterStream)
+)
 
 
 /**********************************************************************\
@@ -473,17 +484,6 @@ static goffset mirage_filter_stream_tell_impl (MirageFilterStream *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-static void mirage_filter_stream_stream_init (MirageStreamInterface *iface);
-
-G_DEFINE_ABSTRACT_TYPE_WITH_CODE(
-    MirageFilterStream,
-    mirage_filter_stream,
-    MIRAGE_TYPE_OBJECT,
-    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_STREAM, mirage_filter_stream_stream_init)
-    G_ADD_PRIVATE(MirageFilterStream)
-)
-
-
 static void mirage_filter_stream_init (MirageFilterStream *self)
 {
     self->priv = mirage_filter_stream_get_instance_private(self);

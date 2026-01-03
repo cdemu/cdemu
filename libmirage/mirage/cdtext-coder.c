@@ -95,8 +95,8 @@ typedef struct
 
 
 /**********************************************************************\
- *                          Private structure                         *
-\***********************************************************************/
+ *                  Object and its private structure                  *
+\**********************************************************************/
 typedef struct
 {
     gint code; /* Language code */
@@ -129,6 +129,9 @@ struct _MirageCdTextCoderPrivate
 
     gint length; /* Overall length, in packs */
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageCdTextCoder, mirage_cdtext_coder, MIRAGE_TYPE_OBJECT)
 
 
 /***********************************************************************\
@@ -737,9 +740,6 @@ gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, Mi
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageCdTextCoder, mirage_cdtext_coder, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_cdtext_coder_init (MirageCdTextCoder *self)
 {
     self->priv = mirage_cdtext_coder_get_instance_private(self);

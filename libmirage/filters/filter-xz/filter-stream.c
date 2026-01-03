@@ -25,11 +25,11 @@
 #define MAX_BLOCK_SIZE 10485760 /* For performance reasons, we support only 10 MB blocks and smaller */
 
 
-static const guint8 xz_signature[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
+static const guint8 xz_signature[6] = {0xFD, '7', 'z', 'X', 'Z', 0x00};
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamXzPrivate
 {
@@ -48,6 +48,21 @@ struct _MirageFilterStreamXzPrivate
 
     lzma_index *index;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamXz,
+    mirage_filter_stream_xz,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamXz)
+)
+
+void mirage_filter_stream_xz_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_xz_register_type(type_module);
+}
+
 
 static gboolean mirage_filter_stream_xz_reallocate_read_buffer (MirageFilterStreamXz *self, gint size, GError **error)
 {
@@ -399,20 +414,6 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamXz,
-    mirage_filter_stream_xz,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamXz)
-)
-
-void mirage_filter_stream_xz_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_xz_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_xz_init (MirageFilterStreamXz *self)
 {
     self->priv = mirage_filter_stream_xz_get_instance_private(self);

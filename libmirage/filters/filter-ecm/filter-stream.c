@@ -38,7 +38,7 @@ static const guint8 ecm_signature[4] = { 'E', 'C', 'M', 0x00 };
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamEcmPrivate
 {
@@ -52,6 +52,20 @@ struct _MirageFilterStreamEcmPrivate
     gint cached_block;
     guint8 buffer[2352];
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamEcm,
+    mirage_filter_stream_ecm,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamEcm)
+)
+
+void mirage_filter_stream_ecm_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_ecm_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -500,20 +514,6 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamEcm,
-    mirage_filter_stream_ecm,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamEcm)
-)
-
-void mirage_filter_stream_ecm_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_ecm_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_ecm_init (MirageFilterStreamEcm *self)
 {
     self->priv = mirage_filter_stream_ecm_get_instance_private(self);

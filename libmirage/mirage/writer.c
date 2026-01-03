@@ -65,7 +65,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageWriterPrivate
 {
@@ -81,6 +81,9 @@ struct _MirageWriterPrivate
     /* Progress signalling */
     guint progress_step;
 };
+
+
+G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(MirageWriter, mirage_writer, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -791,9 +794,6 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(MirageWriter, mirage_writer, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_writer_init (MirageWriter *self)
 {
     self->priv = mirage_writer_get_instance_private(self);

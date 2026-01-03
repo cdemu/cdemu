@@ -38,7 +38,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageObjectPrivate
 {
@@ -46,6 +46,17 @@ struct _MirageObjectPrivate
 
     MirageContext *context;
 };
+
+
+static void mirage_object_contextual_init (MirageContextualInterface *iface);
+
+G_DEFINE_TYPE_WITH_CODE(
+    MirageObject,
+    mirage_object,
+    G_TYPE_OBJECT,
+    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init)
+    G_ADD_PRIVATE(MirageObject)
+)
 
 
 /**********************************************************************\
@@ -154,16 +165,6 @@ static MirageContext *mirage_object_get_context (MirageContextual *_self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-static void mirage_object_contextual_init (MirageContextualInterface *iface);
-
-G_DEFINE_TYPE_WITH_CODE(
-    MirageObject,
-    mirage_object,
-    G_TYPE_OBJECT,
-    G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init)
-    G_ADD_PRIVATE(MirageObject)
-)
-
 static void mirage_object_init (MirageObject *self)
 {
     self->priv = mirage_object_get_instance_private(self);

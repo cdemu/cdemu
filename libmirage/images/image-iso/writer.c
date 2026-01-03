@@ -28,7 +28,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageWriterIsoPrivate
 {
@@ -38,6 +38,21 @@ struct _MirageWriterIsoPrivate
 
     gboolean is_cd_rom;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageWriterIso,
+    mirage_writer_iso,
+    MIRAGE_TYPE_WRITER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageWriterIso)
+)
+
+void mirage_writer_iso_type_register (GTypeModule *type_module)
+{
+    mirage_writer_iso_register_type(type_module);
+}
+
 
 static const gchar *audio_filter_chain[] = {
     "MirageFilterStreamSndfile",
@@ -320,19 +335,6 @@ static gboolean mirage_writer_iso_finalize_image (MirageWriter *_self, MirageDis
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageWriterIso,
-    mirage_writer_iso,
-    MIRAGE_TYPE_WRITER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageWriterIso)
-)
-
-void mirage_writer_iso_type_register (GTypeModule *type_module)
-{
-    mirage_writer_iso_register_type(type_module);
-}
-
 static void mirage_writer_iso_init (MirageWriterIso *self)
 {
     self->priv = mirage_writer_iso_get_instance_private(self);

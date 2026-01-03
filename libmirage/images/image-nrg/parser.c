@@ -29,7 +29,7 @@ static const guint8 ner5_signature[4] = { 'N', 'E', 'R', '5' };
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserNrgPrivate
 {
@@ -57,6 +57,20 @@ struct _MirageParserNrgPrivate
     NRG_DAO_Block *dao_blocks;
     gint num_dao_blocks;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserNrg,
+    mirage_parser_nrg,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserNrg)
+)
+
+void mirage_parser_nrg_type_register (GTypeModule *type_module)
+{
+    mirage_parser_nrg_register_type(type_module);
+}
 
 
 typedef struct
@@ -1087,20 +1101,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserNrg,
-    mirage_parser_nrg,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserNrg)
-)
-
-void mirage_parser_nrg_type_register (GTypeModule *type_module)
-{
-    mirage_parser_nrg_register_type(type_module);
-}
-
-
 static void mirage_parser_nrg_init (MirageParserNrg *self)
 {
     self->priv = mirage_parser_nrg_get_instance_private(self);

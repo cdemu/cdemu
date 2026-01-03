@@ -46,12 +46,15 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserPrivate
 {
     MirageParserInfo info;
 };
+
+
+G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -367,9 +370,6 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_parser_init (MirageParser *self)
 {
     self->priv = mirage_parser_get_instance_private(self);

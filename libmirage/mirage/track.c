@@ -39,7 +39,7 @@
 
 
 /**********************************************************************\
- *                         Private structure                          *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageTrackPrivate
 {
@@ -67,6 +67,9 @@ struct _MirageTrackPrivate
     /* CD-Text list */
     GList *languages_list;
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageTrack, mirage_track, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -1570,9 +1573,6 @@ MirageTrack *mirage_track_get_next (MirageTrack *self, GError **error)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageTrack, mirage_track, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_track_init (MirageTrack *self)
 {
     self->priv = mirage_track_get_instance_private(self);

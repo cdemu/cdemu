@@ -28,7 +28,7 @@ static const guint8 mds_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E'
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserMdsPrivate
 {
@@ -42,6 +42,20 @@ struct _MirageParserMdsPrivate
     guint64 mds_length;
     guint8 *mds_data;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserMds,
+    mirage_parser_mds,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserMds)
+)
+
+void mirage_parser_mds_type_register (GTypeModule *type_module)
+{
+    mirage_parser_mds_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -871,20 +885,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserMds,
-    mirage_parser_mds,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserMds)
-)
-
-void mirage_parser_mds_type_register (GTypeModule *type_module)
-{
-    mirage_parser_mds_register_type(type_module);
-}
-
-
 static void mirage_parser_mds_init (MirageParserMds *self)
 {
     self->priv = mirage_parser_mds_get_instance_private(self);

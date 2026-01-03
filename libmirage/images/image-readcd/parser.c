@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserReadcdPrivate {
     MirageDisc *disc;
@@ -40,6 +40,20 @@ struct _MirageParserReadcdPrivate {
 
     gint prev_mode;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserReadcd,
+    mirage_parser_readcd,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserReadcd)
+)
+
+void mirage_parser_readcd_type_register (GTypeModule *type_module)
+{
+    mirage_parser_readcd_register_type(type_module);
+}
 
 
 static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, MirageStream *stream, GError **error)
@@ -471,20 +485,6 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, MirageS
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserReadcd,
-    mirage_parser_readcd,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserReadcd)
-)
-
-void mirage_parser_readcd_type_register (GTypeModule *type_module)
-{
-    mirage_parser_readcd_register_type(type_module);
-}
-
-
 static void mirage_parser_readcd_init (MirageParserReadcd *self)
 {
     self->priv = mirage_parser_readcd_get_instance_private(self);

@@ -47,7 +47,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageContextPrivate
 {
@@ -69,6 +69,9 @@ struct _MirageContextPrivate
     GHashTable *input_stream_cache;
     GHashTable *output_stream_cache;
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageContext, mirage_context, G_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -608,9 +611,6 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageContext, mirage_context, G_TYPE_OBJECT)
-
-
 static void mirage_context_init (MirageContext *self)
 {
     self->priv = mirage_context_get_instance_private(self);

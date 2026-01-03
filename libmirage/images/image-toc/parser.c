@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserTocPrivate
 {
@@ -61,6 +61,20 @@ struct _MirageParserTocPrivate
     /* Header matching for TOC file verification */
     GRegex *regex_header_ptr; /* Pointer, do not free! */
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserToc,
+    mirage_parser_toc,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserToc)
+)
+
+void mirage_parser_toc_type_register (GTypeModule *type_module)
+{
+    mirage_parser_toc_register_type(type_module);
+}
 
 
 enum
@@ -1317,20 +1331,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserToc,
-    mirage_parser_toc,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserToc)
-)
-
-void mirage_parser_toc_type_register (GTypeModule *type_module)
-{
-    mirage_parser_toc_register_type(type_module);
-}
-
-
 static void mirage_parser_toc_init (MirageParserToc *self)
 {
     self->priv = mirage_parser_toc_get_instance_private(self);

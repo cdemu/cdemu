@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserCuePrivate
 {
@@ -57,6 +57,20 @@ struct _MirageParserCuePrivate
     gint cdtext_length;
     guint8 *cdtext_data;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserCue,
+    mirage_parser_cue,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserCue)
+)
+
+void mirage_parser_cue_type_register (GTypeModule *type_module)
+{
+    mirage_parser_cue_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -1150,20 +1164,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserCue,
-    mirage_parser_cue,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserCue)
-)
-
-void mirage_parser_cue_type_register (GTypeModule *type_module)
-{
-    mirage_parser_cue_register_type(type_module);
-}
-
-
 static void mirage_parser_cue_init (MirageParserCue *self)
 {
     self->priv = mirage_parser_cue_get_instance_private(self);

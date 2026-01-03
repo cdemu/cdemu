@@ -23,6 +23,10 @@
 #define __debug__ "AudioPlay"
 
 
+/* Object definition */
+G_DEFINE_TYPE_WITH_PRIVATE(CdemuAudio, cdemu_audio, MIRAGE_TYPE_OBJECT)
+
+
 /**********************************************************************\
  *                          Playback functions                        *
 \**********************************************************************/
@@ -305,8 +309,6 @@ gint cdemu_audio_get_status (CdemuAudio *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(CdemuAudio, cdemu_audio, MIRAGE_TYPE_OBJECT)
-
 static void cdemu_audio_init (CdemuAudio *self)
 {
     self->priv = cdemu_audio_get_instance_private(self);

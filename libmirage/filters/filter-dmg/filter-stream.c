@@ -37,7 +37,7 @@ typedef struct {
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageFilterStreamDmgPrivate
 {
@@ -69,6 +69,20 @@ struct _MirageFilterStreamDmgPrivate
     z_stream  zlib_stream;
     bz_stream bzip2_stream;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageFilterStreamDmg,
+    mirage_filter_stream_dmg,
+    MIRAGE_TYPE_FILTER_STREAM,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamDmg)
+)
+
+void mirage_filter_stream_dmg_type_register (GTypeModule *type_module)
+{
+    mirage_filter_stream_dmg_register_type(type_module);
+}
 
 
 /**********************************************************************\
@@ -975,20 +989,6 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageFilterStreamDmg,
-    mirage_filter_stream_dmg,
-    MIRAGE_TYPE_FILTER_STREAM,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageFilterStreamDmg)
-)
-
-void mirage_filter_stream_dmg_type_register (GTypeModule *type_module)
-{
-    mirage_filter_stream_dmg_register_type(type_module);
-}
-
-
 static void mirage_filter_stream_dmg_init (MirageFilterStreamDmg *self)
 {
     self->priv = mirage_filter_stream_dmg_get_instance_private(self);

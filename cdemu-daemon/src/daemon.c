@@ -23,6 +23,10 @@
 #define __debug__ "Daemon"
 
 
+/* Object definition */
+G_DEFINE_TYPE_WITH_PRIVATE(CdemuDaemon, cdemu_daemon, MIRAGE_TYPE_OBJECT)
+
+
 /**********************************************************************\
  *                           Signal handlers                          *
 \**********************************************************************/
@@ -347,8 +351,6 @@ CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GEr
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(CdemuDaemon, cdemu_daemon, MIRAGE_TYPE_OBJECT)
-
 static void cdemu_daemon_init (CdemuDaemon *self)
 {
     self->priv = cdemu_daemon_get_instance_private(self);

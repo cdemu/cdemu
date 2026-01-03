@@ -36,13 +36,16 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageIndexPrivate
 {
     gint number;  /* Index' number */
     gint address; /* Index' start address (relative to track start) */
 };
+
+
+G_DEFINE_TYPE_WITH_PRIVATE(MirageIndex, mirage_index, MIRAGE_TYPE_OBJECT)
 
 
 /**********************************************************************\
@@ -107,9 +110,6 @@ gint mirage_index_get_address (MirageIndex *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE_WITH_PRIVATE(MirageIndex, mirage_index, MIRAGE_TYPE_OBJECT)
-
-
 static void mirage_index_init (MirageIndex *self)
 {
     self->priv = mirage_index_get_instance_private(self);

@@ -23,7 +23,7 @@
 
 
 /**********************************************************************\
- *                          Private structure                         *
+ *                  Object and its private structure                  *
 \**********************************************************************/
 struct _MirageParserHdPrivate
 {
@@ -34,6 +34,20 @@ struct _MirageParserHdPrivate
 
     gboolean needs_padding;
 };
+
+
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(
+    MirageParserHd,
+    mirage_parser_hd,
+    MIRAGE_TYPE_PARSER,
+    0,
+    G_ADD_PRIVATE_DYNAMIC(MirageParserHd)
+)
+
+void mirage_parser_hd_type_register (GTypeModule *type_module)
+{
+    mirage_parser_hd_register_type(type_module);
+}
 
 
 static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, MirageStream *stream, GError **error)
@@ -368,20 +382,6 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(
-    MirageParserHd,
-    mirage_parser_hd,
-    MIRAGE_TYPE_PARSER,
-    0,
-    G_ADD_PRIVATE_DYNAMIC(MirageParserHd)
-)
-
-void mirage_parser_hd_type_register (GTypeModule *type_module)
-{
-    mirage_parser_hd_register_type(type_module);
-}
-
-
 static void mirage_parser_hd_init (MirageParserHd *self)
 {
     self->priv = mirage_parser_hd_get_instance_private(self);
