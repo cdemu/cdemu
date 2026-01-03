@@ -401,7 +401,13 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
+gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
+{
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data(self, address, buffer, length, error);
+}
+
+/* Default implementation of virtual method */
+static gboolean mirage_fragment_read_main_data_impl (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     guint64 position;
     gint read_len;
@@ -712,7 +718,13 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
+gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
+{
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data(self, address, buffer, length, error);
+}
+
+/* Default implementation of virtual method */
+static gboolean mirage_fragment_read_subchannel_data_impl (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     MirageStream *stream;
     guint64 position;
@@ -933,6 +945,9 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = mirage_fragment_dispose;
+
+    klass->read_main_data = mirage_fragment_read_main_data_impl;
+    klass->read_subchannel_data = mirage_fragment_read_subchannel_data_impl;
 
     /* Signals */
     /**

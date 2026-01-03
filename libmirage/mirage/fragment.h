@@ -93,12 +93,17 @@ struct _MirageFragment
 /**
  * MirageFragmentClass:
  * @parent_class: the parent class
+ * @read_main_data: reads main channel data for specified sector
+ * @read_subchannel_data: reads subchannel data for specified sector
  *
  * The class structure for the <structname>MirageFragment</structname> type.
  */
 struct _MirageFragmentClass
 {
     MirageObjectClass parent_class;
+
+    gboolean (*read_main_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
+    gboolean (*read_subchannel_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_FRAGMENT */
