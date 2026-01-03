@@ -66,6 +66,7 @@ gboolean mirage_fragment_mdx_setup (
     gint main_format,
     gint subchannel_size,
     gint subchannel_format,
+    const MDX_Footer *footer,
     const MDX_EncryptionHeader *encryption_header,
     GError **error
 );
