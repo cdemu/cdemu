@@ -430,26 +430,99 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
         }
     }
 
-    if (!compression_entry || compression_entry->compression_type == MDX_COMPRESSION_NONE) {
-        /* No compression (with or without compression table) */
-        if (compression_entry) {
-            /* Display only if compression is otherwise enabled (we have
-             * compression table). */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: no compression\n", __debug__, sector_group);
-        }
+    if (!compression_entry || compression_entry->compression_type == MDX_COMPRESSION_NONE || compression_entry->compression_type == MDX_COMPRESSION_ZLIB) {
+        /* No compression (with or without compression table) or zlib compression */
+        gboolean is_zlib = FALSE;
+        guint64 data_offset;
+        guint64 to_read;
 
-        /* Simply read the data */
-        const guint64 data_offset = (compression_entry) ?
-            self->priv->data_offset + compression_entry->data_offset :
-            self->priv->data_offset + (guint64)address * sector_size;
-        const guint64 to_read = num_sectors * sector_size;
+        if (compression_entry) {
+            if (compression_entry->compression_type == MDX_COMPRESSION_ZLIB) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: zlib compression\n", __debug__, sector_group);
+                data_offset = self->priv->data_offset + compression_entry->data_offset;
+                to_read = compression_entry->compressed_size;
+                is_zlib = TRUE;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: no compression\n", __debug__, sector_group);
+                data_offset = self->priv->data_offset + compression_entry->data_offset;
+                to_read = num_sectors * sector_size;
+            }
+        } else {
+            data_offset = self->priv->data_offset + (guint64)address * sector_size;
+            to_read = num_sectors * sector_size; /* num_sectors = 1 */
+        }
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading %" G_GINT64_MODIFIER "d bytes from offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, to_read, data_offset, data_offset);
 
         mirage_stream_seek(self->priv->data_stream, data_offset, G_SEEK_SET, NULL);
-        const gsize read_len = mirage_stream_read(self->priv->data_stream, self->priv->buffer, to_read, NULL);
+        const gsize read_len = mirage_stream_read(self->priv->data_stream, is_zlib ? self->priv->zlib_buffer : self->priv->buffer, to_read, NULL);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read %" G_GINT64_MODIFIER "d bytes\n", __debug__, read_len);
+
+        /* Decrypt */
+        if (self->priv->crypt_handle) {
+            GError *local_error = NULL;
+            gint start_sector_address = sector_group * self->priv->sectors_in_group;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %d\n", __debug__, start_sector_address);
+
+            /* As seen in https://github.com/Marisa-Chan/mdsx, encryption
+             * is applied to individual sectors (compression not enabled),
+             * sector groups without compression, and zlib-compressed data
+             * chunks. AES-256 requires data size to be a multiple of its
+             * 16-byte block size; and while sector size tends to be a
+             * multiple of 16 (except for some more esoteric combinations
+             * of main data, such as 2048-byte main channel and 4-byte
+             * header), zlib-compressed chunks can be of arbitrary size.
+             * It seems that encryption is therefore applied only on part
+             * of the buffer that is aligned with 16-byte AES block size.
+             * And it seems that the sector address for tweak index is
+             * based on the start address of the sector group, and then
+             * whole data chunk is assumed to be continuous sector data
+             * (even though that might not be the case). */
+            gboolean succeeded = mdx_crypto_decipher_buffer_lrw(
+                self->priv->crypt_handle,
+                is_zlib ? self->priv->zlib_buffer : self->priv->buffer,
+                read_len - (read_len % 16),
+                self->priv->tweak_key,
+                1 + start_sector_address * sector_size / 16,
+                &local_error
+            );
+
+            if (!succeeded) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to decrypt sector data: %s", local_error->message);
+                g_error_free(local_error);
+                return FALSE;
+            }
+        }
+
+        /* Decompress, if necessary */
+        if (is_zlib) {
+            gint zlib_ret;
+            gsize total_in;
+            gsize total_out;
+
+            z_stream *zlib_stream = self->priv->zlib_stream;
+
+            zlib_stream->avail_in = read_len;
+            zlib_stream->next_in = self->priv->zlib_buffer;
+
+            zlib_stream->avail_out = self->priv->buffer_size;
+            zlib_stream->next_out = self->priv->buffer;
+
+            inflateReset2(zlib_stream, -15);
+            zlib_ret = inflate(zlib_stream, Z_FINISH); /* Single-step inflate() */
+
+            total_in = zlib_stream->total_in;
+            total_out = zlib_stream->total_out;
+
+            if (zlib_ret != Z_STREAM_END) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read/inflate sector data (status=%d)!", zlib_ret);
+                return FALSE;
+            }
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated %" G_GSIZE_MODIFIER "d bytes from input compressed data into %" G_GSIZE_MODIFIER "d bytes of sector data\n", __debug__, total_in, total_out);
+        }
     } else if (compression_entry->compression_type == MDX_COMPRESSION_RLE) {
         /* Run-length encoding */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d; run-length encoding\n", __debug__, sector_group);
@@ -462,75 +535,11 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
 
         memset(self->priv->buffer, compression_entry->rle_value, num_sectors * sector_size);
     } else {
-        /* Zlib compression */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d; zlib compression\n", __debug__, sector_group);
-
-        /* Read compressed data */
-        const guint64 data_offset = self->priv->data_offset + compression_entry->data_offset;
-        const guint64 to_read = compression_entry->compressed_size;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading %" G_GINT64_MODIFIER "d bytes from offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, to_read, data_offset, data_offset);
-
-        mirage_stream_seek(self->priv->data_stream, data_offset, G_SEEK_SET, NULL);
-        const gsize read_len = mirage_stream_read(self->priv->data_stream, self->priv->zlib_buffer, to_read, NULL);
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read %" G_GINT64_MODIFIER "d bytes\n", __debug__, read_len);
-
-        /* Decompress */
-        gint zlib_ret;
-        gsize total_in;
-        gsize total_out;
-
-        z_stream *zlib_stream = self->priv->zlib_stream;
-
-        zlib_stream->avail_in = read_len;
-        zlib_stream->next_in = self->priv->zlib_buffer;
-
-        zlib_stream->avail_out = self->priv->buffer_size;
-        zlib_stream->next_out = self->priv->buffer;
-
-        inflateReset2(zlib_stream, -15);
-        zlib_ret = inflate(zlib_stream, Z_FINISH); /* Single-step inflate() */
-
-        total_in = zlib_stream->total_in;
-        total_out = zlib_stream->total_out;
-
-        if (zlib_ret != Z_STREAM_END) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read/inflate sector data (status=%d)!", zlib_ret);
-            return FALSE;
-        }
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated %" G_GSIZE_MODIFIER "d bytes from input compressed data into %" G_GSIZE_MODIFIER "d bytes of sector data\n", __debug__, total_in, total_out);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Unsupported compression/read mode!");
+        return FALSE;
     }
 
-    /* Decrypt */
-    if (self->priv->crypt_handle) {
-        gint sector_address = sector_group * self->priv->sectors_in_group;
-        guint8 *buffer_ptr = self->priv->buffer;
-        gboolean succeeded;
-
-        /* Process each sector */
-        for (guint i = 0; i < num_sectors; i++) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data for sector %d\n", __debug__, sector_address);
-
-            succeeded = mdx_crypto_decipher_buffer_lrw(
-                self->priv->crypt_handle,
-                buffer_ptr,
-                sector_size,
-                self->priv->tweak_key,
-                1 + sector_address * sector_size / 16,
-                error
-            );
-
-            if (!succeeded) {
-                return FALSE;
-            }
-
-            sector_address++;
-            buffer_ptr += sector_size;
-        }
-    }
-
+    /* Update the cached sector / sector group indicator */
     self->priv->cached_sector_group = sector_group;
 
     return TRUE;
