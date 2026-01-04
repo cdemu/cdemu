@@ -1,3 +1,18 @@
+gcdemu (3.2.6-1.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Source only upload
+
+ -- Salvo 'LtWorf' Tomaselli <ltworf@debian.org>  Tue, 10 Jun 2025 11:51:48 +0200
+
+gcdemu (3.2.6-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * "Not built on buildd: arch all binaries uploaded by bartm, a new
+    source-only upload is needed to allow migration" (to testing, nvdr.)
+
+ -- Bart Martens <bartm@debian.org>  Fri, 23 May 2025 01:02:51 +0200
+
 gcdemu (3.2.6-1) unstable; urgency=low
 
   * Initial release, closes: #983453.
