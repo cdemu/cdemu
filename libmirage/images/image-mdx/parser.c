@@ -224,7 +224,13 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         mdx_track_block_fix_endian(track_block);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __debug__, i);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, track_block->mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector mode: 0x%X\n", __debug__, track_block->sector_mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  extra data:\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sync pattern: %d\n", __debug__, track_block->has_sync_pattern);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subheader: %d\n", __debug__, track_block->has_subheader);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   header: %d\n", __debug__, track_block->has_header);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   unknown: %d\n", __debug__, track_block->has_unknown);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   edc/ecc: %d\n", __debug__, track_block->has_edc_ecc);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n", __debug__, track_block->subchannel);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  adr/ctl: 0x%X\n", __debug__, track_block->adr_ctl);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  tno: 0x%X\n", __debug__, track_block->tno);
@@ -291,45 +297,86 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         gint converted_mode;
         guint expected_sector_size;
 
-        switch (track_block->mode & 0x07) {
-            case 1: {
+        switch (track_block->sector_mode) {
+            case MDX_SECTOR_AUDIO: {
                 converted_mode = MIRAGE_SECTOR_AUDIO;
                 expected_sector_size = 2352;
+                /* Ignore all extra data bits - although they seem to be
+                 * all set (except for the unknown one) */
                 break;
             }
-            case 2: {
+            case MDX_SECTOR_MODE1: {
                 converted_mode = MIRAGE_SECTOR_MODE1;
                 expected_sector_size = 2048;
+                if (track_block->has_sync_pattern) {
+                    expected_sector_size += 12;
+                }
+                if (track_block->has_header) {
+                    expected_sector_size += 4;
+                }
+                if (track_block->has_edc_ecc) {
+                    expected_sector_size += 288;
+                }
                 break;
             }
-            case 3: {
+            case MDX_SECTOR_MODE2: {
                 converted_mode = MIRAGE_SECTOR_MODE2;
                 expected_sector_size = 2336;
+                if (track_block->has_sync_pattern) {
+                    expected_sector_size += 12;
+                }
+                if (track_block->has_header) {
+                    expected_sector_size += 4;
+                }
                 break;
             }
-            case 4: {
+            case MDX_SECTOR_MODE2_FORM1: {
                 converted_mode = MIRAGE_SECTOR_MODE2_FORM1;
                 expected_sector_size = 2048;
+                if (track_block->has_sync_pattern) {
+                    expected_sector_size += 12;
+                }
+                if (track_block->has_header) {
+                    expected_sector_size += 4;
+                }
+                if (track_block->has_subheader) {
+                    expected_sector_size += 8;
+                }
+                if (track_block->has_edc_ecc) {
+                    expected_sector_size += 280;
+                }
                 break;
             }
-            case 5: {
+            case MDX_SECTOR_MODE2_FORM2: {
                 converted_mode = MIRAGE_SECTOR_MODE2_FORM2;
                 expected_sector_size = 2324;
+                if (track_block->has_sync_pattern) {
+                    expected_sector_size += 12;
+                }
+                if (track_block->has_header) {
+                    expected_sector_size += 4;
+                }
+                if (track_block->has_subheader) {
+                    expected_sector_size += 8;
+                }
+                if (track_block->has_edc_ecc) {
+                    expected_sector_size += 4;
+                }
                 break;
             }
             default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported track mode 0x%X!\n", __debug__, (track_block->mode & 0x07));
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported track mode 0x%X!\n", __debug__, track_block->sector_mode);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported track mode!"));
                 g_object_unref(session);
                 return FALSE;
             }
         }
 
-        /* TODO: account for extra main-channel data and for subchannel data! */
+        /* TODO: account for subchannel data! */
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X\n", __debug__, converted_mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X, expected sector size: %d (0x%X)\n", __debug__, converted_mode, expected_sector_size, expected_sector_size);
         if (expected_sector_size != track_block->sector_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected sector size - expected 0x%X, found 0x%X!\n", __debug__, expected_sector_size, track_block->sector_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected sector size - expected %d (0x%X), found %d (0x%X)!\n", __debug__, expected_sector_size, expected_sector_size, track_block->sector_size, track_block->sector_size);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track sector size mismatch!"));
             g_object_unref(session);
             return FALSE;

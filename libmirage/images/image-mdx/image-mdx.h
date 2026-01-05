@@ -105,6 +105,15 @@ typedef struct
     guint32 __unknown3__;
 } MDX_DescriptorHeader;
 
+typedef enum
+{
+    MDX_SECTOR_AUDIO = 1, /* Audio sector */
+	MDX_SECTOR_MODE1 = 2, /* Mode 1 */
+	MDX_SECTOR_MODE2 = 3, /* Mode 2 (formless) */
+	MDX_SECTOR_MODE2_FORM1 = 4, /* Mode 2 Form 1 */
+	MDX_SECTOR_MODE2_FORM2 = 5 /* Mode 2 Form 2*/
+} MDX_SectorType;
+
 /* Session block (32 bytes) */
 typedef struct
 {
@@ -122,7 +131,23 @@ typedef struct
 /* Track block (80 bytes) */
 typedef struct
 {
-    guint8 mode;  /* Track mode */
+    /* Track mode for sector data (lowest three bits, plus extra data availability flags */
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 has_sync_pattern : 1;
+    guint8 has_subheader : 1;
+    guint8 has_header : 1;
+    guint8 has_unknown : 1;
+    guint8 has_edc_ecc : 1;
+    guint6 sector_mode : 3;
+#else
+    guint8 sector_mode : 3;
+    guint8 has_edc_ecc : 1;
+    guint8 has_unknown : 1;
+    guint8 has_header : 1;
+    guint8 has_subheader : 1;
+    guint8 has_sync_pattern : 1;
+#endif
+
     guint8 subchannel;  /* Subchannel mode */
 
     /* These are the fields from Sub-channel Q information, which are
