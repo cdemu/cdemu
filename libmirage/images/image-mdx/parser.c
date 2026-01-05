@@ -201,6 +201,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
     MDX_TrackBlock *track_blocks;
     MirageSession *session;
     gint medium_type;
+    guint previous_track_end;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing track blocks\n", __debug__);
 
@@ -213,6 +214,9 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __debug__);
         return FALSE;
     }
+
+    /* Determine address where we expect the first track to start; see pregap handling code later on. */
+    previous_track_end = mirage_session_layout_get_start_sector(session);
 
     /* Process track blocks */
     track_blocks = (MDX_TrackBlock *)(self->priv->descriptor_data + session_block->tracks_blocks_offset);
@@ -396,11 +400,16 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         /* Flags: decoded from Ctl */
         mirage_track_set_ctl(track, track_block->adr_ctl & 0x0F);
 
-        /* MDS format does not seem to store pregap data for the first track in its data file; therefore, we need
-         * to provide a NULL fragment. For subsequent tracks, the pregap data does seem to be included, as evident
-         * from comparison of declared track length in the extra block vs. length(s) declared in footer block(s). */
+        /* It seems that pregap data may or may not be stored in the image, and the clue about its presence is
+         * the start_sector64 field in track block - if pregap data is included, then its value matches the end
+         * of previous track; otherwise, the difference should match the length of pregap. The pregap for first
+         * track is never included. */
         if (extra_block && extra_block->pregap) {
-            if (track_block->point == 1) {
+            if (track_block->point > 1 && track_block->start_sector64 == previous_track_end) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %d has pregap of %d (0x%X) sectors; assuming data is included in image\n", __debug__, track_block->point, extra_block->pregap, extra_block->pregap);
+            } else {
+                /* TODO: check that the difference matches pregap length (although the mismatch will cause track
+                 * length mismatch and trigger validation error at end of this function)... */
                 MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %d has pregap of %d (0x%X) sectors; creating NULL fragment\n", __debug__, track_block->point, extra_block->pregap, extra_block->pregap);
@@ -409,11 +418,9 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
                 mirage_track_add_fragment(track, -1, fragment);
                 g_object_unref(fragment);
-
-                mirage_track_set_track_start(track, extra_block->pregap);
-            } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %d has pregap of %d (0x%X) sectors; assuming data is included in image\n", __debug__, track_block->point, extra_block->pregap, extra_block->pregap);
             }
+
+            mirage_track_set_track_start(track, extra_block->pregap);
         }
 
         /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
@@ -541,7 +548,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
         /* Validate the track size. In CD-ROM images, the total track length
          * is stored in the extra block (we need to add the pregap length,
-         * also available in the extra block!) .In DVD-ROM images, it is
+         * also available in the extra block!). In DVD-ROM images, it is
          * stored in the track_length64 field in the main track block (and
          * annoyingly enough, it seems to be set to 0 for CD-ROM images). */
         guint64 declared_track_length = extra_block ? (extra_block->length + extra_block->pregap) : track_block->track_length64;
@@ -557,6 +564,8 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         }
 
         g_object_unref(track);
+
+        previous_track_end += total_track_length;
     }
 
     g_object_unref(session);
