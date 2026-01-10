@@ -462,30 +462,56 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
         /* Decrypt */
         if (self->priv->crypt_handle) {
             GError *local_error = NULL;
-            gint start_sector_address = sector_group * self->priv->sectors_in_group;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %d\n", __debug__, start_sector_address);
+            /* AES uses 16-byte blocks, so the size of data to be encrypted
+             * or decrypted is required to be a multiple of 16 bytes. The
+             * LRW mode is typically applied in disk encryption, where
+             * (hard-)disk sectors have size of 512 bytes, and are thus
+             * aligned with AES block size.
+             *
+             * On the other hand, as seen in https://github.com/Marisa-Chan/mdsx,
+             * the AES+LRW encryption in MDX/MDSv2 format is applied to either
+             * individual sectors (when compression is not enabled), to
+             * sector groups without compression (MDX_COMPRESSION_NONE),
+             * and to zlib-compressed sector groups (MDX_COMPRESSION_ZLIB).
+             *
+             * This means that neither the size of data chunks nor the size
+             * of individual sector (which is used to compute the initial
+             * value of the tweak counter) is necessarily a multiple of
+             * 16 bytes. The full sector size (2352 bytes) is a multiple,
+             * and so is the size of user-data part in Mode1 / Mode 2 Form 1
+             * sectors (2048 bytes). The added subchannel (16 or 96 bytes)
+             * does not change the alignment. However, MDX/MDSv2 allows the
+             * image to contain more than just user-data part of sectors,
+             * but less than full sector data; for example, reading a disc
+             * with TAGES profile seems to store header + user-data for
+             * Mode 1 sectors (2048 + 4 bytes), and header + subheader + user-data
+             * for Mode 2 Form 1 sectors (2048 + 4 + 8 bytes). Similarly,
+             * zlib compression can reduce the size of data for a sector
+             * group (that originally was a multiple of 16 bytes, although
+             * this is also not a given!) to a size that is not aligned to
+             * 16 bytes anymore.
+             *
+             * The above discrepancies seem to be solved by simply rounding
+             * the input data size down to nearest multiple of 16, and
+             * leaving the remaining data un-processed. Same strategy is
+             * applied to sector size when computing start value of the
+             * tweak counter (which seems to be based on fragment-relative
+             * sector addresses). */
+            const gsize aligned_data_len = read_len & ~15;
+            const guint aligned_sector_size = sector_size & ~15;
 
-            /* As seen in https://github.com/Marisa-Chan/mdsx, encryption
-             * is applied to individual sectors (compression not enabled),
-             * sector groups without compression, and zlib-compressed data
-             * chunks. AES-256 requires data size to be a multiple of its
-             * 16-byte block size; and while sector size tends to be a
-             * multiple of 16 (except for some more esoteric combinations
-             * of main data, such as 2048-byte main channel and 4-byte
-             * header), zlib-compressed chunks can be of arbitrary size.
-             * It seems that encryption is therefore applied only on part
-             * of the buffer that is aligned with 16-byte AES block size.
-             * And it seems that the sector address for tweak index is
-             * based on the start address of the sector group, and then
-             * whole data chunk is assumed to be continuous sector data
-             * (even though that might not be the case). */
+            const gint start_sector_address = sector_group * self->priv->sectors_in_group;
+            const guint64 tweak_counter = 1 + start_sector_address * aligned_sector_size / 16;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %d, aligned data length is %" G_GINT64_MODIFIER "d, aligned sector size is %d, start value of tweak counter is %" G_GINT64_MODIFIER "d\n", __debug__, start_sector_address, aligned_data_len, aligned_sector_size, tweak_counter);
+
             gboolean succeeded = mdx_crypto_decipher_buffer_lrw(
                 self->priv->crypt_handle,
                 is_zlib ? self->priv->zlib_buffer : self->priv->buffer,
-                read_len - (read_len % 16),
+                aligned_data_len,
                 self->priv->tweak_key,
-                1 + start_sector_address * sector_size / 16,
+                tweak_counter,
                 &local_error
             );
 
