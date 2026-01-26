@@ -2004,7 +2004,7 @@ class DiscDump:
             # Convert the data to printable format
             printables = string.printable.encode('ascii')
             pack_str = [
-                f'{element}:c' if element in printables else f'\\x{element:02x}'
+                f'{element:c}' if element in printables else f'\\x{element:02x}'
                 for element in pack_data[1]
             ]
             pack_str = ''.join(pack_str)
@@ -2014,7 +2014,7 @@ class DiscDump:
                 node_name,
                 pack_str,
             )
-            data_node.attrib["length"] = f"{len(pack_data[1])}:d"
+            data_node.attrib["length"] = f"{len(pack_data[1]):d}"
 
         return True
 
