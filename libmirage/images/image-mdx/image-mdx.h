@@ -117,6 +117,17 @@ typedef enum
 	MDX_SECTOR_MODE2_FORM2 = 5 /* Mode 2 Form 2*/
 } MDX_SectorType;
 
+typedef enum
+{
+    /* NOTE: these values are the same as the ones used with 3-bit
+     * "Sub-Channel Data Selection Bits" field of READ CD packet command
+     * (see MMC-3/INF-8090) */
+    MDX_SUBCHANNEL_NONE = 0, /* No subchannel */
+    MDX_SUBCHANNEL_PW = 1, /* Raw 96-byte PW */
+    MDX_SUBCHANNEL_Q = 2, /* 16-byte PQ data */
+    MDX_SUBCHANNEL_RW = 4, /* 96-byte RW */
+} MDX_SubchannelType;
+
 /* Session block (32 bytes) */
 typedef struct
 {
@@ -157,7 +168,23 @@ typedef struct
     guint8 has_sync_pattern : 1;
 #endif
 
-    guint8 subchannel;  /* Subchannel mode */
+    /* This field contains three bits (as indicated by bit-masking in
+     * https://github.com/Marisa-Chan/mdsx) that seem to directly
+     * correspond to 3-bit "Sub-Channel Data Selection Bits" from READ
+     * CD packet command; although here, they are shifted three bits to
+     * the left, for some reason.
+     *
+     * The subchannel value seems to be set only in MDX v2.1; in v2.0,
+     * the value seems to be 0 even if subchannel data is present. */
+#if G_BYTE_ORDER == G_BIG_ENDIAN
+    guint8 __unknown1__ : 2;
+    guint8 subchannel : 3;  /* Subchannel mode */
+    guint8 __unknown2__ : 3;
+#else
+    guint8 __unknown1__ : 3;
+    guint8 subchannel : 3;  /* Subchannel mode */
+    guint8 __unknown2__ : 2;
+#endif
 
     /* These are the fields from Sub-channel Q information, which are
      * also returned in full TOC by READ TOC/PMA/ATIP command */
@@ -175,7 +202,7 @@ typedef struct
     guint32 extra_offset; /* Start offset of this track's extra block. */
     guint16 sector_size; /* Sector size. */
 
-    guint8 __unknown1__[18];
+    guint8 __unknown3__[18];
 
     guint32 start_sector; /* Track start sector (PLBA). */
     guint64 start_offset; /* Track start offset. */
@@ -185,7 +212,7 @@ typedef struct
     guint64 start_sector64; /* TODO - MDSv2 specific */
     guint64 track_length64; /* TODO - MDSv2 specific */
 
-    guint8 __unknown2__[8];
+    guint8 __unknown4__[8];
 } MDX_TrackBlock;
 
 /* Extra track block (8 bytes) */

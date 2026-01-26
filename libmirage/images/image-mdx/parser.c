@@ -198,6 +198,8 @@ static gchar *mirage_parser_mdx_get_mdf_filename (MirageParserMdx *self, const g
 
 static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MDX_SessionBlock *session_block, GError **error)
 {
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+
     MDX_TrackBlock *track_blocks;
     MirageSession *session;
     gint medium_type;
@@ -298,73 +300,76 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         /* It seems lowest three bytes encode the sector type, while higher
          * bits are flags that denote availability of extra data (sync
          * pattern, header, subheader, EDC/ECC). */
-        gint converted_mode;
-        guint expected_sector_size;
+        gint sector_type;
+        guint main_size;
+        gint main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
 
         switch (track_block->sector_mode) {
             case MDX_SECTOR_AUDIO: {
-                converted_mode = MIRAGE_SECTOR_AUDIO;
-                expected_sector_size = 2352;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
+
+                sector_type = MIRAGE_SECTOR_AUDIO;
+                main_size = 2352;
                 /* Ignore all extra data bits - although they seem to be
                  * all set (except for the unknown one) */
                 break;
             }
             case MDX_SECTOR_MODE1: {
-                converted_mode = MIRAGE_SECTOR_MODE1;
-                expected_sector_size = 2048;
+                sector_type = MIRAGE_SECTOR_MODE1;
+                main_size = 2048;
                 if (track_block->has_sync_pattern) {
-                    expected_sector_size += 12;
+                    main_size += 12;
                 }
                 if (track_block->has_header) {
-                    expected_sector_size += 4;
+                    main_size += 4;
                 }
                 if (track_block->has_edc_ecc) {
-                    expected_sector_size += 288;
+                    main_size += 288;
                 }
                 break;
             }
             case MDX_SECTOR_MODE2: {
-                converted_mode = MIRAGE_SECTOR_MODE2;
-                expected_sector_size = 2336;
+                sector_type = MIRAGE_SECTOR_MODE2;
+                main_size = 2336;
                 if (track_block->has_sync_pattern) {
-                    expected_sector_size += 12;
+                    main_size += 12;
                 }
                 if (track_block->has_header) {
-                    expected_sector_size += 4;
+                    main_size += 4;
                 }
                 break;
             }
             case MDX_SECTOR_MODE2_FORM1: {
-                converted_mode = MIRAGE_SECTOR_MODE2_FORM1;
-                expected_sector_size = 2048;
+                sector_type = MIRAGE_SECTOR_MODE2_FORM1;
+                main_size = 2048;
                 if (track_block->has_sync_pattern) {
-                    expected_sector_size += 12;
+                    main_size += 12;
                 }
                 if (track_block->has_header) {
-                    expected_sector_size += 4;
+                    main_size += 4;
                 }
                 if (track_block->has_subheader) {
-                    expected_sector_size += 8;
+                    main_size += 8;
                 }
                 if (track_block->has_edc_ecc) {
-                    expected_sector_size += 280;
+                    main_size += 280;
                 }
                 break;
             }
             case MDX_SECTOR_MODE2_FORM2: {
-                converted_mode = MIRAGE_SECTOR_MODE2_FORM2;
-                expected_sector_size = 2324;
+                sector_type = MIRAGE_SECTOR_MODE2_FORM2;
+                main_size = 2324;
                 if (track_block->has_sync_pattern) {
-                    expected_sector_size += 12;
+                    main_size += 12;
                 }
                 if (track_block->has_header) {
-                    expected_sector_size += 4;
+                    main_size += 4;
                 }
                 if (track_block->has_subheader) {
-                    expected_sector_size += 8;
+                    main_size += 8;
                 }
                 if (track_block->has_edc_ecc) {
-                    expected_sector_size += 4;
+                    main_size += 4;
                 }
                 break;
             }
@@ -376,9 +381,75 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
             }
         }
 
-        /* TODO: account for subchannel data! */
+        /* Subchannel data; although https://github.com/Marisa-Chan/mdsx
+         * seems to imply that subchannel type is indicated by the second
+         * byte in the track block (which was also a "subchannel" byte
+         * in the MDSv1 format, albeit with different values), this seems
+         * to hold true only for MDX v2.1. In earlier v2.0, this byte seems
+         * to be set to 0 even if subchannel data is included, and the
+         * only way to actually infer the presence of subchannel data and
+         * its type is to compare the declared sector size against the
+         * expected one (after accounting for additional sector data that
+         * might be present) */
+        gint subchannel_size = 0;
+        gint subchannel_format = 0;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X, expected sector size: %d (0x%X)\n", __debug__, converted_mode, expected_sector_size, expected_sector_size);
+        if (descriptor_header->version_minor == 0) {
+            /* v2.0; subchannel field does not seem to be set */
+            const gint sector_size_diff = track_block->sector_size - main_size;
+
+            if (sector_size_diff == 16) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: extra 16 bytes remaining in declared sector size - assuming 16-byte Q subchannel!\n", __debug__);
+                subchannel_size = 16;
+                subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16;
+            } else if (sector_size_diff == 96) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: extra 96 bytes remaining in declared sector size - assuming 96-byte raw PW subchannel!\n", __debug__);
+                subchannel_size = 96;
+                subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED;
+            }
+        } else {
+            /* v2.1 or newer; subchannel field indicates subchannel data type */
+            switch (track_block->subchannel) {
+                case MDX_SUBCHANNEL_NONE: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel data is available\n", __debug__);
+                    break;
+                }
+                case MDX_SUBCHANNEL_PW: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 96-byte raw PW subchannel data is available\n", __debug__);
+                    subchannel_size = 96;
+                    subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED;
+                    break;
+                }
+                case MDX_SUBCHANNEL_Q: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 16-byte PQ subchannel data is available\n", __debug__);
+                    subchannel_size = 16;
+                    subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16;
+                    break;
+                }
+                /* TODO: throw an error now and uncomment this part once
+                 * we encounter an image with this subchannel type */
+#if 0
+                case MDX_SUBCHANNEL_RW: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 96-byte RW subchannel data is available\n", __debug__);
+                    subchannel_size = 96;
+                    subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96;
+                    break;
+                }
+#endif
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported subchannel data type: %d (0x%X)\n", __debug__, track_block->subchannel, track_block->subchannel);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported subchannel data type (%d)!"), track_block->subchannel);
+                    g_object_unref(session);
+                    return FALSE;
+                }
+            }
+        }
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sector type: 0x%X, main channel: %d (0x%X), subchannel size: %d (0x%X) \n", __debug__, sector_type, main_size, main_size, subchannel_size, subchannel_size);
+
+        /* Check that expected sector size (main size plus subchannel size)
+         * matches the declared sector size. */
+        const guint expected_sector_size = main_size + subchannel_size;
         if (expected_sector_size != track_block->sector_size) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected sector size - expected %d (0x%X), found %d (0x%X)!\n", __debug__, expected_sector_size, expected_sector_size, track_block->sector_size, track_block->sector_size);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track sector size mismatch!"));
@@ -395,7 +466,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
             return FALSE;
         }
 
-        mirage_track_set_sector_type(track, converted_mode);
+        mirage_track_set_sector_type(track, sector_type);
 
         /* Flags: decoded from Ctl */
         mirage_track_set_ctl(track, track_block->adr_ctl & 0x0F);
@@ -475,23 +546,15 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
             g_free(data_filename);
 
             /* Fragment properties */
-            guint64 main_offset = 0; /* Corrected below, if needed */
-            gint main_size = track_block->sector_size;
-            gint main_format = 0;
 
-            gint subchannel_size = 0; /* TODO */
-            gint subchannel_format = 0; /* TODO */
-
-            if (j == 0) {
-                /* Apply offset only if it is the first file... */
-                main_offset = track_block->start_offset;
-            }
-
-            if (converted_mode == MIRAGE_SECTOR_AUDIO) {
-                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
-            } else {
-                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
-            }
+            /* The starting offset in data file is indicated in "start_offset"
+             * field in the track block, and is applicable to the first fragment
+             * (first footer block); if the track is split across multiple files,
+             * the subsequent fragments begin at the start of their corresponding
+             * files */
+            guint64 main_offset = (j == 0) ?
+                main_offset = track_block->start_offset :
+                0;
 
             /* Determine fragment's length; this corresponds to the declared
              * length in the footer block. In case a track has multiple footer

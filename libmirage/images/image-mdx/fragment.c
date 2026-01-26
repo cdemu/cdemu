@@ -627,13 +627,25 @@ static gboolean mirage_fragment_mdx_read_subchannel_data (MirageFragment *_self,
     }
 #endif
 
+    /* Clear both variables */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
+
     /* Ensure sector data is available in cache */
     if (!mirage_fragment_mdx_read_sector_data(MIRAGE_FRAGMENT_MDX(_self), address, error)) {
         return FALSE;
     }
 
+    /* If there's no subchannel, return 0 for the length */
+    if (!self->priv->subchannel_size) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
+        return TRUE;
+    }
+
     /* Length */
-    *length = self->priv->subchannel_size;
+    *length = 96; /* Always 96, because we do the processing here */
 
     /* Data */
     if (buffer) {
@@ -644,8 +656,16 @@ static gboolean mirage_fragment_mdx_read_subchannel_data (MirageFragment *_self,
         }
         offset += self->priv->main_size;
 
-        guint8 *data_buffer = g_malloc0(self->priv->subchannel_size);
-        memcpy(data_buffer, self->priv->buffer + offset, self->priv->subchannel_size);
+        guint8 *data_buffer = g_malloc0(96);
+
+        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
+            /* 16-byte Q; interleave it and pretend everything else's 0 */
+            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, self->priv->buffer + offset, data_buffer);
+        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
+            /* 96-byte interleaved PW; just copy it */
+            memcpy(data_buffer, self->priv->buffer + offset, 96);
+        }
+
         *buffer = data_buffer;
     }
 
