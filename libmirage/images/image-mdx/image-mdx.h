@@ -107,6 +107,9 @@ typedef struct
 
 typedef enum
 {
+    /* NOTE: these values are the same as the ones used with 3-bit
+     * "Expected Sector Type" field of READ CD packet command
+     * (see MMC-3/INF-8090) */
     MDX_SECTOR_AUDIO = 1, /* Audio sector */
 	MDX_SECTOR_MODE1 = 2, /* Mode 1 */
 	MDX_SECTOR_MODE2 = 3, /* Mode 2 (formless) */
@@ -131,7 +134,13 @@ typedef struct
 /* Track block (80 bytes) */
 typedef struct
 {
-    /* Track mode for sector data (lowest three bits, plus extra data availability flags */
+    /* Track mode for sector data (lowest three bits), plus extra data
+     * availability flags.
+     *
+     * The structure of this byte matches the byte 9 of READ CD packet
+     * command (see MMC-3/INF-8090), with the lowest three bits (2-bit
+     * "Error Flags" and 1-bit "Reserved") replaced by 3-bit value of
+     * the "Expected Sector Type" from Byte 1 of READ CD packet command. */
 #if G_BYTE_ORDER == G_BIG_ENDIAN
     guint8 has_sync_pattern : 1;
     guint8 has_subheader : 1;
