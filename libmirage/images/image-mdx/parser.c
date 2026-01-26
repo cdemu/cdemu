@@ -49,6 +49,8 @@ struct _MirageParserMdxPrivate
     const MDX_EncryptionHeader *data_encryption_header;
 
     gint64 prev_session_end;
+
+    gint medium_type;
 };
 
 
@@ -73,6 +75,8 @@ static inline void mdx_descriptor_header_fix_endian (MDX_DescriptorHeader *heade
 {
     header->medium_type = GUINT16_FROM_LE(header->medium_type);
     header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
+    header->cdtext_size = GUINT16_FROM_LE(header->cdtext_size);
+    header->cdtext_offset = GUINT32_FROM_LE(header->cdtext_offset);
     header->sessions_blocks_offset = GUINT32_FROM_LE(header->sessions_blocks_offset);
     header->dpm_blocks_offset = GUINT32_FROM_LE(header->dpm_blocks_offset);
     header->encryption_header_offset = GUINT32_FROM_LE(header->encryption_header_offset);
@@ -202,13 +206,9 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
     MDX_TrackBlock *track_blocks;
     MirageSession *session;
-    gint medium_type;
     guint previous_track_end;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing track blocks\n", __debug__);
-
-    /* Fetch medium type, which we will need later */
-    medium_type = mirage_disc_get_medium_type(self->priv->disc);
 
     /* Get current session */
     session = mirage_disc_get_session_by_index(self->priv->disc, -1, error);
@@ -259,7 +259,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
         /* Read extra track block, if applicable; it seems that only CD images
          * have extra blocks, though. For DVD images, extra_offset is set to 0. */
-        if (medium_type == MIRAGE_MEDIUM_CD && track_block->extra_offset) {
+        if (self->priv->medium_type == MIRAGE_MEDIUM_CD && track_block->extra_offset) {
             extra_block = (MDX_TrackExtraBlock *)(self->priv->descriptor_data + track_block->extra_offset);
             mdx_track_extra_block_fix_endian(extra_block);
 
@@ -749,13 +749,6 @@ static void mirage_parser_mds_parse_dpm_block (MirageParserMdx *self, const guin
 static void mirage_parser_mds_parse_dpm_data (MirageParserMdx *self)
 {
     const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
-
-    if (!descriptor_header->dpm_blocks_offset) {
-        /* No DPM data, nothing to do */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no DPM data found.\n", __debug__);
-        return;
-    }
-
     guint8 *cur_ptr = self->priv->descriptor_data + descriptor_header->dpm_blocks_offset;
 
     /* It would seem the first field is number of DPM data sets, followed by
@@ -780,20 +773,87 @@ static void mirage_parser_mds_parse_dpm_data (MirageParserMdx *self)
     }
 }
 
+static gboolean mirage_parser_mdx_parse_cdtext_data (MirageParserMdx *self, GError **error)
+{
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    MirageSession *session;
+    gboolean succeeded;
+
+    /* Ensure the declared CD-TEXT data length is a multiple of CD-TEXT
+     * data pack (18 bytes) */
+    if (descriptor_header->cdtext_size % 18 != 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: CD-TEXT data length %d is not a multiple of 18!\n", __debug__, descriptor_header->cdtext_size);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("CD-TEXT data length (%d) is not a multiple of 18!"), descriptor_header->cdtext_size);
+        return FALSE;
+    }
+
+    /* MDX image stores "raw" CD-TEXT pack data; however, it seems that
+     * the packs are re-coded to contain only Performer and Title data
+     * (other entries that might have been originally present are removed),
+     * and the corresponding modified Size Info. */
+
+    /* TODO: what happens with multiple sessions? */
+    if (mirage_disc_get_number_of_sessions(self->priv->disc) != 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: CD-TEXT is currently supported only with single-session disc images!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("CD-TEXT is currently supported only with single-session disc images!"));
+        return FALSE;
+    }
+
+    session = mirage_disc_get_session_by_index(self->priv->disc, 0, error);
+
+    if (session) {
+        guint8 *cdtext_data = self->priv->descriptor_data + descriptor_header->cdtext_offset;
+        if (!mirage_session_set_cdtext_data(session, cdtext_data, descriptor_header->cdtext_size, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __debug__);
+            succeeded = FALSE;
+        }
+        g_object_unref(session);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session!\n", __debug__);
+        succeeded = FALSE;
+    }
+
+    return succeeded;
+}
+
 static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **error)
 {
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    GError *local_error = NULL;
+
     /* Sessions */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing sessions...\n", __debug__);
-    if (!mirage_parser_mdx_parse_sessions(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n", __debug__);
+    if (!mirage_parser_mdx_parse_sessions(self, &local_error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions: %s\n", __debug__, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to parse sessions: %s"), local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing sessions\n", __debug__);
 
+    /* CD-TEXT data */
+    if (descriptor_header->cdtext_size != 0) {
+        if (self->priv->medium_type == MIRAGE_MEDIUM_CD) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing CD-TEXT data...\n", __debug__);
+            if (!mirage_parser_mdx_parse_cdtext_data(self, &local_error)) {
+                /* Non-fatal */
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CD-TEXT data: %s\n", __debug__, local_error->message);
+                g_error_free(local_error);
+            }
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing CD-TEXT data\n", __debug__);
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: found CD-TEXT data when medium type is not CD-ROM (type=%d) - ignoring!\n", __debug__, self->priv->medium_type);
+        }
+    }
+
     /* DPM data */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing DPM data...\n", __debug__);
-    mirage_parser_mds_parse_dpm_data(self);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing DPM data\n", __debug__);
+    if (descriptor_header->dpm_blocks_offset != 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing DPM data...\n", __debug__);
+        mirage_parser_mds_parse_dpm_data(self);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing DPM data\n", __debug__);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no DPM data found.\n", __debug__);
+    }
 
     return TRUE;
 }
@@ -1142,6 +1202,8 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u.%u\n", __debug__, descriptor_header->version_major, descriptor_header->version_minor);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  medium type: 0x%X\n", __debug__, descriptor_header->medium_type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: 0x%X\n", __debug__, descriptor_header->num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CD-TEXT block size: 0x%X\n", __debug__, descriptor_header->cdtext_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CD-TEXT block offset: 0x%X\n", __debug__, descriptor_header->cdtext_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, descriptor_header->sessions_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n", __debug__, descriptor_header->dpm_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  encryption header offset: 0x%X\n", __debug__, descriptor_header->encryption_header_offset);
@@ -1162,12 +1224,14 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
         case MDX_MEDIUM_CD_ROM: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
+            self->priv->medium_type = MIRAGE_MEDIUM_CD;
             succeeded = mirage_parser_mdx_load_disc(self, error);
             break;
         }
         case MDX_MEDIUM_DVD_ROM: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __debug__);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
+            self->priv->medium_type = MIRAGE_MEDIUM_DVD;
             succeeded = mirage_parser_mdx_load_disc(self, error);
             break;
         }

@@ -97,12 +97,16 @@ typedef struct
     guint16 medium_type; /* Medium type */
     guint16 num_sessions; /* Number of sessions */
 
-    guint8 __unknown1__[58]; /* TODO */
+    guint8 __unknown1__[8]; /* TODO */
+    guint16 cdtext_size; /* Size of CD-TEXT data block (CD-ROM) */
+    guint8 __unknown2__[8]; /* TODO */
+    guint32 cdtext_offset; /* Offset to CD-TEXT data block (CD-ROM) */
+    guint8 __unknown3__[36]; /* TODO */
 
     guint32 sessions_blocks_offset; /* Offset to session blocks */
     guint32 dpm_blocks_offset; /* Offset to DPM data blocks */
     guint32 encryption_header_offset; /* Offset to encryption header for encrypted track data. */
-    guint32 __unknown3__;
+    guint32 __unknown4__;
 } MDX_DescriptorHeader;
 
 typedef enum
