@@ -77,6 +77,7 @@ static inline void mdx_descriptor_header_fix_endian (MDX_DescriptorHeader *heade
     header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
     header->cdtext_size = GUINT16_FROM_LE(header->cdtext_size);
     header->cdtext_offset = GUINT32_FROM_LE(header->cdtext_offset);
+    header->disc_structures_offset = GUINT32_FROM_LE(header->disc_structures_offset);
     header->sessions_blocks_offset = GUINT32_FROM_LE(header->sessions_blocks_offset);
     header->dpm_blocks_offset = GUINT32_FROM_LE(header->dpm_blocks_offset);
     header->encryption_header_offset = GUINT32_FROM_LE(header->encryption_header_offset);
@@ -816,6 +817,102 @@ static gboolean mirage_parser_mdx_parse_cdtext_data (MirageParserMdx *self, GErr
     return succeeded;
 }
 
+static gboolean mirage_parser_mdx_parser_disc_structures_data (MirageParserMdx *self, GError **error G_GNUC_UNUSED)
+{
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
+    guint8 *cur_ptr;
+
+    /* Similar to MDSv1, the MDX/MDSv2 images store three types of disc
+     * structures:
+     *  - 0x0001: DVD copyright information (4 bytes)
+     *  - 0x0004: DVD manufacturing information (2048 bytes)
+     *  - 0x0000: Physical format information (2048 bytes)
+     * They are stored in that order, taking up 4100 bytes. If disc is dual-layer,
+     * data consists of 8200 bytes, containing afore-mentioned sequence for each
+     * layer. */
+    cur_ptr = self->priv->descriptor_data + descriptor_header->disc_structures_offset;
+
+    /* 0x0001: DVD copyright information */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc structure 0x0001 (%d bytes): %02hX %02hX %02hX %02hX\n", __debug__, 4, cur_ptr[0], cur_ptr[1], cur_ptr[2], cur_ptr[3]);
+    mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0001, cur_ptr, 4);
+    cur_ptr += 4;
+
+    /* 0x0004: DVD manufacturing information */
+    MIRAGE_DEBUG(
+        self,
+        MIRAGE_DEBUG_PARSER,
+        "%s: disc structure 0x0004 (%d bytes): %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX ... %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX\n",
+        __debug__,
+        2048,
+        cur_ptr[0], cur_ptr[1], cur_ptr[2], cur_ptr[3], cur_ptr[4], cur_ptr[5], cur_ptr[6], cur_ptr[7],
+        cur_ptr[2040], cur_ptr[2041], cur_ptr[2042], cur_ptr[2043], cur_ptr[2044], cur_ptr[2045], cur_ptr[2046], cur_ptr[2047]
+    );
+    mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0004, cur_ptr, 2048);
+    cur_ptr += 2048;
+
+    /* 0x0000: Physical information */
+    MIRAGE_DEBUG(
+        self,
+        MIRAGE_DEBUG_PARSER,
+        "%s: disc structure 0x0000 (%d bytes): %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX ... %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX\n",
+        __debug__,
+        2048,
+        cur_ptr[0], cur_ptr[1], cur_ptr[2], cur_ptr[3], cur_ptr[4], cur_ptr[5], cur_ptr[6], cur_ptr[7],
+        cur_ptr[2040], cur_ptr[2041], cur_ptr[2042], cur_ptr[2043], cur_ptr[2044], cur_ptr[2045], cur_ptr[2046], cur_ptr[2047]
+    );
+    int num_layers = (cur_ptr[2] & 0x60) >> 5; /* Bits 5 and 6 of byte 2 comprise num_layers field */
+    if (num_layers == 0x01) {
+        num_layers = 2; /* field value 01b specifies 2 layers */
+    } else {
+        num_layers = 1; /* field value 00b specifies 1 layer */
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of layers: %d\n", __debug__, num_layers);
+
+    mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0000, cur_ptr, 2048);
+    cur_ptr += 2048;
+
+    /* Second round if it's dual-layer... */
+    if (num_layers == 2) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dual-layer disc; reading disc structures for second layer\n", __debug__);
+
+        /* 0x0001: DVD copyright information */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc structure 0x0001 (%d bytes): %02hX %02hX %02hX %02hX\n", __debug__, 4, cur_ptr[0], cur_ptr[1], cur_ptr[2], cur_ptr[3]);
+        mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0001, cur_ptr, 4);
+        cur_ptr += 4;
+
+        /* 0x0004: DVD manufacturing information */
+        MIRAGE_DEBUG(
+            self,
+            MIRAGE_DEBUG_PARSER,
+            "%s: disc structure 0x0004 (%d bytes): %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX ... %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX\n",
+            __debug__,
+            2048,
+            cur_ptr[0], cur_ptr[1], cur_ptr[2], cur_ptr[3], cur_ptr[4], cur_ptr[5], cur_ptr[6], cur_ptr[7],
+            cur_ptr[2040], cur_ptr[2041], cur_ptr[2042], cur_ptr[2043], cur_ptr[2044], cur_ptr[2045], cur_ptr[2046], cur_ptr[2047]
+        );
+        mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0004, cur_ptr, 2048);
+        cur_ptr += 2048;
+
+        /* 0x0000: Physical information */
+        MIRAGE_DEBUG(
+            self,
+            MIRAGE_DEBUG_PARSER,
+            "%s: disc structure 0x0000 (%d bytes): %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX ... %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX\n",
+            __debug__,
+            2048,
+            cur_ptr[0], cur_ptr[1], cur_ptr[2], cur_ptr[3], cur_ptr[4], cur_ptr[5], cur_ptr[6], cur_ptr[7],
+            cur_ptr[2040], cur_ptr[2041], cur_ptr[2042], cur_ptr[2043], cur_ptr[2044], cur_ptr[2045], cur_ptr[2046], cur_ptr[2047]
+        );
+        mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0000, cur_ptr, 2048);
+        cur_ptr += 2048;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: final offset: 0x%lX\n", __debug__, cur_ptr - self->priv->descriptor_data);
+
+    return TRUE;
+}
+
 static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **error)
 {
     const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
@@ -843,6 +940,21 @@ static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **err
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing CD-TEXT data\n", __debug__);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: found CD-TEXT data when medium type is not CD-ROM (type=%d) - ignoring!\n", __debug__, self->priv->medium_type);
+        }
+    }
+
+    /* Disc structures */
+    if (descriptor_header->disc_structures_offset != 0) {
+        if (self->priv->medium_type != MIRAGE_MEDIUM_CD) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing disc structures data...\n", __debug__);
+            if (!mirage_parser_mdx_parser_disc_structures_data(self, &local_error)) {
+                /* Non-fatal */
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse disc structures data: %s\n", __debug__, local_error->message);
+                g_error_free(local_error);
+            }
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing disc structures data\n", __debug__);
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: found disc structures data when medium type is CD-ROM (type=%d) - ignoring!\n", __debug__, self->priv->medium_type);
         }
     }
 
@@ -1204,6 +1316,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: 0x%X\n", __debug__, descriptor_header->num_sessions);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CD-TEXT block size: 0x%X\n", __debug__, descriptor_header->cdtext_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CD-TEXT block offset: 0x%X\n", __debug__, descriptor_header->cdtext_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc structures offset: 0x%X\n", __debug__, descriptor_header->disc_structures_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, descriptor_header->sessions_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n", __debug__, descriptor_header->dpm_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  encryption header offset: 0x%X\n", __debug__, descriptor_header->encryption_header_offset);
