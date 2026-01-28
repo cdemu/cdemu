@@ -202,7 +202,7 @@ static gchar *mirage_parser_mdx_get_mdf_filename (MirageParserMdx *self, const g
 
 static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MDX_SessionBlock *session_block, GError **error)
 {
-    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
 
     MDX_TrackBlock *track_blocks;
     MirageSession *session;
@@ -638,7 +638,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
 static gboolean mirage_parser_mdx_parse_sessions (MirageParserMdx *self, GError **error)
 {
-    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
 
     MDX_SessionBlock *session_blocks;
 
@@ -748,7 +748,7 @@ static void mirage_parser_mds_parse_dpm_block (MirageParserMdx *self, const guin
 
 static void mirage_parser_mds_parse_dpm_data (MirageParserMdx *self)
 {
-    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
     guint8 *cur_ptr = self->priv->descriptor_data + descriptor_header->dpm_blocks_offset;
 
     /* It would seem the first field is number of DPM data sets, followed by
@@ -775,7 +775,7 @@ static void mirage_parser_mds_parse_dpm_data (MirageParserMdx *self)
 
 static gboolean mirage_parser_mdx_parse_cdtext_data (MirageParserMdx *self, GError **error)
 {
-    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
     MirageSession *session;
     gboolean succeeded;
 
@@ -818,7 +818,7 @@ static gboolean mirage_parser_mdx_parse_cdtext_data (MirageParserMdx *self, GErr
 
 static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **error)
 {
-    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
     GError *local_error = NULL;
 
     /* Sessions */
@@ -1028,7 +1028,7 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
 
 static gboolean mirage_parser_mdx_read_data_encryption_header (MirageParserMdx *self, const MDX_EncryptionHeader **encryption_header_out, GError **error)
 {
-    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianess has been fixed up already. */
+    const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
 
     if (!descriptor_header->encryption_header_offset) {
         /* No encryption header available; do nothing and return success status */
