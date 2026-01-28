@@ -181,7 +181,7 @@ static gboolean cdemu_device_generate_dvd_structure (CdemuDevice *self, gint lay
             }
 
             *structure_buffer = (guint8 *)info;
-            *structure_length = sizeof(struct DVD_STRUCTURE_Copyright);
+            *structure_length = sizeof(struct DVD_STRUCTURE_PhysicalFormat);
 
             return TRUE;
         }
