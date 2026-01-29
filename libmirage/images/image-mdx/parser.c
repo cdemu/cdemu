@@ -54,6 +54,8 @@ struct _MirageParserMdxPrivate
      * same instance can be shared among all data fragments. */
     gpointer gfmul_table;
 
+    gboolean is_tages; /* Used to disable validation of track length */
+
     gint64 prev_session_end;
 
     gint medium_type;
@@ -628,10 +630,18 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
         if (total_track_length != declared_track_length) {
             gint track_number = mirage_track_layout_get_track_number(track);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track length validation failed for track #%d - declared length is %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X) sectors, actual length is %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X) sectors!\n", __debug__, track_number, declared_track_length, declared_track_length, total_track_length, total_track_length);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track length validation failed for track #%d!"), track_number);
-            g_object_unref(track);
-            g_object_unref(session);
-            return FALSE;
+            /* In non-TAGES images, we consider the length mismatch to be
+             * an error. In TAGES images, it likely indicates the actual
+             * presence of twin sectors, but at this point, we do not
+             * properly account for those either way. However, allowing
+             * the image to load allows us to read and inspect the sector
+             * data for further development. */
+            if (!self->priv->is_tages) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Track length validation failed for track #%d!"), track_number);
+                g_object_unref(track);
+                g_object_unref(session);
+                return FALSE;
+            }
         }
 
         g_object_unref(track);
@@ -1185,6 +1195,7 @@ static gboolean mirage_parser_mdx_read_data_encryption_header (MirageParserMdx *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: encryption header deciphered without user password!\n", __debug__);
         g_free(header_backup);
         *encryption_header_out = encryption_header;
+        self->priv->is_tages = TRUE; /* Assuming password-less encryption is applicable only to TAGES images... */
         return TRUE;
     }
 
@@ -1416,6 +1427,8 @@ static void mirage_parser_mdx_init (MirageParserMdx *self)
     self->priv->descriptor_data = NULL;
     self->priv->data_encryption_header = NULL;
     self->priv->gfmul_table = NULL;
+
+    self->priv->is_tages = FALSE;
 }
 
 static void mirage_parser_mdx_dispose (GObject *gobject)
