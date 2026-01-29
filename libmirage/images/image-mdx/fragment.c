@@ -503,10 +503,10 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
             const gsize aligned_data_len = read_len & ~15;
             const guint aligned_sector_size = sector_size & ~15;
 
-            const gint start_sector_address = sector_group * self->priv->sectors_in_group;
+            const guint64 start_sector_address = sector_group * self->priv->sectors_in_group;
             const guint64 tweak_counter = 1 + start_sector_address * aligned_sector_size / 16;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %d, aligned data length is %" G_GINT64_MODIFIER "d, aligned sector size is %d, start value of tweak counter is %" G_GINT64_MODIFIER "d\n", __debug__, start_sector_address, aligned_data_len, aligned_sector_size, tweak_counter);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %" G_GINT64_MODIFIER "d, aligned data length is %" G_GINT64_MODIFIER "d, aligned sector size is %d, start value of tweak counter is %" G_GINT64_MODIFIER "d\n", __debug__, start_sector_address, aligned_data_len, aligned_sector_size, tweak_counter);
 
             gboolean succeeded = mdx_crypto_decipher_buffer_lrw(
                 self->priv->crypt_handle,
