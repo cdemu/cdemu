@@ -12,6 +12,7 @@ if(ZLIB_FOUND AND LIBGCRYPT_FOUND)
     add_library(${image_name} MODULE
         crypto.c
         fragment.c
+        gf128mul.c
         parser.c
         plugin.c
     )

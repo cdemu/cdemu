@@ -25,79 +25,7 @@
 #include <gcrypt.h>
 #include <zlib.h>
 
-
-/**********************************************************************\
- *            Multiplication in GF(2^128), required by LRW            *
-\**********************************************************************/
-/* NOTE: this is basic (= slow) implementation using peasant's algorithm.
- * If it turns out to be a bottleneck, we can optimize it via pre-computed
- * look-up table. */
-
-/* By convention, LRW uses BBE (big-big-endian) bit-string representation
- * for elements of GF(2^128); the 128 bits representing the polynomial
- * coefficients are stored in two 64-bit words, with bytes in the words
- * and the bits in those bytes both being stored in big-endian order:
- *
- * 10000000 00000000 00000000 00000000 .... 00000000 00000000 00000000
- *   b[0]     b[1]     b[2]     b[3]          b[13]    b[14]    b[15]
- *
- * The left-most byte (b[0]) is the most significant byte (MSB), and the
- * left-most bit in it is the most significant bit. Therefore, the above
- * buffer represents the polynomial X^127.
- *
- * The polynomial X^7+X^2+X^1+1 has the following representation:
- *
- * 00000000 00000000 00000000 00000000 .... 00000000 00000000 10000111
- *   b[0]     b[1]     b[2]     b[3]          b[13]    b[14]    b[15]
- */
-
-typedef union
-{
-    guint64 words[2];
-    guint8 bytes[16];
-} guint128_bbe;
-
-static inline int is_bit_set_128 (const guint128_bbe *a, gint bit)
-{
-    return a->bytes[(127 - bit) / 8] & (0x80 >> ((127 - bit) % 8));
-}
-
-static inline void xor_128 (guint128_bbe *a, const guint128_bbe *b)
-{
-    a->words[0] ^= b->words[0];
-    a->words[1] ^= b->words[1];
-}
-
-static inline void shift_left_128 (guint128_bbe *a)
-{
-    gint carry = 0;
-    gint new_carry;
-
-    for (gint i = 15; i >= 0; i--) {
-        new_carry = (a->bytes[i] & 0x80) >> 7;
-        a->bytes[i] = (a->bytes[i] << 1) | carry;
-        carry = new_carry;
-    }
-}
-
-static void gf_mul_128 (const guint128_bbe *a, const guint128_bbe *b, guint128_bbe *p)
-{
-    guint128_bbe la = *a; /* Copy first operand to scratch buffer so we can left-shift it */
-    p->words[0] = p->words[1] = 0;
-
-    for (gint i = 0; i < 128; i++) {
-        if (is_bit_set_128(b, i)) {
-            xor_128(p, &la);
-        }
-
-        if (la.bytes[0] & 0x80) {
-            shift_left_128(&la);
-            la.bytes[15] ^= 0x87;
-        } else {
-            shift_left_128(&la);
-        }
-    }
-}
+#include "gf128mul.h"
 
 
 /**********************************************************************\
@@ -133,7 +61,8 @@ mdx_crypto_decipher_buffer_lrw (
         gf_mul_128((guint128_bbe *)tweak_key, &tweak_index, &tweak);
 
         /* XOR with tweak */
-        xor_128((guint128_bbe *)data, &tweak);
+        ((guint128_bbe *)data)->words[0] ^= tweak.words[0];
+        ((guint128_bbe *)data)->words[1] ^= tweak.words[1];
 
         /* Decipher */
         rc = gcry_cipher_decrypt(crypt_handle, data, block_size, NULL, 0);
@@ -143,7 +72,8 @@ mdx_crypto_decipher_buffer_lrw (
         }
 
         /* XOR with tweak */
-        xor_128((guint128_bbe *)data, &tweak);
+        ((guint128_bbe *)data)->words[0] ^= tweak.words[0];
+        ((guint128_bbe *)data)->words[1] ^= tweak.words[1];
 
         data += block_size / sizeof(*data);
     }
