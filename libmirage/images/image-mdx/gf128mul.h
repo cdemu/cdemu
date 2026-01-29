@@ -1,6 +1,6 @@
 /*
  *  libMirage: MDX image: multiplication in GF(2^128), required by LRW
- *  Copyright (C) 2025 Rok Mandeljc
+ *  Copyright (C) 2026 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,11 +39,21 @@
  *   b[0]     b[1]     b[2]     b[3]          b[13]    b[14]    b[15]
  */
 
-typedef union
+typedef struct
 {
-    guint64 words[2];
-    guint8 bytes[16];
+    guint64 a;
+    guint64 b;
 } guint128_bbe;
 
+/* 64k table for fast multiplication in GF(2^128) */
+typedef struct
+{
+    guint128_bbe t[16][256];
+} gf128mul_64k_table;
 
-void gf_mul_128 (const guint128_bbe *a, const guint128_bbe *b, guint128_bbe *p);
+/* Allocate and initialize the table for multiplication */
+gf128mul_64k_table *gf128mul_init_64k_table_bbe (const guint128_bbe *g);
+
+/* Fast table-based multiplication; multiplies the given value with the
+ * operand that was used to initialize the given table. */
+void gf128mul_64k_bbe (guint128_bbe *a, const gf128mul_64k_table *table);

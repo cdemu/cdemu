@@ -31,12 +31,22 @@
 /**********************************************************************\
  *                         AES-256 with LRW                           *
 \**********************************************************************/
+void *mdx_crypto_init_gf128mul_table (const guint8 *tweak_key)
+{
+    return gf128mul_init_64k_table_bbe((guint128_bbe *)tweak_key);
+}
+
+void mdx_crypto_free_gf128mul_table (void *gfmul_table)
+{
+    g_free(gfmul_table);
+}
+
 gboolean
 mdx_crypto_decipher_buffer_lrw (
     gcry_cipher_hd_t crypt_handle,
+    const void *gfmul_table,
     guint8 *data,
     gsize len,
-    const guint8 *tweak_key,
     guint64 sector_number,
     GError **error
 )
@@ -44,25 +54,24 @@ mdx_crypto_decipher_buffer_lrw (
     const gint block_size = 16;
     gpg_error_t rc;
 
-    guint128_bbe tweak;
-    guint128_bbe tweak_index;
-
     if (len % block_size) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Data length is not a multiple of 16-byte block size!");
         return FALSE;
     }
 
-    tweak_index.words[0] = 0; /* High 64-bit word is always 0, because our sector_number is 64-bit */
-
     /* Decipher each 16-byte block */
     for (gsize i = 0; i < len / block_size; i++) {
-        /* Tweak: product of tweak key (F) and tweak index (I) in GF(2^128) */
-        tweak_index.words[1] = GUINT64_TO_BE(sector_number + i);
-        gf_mul_128((guint128_bbe *)tweak_key, &tweak_index, &tweak);
+        /* Tweak: product of tweak key (F) and tweak index (I) in GF(2^128).
+         * Use the table-based multiplication (where table was initialized
+         * using the tweak key). */
+        guint128_bbe tweak;
+        tweak.a = 0;
+        tweak.b = GUINT64_TO_BE(sector_number + i);
+        gf128mul_64k_bbe(&tweak, (gf128mul_64k_table *)gfmul_table);
 
         /* XOR with tweak */
-        ((guint128_bbe *)data)->words[0] ^= tweak.words[0];
-        ((guint128_bbe *)data)->words[1] ^= tweak.words[1];
+        ((guint128_bbe *)data)->a ^= tweak.a;
+        ((guint128_bbe *)data)->b ^= tweak.b;
 
         /* Decipher */
         rc = gcry_cipher_decrypt(crypt_handle, data, block_size, NULL, 0);
@@ -72,8 +81,8 @@ mdx_crypto_decipher_buffer_lrw (
         }
 
         /* XOR with tweak */
-        ((guint128_bbe *)data)->words[0] ^= tweak.words[0];
-        ((guint128_bbe *)data)->words[1] ^= tweak.words[1];
+        ((guint128_bbe *)data)->a ^= tweak.a;
+        ((guint128_bbe *)data)->b ^= tweak.b;
 
         data += block_size / sizeof(*data);
     }
@@ -209,14 +218,23 @@ static gboolean _mdx_crypto_decipher_encryption_header (
             &local_error
         );
     } else {
+        /* Initialize table for GF(2^128) multiplication using the master key */
+        void *gfmul_table = mdx_crypto_init_gf128mul_table(master_key);
+        if (!gfmul_table) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize table for GF(2^128) multiplication!");
+            return FALSE;
+        }
+
         succeeded = mdx_crypto_decipher_buffer_lrw(
             crypt_handle,
+            gfmul_table,
             (guint8 *)(&header->key_data_checksum), /* first field in encrypted-data area */
             sizeof(MDX_EncryptionHeader) - offsetof(MDX_EncryptionHeader, key_data_checksum),
-            master_key, /* Tweak key (16 bytes) at the start of master key buffer */
             1, /* Sector number = 1 */
             &local_error
         );
+
+        mdx_crypto_free_gf128mul_table(gfmul_table);
     }
     if (!succeeded) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to decipher header data buffer: %s", local_error->message);

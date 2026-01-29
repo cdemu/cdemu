@@ -259,12 +259,15 @@ guint8 *mdx_crypto_decipher_and_decompress_descriptor(
 
 gboolean mdx_crypto_decipher_buffer_lrw (
     gcry_cipher_hd_t crypt_handle,
+    const void *gfmul_table,
     guint8 *data,
     gsize len,
-    const guint8 *tweak_key,
     guint64 sector_number,
     GError **error
 );
+
+void *mdx_crypto_init_gf128mul_table (const guint8 *tweak_key);
+void mdx_crypto_free_gf128mul_table (void *gfmul_table);
 
 
 #pragma pack()

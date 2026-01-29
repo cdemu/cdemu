@@ -64,7 +64,7 @@ struct _MirageFragmentMdxPrivate
 
     /* Cipher handle for data deciphering */
     gcry_cipher_hd_t crypt_handle;
-    guint8 tweak_key[16];
+    void *gfmul_table;
 
     /* Compression table */
     MDX_CompressionTableEntry *compression_table;
@@ -312,8 +312,13 @@ gboolean mirage_fragment_mdx_setup (
             return FALSE;
         }
 
-        /* Copy tweak key - first 16 bytes of the key data */
-        memcpy(self->priv->tweak_key, encryption_header->key_data, 16);
+        /* Initialize GF(2^128) multiplication table using the tweak key
+         * (first 16 bytes of the key data). */
+        self->priv->gfmul_table = mdx_crypto_init_gf128mul_table(encryption_header->key_data);
+        if (!self->priv->gfmul_table) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to initialize table for GF(2^128) multiplication!");
+            return FALSE;
+        }
     }
 
     /* If compression is enabled, read compression table */
@@ -508,9 +513,9 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
 
             gboolean succeeded = mdx_crypto_decipher_buffer_lrw(
                 self->priv->crypt_handle,
+                self->priv->gfmul_table,
                 is_zlib ? self->priv->zlib_buffer : self->priv->buffer,
                 aligned_data_len,
-                self->priv->tweak_key,
                 tweak_counter,
                 &local_error
             );
@@ -686,6 +691,7 @@ static void mirage_fragment_mdx_init (MirageFragmentMdx *self)
     self->priv->cached_sector_group = -1; /* unsigned; so this becomes max value */
 
     self->priv->crypt_handle = NULL;
+    self->priv->gfmul_table = NULL;
 
     self->priv->compression_table = NULL;
     self->priv->compression_table_size = 0;
@@ -723,6 +729,8 @@ static void mirage_fragment_mdx_dispose (GObject *gobject)
 static void mirage_fragment_mdx_finalize (GObject *gobject)
 {
     MirageFragmentMdx *self = MIRAGE_FRAGMENT_MDX(gobject);
+
+    mdx_crypto_free_gf128mul_table(self->priv->gfmul_table);
 
     g_free(self->priv->buffer);
     g_free(self->priv->compression_table);
