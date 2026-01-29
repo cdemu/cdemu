@@ -8,7 +8,7 @@ find_package(ZLIB 1.2.4 QUIET)
 pkg_check_modules(LIBGCRYPT REQUIRED libgcrypt IMPORTED_TARGET)
 
 # Build
-if(ZLIB_FOUND AND LIBGCRYPT_FOUND)
+if(ZLIB_FOUND AND LIBGCRYPT_FOUND AND (GLIB_glib-2.0_VERSION VERSION_GREATER_EQUAL "2.58"))
     add_library(${image_name} MODULE
         crypto.c
         fragment.c

@@ -23,6 +23,7 @@
 
 #include "image-mdx.h"
 #include "fragment.h"
+#include "gf128mul.h"
 
 #define __debug__ "MDX-Parser"
 
@@ -47,6 +48,11 @@ struct _MirageParserMdxPrivate
     /* Optional encryption header for encrypted track data; pointer into
      * descriptor data buffer. */
     const MDX_EncryptionHeader *data_encryption_header;
+
+    /* Pre-computed GF(2^128) multiplication table for data decryption,
+     * wrapped in GLib's referenced-counted box (g_rc_box_* API) so the
+     * same instance can be shared among all data fragments. */
+    gpointer gfmul_table;
 
     gint64 prev_session_end;
 
@@ -591,6 +597,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
                 subchannel_format,
                 footer_block,
                 self->priv->data_encryption_header,
+                self->priv->gfmul_table,
                 &local_error
             );
 
@@ -1325,6 +1332,22 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     if (!mirage_parser_mdx_read_data_encryption_header(self, &self->priv->data_encryption_header, error)) {
         return FALSE;
     }
+    /* If track data is encrypted, prepare the pre-computed GF(2^128)
+     * multiplication table, so we can share it across all data fragments.
+     * Use reference-counted box (g_rc_box_* APIs) that were introduced
+     * in GLib 2.58. */
+    if (self->priv->data_encryption_header) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: initializing GF(2^128) multiplication table for data decryption...\n", __debug__);
+        self->priv->gfmul_table = g_rc_box_new0(gf128mul_64k_table);
+        if (!self->priv->gfmul_table) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize table for GF(2^128) multiplication!");
+            return FALSE;
+        }
+        gf128mul_init_64k_table_bbe(
+            (guint128_bbe *)self->priv->data_encryption_header->key_data,
+            self->priv->gfmul_table
+        );
+    }
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -1392,6 +1415,7 @@ static void mirage_parser_mdx_init (MirageParserMdx *self)
 
     self->priv->descriptor_data = NULL;
     self->priv->data_encryption_header = NULL;
+    self->priv->gfmul_table = NULL;
 }
 
 static void mirage_parser_mdx_dispose (GObject *gobject)
@@ -1401,6 +1425,11 @@ static void mirage_parser_mdx_dispose (GObject *gobject)
     if (self->priv->stream) {
         g_object_unref(self->priv->stream);
         self->priv->stream = NULL;
+    }
+
+    if (self->priv->gfmul_table) {
+        g_rc_box_release(self->priv->gfmul_table);
+        self->priv->gfmul_table = NULL;
     }
 
     /* Chain up to the parent class */

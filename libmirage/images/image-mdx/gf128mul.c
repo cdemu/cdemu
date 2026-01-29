@@ -195,15 +195,9 @@ static inline void be128_xor (guint128_bbe *r, const guint128_bbe *p, const guin
  * t[1][BYTE] contains g*x^8*BYTE
  *  ..
  * t[15][BYTE] contains g*x^120*BYTE */
-gf128mul_64k_table *gf128mul_init_64k_table_bbe (const guint128_bbe *g)
+void gf128mul_init_64k_table_bbe (const guint128_bbe *g, gf128mul_64k_table *table)
 {
-    gf128mul_64k_table *table;
     guint i, j, k;
-
-    table = g_new0(gf128mul_64k_table, 1);
-    if (!table) {
-        return NULL;
-    }
 
     table->t[0][1] = *g;
     for (j = 1; j <= 64; j <<= 1) {
@@ -226,8 +220,6 @@ gf128mul_64k_table *gf128mul_init_64k_table_bbe (const guint128_bbe *g)
             gf128mul_x8_bbe(&table->t[i][j]);
         }
     }
-
-    return table;
 }
 
 void gf128mul_64k_bbe (guint128_bbe *a, const gf128mul_64k_table *table)

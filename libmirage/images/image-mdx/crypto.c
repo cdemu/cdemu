@@ -31,20 +31,10 @@
 /**********************************************************************\
  *                         AES-256 with LRW                           *
 \**********************************************************************/
-void *mdx_crypto_init_gf128mul_table (const guint8 *tweak_key)
-{
-    return gf128mul_init_64k_table_bbe((guint128_bbe *)tweak_key);
-}
-
-void mdx_crypto_free_gf128mul_table (void *gfmul_table)
-{
-    g_free(gfmul_table);
-}
-
 gboolean
 mdx_crypto_decipher_buffer_lrw (
     gcry_cipher_hd_t crypt_handle,
-    const void *gfmul_table,
+    const gpointer gfmul_table,
     guint8 *data,
     gsize len,
     guint64 sector_number,
@@ -219,11 +209,12 @@ static gboolean _mdx_crypto_decipher_encryption_header (
         );
     } else {
         /* Initialize table for GF(2^128) multiplication using the master key */
-        void *gfmul_table = mdx_crypto_init_gf128mul_table(master_key);
+        gpointer gfmul_table = g_new0(gf128mul_64k_table, 1);
         if (!gfmul_table) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize table for GF(2^128) multiplication!");
             return FALSE;
         }
+        gf128mul_init_64k_table_bbe((guint128_bbe *)master_key, gfmul_table);
 
         succeeded = mdx_crypto_decipher_buffer_lrw(
             crypt_handle,
@@ -234,7 +225,7 @@ static gboolean _mdx_crypto_decipher_encryption_header (
             &local_error
         );
 
-        mdx_crypto_free_gf128mul_table(gfmul_table);
+        g_free(gfmul_table);
     }
     if (!succeeded) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to decipher header data buffer: %s", local_error->message);

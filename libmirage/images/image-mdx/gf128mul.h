@@ -51,8 +51,9 @@ typedef struct
     guint128_bbe t[16][256];
 } gf128mul_64k_table;
 
-/* Allocate and initialize the table for multiplication */
-gf128mul_64k_table *gf128mul_init_64k_table_bbe (const guint128_bbe *g);
+/* Initialize the table for multiplication; the structure must be allocated
+ * by caller. */
+void gf128mul_init_64k_table_bbe (const guint128_bbe *g, gf128mul_64k_table *table);
 
 /* Fast table-based multiplication; multiplies the given value with the
  * operand that was used to initialize the given table. */

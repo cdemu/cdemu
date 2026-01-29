@@ -64,7 +64,7 @@ struct _MirageFragmentMdxPrivate
 
     /* Cipher handle for data deciphering */
     gcry_cipher_hd_t crypt_handle;
-    void *gfmul_table;
+    gpointer gfmul_table;
 
     /* Compression table */
     MDX_CompressionTableEntry *compression_table;
@@ -248,6 +248,7 @@ gboolean mirage_fragment_mdx_setup (
     gint subchannel_format,
     const MDX_Footer *footer,
     const MDX_EncryptionHeader *encryption_header,
+    gpointer gfmul_table,
     GError **error
 )
 {
@@ -312,13 +313,9 @@ gboolean mirage_fragment_mdx_setup (
             return FALSE;
         }
 
-        /* Initialize GF(2^128) multiplication table using the tweak key
-         * (first 16 bytes of the key data). */
-        self->priv->gfmul_table = mdx_crypto_init_gf128mul_table(encryption_header->key_data);
-        if (!self->priv->gfmul_table) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to initialize table for GF(2^128) multiplication!");
-            return FALSE;
-        }
+        /* Store reference to shared instance of pre-computed GF(2^128)
+         * multiplication table. */
+        self->priv->gfmul_table = g_rc_box_acquire(gfmul_table);
     }
 
     /* If compression is enabled, read compression table */
@@ -716,6 +713,11 @@ static void mirage_fragment_mdx_dispose (GObject *gobject)
         self->priv->crypt_handle = NULL;
     }
 
+    if (self->priv->gfmul_table) {
+        g_rc_box_release(self->priv->gfmul_table);
+        self->priv->gfmul_table = NULL;
+    }
+
     if (self->priv->zlib_stream) {
         inflateEnd(self->priv->zlib_stream);
         g_free(self->priv->zlib_stream);
@@ -729,8 +731,6 @@ static void mirage_fragment_mdx_dispose (GObject *gobject)
 static void mirage_fragment_mdx_finalize (GObject *gobject)
 {
     MirageFragmentMdx *self = MIRAGE_FRAGMENT_MDX(gobject);
-
-    mdx_crypto_free_gf128mul_table(self->priv->gfmul_table);
 
     g_free(self->priv->buffer);
     g_free(self->priv->compression_table);
