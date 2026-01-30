@@ -1,6 +1,6 @@
 /*
  *  libMirage: MDX image: data decryption functions
- *  Copyright (C) 2025 Rok Mandeljc
+ *  Copyright (C) 2025-2026 Rok Mandeljc
  *
  *  Based on reverse-engineering effort from:
  *  https://github.com/Marisa-Chan/mdsx

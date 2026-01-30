@@ -1,7 +1,7 @@
 /*
  *  libMirage: MDX image: parser
- *  Copyright (C) 2006-2014 Henrik Stokseth
- *  Copyright (C) 2025 Rok Mandeljc
+ *  Copyright (C) 2006-2025 Henrik Stokseth
+ *  Copyright (C) 2025-2026 Rok Mandeljc
  *
  *  Based on reverse-engineering effort from:
  *  https://github.com/Marisa-Chan/mdsx

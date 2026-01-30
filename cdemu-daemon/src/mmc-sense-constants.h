@@ -1,6 +1,6 @@
 /*
  *  CDEmu daemon: MMC-3 sense keys and ASC/ASCQ combinations
- *  Copyright (C) 2006-2014 Rok Mandeljc
+ *  Copyright (C) 2006-2026 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

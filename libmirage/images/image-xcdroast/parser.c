@@ -1,6 +1,6 @@
 /*
  *  libMirage: X-CD-Roast image: parser
- *  Copyright (C) 2009-2014 Rok Mandeljc
+ *  Copyright (C) 2009-2026 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

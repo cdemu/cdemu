@@ -1,6 +1,6 @@
 # cdemu-bash-completion.sh: bash completion for cdemu client
 # Copyright (C) 2011-2014 Henrik Stokseth
-# Copyright (C) 2014 Rok Mandeljc
+# Copyright (C) 2014-2026 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

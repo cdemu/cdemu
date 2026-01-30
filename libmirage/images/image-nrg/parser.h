@@ -1,6 +1,6 @@
 /*
  *  libMirage: NRG image: parser
- *  Copyright (C) 2006-2014 Rok Mandeljc
+ *  Copyright (C) 2006-2026 Rok Mandeljc
  *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
