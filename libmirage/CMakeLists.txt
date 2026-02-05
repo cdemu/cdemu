@@ -12,6 +12,11 @@ set(MIRAGE_SOVERSION_MAJOR 12)
 set(MIRAGE_SOVERSION_MINOR 0)
 set(MIRAGE_SOVERSION_PATCH 0)
 
+# The version if GIR (GObject Introspection) namespace. Similar to the
+# soversion, but with separate update criteria. For historic reasons,
+# the current version of the namespace is 3.2.
+set(MIRAGE_GIR_VERSION "3.2")
+
 # Additional CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -181,8 +186,8 @@ intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 # *** Introspection ***
 if(INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection(
-        FILENAME Mirage-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.gir
-        NSVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        FILENAME Mirage-${MIRAGE_GIR_VERSION}.gir
+        NSVERSION ${MIRAGE_GIR_VERSION}
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
         QUIET
@@ -198,7 +203,7 @@ endif()
 # *** Vala API ***
 if(INTROSPECTION_ENABLED AND INTROSPECTION_FOUND AND VALAC AND VAPIGEN)
     add_custom_target(vala ALL)
-    set(gir_fullname ${CMAKE_BINARY_DIR}/Mirage-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.gir)
+    set(gir_fullname ${CMAKE_BINARY_DIR}/Mirage-${MIRAGE_GIR_VERSION}.gir)
     set(vapi_file ${CMAKE_CURRENT_BINARY_DIR}/libmirage.vapi)
 
     add_custom_command(OUTPUT ${vapi_file}
