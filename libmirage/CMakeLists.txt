@@ -122,6 +122,7 @@ set(libmirage_HEADERS
     mirage/track.h
     mirage/types.h
     mirage/utils.h
+#    mirage/utils-private.h
     mirage/writer.h
     ${PROJECT_BINARY_DIR}/mirage/version.h
 #    ${PROJECT_BINARY_DIR}/mirage/config.h
@@ -148,6 +149,7 @@ set(libmirage_SOURCES
     mirage/stream.c
     mirage/track.c
     mirage/utils.c
+    mirage/utils-private.c
     mirage/version.c
     mirage/writer.c
 )
@@ -229,7 +231,7 @@ if(GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/mirage ${PROJECT_BINARY_DIR}/mirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/reference
-        IGNORE_HFILES compat-input-stream.h config.h
+        IGNORE_HFILES compat-input-stream.h config.h utils-private.h
         CFLAGS ${GLIB_CFLAGS}
         LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}

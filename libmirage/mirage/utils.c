@@ -1477,35 +1477,3 @@ gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary
     g_regex_unref(regex);
     return result;
 }
-
-
-
-/**********************************************************************\
- *                           Miscellaneous                            *
-\**********************************************************************/
-/**
- * mirage_signal_handlers_disconnect_by_func:
- * @instance: (in) (type GObject.Object): the instance to remove handlers from
- * @func: (in) (scope call) (closure user_data): the C closure callback of the handlers
- * @user_data: (in) (nullable): the closure data of the handlers' closures
- *
- * Replacement for g_signal_handlers_disconnect_by_func() that accepts
- * function pointer instead of object pointer, and type-puns the given
- * function pointer to object pointer via union to avoid warnings when
- * compiling with pedantic compiler settings.
- *
- * Returns: the number of handlers that matched.
- **/
-guint mirage_signal_handlers_disconnect_by_func (gpointer instance, GCallback func, gpointer user_data)
-{
-    /* Type-pun the given function pointer to object pointer (required by
-     * g_signal_handlers_disconnect_*()) via union to avoid warnings in
-     * -pedantic mode. */
-    union {
-        GCallback function_ptr;
-        gpointer object_ptr;
-    } func_alias;
-    func_alias.function_ptr = func;
-
-    return g_signal_handlers_disconnect_by_func(instance, func_alias.object_ptr, user_data);
-}

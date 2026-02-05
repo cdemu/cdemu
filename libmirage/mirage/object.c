@@ -33,6 +33,7 @@
 
 #include "mirage/config.h"
 #include "mirage/mirage.h"
+#include "mirage/utils-private.h"
 
 #include <glib/gi18n-lib.h>
 
