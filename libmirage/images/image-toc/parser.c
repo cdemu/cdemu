@@ -1178,7 +1178,7 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, MirageS
     }
 
     /* Read file line-by-line */
-    for (gint line_number = 1; ; line_number++) {
+    while (TRUE) {
         GError *local_error = NULL;
         gchar *line_string;
         gsize line_length;
