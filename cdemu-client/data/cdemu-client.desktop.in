@@ -5,7 +5,7 @@ _Name=CDEmu client
 _Comment=Client for handling optical media (CD/DVD) images
 NoDisplay=true
 TryExec=cdemu
-Exec=cdemu load any %F
+Exec=env CDEMU_USE_ZENITY=1 cdemu load any %F
 MimeType=application/x-apple-diskimage;application/x-b6t;application/x-c2d;application/x-ccd;application/x-cdi;application/x-cdrdao-toc;application/x-cd-image;application/x-cif;application/x-cso;application/x-cue;application/x-daa;application/x-ecm;application/x-gamecube-iso-image;application/x-gbi;application/x-isz;application/x-macbinary;application/x-mds;application/x-mdx;application/x-nrg;application/x-wii-iso-image;application/x-xcdroast;application/x-xmd;
 Icon=cdemu-client
 Terminal=false
