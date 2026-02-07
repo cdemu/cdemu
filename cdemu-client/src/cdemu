@@ -182,35 +182,50 @@ class cmd_load:
         try:
             proxy.DeviceLoad(device, filenames, params)
         except GLib.Error as e:
-            if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" not in str(e):
+            if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
+                # We need password to load the image, so ask the user for it
+                try:
+                    password = self.ask_for_password()
+                except Exception as e:
+                    raise CDEmuError(_("Failed to obtain password for encrypted image: %s") % (e, ))
+
+                # Append password to params
+                params["password"] = GLib.Variant("s", password)
+                return self.load_device(proxy, device, filenames, params)
+            else:
                 raise CDEmuError(_("Failed to load image: %s") % (e))
 
-            # We need password
-            if "CDEMU_ASKPASS" in os.environ:
-                password = subprocess.run(
+    def ask_for_password(self):
+        # If CDEMU_ASKPASS is defined, use it.
+        if "CDEMU_ASKPASS" in os.environ:
+            try:
+                return subprocess.run(
                     shlex.split(os.environ["CDEMU_ASKPASS"]),
                     check=True,
                     text=True,
                     stdout=subprocess.PIPE,
                 ).stdout
-            else:
-                if sys.stdin.isatty():
-                    print(_("The image you are trying to load is encrypted."))
-                    password = getpass.getpass(_("Password: "))
-                else:
-                    if "SSH_ASKPASS" in os.environ:
-                        password = subprocess.run(
-                            shlex.split(os.environ["SSH_ASKPASS"]),
-                            check=True,
-                            text=True,
-                            stdout=subprocess.PIPE,
-                        ).stdout
-                    else:
-                        raise CDEmuError(_("No password agent was supplied."))
+            except Exception as e:
+                raise CDEmuError(_("Failed to run password agent defined via CDEMU_ASKPASS environment variable: %s") % (e, ))
 
-            # Append password to params
-            params["password"] = GLib.Variant("s", password)
-            return self.load_device(proxy, device, filenames, params)
+        # If we have console available, use `getpass`.
+        if sys.stdin.isatty():
+            print(_("The image you are trying to load is encrypted."))
+            return getpass.getpass(_("Password: "))
+
+        # Otherwise, use the command defined by SSH_ASKPASS, if available.
+        if "SSH_ASKPASS" in os.environ:
+            try:
+                return subprocess.run(
+                    shlex.split(os.environ["SSH_ASKPASS"]),
+                    check=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout
+            except Exception as e:
+                raise CDEmuError(_("Failed to run password agent defined via SSH_ASKPASS environment variable: %s") % (e, ))
+
+        raise CDEmuError(_("No password agent was supplied."))
 
 
 ########################################################################
