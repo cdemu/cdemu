@@ -26,6 +26,7 @@ import os
 import shlex
 import subprocess
 import sys
+import time
 
 import gi
 
@@ -135,6 +136,14 @@ class cmd_load:
             help=_("encoding for text-based images"),
         )
         parser.add_argument(
+            "--unload",
+            "--replace",
+            action="store_true",
+            dest="unload",
+            default=False,
+            help=_("unload image from a loaded device if necessary"),
+        )
+        parser.add_argument(
             "--create",
             action="store_true",
             dest="create",
@@ -175,6 +184,17 @@ class cmd_load:
 
             # If we are here, it means we did not find an empty device...
 
+            # We are allowed to unload a device; go over all devices again, and load the first device that we manage
+            # to unload.
+            if arguments.unload:
+                for device in range(num_devices):
+                    try:
+                        if self.try_unload_device(proxy, device):
+                            return self.load_device(proxy, device, filenames, parser_params)
+                    except Exception:
+                        print_warning(_("Error while trying to unload device %d: %s") % (device, e))
+                        continue
+
             # We are allowed to create a new device.
             if arguments.create:
                 # Create new device
@@ -199,7 +219,49 @@ class cmd_load:
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
+            # If we are allowed to unload the device, ensure that it is unloaded before submitting load command.
+            if arguments.unload:
+                try:
+                    self.try_unload_device(proxy, device)
+                except Exception as e:
+                    print_warning(_("Error while trying to unload device %d: %s") % (device, e))
+
             return self.load_device(proxy, device, filenames, parser_params)
+
+    # Check if device is loaded, and try to unload it
+    def try_unload_device(self, proxy, device):
+        status = proxy.DeviceGetStatus(device)
+        if not status[0]:
+            return True  # Already unloaded
+
+        # Request unload. Note that this does necessarily unload the device, and even if it does, it usually happens
+        # some time after the command returns. For example, when linux mounts the filesystem on the optical disc, it
+        # issues a lock command to the optical drive. Therefore, the unload command only generates an event that is
+        # equivalent to the press on the eject button on the physical drive, and returns immediately. The system then
+        # picks up the generated event, unmounts the filesystem, unlocks the device, and ejects the disc from it.
+        # Therefore, after we submit the unload command, we wait for a bit while polling the device status. We cannot be
+        # too eager here, otherwise a "cdemu load --unload any <file>" might cause all devices to be unloaded and still
+        # report failing to find an empty device. On the other hand, we also do not want to wait forever...
+        TIMEOUT = 15  # seconds
+        proxy.DeviceUnload(device)
+
+        start_time = time.time()
+        while True:
+            elapsed = time.time() - start_time
+
+            # Query status
+            status = proxy.DeviceGetStatus(device)
+            if not status[0]:
+                return True  # Unloaded
+
+            # Timeout
+            if elapsed > TIMEOUT:
+                break
+
+            # Wait...
+            time.sleep(0.25)
+
+        return False
 
     # Device loading with password query support
     def load_device(self, proxy, device, filenames, params):
