@@ -134,6 +134,13 @@ class cmd_load:
             type=str,
             help=_("encoding for text-based images"),
         )
+        parser.add_argument(
+            "--create",
+            action="store_true",
+            dest="create",
+            default=False,
+            help=_("create a new device if necessary"),
+        )
 
     def __call__(self, proxy, arguments):
         # We need to pass absolute filenames to daemon
@@ -165,9 +172,27 @@ class cmd_load:
 
                 # Load device
                 return self.load_device(proxy, device, filenames, parser_params)
-            else:
-                # If we're here, it means we didn't get an empty device
-                raise CDEmuError(_("No empty device found"))
+
+            # If we are here, it means we did not find an empty device...
+
+            # We are allowed to create a new device.
+            if arguments.create:
+                # Create new device
+                try:
+                    proxy.AddDevice()
+                except GLib.Error as e:
+                    raise CDEmuError(_("Failed to add device: %s") % (e))
+
+                # Query the number again, just in case
+                try:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.Error as e:
+                    raise CDEmuError(_("Failed to get number of devices: %s") % (e))
+
+                # Load the last (= newly added) device
+                return self.load_device(proxy, num_devices - 1, filenames, parser_params)
+
+            raise CDEmuError(_("No empty device found"))
         else:
             try:
                 device = int(arguments.device, 0)
