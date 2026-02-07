@@ -196,30 +196,45 @@ class cmd_load:
                 raise CDEmuError(_("Failed to load image: %s") % (e))
 
     def ask_for_password(self):
+        def _get_command_output(command_args):
+            output = subprocess.run(
+                command_args,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout
+
+            # Remove the trailing newline, if preset. Some commands,
+            # such as zenity, seem to include it in their output.
+            if output.endswith('\n'):
+                output = output[:-1]
+
+            return output
+
         # If zenity integration is enabled via CDEMU_USE_ZENITY environment
         # variable, use zenity dialog to ask for password. While this could
         # also be achieved by setting CDEMU_ASKPASS to "zenity --password",
         # we can better customize the dialog in this dedicated codepath.
         if os.environ.get("CDEMU_USE_ZENITY", "0") != "0":
             try:
-                return subprocess.run(
-                    ["zenity", "--entry", "--title", _("CDEmu client"), "--text", _("Please enter password for encrypted image"), "--hide-text"],
-                    check=True,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout
+                command_args = [
+                    "zenity",
+                    "--entry",
+                    "--title",
+                    _("CDEmu client"),
+                    "--text",
+                    _("Please enter password for encrypted image"),
+                    "--hide-text",
+                ]
+                return _get_command_output(command_args)
             except Exception as e:
                 raise CDEmuError(_("Failed to obtain password via zenity: %s") % (e, ))
 
         # If CDEMU_ASKPASS is defined, use it.
         if "CDEMU_ASKPASS" in os.environ:
             try:
-                return subprocess.run(
-                    shlex.split(os.environ["CDEMU_ASKPASS"]),
-                    check=True,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout
+                command_args = shlex.split(os.environ["CDEMU_ASKPASS"])
+                return _get_command_output(command_args)
             except Exception as e:
                 raise CDEmuError(_("Failed to run password agent defined via CDEMU_ASKPASS environment variable: %s") % (e, ))
 
@@ -231,12 +246,8 @@ class cmd_load:
         # Otherwise, use the command defined by SSH_ASKPASS, if available.
         if "SSH_ASKPASS" in os.environ:
             try:
-                return subprocess.run(
-                    shlex.split(os.environ["SSH_ASKPASS"]),
-                    check=True,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout
+                command_args = shlex.split(os.environ["SSH_ASKPASS"])
+                return _get_command_output(command_args)
             except Exception as e:
                 raise CDEmuError(_("Failed to run password agent defined via SSH_ASKPASS environment variable: %s") % (e, ))
 
