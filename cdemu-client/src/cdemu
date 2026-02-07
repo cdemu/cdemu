@@ -196,6 +196,21 @@ class cmd_load:
                 raise CDEmuError(_("Failed to load image: %s") % (e))
 
     def ask_for_password(self):
+        # If zenity integration is enabled via CDEMU_USE_ZENITY environment
+        # variable, use zenity dialog to ask for password. While this could
+        # also be achieved by setting CDEMU_ASKPASS to "zenity --password",
+        # we can better customize the dialog in this dedicated codepath.
+        if os.environ.get("CDEMU_USE_ZENITY", "0") != "0":
+            try:
+                return subprocess.run(
+                    ["zenity", "--entry", "--title", _("CDEmu client"), "--text", _("Please enter password for encrypted image"), "--hide-text"],
+                    check=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout
+            except Exception as e:
+                raise CDEmuError(_("Failed to obtain password via zenity: %s") % (e, ))
+
         # If CDEMU_ASKPASS is defined, use it.
         if "CDEMU_ASKPASS" in os.environ:
             try:
@@ -1901,4 +1916,18 @@ if __name__ == "__main__":
         sys.exit(0)
     except CDEmuError as e:
         print_error(e)
+
+        # Check if we need to report error through zenity-based dialog as well.
+        if os.environ.get("CDEMU_USE_ZENITY", "0") != "0":
+            try:
+                subprocess.run(
+                    ["zenity", "--error", "--title", _("CDEmu client"), "--text", str(e)],
+                    check=True,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except Exception:
+                print_warning(_("Failed to report error via zenity: %s") % (e, ))
+
         sys.exit(-1)
