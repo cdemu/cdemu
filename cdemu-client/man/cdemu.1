@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Jul 14, 2013"
+.TH CDEMU 1 "February 2026"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -16,7 +16,7 @@ daemon, such as loading and unloading devices, displaying devices' status and
 retrieving/setting devices' debug masks.
 .PP
 When connecting to daemon, cdemu client can use either session or system bus. By
-hard-coded default, it uses system bus. The default bus to be used can be specified
+hard-coded default, it uses session bus. The default bus to be used can be specified
 via /etc/cdemu-client.conf or ~/.cdemu-client file; for more information, please
 read README file. The default can be overridden using
 .B --bus
@@ -27,6 +27,34 @@ is required to load an image, cdemu-client will prompt for it and then send it t
 .PP
 NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
 ANY PROTECTION.
+.PP
+The password prompt mechanism is implemented as follows. If \fBCDEMU_ASKPASS\fR
+environment variable is set, the password is obtained by running a sub-process
+with the command specified in the said environment variable. Otherwise, if the
+client is ran from a console (standard input is available), the console is used
+to prompt for the password. If console is unavailable, the command from
+\fBSSH_ASKPASS\fR environment variable is used, if the said variable is set.
+Otherwise, the password cannot be obtained and error is raised.
+.SH OPTIONAL INTEGRATION WITH ZENITY
+Optional integration with \fBzenity\fR can be turned on by setting the
+\fBCDEMU_USE_ZENITY\fR environment variable to a value different from 0.
+.PP
+In this mode, cdemu client uses \fBzenity\fR-provided password input dialog
+to prompt user for password when trying to load an encrypted image. This
+effectively bypasses the mechanism outlined in the previous section (i.e.,
+the \fBzenity\fR dialog is always used to prompt for password, regardless
+of other environment variables and availability of standard input).
+.PP
+Similarly, \fBzenity\fR-provided error dialog is used to report errors,
+in addition to them being printed to the stderr stream. Note that error
+dialog effectively blocks the execution of the program until user
+acknowledges and closes the dialog.
+.PP
+This mode is primarily intended for use cases where cdemu client is used
+to implement actions that run without attached console, but may require
+user input (password) and may need to report error messages. An example
+of such scenario is implementation of a "Load with CDEmu client" action
+for desktop environments and their file browsers.
 .SH OPTIONS
 .TP
 .B -h --help
@@ -38,23 +66,38 @@ Prints version info and exits.
 .TP
 .B -b --bus
 Sets the D-BUS bus type to use for connection. Valid values are \fIsession\fR
-and \fIsystem\fR. If no bus is specified, the default bus is used.
+and \fIsystem\fR. If no bus is specified, the session bus is used by default.
 .SH COMMANDS
 .TP
-.B load [parser-parameters] <device> <filename> [...]
+.B load [options] <device> <filename> [...]
 Loads the device; \fBdevice\fR is the number of the desired device, or \fIany\fR.
 If \fIany\fR is used, then the client will attempt to load the image into the
 first empty device it finds (provided there is one available). \fBfilename\fR is
 the image filename. For multi-file images, multiple filenames can be provided.
 
-The following optional parser parameters can be passed when trying to load the
-image (whether they are supported by a particular parser or not depends on the
-parser implementation):
+The following options can be passed to the load command:
+
+.B --replace
+(or \fB--unload\fR) Allows the specified device to be unloaded, thereby effectively
+replacing the image in an already-loaded device. When device is set to \fIany\fR,
+the client first iterates over all devices and attempts to find an empty device.
+If no empty device is available, it iterates over devices again, and attempts to load
+the image in first device that it manages to unload. In practice, this will most often
+be the first device, unless some explicit locking prevents the device from being unloaded.
+
+.B --create
+If no empty device is available, allow client to request a new device to be created,
+and load the image into it. Applicable only when device is set to \fIany\fR.
+
+In addition to the above options, the following optional parser parameters can be also
+passed via corresponding options (whether they are supported by a particular image parser
+or not depends on the parser implementation):
 
 .B --encoding <string>
 Allows an encoding for text-based image format (such as CUE) to be specified. This
 might be needed if the image descriptor file contains non-ASCII characters and does
 not use Unicode.
+
 .TP
 .B create-blank [options] --writer_id=<writer-id> <device> <image_file>
 Creates blank recordable disc in the specified device. \fBdevice\fR is the number
