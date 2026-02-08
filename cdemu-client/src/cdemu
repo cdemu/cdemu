@@ -234,7 +234,7 @@ class cmd_load:
         if not status[0]:
             return True  # Already unloaded
 
-        # Request unload. Note that this does necessarily unload the device, and even if it does, it usually happens
+        # Request unload. Note that this does not necessarily unload the device, and even if it does, it usually happens
         # some time after the command returns. For example, when linux mounts the filesystem on the optical disc, it
         # issues a lock command to the optical drive. Therefore, the unload command only generates an event that is
         # equivalent to the press on the eject button on the physical drive, and returns immediately. The system then
