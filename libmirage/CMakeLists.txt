@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(libmirage VERSION 3.2.10 LANGUAGES C)
+project(libmirage VERSION 3.3.0 LANGUAGES C)
 
 # Semantic versioning 2.0.0 (semver.org):
 # MAJOR is increased when backwards-incompatible changes are made to

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 # NOTE: project name must be left at "cdemu" (as opposed to being changed
 # to more appropriate "cdemu-client"), because several things depend on
 # it (e.g., translation names).
-project(cdemu VERSION 3.2.5 LANGUAGES NONE)
+project(cdemu VERSION 3.3.0 LANGUAGES NONE)
 
 # Additional CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)

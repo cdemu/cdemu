@@ -43,7 +43,7 @@ from gi.repository import Mirage
 
 # *** Globals ***
 app_name = "image-analyzer"
-app_version = "3.2.6"
+app_version = "3.3.0"
 
 # I18n
 gettext.install(app_name)

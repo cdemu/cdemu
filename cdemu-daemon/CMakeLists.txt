@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(cdemu-daemon VERSION 3.2.7 LANGUAGES C)
+project(cdemu-daemon VERSION 3.3.0 LANGUAGES C)
 
 option(ENABLE_LOGIND_SLEEP_HANDLER "Enable support for systemd-logind sleep/hibernation signal handler." ON)
 option(PEDANTIC_MODE "Enable -pedantic flag on gcc compiler" OFF)
