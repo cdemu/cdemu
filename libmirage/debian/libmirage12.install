@@ -1,5 +1,5 @@
 usr/lib/*/lib*.so.*
-usr/lib/*/libmirage-3.2/*.so
+usr/lib/*/libmirage-3.3/*.so
 usr/share/mime/packages/*.xml
 usr/share/locale/*/LC_MESSAGES/libmirage.mo
 debian/appstream/*	/usr/share/metainfo

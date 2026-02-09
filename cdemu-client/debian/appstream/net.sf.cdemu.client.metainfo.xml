@@ -16,6 +16,9 @@
 	</provides>
 	<releases>
 	</releases>
+		<release version="3.3.0" date="2026-02-15" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.3.0.tar.xz/download</url>
+		</release>
 		<release version="3.2.5" date="2021-04-18" type="stable">
 			<url>https://sourceforge.net/projects/cdemu/files/cdemu-client/cdemu-client-3.2.5.tar.xz/download</url>
 		</release>

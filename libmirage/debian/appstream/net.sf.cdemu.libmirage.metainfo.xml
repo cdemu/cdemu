@@ -12,9 +12,12 @@
 	<name>libMirage</name>
 	<project_license>GPL-2.0+</project_license>
 	<provides>
-		<library>libmirage.so.11</library>
+		<library>libmirage.so.12</library>
 	</provides>
 	<releases>
+		<release version="3.3.0" date="2026-02-15" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.3.0.tar.xz/download</url>
+		</release>
 		<release version="3.2.10" date="2025-03-29" type="stable">
 			<url>https://sourceforge.net/projects/cdemu/files/libmirage/libmirage-3.2.10.tar.xz/download</url>
 		</release>

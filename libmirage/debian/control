@@ -15,16 +15,17 @@ Build-Depends: cmake (>= 3.16.0),
                libsamplerate0-dev,
                libsndfile1-dev,
                pkgconf,
-               zlib1g-dev
+               zlib1g-dev,
+               libgcrypt20-dev
 Standards-Version: 4.7.2
 Rules-Requires-Root: no
 
 
-Package: libmirage11
+Package: libmirage12
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
-Conflicts: libmirage9, libmirage10
-Replaces: libmirage9, libmirage10
+Conflicts: libmirage9, libmirage10, libmirage11
+Replaces: libmirage9, libmirage10, libmirage11
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Multi-Arch: same
 Description: CD-ROM image access library
@@ -43,7 +44,7 @@ Architecture: any
 Multi-Arch: same
 Conflicts: gir1.2-mirage-3.1
 Replaces: gir1.2-mirage-3.1
-Depends: libmirage11 (= ${binary:Version}), ${gir:Depends}, ${misc:Depends}
+Depends: libmirage12 (= ${binary:Version}), ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (typelib files)
  libMirage is a CD-ROM image access library, part of the CDEmu suite,
  a free, GPL CD/DVD-ROM device emulator for Linux.
@@ -58,7 +59,7 @@ Provides: gir1.2-mirage-3.2-dev (= ${binary:Version})
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          gir1.2-mirage-3.2 (= ${binary:Version}),
-         libmirage11 (= ${binary:Version})
+         libmirage12 (= ${binary:Version})
 Description: CD-ROM image access library development files
  libMirage is a CD-ROM image access library, part of the CDEmu suite,
  a free, GPL CD/DVD-ROM device emulator for Linux.

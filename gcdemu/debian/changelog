@@ -1,3 +1,9 @@
+gcdemu (3.3.0-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Mon, 09 Feb 2026 17:00:00 +0100
+
 gcdemu (3.2.6-1.2) unstable; urgency=low
 
   * Non-maintainer upload.

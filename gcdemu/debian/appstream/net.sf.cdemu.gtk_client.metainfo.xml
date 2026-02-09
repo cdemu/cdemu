@@ -20,6 +20,9 @@
 		<binary>gcdemu</binary>
 	</provides>
 	<releases>
+		<release version="3.3.0" date="2026-02-15" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/gcdemu/gcdemu-3.3.0.tar.xz/download</url>
+		</release>
 		<release version="3.2.6" date="2021-10-23" type="stable">
 			<url>https://sourceforge.net/projects/cdemu/files/gcdemu/gcdemu-3.2.6.tar.xz/download</url>
 		</release>
