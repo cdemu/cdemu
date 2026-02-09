@@ -27,6 +27,7 @@ G_BEGIN_DECLS
 
 
 /* Miscellaneous */
+G_GNUC_INTERNAL
 guint mirage_signal_handlers_disconnect_by_func (gpointer instance, GCallback func, gpointer user_data);
 
 
