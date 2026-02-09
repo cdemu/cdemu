@@ -280,7 +280,7 @@ endif()
 
 # *** Configuration summary ***
 message(STATUS "")
-message(STATUS "*** libMirage v.${PROJECT_VERSION} configuration summary ***")
+message(STATUS "*** libMirage v${PROJECT_VERSION} configuration summary ***")
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
 message(STATUS " plugin dir: " ${MIRAGE_PLUGIN_DIR})

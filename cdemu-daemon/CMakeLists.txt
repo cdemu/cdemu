@@ -113,7 +113,7 @@ intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 
 # *** Configuration summary ***
 message(STATUS "")
-message(STATUS "*** CDEmu daemon v.${PROJECT_VERSION} configuration summary ***")
+message(STATUS "*** CDEmu daemon v${PROJECT_VERSION} configuration summary ***")
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
 message(STATUS "Options:")
