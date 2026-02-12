@@ -1,0 +1,2023 @@
+# Georgian translation for libmirage.
+# Copyright (C) 2026 libmirage's authors.
+# This file is distributed under the same license as the libmirage package.
+# Ekaterine Papava <papava.e@gtu.ge>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libmirage\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-08 15:34+0100\n"
+"PO-Revision-Date: 2026-02-12 18:52+0100\n"
+"Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+#: ../filters/filter-cso/filter-stream.c:89
+#: ../filters/filter-cso/filter-stream.c:147
+msgid "Invalid CSO file!"
+msgstr "არასწორი CSO ფაილი!"
+
+#: ../filters/filter-cso/filter-stream.c:102
+msgid "No parts in CSO file!"
+msgstr "CSO ფაილში ნაწილები არაა!"
+
+#: ../filters/filter-cso/filter-stream.c:109
+#: ../filters/filter-dmg/filter-stream.c:479
+msgid "Failed to allocate memory for index!"
+msgstr "ინდექსისთვის მეხსიერების გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-cso/filter-stream.c:115
+#: ../filters/filter-xz/filter-stream.c:166
+msgid "Failed to seek to the beginning of index!"
+msgstr "ინდექსის დასაწყისში გადახვევა ჩავარდა!"
+
+#: ../filters/filter-cso/filter-stream.c:128
+msgid "Failed to read from index!"
+msgstr "ინდექსიდან წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-cso/filter-stream.c:166
+#: ../filters/filter-daa/filter-stream.c:419
+#: ../filters/filter-dmg/filter-stream.c:560
+#: ../filters/filter-gzip/filter-stream.c:201
+#: ../filters/filter-isz/filter-stream.c:496
+#, c-format
+msgid "Failed to initialize zlib's inflate (error: %d)!"
+msgstr "zlib-ის გაბერვის ინიციალიზაციის შეცდომა (შეცდომა: %d)!"
+
+#: ../filters/filter-cso/filter-stream.c:174
+#: ../filters/filter-dmg/filter-stream.c:581
+#: ../filters/filter-isz/filter-stream.c:518
+msgid "Failed to allocate memory for inflate buffer!"
+msgstr "გაბერვის ბუფერისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-cso/filter-stream.c:182
+#: ../filters/filter-dmg/filter-stream.c:588
+#: ../filters/filter-isz/filter-stream.c:526
+msgid "Failed to allocate memory for I/O buffer!"
+msgstr "შეტანა/გამოტანის ბუფერისთვის მეხსიერების გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-cso/filter-stream.c:216
+msgid "Filter cannot handle given data: failed to read CISO header!"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: CISO თავსართის წაკითხვა "
+"ჩავარდა!"
+
+#: ../filters/filter-cso/filter-stream.c:226
+#: ../filters/filter-macbinary/filter-stream.c:255
+msgid "Filter cannot handle given data: invalid header!"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: არასწორი თავსართი!"
+
+#: ../filters/filter-cso/filter-stream.c:353
+msgid "CSO File Filter"
+msgstr "CSO ფაილის ფილტრი"
+
+#: ../filters/filter-cso/filter-stream.c:356
+msgid "Compressed ISO images (*.ciso, *.cso)"
+msgstr "შეკუმშული ISO ასლის ფაილი (*.ciso, *.cso)"
+
+#: ../filters/filter-cso/libmirage-cso.xml.in.h:1
+#: ../filters/filter-isz/libmirage-isz.xml.in.h:1
+msgid "Compressed ISO image file"
+msgstr "შეკუმშული ISO ასლის ფაილი"
+
+#: ../filters/filter-daa/filter-stream.c:514
+msgid "Failed to read main file's header!"
+msgstr "მთავარი ფაილის თავსართის წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-daa/filter-stream.c:546
+#: ../filters/filter-daa/filter-stream.c:588
+msgid "CRC32 checksum mismatch!"
+msgstr "CRC32 საკონტროლო ჯამი არ ემთხვევა!"
+
+#: ../filters/filter-daa/filter-stream.c:563
+msgid "Failed to read part file's header!"
+msgstr "ნაწილი ფაილის თავსართის წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-daa/filter-stream.c:619
+#, c-format
+msgid "Failed to find part for offset %s!"
+msgstr "შეუძლებელია ნაწილის პოვნა წანაცვლებისთვის %s!"
+
+#: ../filters/filter-daa/filter-stream.c:641
+#, c-format
+msgid "Failed to seek to %s!"
+msgstr "%s-ზე გადახვევა ჩავარდა!"
+
+#: ../filters/filter-daa/filter-stream.c:648
+#, c-format
+msgid "Failed to read 0x%X bytes!"
+msgstr "0x%X ბაიტის წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-daa/filter-stream.c:672
+#: ../filters/filter-daa/filter-stream.c:730
+msgid "Failed to read descriptor data!"
+msgstr "დესკრიპტორის მონაცემების წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-daa/filter-stream.c:705
+msgid "Invalid filename format type!"
+msgstr "არასწორი ფაილის სახელის ფორმატის ტიპი!"
+
+#: ../filters/filter-daa/filter-stream.c:723
+msgid "Invalid size for encryption descriptor!"
+msgstr "დაშიფვრის დესკრიპტორის ზომა არასწორია!"
+
+#: ../filters/filter-daa/filter-stream.c:754 ../images/image-mdx/parser.c:1219
+msgid "Image is encrypted!"
+msgstr "ასლის ფაილი დაშიფრულია!"
+
+#: ../filters/filter-daa/filter-stream.c:766
+msgid "Incorrect password!"
+msgstr "არასწორი პაროლი!"
+
+#: ../filters/filter-daa/filter-stream.c:795
+msgid "Failed to read descriptor type!"
+msgstr "დესკრიპტორის ტიპის წაკითხვის შეცდომა!"
+
+#: ../filters/filter-daa/filter-stream.c:928
+#, c-format
+msgid "Failed to allocate chunk table buffer (%d bytes)!"
+msgstr "ფრაგმენტების ცხრილის ბუფერის გამოყოფის შეცდომა (%d ბაიტი)!"
+
+#: ../filters/filter-daa/filter-stream.c:936
+msgid "Failed to read chunk table data!"
+msgstr "ფრაგმენტების ცხრილის მონაცემების წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-daa/filter-stream.c:973
+#, c-format
+msgid "Failed to allocate chunk table (%s bytes)!"
+msgstr "ფრაგმენტების ცხრილის გამოყოფის შეცდომა (%s ბაიტი)!"
+
+#: ../filters/filter-daa/filter-stream.c:1052
+#, c-format
+msgid "Failed to allocate I/O buffer size (%d bytes)!"
+msgstr "შეტანა/გამოტანის ბუფერის ზომის გამოყოფა ჩავარდა (%d ბაიტი)!"
+
+#: ../filters/filter-daa/filter-stream.c:1078
+msgid "Failed to allocate part table!"
+msgstr "ნაწილების ცხრილის გამოყოფა შეუძლებელია!"
+
+#: ../filters/filter-daa/filter-stream.c:1130
+msgid "Failed to read part's signature!"
+msgstr "ნაწილის ხელმოწერის წაკითხვა შეუძლებელია!"
+
+#: ../filters/filter-daa/filter-stream.c:1144
+msgid "Part's signature is invalid!"
+msgstr "ნაწილის ხელმოწერა შეუძლებელია!"
+
+#: ../filters/filter-daa/filter-stream.c:1235
+msgid "Compressed chunk table not supported yet!"
+msgstr "შეკუმშული ფრაგმენტების ცხრილი ჯერ მხარდაჭერილი არაა!"
+
+#: ../filters/filter-daa/filter-stream.c:1242
+#, c-format
+msgid "Bit swap type %d not supported yet!"
+msgstr "ბიტების მიმოცვლის ტიპი %d ჯერ მხარდაჭერილი არაა!"
+
+#: ../filters/filter-daa/filter-stream.c:1268
+#, c-format
+msgid "Unsupported format: 0x%X!"
+msgstr "მხარდაუჭერელი ფორმატი: 0x%X!"
+
+#: ../filters/filter-daa/filter-stream.c:1284
+#, c-format
+msgid "Failed to allocate inflate buffer (%d bytes)!"
+msgstr "გაბერვის ბუფერის გამოყოფა ჩავარდა (%d ბაიტი)!"
+
+#: ../filters/filter-daa/filter-stream.c:1320
+msgid "Filter cannot handle given data: failed to read 16-byte signature!"
+msgstr ""
+"ფილტრს მითითებული მონაცემების დამუშავება არ შეუძლია: 16-ბიტიანი ხელმოწერის "
+"წაკითხვის შეცდომა!"
+
+#: ../filters/filter-daa/filter-stream.c:1332
+#: ../filters/filter-ecm/filter-stream.c:255
+#: ../filters/filter-gzip/filter-stream.c:310
+#: ../filters/filter-xz/filter-stream.c:284
+msgid "Filter cannot handle given data: invalid signature!"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: არასწორი ხელმოწერა!"
+
+#: ../filters/filter-daa/filter-stream.c:1454
+msgid "DAA File Filter"
+msgstr "DAA ფაილის ფილტრი"
+
+#: ../filters/filter-daa/filter-stream.c:1457
+msgid "PowerISO images (*.daa)"
+msgstr "PowerISO ასლის ფაილები (*.daa)"
+
+#: ../filters/filter-daa/filter-stream.c:1458
+msgid "gBurner images (*.gbi)"
+msgstr "gBurner ასლის ფაილები (*.gbi)"
+
+#: ../filters/filter-daa/libmirage-daa.xml.in.h:1
+msgid "PowerISO image file"
+msgstr "PowerISO ასლის ფაილი"
+
+#: ../filters/filter-daa/libmirage-gbi.xml.in.h:1
+msgid "gBurner image file"
+msgstr "gBurner ასლის ფაილი"
+
+#: ../filters/filter-dmg/filter-stream.c:351
+#: ../filters/filter-dmg/filter-stream.c:365
+#: ../filters/filter-macbinary/filter-stream.c:287
+#: ../filters/filter-macbinary/filter-stream.c:331
+msgid "Failed to allocate memory!"
+msgstr "მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:357
+msgid "Failed to read XML resource-fork!"
+msgstr "XML რესურსის შტოს წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-dmg/filter-stream.c:371
+msgid "Failed to read binary resource-fork!"
+msgstr "ბინარული რესურსის შტოს წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-dmg/filter-stream.c:377
+msgid "Image lacks either an XML or a binary descriptor!"
+msgstr "ასლის ფაილს, ან XML, ან ბინარული დესკრიპტორი აკლია!"
+
+#: ../filters/filter-dmg/filter-stream.c:383
+#: ../filters/filter-macbinary/filter-stream.c:301
+msgid "Failed to parse resource-fork!"
+msgstr "რესურსების რტოს დამუშავება ჩავარდა!"
+
+#: ../filters/filter-dmg/filter-stream.c:445
+#, c-format
+msgid "Encountered unknown block type: %d!"
+msgstr "შემხვდა უცნობი ბლოკის ტიპი: %d!"
+
+#: ../filters/filter-dmg/filter-stream.c:488
+msgid "Failed to find required 'blkx' type!"
+msgstr "აუცილებელი ტიპის 'blkx' აღმოჩენის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:574
+#: ../filters/filter-isz/filter-stream.c:510
+#, c-format
+msgid "Failed to initialize libbz2's decompress (error: %d)!"
+msgstr "libbz2-ის დეკომპრესიის ინიციალიზაცია ჩავარდა (შეცდომა: %d)!"
+
+#: ../filters/filter-dmg/filter-stream.c:610
+#: ../filters/filter-isz/filter-stream.c:305
+msgid "Failed to allocate memory for streams!"
+msgstr "ნაკადებისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:627
+#: ../filters/filter-isz/filter-stream.c:321
+msgid "Failed to create stream!"
+msgstr "ნაკადის შექმნის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:638
+msgid "Failed to reallocate memory for koly blocks!"
+msgstr "koly-ის ბლოკებისთვის მეხსიერების ხელახლა გამოყოფის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:654
+msgid "Failed to read koly block!"
+msgstr "koly-ის ბლოკის წაკითხვის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:661
+msgid "Invalid koly block!"
+msgstr "არასწორი koly-ის ბლოკი!"
+
+#: ../filters/filter-dmg/filter-stream.c:692
+msgid "Failed to allocate memory for koly block!"
+msgstr "koly-ის ბლოკისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:706
+msgid "Filter stream cannot handle given image: failed to read koly block!"
+msgstr ""
+"ფილტრის ნაკადს მოწოდებული ასლის ფაილის დამუშავება არ შეუძლია: koly-ის ბლოკის "
+"წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-dmg/filter-stream.c:713
+msgid "Filter stream cannot handle given image: invalid koly block!"
+msgstr ""
+"ფილტრის ნაკადს მოწოდებული ასლის ფაილის დამუშავება არ შეუძლია: არასწორი koly-"
+"ის ბლოკი!"
+
+#: ../filters/filter-dmg/filter-stream.c:726
+#: ../filters/filter-isz/filter-stream.c:566
+msgid "File is not the first file of a set!"
+msgstr "ფაილი ნაკრების პირველი ფაილი არაა!"
+
+#: ../filters/filter-dmg/filter-stream.c:736
+msgid "Failed to open streams!"
+msgstr "ნაკადების გახსნის შეცდომა!"
+
+#: ../filters/filter-dmg/filter-stream.c:1001
+msgid "DMG File Filter"
+msgstr "DMG ფაილის ფილტრი"
+
+#: ../filters/filter-dmg/filter-stream.c:1004
+msgid "Apple Disk Image (*.dmg)"
+msgstr "Apple დისკის ასლის ფაილი (*.dmg)"
+
+#: ../filters/filter-ecm/filter-stream.c:82
+#: ../filters/filter-ecm/filter-stream.c:97
+#, c-format
+msgid "Failed to allocate %d ECM parts!"
+msgstr "%d ECM ნაწილის გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-ecm/filter-stream.c:131
+msgid "Failed to seek behind signature!"
+msgstr "ხელმოწერის მიღმა გადახვევა ჩავარდა!"
+
+#: ../filters/filter-ecm/filter-stream.c:141
+#: ../filters/filter-ecm/filter-stream.c:150
+msgid "Failed to read a byte!"
+msgstr "ბაიტის წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-ecm/filter-stream.c:156
+msgid "Corrupted ECM file; invalid sector count!"
+msgstr "დაზიანებული ECM ფაილი. სექტორების რაოდენობა არასწორია!"
+
+#: ../filters/filter-ecm/filter-stream.c:194
+#, c-format
+msgid "Unhandled ECM part type %d!"
+msgstr "დაუმუშავებელი ECM ნაწილის ტიპი %d!"
+
+#: ../filters/filter-ecm/filter-stream.c:202
+msgid "Failed to seek over ECM part data!"
+msgstr "ECM ნაწილის მონაცემებს მიღმა გადახვევა ჩავარდა!"
+
+#: ../filters/filter-ecm/filter-stream.c:220
+msgid "No parts in ECM file!"
+msgstr "ECM ფაილში ნაწილები არაა!"
+
+#: ../filters/filter-ecm/filter-stream.c:249
+#: ../filters/filter-gzip/filter-stream.c:304
+msgid "Filter cannot handle given data: failed to read 4 signature bytes!"
+msgstr ""
+"ფილტრს მითითებული მონაცემების დამუშავება არ შეუძლია: ხელმოწერის 4 ბაიტის "
+"წაკითხვის შეცდომა!"
+
+#: ../filters/filter-ecm/filter-stream.c:523
+msgid "ECM File Filter"
+msgstr "ECM ფაილის ფილტრი"
+
+#: ../filters/filter-ecm/filter-stream.c:526
+msgid "ECM'ified images (*.ecm)"
+msgstr "გა-ECM-ებული ასლის ფაილები (*.ecm)"
+
+#: ../filters/filter-ecm/libmirage-ecm.xml.in.h:1
+msgid "ECM'ified image file"
+msgstr "გა-ECM-ებული ასლის ფაილი"
+
+#: ../filters/filter-gzip/filter-stream.c:116
+#, c-format
+msgid "Failed to allocate part buffer (%d bytes)!"
+msgstr "ნაწილის ბუფერის გამოყოფა ჩავარდა (%d ბაიტი)!"
+
+#: ../filters/filter-gzip/filter-stream.c:131
+#: ../filters/filter-gzip/filter-stream.c:146
+#, c-format
+msgid "Failed to allocate %d GZIP parts!"
+msgstr "%d GZIP ნაწილის გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-gzip/filter-stream.c:185
+msgid "Failed to allocate buffers!"
+msgstr "ბუფერების გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-gzip/filter-stream.c:207
+msgid "Failed to seek to the beginning of stream!"
+msgstr "ნაკადის დასაწყისში გადახვევა ჩავარდა!"
+
+#: ../filters/filter-gzip/filter-stream.c:218
+#, c-format
+msgid "Failed to read %d bytes from underlying stream!"
+msgstr "%d ბაიტის წაკითხვის შეცდომა ქვედა ნაკადიდან!"
+
+#: ../filters/filter-gzip/filter-stream.c:221
+msgid "Unexpectedly reached EOF!"
+msgstr "მოულოდნელი EOF!"
+
+#: ../filters/filter-gzip/filter-stream.c:246
+msgid "Failed to inflate!"
+msgstr "გაბერვა ჩავარდა!"
+
+#: ../filters/filter-gzip/filter-stream.c:270
+msgid "No parts in GZIP file!"
+msgstr "GZIP ფაილში ნაწილები არაა!"
+
+#: ../filters/filter-gzip/filter-stream.c:496
+msgid "GZIP File Filter"
+msgstr "GZIP ფაილის ფილტრი"
+
+#: ../filters/filter-gzip/filter-stream.c:499
+msgid "gzip-compressed images (*.gz)"
+msgstr "gzip-ით შეკუმშული დისკის ასლის ფაილები (*.gz)"
+
+#: ../filters/filter-isz/filter-stream.c:151
+#: ../filters/filter-isz/filter-stream.c:189
+msgid "Failed to seek to the beginning of segment table!"
+msgstr "სეგმენტების ცხრილის დასაწყისში გადახვევის შეცდომა!"
+
+#: ../filters/filter-isz/filter-stream.c:163
+msgid "Failed to read segment!"
+msgstr "სეგმენტის წაკითხვს შეცდომა!"
+
+#: ../filters/filter-isz/filter-stream.c:183
+#: ../filters/filter-isz/filter-stream.c:230
+#: ../filters/filter-isz/filter-stream.c:275
+msgid "Failed to allocate memory for segment table!"
+msgstr "სეგმენტების ცხრილისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-isz/filter-stream.c:377
+msgid "No parts in ISZ file!"
+msgstr "ISZ ფაილში ნაწილები არაა!"
+
+#: ../filters/filter-isz/filter-stream.c:384
+msgid "Failed to allocate memory for chunk table!"
+msgstr "ფრაგმენტების ცხრილისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-isz/filter-stream.c:396
+msgid "Unsupported pointer length!"
+msgstr "მხარდაუჭერელი მაჩვენებლის სიგრძე!"
+
+#: ../filters/filter-isz/filter-stream.c:404
+msgid "Failed to allocate memory for chunk buffer!"
+msgstr "ფრაგმენტების ბუფერისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-isz/filter-stream.c:410
+msgid "Failed to seek to the beginning of chunk table!"
+msgstr "ფრაგმენტების ცხრილის დასაწყისში გადახვევის შეცდომა!"
+
+#: ../filters/filter-isz/filter-stream.c:418
+msgid "Failed to read index!"
+msgstr "ინდექსის წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-isz/filter-stream.c:548
+msgid "Filter cannot handle given data: failed to read ISZ header!"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: ISZ თავსართის წაკითხვა "
+"ჩავარდა!"
+
+#: ../filters/filter-isz/filter-stream.c:557
+msgid "Filter cannot handle given data: invalid ISZ header!"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: არასწორი ISZ თავსართი!"
+
+#: ../filters/filter-isz/filter-stream.c:836
+msgid "ISZ File Filter"
+msgstr "ISZ ფაილის ფილტრი"
+
+#: ../filters/filter-isz/filter-stream.c:839
+msgid "Compressed ISO images (*.isz)"
+msgstr "შეკუმშული ISO ასლის ფაილები (*.isz)"
+
+#: ../filters/filter-macbinary/filter-stream.c:241
+msgid "Filter cannot handle given data: failed to read MacBinary header!"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: MacBinary-ის თავსართის "
+"წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-macbinary/filter-stream.c:264
+msgid ""
+"File validates as MacBinary v1.0, however the check is unreliable and "
+"therefore disabled!"
+msgstr ""
+"შესაძლებელია, ეს ფაილი წარმოადგენს MacBinary v1.0-ს. მაგრამ შემოწმება სანდო "
+"არა და ამიტომ გამორთულია!"
+
+#: ../filters/filter-macbinary/filter-stream.c:294
+msgid "Failed to read resource-fork!"
+msgstr "რესურსების შტოს წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-macbinary/filter-stream.c:378
+msgid "KenCode decompression is not supported!"
+msgstr "KenCode-ის დეკომპრესია მხარდაჭერილი არაა!"
+
+#: ../filters/filter-macbinary/filter-stream.c:382
+#, c-format
+msgid "Encountered unknown part type: %d!"
+msgstr "შემხვდა უცნობი ნაწილის ტიპი: %d!"
+
+#: ../filters/filter-macbinary/filter-stream.c:393
+#: ../filters/filter-macbinary/filter-stream.c:400
+msgid "Error allocating memory for buffers!"
+msgstr "ბუფერებისთვის მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../filters/filter-macbinary/filter-stream.c:429
+msgid "NDIF data structures not found!"
+msgstr "NDIF მონაცემთა სტრუქტურები აღმოჩენილი არაა!"
+
+#: ../filters/filter-macbinary/filter-stream.c:576
+msgid "MACBINARY File Filter"
+msgstr "MACBINARY ფაილის ფილტრი"
+
+#: ../filters/filter-macbinary/filter-stream.c:579
+msgid "MacBinary images (*.bin, *.macbin)"
+msgstr "MacBinary ასლის ფაილები (*.bin, *.macbin)"
+
+#: ../filters/filter-sndfile/filter-stream.c:184
+msgid "Filter cannot handle given data: .BIN files are not supported."
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: .BIN ფაილები "
+"მხარდაჭერილი არაა."
+
+#: ../filters/filter-sndfile/filter-stream.c:195
+#, c-format
+msgid "Filter cannot handle given data: failed to open sndfile: %s"
+msgstr ""
+"ფილტრს მოწოდებული ინფორმაციის დამუშავება არ შეუძლია: sndfile-ის გახსნის "
+"შეცდომა: %s"
+
+#: ../filters/filter-sndfile/filter-stream.c:216
+msgid "Audio file is not seekable!"
+msgstr "აუდიოფაილი გადახვევადი არაა!"
+
+#: ../filters/filter-sndfile/filter-stream.c:220
+#, c-format
+msgid ""
+"Invalid number of channels in audio file (%d)! Only two-channel audio files "
+"are supported!"
+msgstr ""
+"არხების არასწორი რაოდენობა აუდიოფაილში (%d). მხარდაჭერილია, მხოლოდ, "
+"ორარხიანი აუდიოფაილები!"
+
+#: ../filters/filter-sndfile/filter-stream.c:238
+msgid "Failed to allocate read buffer!"
+msgstr "წაკითხვის ბუფერის გამოყოფის შეცდომა!"
+
+#: ../filters/filter-sndfile/filter-stream.c:252
+#, c-format
+msgid "Failed to initialize resampler; error code %d!"
+msgstr "რესამპლერის ინიციალიზაცია ჩავარდა. შეცდომის კოდი %d!"
+
+#: ../filters/filter-sndfile/filter-stream.c:261
+msgid "Failed to allocate resampler output buffer!"
+msgstr "რესამლერის გამოტანის ბუფერის გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-sndfile/filter-stream.c:270
+msgid "Failed to allocate resampler input buffer!"
+msgstr "რესამლერის შეყვანის ბუფერის გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-sndfile/filter-stream.c:412
+msgid "SNDFILE File Filter"
+msgstr "SNDFILE ფაილის ფილტრი"
+
+#: ../filters/filter-sndfile/filter-stream.c:415
+#: ../images/image-iso/parser.c:491
+msgid "WAV audio files (*.wav)"
+msgstr "WAV აუდიოფაილები (*.wav)"
+
+#: ../filters/filter-sndfile/filter-stream.c:416
+msgid "AIFF audio files (*.aiff)"
+msgstr "AIFF აუდიოფაილები (*.aiff)"
+
+#: ../filters/filter-sndfile/filter-stream.c:417
+msgid "FLAC audio files (*.flac)"
+msgstr "FLAC აუდიოფაილები (*.flac)"
+
+#: ../filters/filter-sndfile/filter-stream.c:418
+msgid "OGG audio files (*.ogg)"
+msgstr "OGG აუდიოფაილები (*.ogg)"
+
+#: ../filters/filter-xz/filter-stream.c:72
+#, c-format
+msgid "Failed to (re)allocate read buffer (%d bytes)!"
+msgstr "წაკითხვის ბუფერის (%d ბაიტი) (თავიდან) გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-xz/filter-stream.c:99
+msgid "Failed to seek to the beginning of header!"
+msgstr "თავსართის დასაწყისსი გადახვევა ჩავარდა!"
+
+#: ../filters/filter-xz/filter-stream.c:105
+msgid "Failed to read stream's header!"
+msgstr "ნაკადის თავსართის წაკითხვის შეცდომა!"
+
+#: ../filters/filter-xz/filter-stream.c:112
+msgid "Failed to decode stream's header!"
+msgstr "ნაკადის თავსართის დეკოდირების შეცდომა!"
+
+#: ../filters/filter-xz/filter-stream.c:120
+msgid "Failed to seek to the beginning of footer!"
+msgstr "ბოლოსართის დასაწყისში გადახვევა ჩავარდა!"
+
+#: ../filters/filter-xz/filter-stream.c:126
+msgid "Failed to read stream's footer!"
+msgstr "ნაკადის ბოლოსართის წაკითხვის შეცდომა!"
+
+#: ../filters/filter-xz/filter-stream.c:133
+msgid "Failed to decode stream's footer!"
+msgstr "ნაკადის ბოლოსართის დეკოდირების შეცდომა!"
+
+#: ../filters/filter-xz/filter-stream.c:142
+msgid "Stream's header and footer do not match!"
+msgstr "ნაკადის თავსართი და ბოლოსართი არ ემთხვევა!"
+
+#: ../filters/filter-xz/filter-stream.c:171
+msgid "Failed to read stream's index!"
+msgstr "ნაკადის ინდექსის წაკითხვა ჩავარდა!"
+
+#: ../filters/filter-xz/filter-stream.c:177
+msgid "Failed to decode stream's index!"
+msgstr "ნაკადის ინდექსის გაშიფვრის შეცდომა!"
+
+#: ../filters/filter-xz/filter-stream.c:184
+msgid "Declared and actual index size mismatch!"
+msgstr "აღწერილი და რეალური ინდექსის ზომა არ ემთხვევა!"
+
+#: ../filters/filter-xz/filter-stream.c:243
+#, c-format
+msgid "The largest block (%s bytes) exceeds the limit of %d bytes!"
+msgstr "უდიდესი ბლოკი (%s ბაიტი) ზღვარს (%d ბაიტი) აჭარბებს!"
+
+#: ../filters/filter-xz/filter-stream.c:253
+#, c-format
+msgid "Failed to allocate block buffer (%d bytes)!"
+msgstr "ბლოკის ბუფერის (%d ბაიტი) გამოყოფა ჩავარდა!"
+
+#: ../filters/filter-xz/filter-stream.c:278
+msgid "Filter cannot handle given data: failed to read 6 signature bytes!"
+msgstr ""
+"ფილტრს მითითებული მონაცემების დამუშავება არ შეუძლია: ხელმოწერის 6 ბაიტის "
+"წაკითხვის შეცდომა!"
+
+#: ../filters/filter-xz/filter-stream.c:423
+msgid "XZ File Filter"
+msgstr "XZ ფაილის ფილტრი"
+
+#: ../filters/filter-xz/filter-stream.c:426
+msgid "xz-compressed images (*.xz)"
+msgstr "xz-ით შეკუმშული ასლის ფაილები (*.xz)"
+
+#: ../images/image-b6t/libmirage-b6t.xml.in.h:1
+msgid "BlindWrite 5/6 image file"
+msgstr "BlindWrite 5/6 ასლის ფაილი"
+
+#: ../images/image-b6t/parser.c:231
+msgid "Failed to read whole BWA file!"
+msgstr "მთლიანი BWA ფაილის წაკითხვის შეცდომა!"
+
+#: ../images/image-b6t/parser.c:414
+#, c-format
+msgid "Failed to find data file '%s'!"
+msgstr "მონაცემების ფაილის '%s' პოვნა შეუძლებელია!"
+
+#: ../images/image-b6t/parser.c:528
+msgid "Invalid header!"
+msgstr "არასწორი თავსართი!"
+
+#: ../images/image-b6t/parser.c:675
+#, c-format
+msgid "Unknown or unhandled disc type 0x%X!"
+msgstr "უცნობი, ან დაუმუშავებელი დისკის ტიპი 0x%X!"
+
+#: ../images/image-b6t/parser.c:1043
+#, c-format
+msgid "Unknown track type 0x%X!"
+msgstr "უცნობი ტრეკის ტიპი 0x%X!"
+
+#: ../images/image-b6t/parser.c:1162
+msgid "Invalid footer!"
+msgstr "არასწორი ბოლოსართი!"
+
+#: ../images/image-b6t/parser.c:1266
+msgid ""
+"Parser cannot handle given image: failed to read 16 bytes from image file "
+"stream!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: ასლის ფაილის "
+"ნაკადიდან 16 ბაიტის წაკითხვის შეცდომა!"
+
+#: ../images/image-b6t/parser.c:1273 ../images/image-c2d/parser.c:547
+#: ../images/image-nrg/parser.c:986
+msgid "Parser cannot handle given image: invalid signature!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: არასწორი "
+"ხელმოწერა!"
+
+#: ../images/image-b6t/parser.c:1305
+msgid "Failed to read whole B6T file!"
+msgstr "მთლიანი B6T ფაილის წაკითხვის შეცდომა!"
+
+#: ../images/image-b6t/parser.c:1338
+msgid "B6T Image Parser"
+msgstr "B6T ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-b6t/parser.c:1340
+msgid "BlindWrite 5/6 images (*.b5t, *.b6t)"
+msgstr "BlindWrite 5/6 ასლის ფაილები (*.b5t, *.b6t)"
+
+#: ../images/image-c2d/libmirage-c2d.xml.in.h:1
+msgid "WinOnCD image file"
+msgstr "WinOnCD ასლის ფაილი"
+
+#: ../images/image-c2d/parser.c:168
+msgid "Failed to read Z info header!"
+msgstr "Z ინფორმაციის თავსართის წაკითხვა ჩავარდა!"
+
+#: ../images/image-c2d/parser.c:177
+msgid "Failed to read Z info!"
+msgstr "Z ინფორმაციის წაკითხვა ჩავარდა!"
+
+#: ../images/image-c2d/parser.c:187
+msgid "Compressed images are not supported yet!"
+msgstr "შეკუმშული ასლის ფაილები ჯერ მხარდაჭერილი არაა!"
+
+#: ../images/image-c2d/parser.c:540 ../images/image-nrg/parser.c:941
+#: ../images/image-nrg/parser.c:965
+msgid "Parser cannot handle given image: failed to read signature!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: ხელმოწერის "
+"წაკითხვის შეცდომა!"
+
+#: ../images/image-c2d/parser.c:570
+#, c-format
+msgid "Failed to allocate memory for header (%zu bytes)!"
+msgstr "თავსართისთვის (%zu ბაიტი) მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../images/image-c2d/parser.c:577 ../images/image-cif/parser.c:602
+msgid "Failed to read header!"
+msgstr "თავსართის წაკითხვა ჩავარდა!"
+
+#: ../images/image-c2d/parser.c:591
+#, c-format
+msgid "Failed to allocate memory for descriptor (%d)!"
+msgstr "დესკრიპტორისთვის (%d) მეხსიერების გამოყოფის შეცდომა!"
+
+#: ../images/image-c2d/parser.c:599 ../images/image-cdi/parser.c:987
+#: ../images/image-nrg/parser.c:1020
+msgid "Failed to read descriptor!"
+msgstr "დესკრიპტორის წაკითხვა ჩავარდა!"
+
+#: ../images/image-c2d/parser.c:629
+msgid "C2D Image Parser"
+msgstr "C2D ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-c2d/parser.c:631
+msgid "WinOnCD images (*.c2d)"
+msgstr "WinOnCD ასლის ფაილები (*.c2d)"
+
+#: ../images/image-ccd/libmirage-ccd.xml.in.h:1
+msgid "CloneCD image file"
+msgstr "CloneCD ასლის ფაილი"
+
+#: ../images/image-ccd/parser.c:280
+msgid "ccd_next_entry == NULL; should not happen!"
+msgstr "ccd_next_entry == NULL; არ უნდა მომხდარიყო!"
+
+#: ../images/image-ccd/parser.c:799
+#, c-format
+msgid "Failed to get entry with point #%d!"
+msgstr "მიღების შეცდომა ჩანაწერისთვის წერტილით #%d!"
+
+#: ../images/image-ccd/parser.c:888
+#, c-format
+msgid ""
+"Declared CD-TEXT size (%d) does not match declared number of entries (%d)!"
+msgstr ""
+"აღწერილი CD-TEXT-ის ზომა (%d) ჩანაწერების აღწერილ რაოდენობას (%d) არ "
+"ემთხვევა!"
+
+#: ../images/image-ccd/parser.c:915
+#, c-format
+msgid "Invalid CD-TEXT entry #%d (expecting only %d entries)!"
+msgstr "არასწორი CD-TEXT-ის ჩანაწერი #%d (მოველოდი, მხოლოდ, %d ჩანაწერს)!"
+
+#: ../images/image-ccd/parser.c:1059 ../images/image-cue/parser.c:1025
+#: ../images/image-toc/parser.c:1039 ../images/image-xcdroast/parser.c:612
+#: ../images/image-xcdroast/parser.c:695
+#, c-format
+msgid "Failed to read line #%d: %s!"
+msgstr "წაკითხვის შეცდომა ხაზზე #%d: %s!"
+
+#: ../images/image-ccd/parser.c:1153 ../images/image-cdi/parser.c:950
+#: ../images/image-cue/parser.c:1094 ../images/image-readcd/parser.c:69
+msgid "Parser cannot handle given image: invalid suffix!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: არასწორი "
+"სუფიქსი!"
+
+#: ../images/image-ccd/parser.c:1191
+msgid "Could not find main data file!"
+msgstr "მთავარი მონაცემთა ფაილის პოვნა შეუძლებელია!"
+
+#: ../images/image-ccd/parser.c:1195
+msgid "Could not find subchannel data file!"
+msgstr "ქვეარხის მონაცემთა ფაილის პოვნა შეუძლებელია!"
+
+#: ../images/image-ccd/parser.c:1248
+msgid "CCD Image Parser"
+msgstr "CCD ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-ccd/parser.c:1250
+msgid "CloneCD images (*.ccd)"
+msgstr "CloneCD ასლის ფაილები (*.ccd)"
+
+#: ../images/image-cdi/libmirage-cdi.xml.in.h:1
+msgid "DiscJuggler image file"
+msgstr "DiscJuggler ასლის ფაილები"
+
+#: ../images/image-cdi/parser.c:136
+#, c-format
+msgid "Invalid track mode: %d!"
+msgstr "არასწორი ტრეკის რეჟიმი: %d!"
+
+#: ../images/image-cdi/parser.c:179
+#, c-format
+msgid "Invalid read mode: %d!"
+msgstr "არასწორი წაკითხვის რეჟიმი: %d!"
+
+#: ../images/image-cdi/parser.c:974
+msgid "Failed to read descriptor length!"
+msgstr "დესკრიპტორის სიგრძის წაკითხვის შეცდომა!"
+
+#: ../images/image-cdi/parser.c:1029
+msgid "CDI Image Parser"
+msgstr "CDI ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-cdi/parser.c:1031
+msgid "DiscJuggler images (*.cdi)"
+msgstr "DiscJuggler ასლის ფაილები (*.cdi)"
+
+#: ../images/image-cif/libmirage-cif.xml.in.h:1
+msgid "Adaptec Easy CD/DVD Creator image file"
+msgstr "Adaptec Easy CD/DVD Creator-ის ასლის ფაილი"
+
+#: ../images/image-cif/parser.c:132
+msgid "Failed to read sub-block length!"
+msgstr "ქვებლოკის სიგრძის წაკითხვის შეცდომა!"
+
+#: ../images/image-cif/parser.c:143 ../images/image-cif/parser.c:264
+msgid "Sanity check failed!"
+msgstr "სისწორის შემოწმება ჩავარდა!"
+
+#: ../images/image-cif/parser.c:152
+#, c-format
+msgid "Failed to read sub-block data (%d bytes)!"
+msgstr "ქვებლოკის მონაცემების (%d ბაიტი) წაკითხვის შეცდომა!"
+
+#: ../images/image-cif/parser.c:252
+#, c-format
+msgid "Unknown track type (%d)!"
+msgstr "უცნობი ტრეკის ტიპი (%d)!"
+
+#: ../images/image-cif/parser.c:353
+#, c-format
+msgid "Unknown session type (%d)!"
+msgstr "უცნობი სესიის ტიპი (%d)!"
+
+#: ../images/image-cif/parser.c:541
+msgid "Failed to read number of entries!"
+msgstr "ჩანაწერების რაოდენობის წაკითხვის შეცდომა!"
+
+#: ../images/image-cif/parser.c:557
+msgid "Failed to read \"ofs\" entry!"
+msgstr "\"ofs\" ჩანაწერის წაკითხვა ჩავარდა!"
+
+#: ../images/image-cif/parser.c:564 ../images/image-cif/parser.c:609
+#, c-format
+msgid "Invalid FOURCC; expected 'RIFF', got '%.4s'"
+msgstr "არსწორი FOURCC. მოველოდი: 'RIFF'. მივიღე:'%.4s'"
+
+#: ../images/image-cif/parser.c:639
+msgid "Descriptor does not contain 'disc' block!"
+msgstr "დესკრიპტორი ბლოკს 'disc' არ შეიცავს!"
+
+#: ../images/image-cif/parser.c:645
+msgid "Descriptor does not contain 'ofs ' block!"
+msgstr "დესკრიპტორი ბლოკს 'ofs' არ შეიცავს!"
+
+#: ../images/image-cif/parser.c:705
+msgid "Parser cannot handle given image: failed to read header!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: თავსართის "
+"წაკითხვის შეცდომა!"
+
+#: ../images/image-cif/parser.c:715
+msgid "Parser cannot handle given image: image does not begin with 'RIFF'!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: დისკის ასლის "
+"ფაილი 'RIFF'-ით არ იწყება!"
+
+#: ../images/image-cif/parser.c:721
+msgid "Parser cannot handle given image: invalid header!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: არასწორი "
+"თავსართი!"
+
+#: ../images/image-cif/parser.c:761
+msgid "CIF Image Parser"
+msgstr "CIF ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-cif/parser.c:763
+msgid "Adaptec Easy CD/DVD Creator images (*.cif)"
+msgstr "Adaptec Easy CD/DVD Creator-ის ასლის ფაილები (*.cif)"
+
+#: ../images/image-cue/parser.c:113 ../images/image-cue/parser.c:284
+#: ../images/image-cue/parser.c:427 ../images/image-cue/parser.c:441
+#: ../images/image-cue/parser.c:463 ../images/image-cue/parser.c:487
+msgid "Current track is not set!"
+msgstr "მიმდინარე ტრეკი დაყენებული არაა!"
+
+#: ../images/image-cue/parser.c:127
+msgid "Finishing last track resulted in negative fragment length!"
+msgstr "ბოლო ტრეკის დასრულების შედეგი უარყოფითი ფრაგმენტის სიგრძეა!"
+
+#: ../images/image-cue/parser.c:148
+msgid "Current session is not set!"
+msgstr "მიმდინარე სესია დაყენებული არაა!"
+
+#: ../images/image-cue/parser.c:205 ../images/image-mds/parser.c:402
+#: ../images/image-mdx/parser.c:204 ../images/image-toc/parser.c:192
+msgid "Failed to find data file!"
+msgstr "მონაცემთა ფაილის პოვნა შეუძლებელია!"
+
+#: ../images/image-cue/parser.c:269
+#, c-format
+msgid "Invalid track mode string '%s'!"
+msgstr "არასწორი ტრეკის რეჟიმის სტრიქონი '%s'!"
+
+#: ../images/image-cue/parser.c:668
+msgid "Failed to find CDT file!"
+msgstr "CDT ფაილის აღმოჩენის შეცდომა!"
+
+#: ../images/image-cue/parser.c:704
+msgid "Failed to read whole CDT file!"
+msgstr "მთლიანი CDT ფაილის წაკითხვის შეცდომა!"
+
+#: ../images/image-cue/parser.c:1173
+msgid "CUE Image Parser"
+msgstr "CUE ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-cue/parser.c:1175
+msgid "CUE images (*.cue)"
+msgstr "CUE ასლის ფაილები (*.cue)"
+
+#: ../images/image-harddisk/libmirage-apple.xml.in.h:1
+msgid "Apple Disk image"
+msgstr "Apple-ის დისკის ასლის ფაილი"
+
+#: ../images/image-harddisk/parser.c:68
+msgid "Parser cannot handle given image: file too small!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: ფაილი "
+"მეტისმეტად დიდია!"
+
+#: ../images/image-harddisk/parser.c:78
+msgid "Failed to seek to ISO signature!"
+msgstr "ISO ხელმოწერამდე გადახვევა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:84
+msgid "Failed to read ISO signature!"
+msgstr "ISO ხელმოწერის წაკითხვა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:91
+msgid "Image is an ISO image - deferring!"
+msgstr "ასლის ფაილი ISO ფაილია - გამოტოვება!"
+
+#: ../images/image-harddisk/parser.c:103
+msgid "Failed to seek to beginning of file!"
+msgstr "ფაილის დასაწყისში გადახვევა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:109
+msgid "Failed to read driver descriptor map!"
+msgstr "დრაივერის დესკრიპტორების სიის წაკითხვის შეცდომა!"
+
+#: ../images/image-harddisk/parser.c:126
+msgid "Failed to seek to beginning of APM entries!"
+msgstr "APM ჩანაწერების დასაწყისში გადახვევის შეცდომა!"
+
+#: ../images/image-harddisk/parser.c:132
+msgid "Failed to read APM entry!"
+msgstr "APM ჩანაწერის წაკითხვა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:155
+msgid "Parser cannot map this sector size!"
+msgstr "დამმუშავებელს ამ სექტორის ზომის ასახვა არ შეუძლია!"
+
+#: ../images/image-harddisk/parser.c:171
+msgid "Failed to seek to GPT header!"
+msgstr "GPT თავსართამდე გადახვევა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:177
+msgid "Failed to read GPT header!"
+msgstr "GPT თავსართის წაკითხვა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:194
+msgid "Failed to seek to beginning of GPT entries!"
+msgstr "GPT ჩანაწერების დასაწყისში გადახვევა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:200
+msgid "Failed to read GPT entry!"
+msgstr "GPT ჩანაწერის წაკითხვა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:231
+msgid "Failed to seek to Master Directory Block (MDB)!"
+msgstr "ძირითადი საქაღალდის ბლოკამდე (MDB) გადახვევა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:237
+msgid "Failed to read Master Directory Block (MDB)!"
+msgstr "ძირითადი საქაღალდის ბლოკის (MDB) წაკითხვა ჩავარდა!"
+
+#: ../images/image-harddisk/parser.c:255 ../images/image-readcd/parser.c:104
+msgid "Parser cannot handle given image!"
+msgstr "დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება!"
+
+#: ../images/image-harddisk/parser.c:393
+msgid "Hard-disk Image Parser"
+msgstr "მყარი დისკის ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-harddisk/parser.c:395
+msgid "Apple Disk image (*.cdr)"
+msgstr "Apple-ის ასლის ფაილი (*.cdr)"
+
+#: ../images/image-harddisk/parser.c:396
+msgid "Apple Disk image (*.smi)"
+msgstr "Apple-ის ასლის ფაილი (*.smi)"
+
+#: ../images/image-harddisk/parser.c:397
+msgid "Apple Disk image (*.img)"
+msgstr "Apple-ის ასლის ფაილი (*.img)"
+
+#: ../images/image-iso/parser.c:76
+#, c-format
+msgid "Failed to seek to %s to read %d bytes of data!"
+msgstr "%s-მდე გადახვევა %d ბაიტი მონაცემების წასაკითხად შეუძლებელია!"
+
+#: ../images/image-iso/parser.c:84
+#, c-format
+msgid "Failed to read %d bytes of data!"
+msgstr "%d ბაიტი მონაცემების წაკითხვა ჩავარდა!"
+
+#: ../images/image-iso/parser.c:122
+msgid "Parser cannot handle given image: file is too small!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: ფაილი "
+"მეტისმეტად პატარაა!"
+
+#: ../images/image-iso/parser.c:223
+msgid ""
+"Parser cannot handle given image: file size does not correspond to any "
+"supported combination of sector and subchannel size!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: ფაილის ზომა არ "
+"შეესაბამება არცერთ სექტორებისა და ქვეარხის ზომის კომბინაციას!"
+
+#: ../images/image-iso/parser.c:259
+#, c-format
+msgid "Unhalded main sector data size %d!"
+msgstr "მხარდაუჭერელი მთავარი სექტორის მონაცემთა ზომა %d!"
+
+#: ../images/image-iso/parser.c:310
+#, c-format
+msgid "Unhalded subchannel data size %d!"
+msgstr "მხარდაუჭერელი ქვეარხის მონაცემთა ზომა %d!"
+
+#: ../images/image-iso/parser.c:486
+msgid "ISO Image Parser"
+msgstr "ISO ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-iso/parser.c:488
+msgid "ISO images (*.iso, *.bin, *.img)"
+msgstr "ISO ასლის ფაილები (*.iso, *.bin, *.img)"
+
+#: ../images/image-iso/parser.c:489
+msgid "GameCube ISO images (*.iso"
+msgstr "GameCube ISO ასლის ფაილები (*.iso"
+
+#: ../images/image-iso/parser.c:490
+msgid "Wii ISO images (*.iso)"
+msgstr "Wii ISO ასლის ფაილები (*.iso)"
+
+#: ../images/image-iso/writer.c:359
+msgid "ISO Image Writer"
+msgstr "ISO ასლის ჩამწერი"
+
+#: ../images/image-iso/writer.c:368
+msgid "Audio file suffix"
+msgstr "აუდიოფაილის სუფიქსი"
+
+#: ../images/image-iso/writer.c:369
+msgid ""
+"Suffix to use for image files of audio tracks. Applicable only when in raw "
+"write is disabled."
+msgstr ""
+"სუფიქსი აუდიოტრეკების ასლის ფაილისთვის. მუშაობს, მხოლოდ, მაშინ, როცა "
+"დაუმუშავებელი ჩაწერა გამორთულია."
+
+#: ../images/image-iso/writer.c:375 ../images/image-toc/writer.c:654
+msgid "Write raw"
+msgstr "დაუმუშავებლის ჩაწერა"
+
+#: ../images/image-iso/writer.c:376 ../images/image-toc/writer.c:655
+msgid ""
+"A flag indicating whether to write full 2352-byte sector data or only user "
+"data part of it (e.g., 2048 bytes for Mode 1)"
+msgstr ""
+"ალამი, რომელიც მიუთითებს, ჩაიწერება სრული 2352-ბაიტიანი სექტორის მონაცემები, "
+"ან, მხოლოდ მომხმარებლის მონაცემები ნაწილი (მაგ: 0248 ბაიტი 1 რეჟიმისთვის)"
+
+#: ../images/image-iso/writer.c:381 ../images/image-toc/writer.c:660
+msgid "Write subchannel"
+msgstr "ქვეარხის ჩაწერა"
+
+#: ../images/image-iso/writer.c:382 ../images/image-toc/writer.c:661
+msgid ""
+"A flag indicating whether to write subchannel data or not. If set, it "
+"implies raw writing."
+msgstr ""
+"ალამი, რომელიც მიუთითებს, მოხდება ქვეარხის მონაცემების ჩაწერა, თუ არა. თუ "
+"დაყენებულია, ის გულისხმობს დაუმუშავებელ ჩაწერას."
+
+#: ../images/image-iso/writer.c:387 ../images/image-toc/writer.c:666
+msgid "Swap raw audio data"
+msgstr "დაუმუშავებელი აუდიომონაცემების წინასწარი ჩატვირთვა"
+
+#: ../images/image-iso/writer.c:388 ../images/image-toc/writer.c:667
+msgid ""
+"A flag indicating whether to swap audio data. Applicable only to raw writing."
+msgstr ""
+"ალამი, რომელიც მიუთითებს, მოხდება აუდიომონაცემების წინასწარი ჩატვირთვა, თუ "
+"არა. გამოიყენება, მხოლოდ, დაუმუშავებელი ჩაწერისას."
+
+#: ../images/image-mds/libmirage-mds.xml.in.h:2
+#, no-c-format
+msgid "Alcohol 120% image file (*.mds)"
+msgstr "Alcohol 120% ასლის ფაილი (*.mds)"
+
+#: ../images/image-mds/libmirage-xmd.xml.in.h:1
+msgid "GameJack image file (*.xmd)"
+msgstr "GameJack ასლის ფაილი (*.xmd)"
+
+#: ../images/image-mds/parser.c:380
+msgid "Track block does not have a footer!"
+msgstr "ტრეკის ბლოკს ბოლოსართი არ აქვს!"
+
+#: ../images/image-mds/parser.c:777
+msgid "Parser cannot handle given image: failed to read signature and version!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: ხელმოწერისა და "
+"ვერსიის წაკითხვის შეცდომა!"
+
+#: ../images/image-mds/parser.c:785 ../images/image-mdx/parser.c:1272
+msgid "Parser cannot handle given image: invalid signature and/or version!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: არასწორი "
+"ხელმოწერა ან/და ვერსია!"
+
+#: ../images/image-mds/parser.c:817
+msgid "Failed to read whole MDS file!"
+msgstr "მთლიანი MDS ფაილის წაკითხვის შეცდომა!"
+
+#: ../images/image-mds/parser.c:863 ../images/image-mdx/parser.c:1387
+#, c-format
+msgid "Medium of type 0x%X not supported yet!"
+msgstr "მედია ტიპით 0x%X ჯერ მხარდაჭერილი არაა!"
+
+#: ../images/image-mds/parser.c:894
+msgid "MDS Image Parser"
+msgstr "MDS ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-mds/parser.c:897
+#, no-c-format
+msgid "Alchohol 120% images (*.mds)"
+msgstr "Alchohol 120% ასლის ფაილები (*.mds)"
+
+#: ../images/image-mds/parser.c:898
+msgid "GameJack images (*.xmd)"
+msgstr "GameJack ასლის ფაილები (*.xmd)"
+
+#: ../images/image-mdx/libmirage-mdx.xml.in.h:1
+msgid "DaemonTools image file"
+msgstr "DaemonTools-ის ასლის ფაილი"
+
+#: ../images/image-mdx/parser.c:387
+msgid "Unsupported track mode!"
+msgstr "მხარდაუჭერელი ტრეკის რეჟიმი!"
+
+#: ../images/image-mdx/parser.c:450
+#, c-format
+msgid "Unsupported subchannel data type (%d)!"
+msgstr "მხარდაუჭერელი ქვეარხის მონაცემთა ტიპი (%d)!"
+
+#: ../images/image-mdx/parser.c:464
+msgid "Track sector size mismatch!"
+msgstr "ტრეკის სექტორის ზომა არ ემთხვევა!"
+
+#: ../images/image-mdx/parser.c:511
+msgid "Track has no footer blocks!"
+msgstr "ტრეკს ბოლოსართის ბლოკები არ აქვს!"
+
+#: ../images/image-mdx/parser.c:533
+msgid "Zero-valued filename offset found in footer block!"
+msgstr ""
+"ბოლოსართის ბლოკში აღმოჩენილია ნულოვანი მნიშვნელობის ფაილის სახელის "
+"წანაცვლება!"
+
+#: ../images/image-mdx/parser.c:610
+#, c-format
+msgid "Failed to set up MDX data fragment: %s!"
+msgstr "MDX მონაცემთა ფრაგმენტის მორგება შეუძლებელია: %s!"
+
+#: ../images/image-mdx/parser.c:640
+#, c-format
+msgid "Track length validation failed for track #%d!"
+msgstr "ტრეკის სიგრძის გადამოწმება ჩავარდა ტრეკისთვის #%d!"
+
+#: ../images/image-mdx/parser.c:804
+#, c-format
+msgid "CD-TEXT data length (%d) is not a multiple of 18!"
+msgstr "CD-TEXT-ის მონაცემების სიგრძე (%d) 18-ის ნამრავლი არაა!"
+
+#: ../images/image-mdx/parser.c:816
+msgid "CD-TEXT is currently supported only with single-session disc images!"
+msgstr ""
+"CD-TEXT ამჟამად, მხოლოდ, ერთსესიიანი დისკის ასლის ფაილებთანაა ხელმისაწვდომი!"
+
+#: ../images/image-mdx/parser.c:942
+#, c-format
+msgid "Failed to parse sessions: %s"
+msgstr "სესიების დამუშავების შეცდომა: %s"
+
+#: ../images/image-mdx/parser.c:1016
+msgid "Failed to read MDX footer offset!"
+msgstr "MDX ბოლოსართის წანაცვლების წაკითხვის შეცდომა!"
+
+#: ../images/image-mdx/parser.c:1024
+msgid "Failed to read MDX footer length!"
+msgstr "MDX ბოლოსართის სიგრძის წაკითხვის შეცდომა!"
+
+#: ../images/image-mdx/parser.c:1034 ../images/image-mdx/parser.c:1049
+msgid "Failed to seek to encryption header offset!"
+msgstr "დაშიფვრის თავსართის წანაცვლებამდე გადახვევა შეუძლებელია!"
+
+#: ../images/image-mdx/parser.c:1060
+msgid "Failed to read encryption header!"
+msgstr "დაშიფვრის თავსართის წაკითხვა ჩავარდა!"
+
+#: ../images/image-mdx/parser.c:1068
+#, c-format
+msgid "Failed to decipher encryption header: %s!"
+msgstr "დაშიფვრის თავსართის გაშიფვრა ჩავარდა: %s!"
+
+#: ../images/image-mdx/parser.c:1104
+msgid "Sanity check on descriptor size failed!"
+msgstr "დესკრიპტორის ზომაზე მთლიანობის შემოწმება ჩავარდა!"
+
+#: ../images/image-mdx/parser.c:1114
+msgid "Failed to allocate read buffer for descriptor data!"
+msgstr "დესკრიპტორის მონაცემებისთვის წაკითხვის ბუფერის გამოყოფის შეცდომა!"
+
+#: ../images/image-mdx/parser.c:1123
+msgid "Failed to read all descriptor data!"
+msgstr "ყველა დესკრიპტორის მონაცემების წაკითხვის შეცდომა!"
+
+#: ../images/image-mdx/parser.c:1140
+#, c-format
+msgid "Failed to decipher/decompress descriptor data: %s!"
+msgstr "დესკრიპტორის მონაცემების გაშიფვრის/დეკომპრესიის შეცდომა: %s!"
+
+#: ../images/image-mdx/parser.c:1175
+msgid "Unexpected size of encryption header for image data!"
+msgstr "დაშიფვრის თავსართის მოულოდნელი ზომა ასლის ფაილების მონაცემებისთვის!"
+
+#: ../images/image-mdx/parser.c:1189
+msgid "Failed to allocate buffer!"
+msgstr "ბუფერის გამოყოფის შეცდომა!"
+
+#: ../images/image-mdx/parser.c:1231
+msgid ""
+"Failed to decipher encryption header for image data! Incorrect password?"
+msgstr ""
+"ასლის ფაილის მონაცემებისთვის დაშიფვრის თავსართის გაშიფვრა ჩავარდა! არასწორი "
+"პაროლი?"
+
+#: ../images/image-mdx/parser.c:1264
+msgid "Parser cannot handle given image: failed to read MDX/MDSv2 header!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: MDX/MDSv2 "
+"თავსართის წაკითხვის შეცდომა!"
+
+#: ../images/image-mdx/parser.c:1289
+#, c-format
+msgid ""
+"Installed version of libgcrypt (%s) does not satisfy minimum requirement "
+"(%s)!"
+msgstr ""
+"libgcrypt-ის დაყენებული ვერსია (%s) მინიმალურ მოთხოვნას (%s) არ აკმაყოფილებს!"
+
+#: ../images/image-mdx/parser.c:1418
+msgid "MDX Image Parser"
+msgstr "MDX ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-mdx/parser.c:1420
+msgid "DaemonTools images (*.mdx, *.mds)"
+msgstr "DaemonTools-ის ასლის ფაილები (*.mdx, *.mds)"
+
+#: ../images/image-nrg/parser.c:113
+msgid "Failed to allocate memory for block index!"
+msgstr "ბლოკის ინდექსისთვის მეხსიერების გამოყოფა ჩავარდა!"
+
+#: ../images/image-nrg/parser.c:216
+msgid "Failed to look up 'MTYP' block!"
+msgstr "'MTYP' ბლოკის მოძებნის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:244
+#, c-format
+msgid "Unhandled medium type: %d!"
+msgstr "დაუმუშავებელი მედიის ტიპი: %d!"
+
+#: ../images/image-nrg/parser.c:353
+msgid "Failed to look up 'ETN2' or 'ETNF' block!"
+msgstr "'ETN2' ან 'ETNF' ბლოკის მოძებნის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:366
+msgid "Failed to allocate space for ETN blocks!"
+msgstr "ETN ბლოკებისთვის სივრცის გამოყოფა ჩავარდა!"
+
+#: ../images/image-nrg/parser.c:412
+msgid "Failed to look up 'CUEX' or 'CUES' block!"
+msgstr "'CUEX' ან 'CUES' ბლოკის მოძებნის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:425
+msgid "Failed to allocate memory for CUE blocks!"
+msgstr "CUE ბლოკებისთვის მეხსიერების გამოყოფა ჩავარდა!"
+
+#: ../images/image-nrg/parser.c:473
+msgid "Failed to look up 'DAOX' or 'DAOI' block!"
+msgstr "'DAOX' ან 'DAOI' ბლოკის მოძებნის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:485
+msgid "Failed to allocate space for DAO header!"
+msgstr "DAO თავსართისთვის სივრცის გამოყოფა ჩავარდა!"
+
+#: ../images/image-nrg/parser.c:891
+msgid "Failed to look up 'CDTX' block!"
+msgstr "'CDTX' ბლოკის მოძებნის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:954
+msgid "Failed to read trailer offset!"
+msgstr "ბოლო წანაცვლების წაკითხვის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:977
+msgid "Failed to seek to trailer offset (32-bit)!"
+msgstr "ბოლო წანაცვლებამდე (32-ბიტიანი) გადახვევის შეცდომა!"
+
+#: ../images/image-nrg/parser.c:1010
+msgid "nrg_data_length must be greater than 0!"
+msgstr "nrg_data_length 0-ზე მეტი უნდა იყოს!"
+
+#: ../images/image-nrg/parser.c:1108
+msgid "NRG Image Parser"
+msgstr "NRG ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-nrg/parser.c:1110
+msgid "Nero Burning Rom images (*.nrg)"
+msgstr "Nero Burning Rom-ის ასლის ფაილები (*.nrg)"
+
+#: ../images/image-nrg/libmirage-nrg.xml.in.h:1
+msgid "Nero Burning ROM image file"
+msgstr "Nero Burning ROM ასლის ფაილი"
+
+#: ../images/image-readcd/parser.c:78
+msgid "Parser cannot handle given image: failed to read 2-byte TOC length!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: 2-ბაიტიანი TOC-"
+"ის სიგრძის წაკითხვის შეცდომა!"
+
+#: ../images/image-readcd/parser.c:318
+msgid "Data file not found!"
+msgstr "მონაცემთა ფაილი აღმოჩენილი არაა!"
+
+#: ../images/image-readcd/parser.c:325
+msgid "Failed to create stream on data file!"
+msgstr "მონაცემთა ფაილზე ნაკადის შექმნა ჩავარდა!"
+
+#: ../images/image-readcd/parser.c:341
+msgid "Failed to read whole TOC file!"
+msgstr "მთლიანი TOC ფაილის წაკითხვის შეცდომა!"
+
+#: ../images/image-readcd/parser.c:495
+msgid "READCD Image Parser"
+msgstr "READCD ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-readcd/parser.c:497
+msgid "readcd images (*.toc)"
+msgstr "readcd-ის ასლის ფაილები (*.toc)"
+
+#: ../images/image-toc/parser.c:1247 ../images/image-xcdroast/parser.c:837
+msgid "Parser cannot handle given image: invalid TOC file!"
+msgstr ""
+"დამმუშავებელს არ შეუძლია მიწოდებული ასლის ფაილის დამუშავება: არასწორი TOC "
+"ფაილი!"
+
+#: ../images/image-toc/parser.c:1348
+msgid "TOC Image Parser"
+msgstr "TOC ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-toc/parser.c:1350
+msgid "cdrdao images (*.toc)"
+msgstr "cdrdao-ის ასლის ფაილები (*.toc)"
+
+#: ../images/image-toc/writer.c:472
+msgid "Unsupported medium format!"
+msgstr "მხარდაუჭერელი მედიის ფორმატი!"
+
+#: ../images/image-toc/writer.c:645
+msgid "TOC Image Writer"
+msgstr "TOC ასლის ფაილების ჩამწერი"
+
+#: ../images/image-xcdroast/parser.c:899
+msgid "X-CD-Roast Image Parser"
+msgstr "X-CD-Roast ასლის ფაილის დამმუშავებელი"
+
+#: ../images/image-xcdroast/parser.c:901
+msgid "X-CD-Roast images (*.toc)"
+msgstr "X-CD-Roast-ის ასლის ფაილები (*.toc)"
+
+#: ../images/image-xcdroast/libmirage-xcdroast.xml.in.h:1
+msgid "X-CD Roast image file"
+msgstr "X-CD Roast ასლის ფაილი"
+
+#: ../mirage/cdtext-coder.c:369
+#, c-format
+msgid "Invalid block number #%i!"
+msgstr "არასწორი ბლოკის ნომერი #%i!"
+
+#: ../mirage/cdtext-coder.c:679
+#, c-format
+msgid "Block number %d exceeds number of blocks %d!"
+msgstr "ბლოკის ნომერი %d მეტია, ვიდრე ბლოკების რაოდენობა %d!"
+
+#: ../mirage/cdtext-coder.c:683
+#, c-format
+msgid "Requested block %d has no language code set!"
+msgstr "მოთხოვნილ ბლოკს %d ენის კოდი დაყენებული არ აქვს!"
+
+#: ../mirage/context.c:316
+msgid "Context does not have a password function!"
+msgstr "კონტექსტს პაროლის ფუნქცია არ აქვს!"
+
+#: ../mirage/context.c:324
+msgid "Password has not been provided!"
+msgstr "პაროლი მოწოდებული არაა!"
+
+#: ../mirage/context.c:362
+msgid "No image files given!"
+msgstr "ასლის ფაილები გადაცემული არაა!"
+
+#. No parser found
+#: ../mirage/context.c:414
+msgid "No parser can handle the image file!"
+msgstr "ასლის ფაილის დამუშავება არცერთ დამმუშავებელს შეუძლია!"
+
+#: ../mirage/context.c:467
+#, c-format
+msgid "Failed to open read-only file stream on data file: %s!"
+msgstr "მონაცემთა ფაილზე მხოლოდ-წაკითხვადი ფაილის ნაკადის გახსნის შეცდომა: %s!"
+
+#: ../mirage/context.c:562
+#, c-format
+msgid "Failed to open read-write file stream on data file: %s!"
+msgstr ""
+"მონაცემთა ფაილზე ჩაწერად-წაკითხვადი ფაილის ნაკადის გახსნის შეცდომა: %s!"
+
+#: ../mirage/context.c:576
+#, c-format
+msgid "Invalid filter type '%s' in filter chain!"
+msgstr "არასწორი ფილტრის ტიპი '%s' ფილტრების ჯაჭვში!"
+
+#: ../mirage/context.c:586
+#, c-format
+msgid "Failed to create filter type '%s': %s!"
+msgstr "შექმნის შეცდომა ფილტრის ტიპისტვის '%s'; %s!"
+
+#: ../mirage/contextual.c:292 ../mirage/contextual.c:327
+#: ../mirage/contextual.c:363
+msgid "Context not set!"
+msgstr "კონტექსტი დაყენებული არაა!"
+
+#: ../mirage/disc.c:520
+#, c-format
+msgid "Session with number %d already exists!"
+msgstr "სესია ნომრით %d უკვე არსებობს!"
+
+#: ../mirage/disc.c:649
+#, c-format
+msgid "Session index %d out of range!"
+msgstr "სესიის ინდექსი %d შუალედს გარეთაა!"
+
+#: ../mirage/disc.c:659
+#, c-format
+msgid "Session with index %d not found!"
+msgstr "სესია ინდექსით %d აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:696
+#, c-format
+msgid "Session with number %d not found!"
+msgstr "სესია ნომრით %d აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:722
+#, c-format
+msgid "Session address %d (0x%X) out of range!"
+msgstr "სესიის მისამართი %d (0x%X) შუალედს გარეთაა!"
+
+#: ../mirage/disc.c:740
+#, c-format
+msgid "Session containing address %d not found!"
+msgstr "სესია, რომელიც შეიცავს მისამართს %d აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:784
+#, c-format
+msgid "Session with track %d not found!"
+msgstr "სესია ტრეკით %d აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:834 ../mirage/disc.c:866
+#, c-format
+msgid "Session %p is not in disc layout!"
+msgstr "სესია %p დისკის განლაგებაში არაა!"
+
+#: ../mirage/disc.c:843
+#, c-format
+msgid "Session before session %p not found!"
+msgstr "სესია სესიამდე %p აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:876
+#, c-format
+msgid "Session after session %p not found!"
+msgstr "სესია სესიის %p შემდეგ აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:966
+msgid "Session not found!"
+msgstr "სესია ვერ ვიპოვე!"
+
+#: ../mirage/disc.c:1069 ../mirage/disc.c:1119
+msgid "Track has no parent!"
+msgstr "ტრეკს მშობელი არ გააჩნია!"
+
+#: ../mirage/disc.c:1106 ../mirage/session.c:759
+#, c-format
+msgid "Invalid track number %d!"
+msgstr "არასწორი ტრეკის ნომერი %d!"
+
+#: ../mirage/disc.c:1158 ../mirage/session.c:817
+#, c-format
+msgid "Track index %d out of range!"
+msgstr "ტრეკი ინდექსით %d შუალედს გარეთაა!"
+
+#: ../mirage/disc.c:1179 ../mirage/session.c:829
+#, c-format
+msgid "Track with index %d not found!"
+msgstr "ტრეკი ინდექსით %d აღმოჩენილი არაა!"
+
+#: ../mirage/disc.c:1316
+msgid "Invalid medium type!"
+msgstr "არასწორი მედიის ტიპი!"
+
+#: ../mirage/disc.c:1321
+#, c-format
+msgid "Invalid layer %d!"
+msgstr "არასწორი ფენა %d!"
+
+#: ../mirage/disc.c:1328
+msgid "Disc structure data not provided!"
+msgstr "დისკის სტრუქტურის მონაცემები მოწოდებული არაა!"
+
+#: ../mirage/disc.c:1502
+msgid "DPM data not available!"
+msgstr "DPM მონაცემები ხელმისაწვდომი არაა!"
+
+#: ../mirage/disc.c:1512
+#, c-format
+msgid "Sector address %d out of range!"
+msgstr "სექტორი მისამართით %d შუალედს გარეთაა!"
+
+#: ../mirage/file-stream.c:122
+#, c-format
+msgid "File '%s' does not exist!"
+msgstr "ფაილი '%s' არ არსებობს!"
+
+#: ../mirage/file-stream.c:137
+#, c-format
+msgid "Failed to open file %s stream on data file '%s': %s!"
+msgstr "ფაილის %s ნაკადის გახსნის შეცდომა მონაცემთა ფაილზე '%s': %s!"
+
+#: ../mirage/file-stream.c:137
+msgid "input/output"
+msgstr "შეტანა/გამოტანა"
+
+#: ../mirage/file-stream.c:137
+msgid "input"
+msgstr "შეყვანა"
+
+#: ../mirage/file-stream.c:171
+msgid "No file input stream!"
+msgstr "შეყვანის ნაკადის გარეშე!"
+
+#: ../mirage/file-stream.c:184
+msgid "No file output stream!"
+msgstr "გამოტანის ნაკადის გარეშე!"
+
+#: ../mirage/file-stream.c:197
+msgid "No file stream!"
+msgstr "ფაილის ნაკადის გარეშე!"
+
+#: ../mirage/file-stream.c:224
+msgid "Cannot move file for non-writable stream!"
+msgstr "ფაილის გადატანა არაჩაწერადი ნაკადისთვის შეუძლებელია!"
+
+#: ../mirage/file-stream.c:254
+#, c-format
+msgid "Failed to move file: %s"
+msgstr "ფაილის გადაადგილების შეცდომა: %s"
+
+#: ../mirage/file-stream.c:269
+#, c-format
+msgid "Failed to re-open moved file: %s"
+msgstr "გადატანილი ფაილის თავიდან გახსნა ჩავარდა: %s"
+
+#: ../mirage/filter-stream.c:330
+msgid "No underlying stream!"
+msgstr "ქვედა ნაკადის გარეშე!"
+
+#: ../mirage/filter-stream.c:351
+msgid "Simplified partial read function is not implemented!"
+msgstr "გამარტივებული ნაწილობრივი წაკითხვის ფუნქცია განხორციელებული არაა!"
+
+#: ../mirage/filter-stream.c:369
+msgid "Failed to do a partial read."
+msgstr "ნაწილობრივი ჩაწერის შესრულება ჩავარდა."
+
+#: ../mirage/filter-stream.c:397
+msgid "Stream is not writable!"
+msgstr "ნაკადი ჩაწერადი არაა!"
+
+#: ../mirage/filter-stream.c:404
+msgid "Simplified partial write function is not implemented!"
+msgstr "გამარტივებული ნაწილობრივი ჩაწერის ფუნქცია განხორციელებული არაა!"
+
+#: ../mirage/filter-stream.c:416
+msgid "Failed to do a partial write."
+msgstr "ნაწილობრივი ჩაწერის შესრულება ჩავარდა."
+
+#: ../mirage/filter-stream.c:458
+msgid "Invalid seek type."
+msgstr "არასწორი გადახვევის ტიპი."
+
+#: ../mirage/filter-stream.c:467
+msgid "Seek before beginning of file not allowed!"
+msgstr "ფაილის დასაწყისამდე გადახვევა დაშვებული არაა!"
+
+#: ../mirage/fragment.c:194
+msgid "Main channel data input stream not set!"
+msgstr "მთავარი არხის მონაცემთა შეყვანის ნაკადი დაყენებული არაა!"
+
+#: ../mirage/fragment.c:201
+#, c-format
+msgid "Failed to seek to the end of main channel data input stream: %s"
+msgstr "მთავარი არხის მონაცემთა შეყვანის ნაკადის ბოლოში გადახვევის შეცდომა: %s"
+
+#: ../mirage/fragment.c:493
+#, c-format
+msgid "Mismatch between given data (%d) and set main channel data size (%d)!"
+msgstr ""
+"მოწოდებულ მონაცემებისა (%d) და დაყენებული მთავარი არხის მონაცემების ზომა "
+"(%d) არ ემთხვევა!"
+
+#: ../mirage/fragment.c:532
+#, c-format
+msgid "Failed to seek to position %s"
+msgstr "გადახვევის შეცდომა პოზიციამდე %s"
+
+#: ../mirage/fragment.c:540 ../mirage/fragment.c:883
+#, c-format
+msgid "Failed to write data: %s"
+msgstr "მონაცემთა ჩაწერა ჩავარდა: %s"
+
+#: ../mirage/fragment.c:840
+#, c-format
+msgid "Mismatch between given data (%d) and accepted subchannel size (%d)!"
+msgstr ""
+"მოწოდებულ მონაცემებისა (%d) და მოწოდებული ქვეარხის ზომა (%d) არ ემთხვევა!"
+
+#: ../mirage/fragment.c:876
+#, c-format
+msgid "Failed to seek to position %s!"
+msgstr "გადახვევის შეცდომა პოზიციამდე %s!"
+
+#: ../mirage/language.c:144 ../mirage/language.c:186
+#, c-format
+msgid "Invalid pack type %d!"
+msgstr "არასწორი პაკეტის ტიპი %d!"
+
+#: ../mirage/language.c:191
+#, c-format
+msgid "Data not set for pack type %d!"
+msgstr "პაკეტის ტიპისთვის %d მონაცემები დაყენებული არაა!"
+
+#: ../mirage/mirage.c:152
+#, c-format
+msgid "Failed to open plugin directory '%s'!"
+msgstr "გახსნის შეცდომა დამატებების საქაღალდისთვის '%s'!"
+
+#: ../mirage/mirage.c:223 ../mirage/mirage.c:280 ../mirage/mirage.c:304
+#: ../mirage/mirage.c:330 ../mirage/mirage.c:360 ../mirage/mirage.c:384
+#: ../mirage/mirage.c:410 ../mirage/mirage.c:440 ../mirage/mirage.c:464
+#: ../mirage/mirage.c:490 ../mirage/mirage.c:523 ../mirage/mirage.c:549
+msgid "Library not initialized!"
+msgstr "ბიბლიოთეკა ინიციალიზებული არაა!"
+
+#: ../mirage/mirage.c:337 ../mirage/mirage.c:417 ../mirage/mirage.c:497
+msgid "Iteration has been cancelled!"
+msgstr "იტერაცია გაუქმდა!"
+
+#: ../mirage/mirage.c:559
+#, c-format
+msgid "Writer '%s' not found!"
+msgstr "ჩამწერი '%s' აღმოჩენილი არაა!"
+
+#: ../mirage/parser.c:357
+msgid "Failed to create data stream!"
+msgstr "მონაცემთა ნაკადის შექმნა ჩავარდა!"
+
+#: ../mirage/sector.c:75
+#, c-format
+msgid "Sync pattern not available for sector type %d!"
+msgstr "სინქრონიზაციის ნიმუში ხელმიუწვდომელია სექტორის ტიპისთვის %d!"
+
+#: ../mirage/sector.c:95
+#, c-format
+msgid "Header not available for sector type %d!"
+msgstr "თავსართი ხელმისაწვდომი არაა სექტორის ტიპისთვის %d!"
+
+#: ../mirage/sector.c:112
+#, c-format
+msgid "Subheader not available for sector type %d!"
+msgstr "ქვეთავსართი ხელმისაწვდომი არაა სექტორის ტიპისთვის %d!"
+
+#: ../mirage/sector.c:153
+#, c-format
+msgid "Data not available for sector type %d!"
+msgstr "მონაცემები ხელმისაწვდომი არაა სექტორის ტიპისთვის %d!"
+
+#: ../mirage/sector.c:179
+#, c-format
+msgid "EDC/ECC not available for sector type %d!"
+msgstr "EDC/ECC ხელმისაწვდომი არაა სექტორის ტიპისთვის %d!"
+
+#: ../mirage/sector.c:216
+#, c-format
+msgid "Unhandled sector size %d for Audio sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d აუდიოს სექტორისთვის!"
+
+#: ../mirage/sector.c:262
+#, c-format
+msgid "Unhandled sector size %d for Mode 0 sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d 0 რეჟიმის სექტორისთვის!"
+
+#: ../mirage/sector.c:342
+#, c-format
+msgid "Unhandled sector size %d for Mode 1 sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d 1 რეჟიმის სექტორისთვის!"
+
+#: ../mirage/sector.c:389
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Formless sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d 2 რეჟიმის უფორმო სექტორისთვის!"
+
+#: ../mirage/sector.c:494
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Form 1 sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d 2 რეჟიმის 1 ფორმის სექტორისთვის!"
+
+#: ../mirage/sector.c:605
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Form 2 sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d 2 რეჟიმის 2 ფორმის სექტორისთვის!"
+
+#: ../mirage/sector.c:676
+#, c-format
+msgid "Unhandled sector size %d for Mode 2 Mixed sector!"
+msgstr "დაუმუშავებელი სექტორის ზომა %d 2 რეჟიმის შერეული სექტორისთვის!"
+
+#: ../mirage/sector.c:893
+msgid "Raw sectors require 2352 bytes of data!"
+msgstr "დაუმუშავებელი სექტორები ითხოვენ 2352 ბაიტ მონაცემებს!"
+
+#: ../mirage/sector.c:1014
+#, c-format
+msgid ""
+"Requested subchannel size (%d) and actual subchannel size (%d) mismatch!"
+msgstr ""
+"მოთხოვნილი ქვეარხის ზომა (%d) და მიმდინარე ქვეარხის ზომა (%d) არ ემთხვევა!"
+
+#: ../mirage/sector.c:1113
+#, c-format
+msgid "Expected %d bytes for sync pattern!"
+msgstr "მოველოდი %d ბაიტს სინქრონიზაციის ნიმუშისთვის!"
+
+#: ../mirage/sector.c:1190
+#, c-format
+msgid "Expected %d bytes for header!"
+msgstr "მოველოდი %d ბაიტს თავსართისთვის!"
+
+#: ../mirage/sector.c:1274
+#, c-format
+msgid "Expected %d bytes for subheader!"
+msgstr "მოველოდი %d ბაიტს ქვეთავსართისთვის!"
+
+#: ../mirage/sector.c:1345
+#, c-format
+msgid "Expected %d bytes for data!"
+msgstr "მოველოდი %d ბაიტს მონაცემებისთვის!"
+
+#: ../mirage/sector.c:1421
+#, c-format
+msgid "Expected %d bytes for EDC/ECC!"
+msgstr "მოველოდი %d ბაიტს EDC/ECC-ისთვის!"
+
+#: ../mirage/sector.c:1493 ../mirage/sector.c:1549
+#, c-format
+msgid "Subchannel format %d not supported yet!"
+msgstr "ქვეარხის ფორმატი %d ჯერ მხარდაჭერილი არაა!"
+
+#: ../mirage/sector.c:1520
+msgid "Expected 96 bytes for PW subchannel!"
+msgstr "მოველოდი 96 ბაიტს PW ქვეარხისთვის!"
+
+#: ../mirage/sector.c:1530
+msgid "Expected 16 bytes for Q subchannel!"
+msgstr "მოველოდი 16 ბაიტს Q ქვეარხისთვის!"
+
+#: ../mirage/session.c:679
+#, c-format
+msgid "Track with number %d already exists!"
+msgstr "ტრეკი ნომრით %d უკვე არსებობს!"
+
+#: ../mirage/session.c:866
+#, c-format
+msgid "Track with number %d not found!"
+msgstr "ტრეკი ნომრით %d აღმოჩენილი არაა!"
+
+#: ../mirage/session.c:892
+#, c-format
+msgid "Track address %d out of range!"
+msgstr "ტრეკის მისამართი %d შუალედს გარეთაა!"
+
+#: ../mirage/session.c:910
+#, c-format
+msgid "Track containing address %d not found!"
+msgstr "ტრეკი, რომელიც შეიცავს მისამართს %d აღმოჩენილი არაა!"
+
+#: ../mirage/session.c:960 ../mirage/session.c:994
+#, c-format
+msgid "Track %p is not in session layout!"
+msgstr "ტრეკი %p დისკის განლაგებაში არაა!"
+
+#: ../mirage/session.c:970
+#, c-format
+msgid "Track before track %p not found!"
+msgstr "ტრეკი ტრეკამდე %p აღმოჩენილი არაა!"
+
+#: ../mirage/session.c:1005
+#, c-format
+msgid "Track after track %p not found!"
+msgstr "ტრეკი ტრეკის %p შემდეგ აღმოჩენილი არაა!"
+
+#: ../mirage/session.c:1046 ../mirage/track.c:1326
+#, c-format
+msgid "Language with language code %d already exists!"
+msgstr "ენა ენის კოდით %d უკვე არსებობს!"
+
+#: ../mirage/session.c:1157
+#, c-format
+msgid "Invalid language index %d!"
+msgstr "არასწორი ენის ინდექსი %d!"
+
+#: ../mirage/session.c:1167 ../mirage/track.c:1446
+#, c-format
+msgid "Language with index %d not found!"
+msgstr "ენა ინდექსით %d აღმოჩენილი არაა!"
+
+#: ../mirage/session.c:1204 ../mirage/track.c:1483
+#, c-format
+msgid "Language with language code %d not found!"
+msgstr "ენა ენის კოდით %d აღმოჩენილი არაა!"
+
+#: ../mirage/session.c:1307
+msgid "Failed to decode CD-TEXT data!"
+msgstr "CD-TEXT-ის მონაცემების გაშიფვრა ჩავარდა!"
+
+#: ../mirage/session.c:1463 ../mirage/session.c:1492
+msgid "Session is not in disc layout!"
+msgstr "სესია დისკის განლაგებაში არაა!"
+
+#: ../mirage/track.c:497 ../mirage/track.c:585
+msgid "Sector address out of range!"
+msgstr "სექტორის მისამართი შუალედს გარეთაა!"
+
+#: ../mirage/track.c:504
+#, c-format
+msgid "Failed to get fragment to feed sector: %s"
+msgstr "სექტორის შესავსებად ფაქტორის მიღების შეცდომა: %s"
+
+#: ../mirage/track.c:516
+#, c-format
+msgid "Failed read main channel data: %s"
+msgstr "მთავარი არხის მონაცემთა წაკითხვის შეცდომა: %s"
+
+#: ../mirage/track.c:524
+#, c-format
+msgid "Failed to read subchannel data: %s"
+msgstr "ქვეარხის მონაცემების წაკითხვის შეცდომა: %s"
+
+#: ../mirage/track.c:538
+#, c-format
+msgid "Failed to feed data: %s"
+msgstr "მონაცემების შევსების შეცდომა: %s"
+
+#: ../mirage/track.c:595
+msgid "Cannot append sector to track that is not last in the layout!"
+msgstr ""
+"სექტორის იმ ტრეკის ბოლოში მიწერა, რომელიც განლაგებაში ბოლო არაა, შეუძლებელია!"
+
+#: ../mirage/track.c:604
+#, c-format
+msgid "Failed to get last fragment to append sector: %s"
+msgstr "სექტორისთვის ბოლოში მისაწერად ბოლო ფრაგმენტის მიღება ჩავარდა: %s"
+
+#: ../mirage/track.c:613
+#, c-format
+msgid "Failed to get fragment to write sector: %s"
+msgstr "სექტორის ჩასაწერად ფრაგმენტის მიღების შეცდომა: %s"
+
+#: ../mirage/track.c:631
+#, c-format
+msgid "Failed to extract data from sector: %s"
+msgstr "სექტორიდან მონაცემების ამოღების შეცდომა: %s"
+
+#: ../mirage/track.c:639
+#, c-format
+msgid "Failed write main channel data: %s"
+msgstr "მთავარი არხის მონაცემების ჩაწერის შეცდომა: %s"
+
+#: ../mirage/track.c:648
+#, c-format
+msgid "Failed to write subchannel data: %s"
+msgstr "ქვეარხის მონაცემების ჩაწერის შეცდომა: %s"
+
+#: ../mirage/track.c:931
+#, c-format
+msgid "Fragment index %d out of range!"
+msgstr "ფრაგმენტის ინდექსი %d შუალედს გარეთაა!"
+
+#: ../mirage/track.c:941
+#, c-format
+msgid "Fragment with index %d not found!"
+msgstr "ფრაგმენტის ინდექსი %d აღმოჩენილი არაა!"
+
+#: ../mirage/track.c:980
+#, c-format
+msgid "Fragment with address %d not found!"
+msgstr "ფრაგმენტის მისამართით %d აღმოჩენილი არაა!"
+
+#: ../mirage/track.c:1046
+msgid "No fragment with subchannel found!"
+msgstr "ქვეარხის მქონე ფრაგმენტები აღმოჩენილი არაა!"
+
+#: ../mirage/track.c:1124
+#, c-format
+msgid "Invalid index start address (%d); before track start!"
+msgstr "არასწორი ინდექსის დაწყების მისამართი (%d) ტრეკის დასაწყისამდე!"
+
+#: ../mirage/track.c:1208
+#, c-format
+msgid "Index number %d out of range!"
+msgstr "ინდექსის ნომერი %d შუალედს გარეთაა!"
+
+#: ../mirage/track.c:1218
+#, c-format
+msgid "Index with number %d not found!"
+msgstr "ინდექსი ნომრით %d აღმოჩენილი არაა!"
+
+#: ../mirage/track.c:1257
+#, c-format
+msgid "Index with address %d not found!"
+msgstr "ინდექსი მისამართით %d აღმოჩენილი არა!"
+
+#: ../mirage/track.c:1436
+#, c-format
+msgid "Language index %d out of range!"
+msgstr "ენის ინდექსი %d შუალედს გარეთაა!"
+
+#: ../mirage/track.c:1534 ../mirage/track.c:1563
+msgid "Track is not in session layout!"
+msgstr "ტრეკი სესიის განლაგებაში არაა!"
+
+#: ../mirage/writer.c:298
+#, c-format
+msgid "Parameter '%s' has invalid type (expected '%s', got '%s')!"
+msgstr "პარამეტრს '%s' აქვს არასწორი ტიპი (მოველოდი: '%s'. მივიღე: '%s')!"
+
+#: ../mirage/writer.c:317
+#, c-format
+msgid "Parameter '%s' has invalid value!"
+msgstr "პარამეტრის '%s' მნიშვნელობა არასწორია!"

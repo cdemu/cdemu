@@ -1,0 +1,780 @@
+# Georgian translation for cdemu-client.
+# Copyright (C) 2026 cdemu-client's authors.
+# This file is distributed under the same license as the cdemu-client package.
+# Ekaterine Papava <papava.e@gtu.ge>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cdemu-client\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-08 22:02+0100\n"
+"PO-Revision-Date: 2026-02-12 10:37+0100\n"
+"Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+#: ../src/cdemu:83
+#, c-format
+msgid "ERROR: %s"
+msgstr "შეცდომა: %s"
+
+#: ../src/cdemu:89
+#, c-format
+msgid "WARNING: %s"
+msgstr "გაფრთხილება: %s"
+
+#: ../src/cdemu:111
+msgid "loads an image to the device"
+msgstr "ჩატვირთავს ასლის ფაილს მოწყობილობაში"
+
+#: ../src/cdemu:125 ../src/cdemu:365 ../src/cdemu:558 ../src/cdemu:686
+#: ../src/cdemu:846 ../src/cdemu:1004 ../src/cdemu:1105 ../src/cdemu:1206
+#: ../src/cdemu:1307 ../src/cdemu:1408
+msgid "device"
+msgstr "მოწყობილობა"
+
+#: ../src/cdemu:131
+msgid "image file(s)"
+msgstr "ასლის ფაილ(ებ)-ი"
+
+#: ../src/cdemu:136
+msgid "encoding for text-based images"
+msgstr "კოდირება ტექსტური ასლის ფაილებისთვის"
+
+#: ../src/cdemu:144
+msgid "unload image from a loaded device if necessary"
+msgstr "ასლის ფაილის გამოტვირთვა ჩატვირთული მოწყობილობიდან, თუ ეს საჭიროა"
+
+#: ../src/cdemu:151
+msgid "create a new device if necessary"
+msgstr "ახალი მოწყობილობის შექმნა, თუ ეს საჭიროა"
+
+#: ../src/cdemu:168 ../src/cdemu:210 ../src/cdemu:421 ../src/cdemu:567
+#: ../src/cdemu:608 ../src/cdemu:651 ../src/cdemu:710 ../src/cdemu:744
+#: ../src/cdemu:869 ../src/cdemu:903 ../src/cdemu:1025 ../src/cdemu:1059
+#: ../src/cdemu:1126 ../src/cdemu:1160 ../src/cdemu:1227 ../src/cdemu:1261
+#: ../src/cdemu:1328 ../src/cdemu:1362 ../src/cdemu:1429 ../src/cdemu:1457
+#, c-format
+msgid "Failed to get number of devices: %s"
+msgstr "მოწყობილობების რაოდენობის მიღება ჩავარდა: %s"
+
+#: ../src/cdemu:175 ../src/cdemu:428 ../src/cdemu:616
+#, c-format
+msgid "Failed to get status of device %i: %s"
+msgstr "სტატუსის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:195 ../src/cdemu:227
+#, c-format
+msgid "Error while trying to unload device %d: %s"
+msgstr "გამოტვირთვის შეცდომა მოწყობილობისთვის %d: %s"
+
+#: ../src/cdemu:204 ../src/cdemu:1754
+#, c-format
+msgid "Failed to add device: %s"
+msgstr "მოწყობილობის დამატება ჩავარდა: %s"
+
+#: ../src/cdemu:215 ../src/cdemu:439
+msgid "No empty device found"
+msgstr "ცარიელი მოწყობილობის გარეშე"
+
+#: ../src/cdemu:220 ../src/cdemu:444 ../src/cdemu:582 ../src/cdemu:726
+#: ../src/cdemu:772 ../src/cdemu:885 ../src/cdemu:930 ../src/cdemu:1019
+#: ../src/cdemu:1041 ../src/cdemu:1079 ../src/cdemu:1120 ../src/cdemu:1142
+#: ../src/cdemu:1180 ../src/cdemu:1221 ../src/cdemu:1243 ../src/cdemu:1281
+#: ../src/cdemu:1322 ../src/cdemu:1344 ../src/cdemu:1382 ../src/cdemu:1442
+#: ../src/cdemu:1479
+#, c-format
+msgid "String '%s' is not a number"
+msgstr "სტრიქონი '%s' რიცხვი არაა"
+
+#: ../src/cdemu:277
+#, c-format
+msgid "Failed to obtain password for encrypted image: %s"
+msgstr "დაშიფრული ასლის ფაილისთვის პაროლის მიღების შეცდომა: %s"
+
+#: ../src/cdemu:283
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "დისკის ასლის ფაილის ჩატვირთვის შეცდომა: %s"
+
+#: ../src/cdemu:311 ../src/cdemu:2022 ../data/cdemu-client.desktop.in.h:1
+msgid "CDEmu client"
+msgstr "CDEmu-ის კლიენტი"
+
+#: ../src/cdemu:313
+msgid "Please enter password for encrypted image"
+msgstr "შეიყვანეთ პაროლი დაშიფრული ასლის ფაილისთვის"
+
+#: ../src/cdemu:318
+#, c-format
+msgid "Failed to obtain password via zenity: %s"
+msgstr "zenity-ით პაროლის მიღება ჩავარდა: %s"
+
+#: ../src/cdemu:326
+#, c-format
+msgid ""
+"Failed to run password agent defined via CDEMU_ASKPASS environment variable: "
+"%s"
+msgstr ""
+"გარემოს ცვლადში CDEMU_ASKPASS აღწერილი პაროლის აგენტის გაშვება ჩავარდა: %s"
+
+#: ../src/cdemu:330
+msgid "The image you are trying to load is encrypted."
+msgstr "ასლის ფაილი, რომლის ჩატვირთვასაც ცდილობთ, დაშიფრულია."
+
+#: ../src/cdemu:331
+msgid "Password: "
+msgstr "პაროლი: "
+
+#: ../src/cdemu:339
+#, c-format
+msgid ""
+"Failed to run password agent defined via SSH_ASKPASS environment variable: %s"
+msgstr ""
+"გარემოს ცვლადში SSH_ASKPASS აღწერილი პაროლის აგენტის გაშვება ჩავარდა: %s"
+
+#: ../src/cdemu:341
+msgid "No password agent was supplied."
+msgstr "პაროლის აგენტი მითითებული არაა."
+
+#: ../src/cdemu:351
+msgid "load blank/recordable image to the device"
+msgstr "ცარიელი/ჩაწერადი ასლის ფაილის ჩატვირთვა მოწყობილობაში"
+
+#: ../src/cdemu:370
+msgid "image filename/basename"
+msgstr "ასლის ფაილის სახელი/საბაზისო სახელი"
+
+#: ../src/cdemu:377
+msgid "ID of image writer to use"
+msgstr "გამოსაყენებელი ასლის ფაილების ჩამწერის ID"
+
+#: ../src/cdemu:384
+msgid "medium type"
+msgstr "მედიის ტიპი"
+
+#: ../src/cdemu:391
+msgid "additional writer parameter(s)"
+msgstr "ჩამწერის დამატებითი პარამეტრ(ებ)-ი"
+
+#: ../src/cdemu:454
+#, c-format
+msgid "Failed to load blank image: %s"
+msgstr "ცარიელი დისკის ასლის ფაილის ჩატვირთვის შეცდომა: %s"
+
+#: ../src/cdemu:472
+#, c-format
+msgid "Parameter token '%s' is not a key=value pair!"
+msgstr "პარამეტრი ტოკენი '%s' გასაღები=მნიშვნელობის წყვილი არაა!"
+
+#: ../src/cdemu:485 ../src/cdemu:1668
+#, c-format
+msgid "Failed to get parameter sheet for writer: %s"
+msgstr "ჩამწერისთვის პარამეტრის ფურცლის მიღების შეცდომა: %s"
+
+#: ../src/cdemu:500
+#, c-format
+msgid "Parameter '%s' not found in writer's parameter sheet!"
+msgstr "პარამეტრი '%s' ჩამწერის პარამეტრების ფურცელში აღმოჩენილი არაა!"
+
+#: ../src/cdemu:513
+#, c-format
+msgid "Invalid value '%s' given for parameter '%s'!"
+msgstr "მოწოდებულია არასწორი მნისვნელობა '%s' პარამეტრისთვის '%s'!"
+
+#: ../src/cdemu:526
+#, c-format
+msgid "String '%s' given as value for parameter '%s' is not a number!"
+msgstr ""
+"სტრიქონი '%s' მითითებული, როგორც მნიშვნელობა პარამეტრისთვის '%s' რიცხვი არაა!"
+
+#: ../src/cdemu:529
+#, c-format
+msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
+msgstr "აღწერილია დაუმუშავებელი პარამეტრის ტიპი '%s' პარამეტრისთვის '%s'!"
+
+#: ../src/cdemu:544
+msgid "unloads the device"
+msgstr "გამოტვირთავს მოწყობილობას"
+
+#: ../src/cdemu:573 ../src/cdemu:580
+#, c-format
+msgid "Failed to unload device %i: %s"
+msgstr "გამოტვირთვის შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:592
+msgid "displays the devices' status"
+msgstr "აჩვენებს მოწყობილობის სტატუსს"
+
+#: ../src/cdemu:610
+msgid "Devices' status:"
+msgstr "მოწყობილობების სტატუსი:"
+
+#: ../src/cdemu:611 ../src/cdemu:654 ../src/cdemu:747 ../src/cdemu:906
+#: ../src/cdemu:1062 ../src/cdemu:1163 ../src/cdemu:1264 ../src/cdemu:1365
+#: ../src/cdemu:1460
+msgid "DEV"
+msgstr "DEV"
+
+#: ../src/cdemu:611
+msgid "LOADED"
+msgstr "ჩატვირთულია"
+
+#: ../src/cdemu:611
+msgid "FILENAME"
+msgstr "ფაილის სახელი"
+
+#: ../src/cdemu:635
+msgid "displays the device mapping information"
+msgstr "აჩვენებს მოწყობილობის ასახვის ინფორმაციას"
+
+#: ../src/cdemu:653
+msgid "Device mapping:"
+msgstr "მოწყობილობის ასახვა:"
+
+#: ../src/cdemu:654
+msgid "SCSI CD-ROM"
+msgstr "SCSI CD-ROM"
+
+#: ../src/cdemu:654
+msgid "SCSI generic"
+msgstr "SCSI generic"
+
+#: ../src/cdemu:659
+#, c-format
+msgid "Failed to get device mapping of device %i: %s"
+msgstr "მოწყობილობის ასახვის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:672
+msgid "displays/sets daemon debug mask"
+msgstr "გამოიტანს/დააყენებს დემონის გამართვის ნიღაბს"
+
+#: ../src/cdemu:692 ../src/cdemu:852 ../src/cdemu:1010 ../src/cdemu:1111
+#: ../src/cdemu:1212 ../src/cdemu:1313
+msgid "new value"
+msgstr "ახალი მნიშვნელობა"
+
+#: ../src/cdemu:712
+#, c-format
+msgid "Setting daemon debug mask of all devices to 0x%X."
+msgstr ""
+"დემონის გამართვის ნიღბის დაყენება ყველა მოწყობილობისთვის მნიშვნელობაზე 0x%X."
+
+#: ../src/cdemu:718 ../src/cdemu:733
+#, c-format
+msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
+msgstr ""
+"დემონის გამართვის ნიღბის დაყენების შეცდომა მოწყობილობისთვის %i მნიშვნელობაზე "
+"0x%X: %s"
+
+#: ../src/cdemu:728
+#, c-format
+msgid "Setting daemon debug mask of device %i to 0x%X."
+msgstr ""
+"დემონის გამართვის ნიღბის დაყენება მოწყობილობისთვის %i მნიშვნელობაზე 0x%X."
+
+#: ../src/cdemu:746
+msgid "Devices' daemon debug masks:"
+msgstr "მოწყობილობების დემონის გამართვის ნიღბები:"
+
+#: ../src/cdemu:747 ../src/cdemu:906
+msgid "DEBUG MASK"
+msgstr "გამართვის ნიღაბი"
+
+#: ../src/cdemu:747 ../src/cdemu:906
+msgid "MEANING"
+msgstr "მნიშვნელობა"
+
+#: ../src/cdemu:754 ../src/cdemu:768
+#, c-format
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr "დემონის გამართვის ნიღბის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:777
+#, c-format
+msgid "Daemon debug mask of device %i: 0x%X (%s)"
+msgstr "დემონის გამართვის ნიღაბი მოწყობილობისთვის %i: 0x%X (%s)"
+
+#: ../src/cdemu:796 ../src/cdemu:954
+#, c-format
+msgid ""
+"String '%s' is not a number nor was it found in the list of valid debug mask "
+"identifiers"
+msgstr ""
+"სტრიქონი '%s' არც რიცხვია და არც სწორი გამართვის ნიღბის იდენტიფიკატორების "
+"სიაშია"
+
+#: ../src/cdemu:819 ../src/cdemu:1606
+#, c-format
+msgid "Failed to enumerate supported daemon debug masks: %s"
+msgstr "მხარდაჭერილი დემონის გამართვის ნიღბების ჩამოთვლის შეცდომა: %s"
+
+#: ../src/cdemu:832
+msgid "displays/sets library debug mask"
+msgstr "გამოიტანს/დააყენებს ბიბლიოთეკის გამართვის ნიღაბს"
+
+#: ../src/cdemu:871
+#, c-format
+msgid "Setting library debug mask of all devices to 0x%X."
+msgstr ""
+"ბიბლიოთეკის გამართვის ნიღბის დაყენება ყველა მოწყობილობისთვის მნიშვნელობაზე "
+"0x%X."
+
+#: ../src/cdemu:877 ../src/cdemu:892
+#, c-format
+msgid "Failed to set library debug mask of device %i to 0x%X: %s"
+msgstr ""
+"ბიბლიოთეკის გამართვის ნიღბის დაყენების შეცდომა მოწყობილობისთვის %i "
+"მნიშვნელობაზე 0x%X: %s"
+
+#: ../src/cdemu:887
+#, c-format
+msgid "Setting library debug mask of device %i to 0x%X."
+msgstr ""
+"ბიბლიოთეკის გამართვის ნიღბის დაყენება მოწყობილობისთვის %i მნიშვნელობაზე 0x%X."
+
+#: ../src/cdemu:905
+msgid "Devices' library debug masks:"
+msgstr "მოწყობილობების ბიბლიოთეკის გამართვის ნიღბები:"
+
+#: ../src/cdemu:913 ../src/cdemu:926
+#, c-format
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr "ბიბლიოთეკის გამართვის ნიღბის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:935
+#, c-format
+msgid "Library debug mask of device %i: 0x%X (%s)"
+msgstr "ბიბლიოთეკის გამართვის ნიღაბი მოწყობილობისთვის %i: 0x%X (%s)"
+
+#: ../src/cdemu:977 ../src/cdemu:1636
+#, c-format
+msgid "Failed to enumerate supported library debug masks: %s"
+msgstr "მხარდაჭერილი ბიბლიოთეკის გამართვის ნიღბების ჩამოთვლის შეცდომა: %s"
+
+#: ../src/cdemu:990
+msgid "displays/sets DPM emulation flag"
+msgstr "აჩვენებს/დააყენებს DPM ემულაციის ალამს"
+
+#: ../src/cdemu:1027
+#, c-format
+msgid "Setting DPM emulation flag of all devices to %i."
+msgstr "DPM ემულაციის ალმის დაყენება ყველა მოწყობილობისთვის მნიშვნელობაზე %i."
+
+#: ../src/cdemu:1033 ../src/cdemu:1048
+#, c-format
+msgid "Failed to set DPM emulation flag of device %i to %i: %s"
+msgstr ""
+"DPM ემულაციის ალმის დაყენების შეცდომა მოწყობილობისთვის %i მნიშვნელობაზე %i. "
+"%s"
+
+#: ../src/cdemu:1043
+#, c-format
+msgid "Setting DPM emulation flag of device %i to %i."
+msgstr "DPM ემულაციის ალმის დაყენება მოწყობილობისთვის %i მნიშვნელობაზე %i."
+
+#: ../src/cdemu:1061
+msgid "Devices' DPM emulation flag:"
+msgstr "მოწყობილობების DPM-ის ემულაციის ალამი:"
+
+#: ../src/cdemu:1062 ../src/cdemu:1163 ../src/cdemu:1264 ../src/cdemu:1365
+msgid "ENABLED"
+msgstr "ჩართულია"
+
+#: ../src/cdemu:1068 ../src/cdemu:1077
+#, c-format
+msgid "Failed to get DPM emulation flag of device %i: %s"
+msgstr "DPM ემულაციის ალმის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:1081
+#, c-format
+msgid "DPM emulation flag of device %i: %i"
+msgstr "DPM ემულაციის ალამი მოწყობილობისთვის %i: %i"
+
+#: ../src/cdemu:1091
+msgid "displays/sets transfer rate emulation flag"
+msgstr "აჩვენებს/დააყენებს გადაცემის სიჩქარის ემულაციის ალამს"
+
+#: ../src/cdemu:1128
+#, c-format
+msgid "Setting transfer rate emulation flag of all devices to %i."
+msgstr ""
+"გადაცემის სიჩქარის ემულაციის ალმის დაყენება ყველა მოწყობილობისთვის "
+"მნიშვნელობაზე %i."
+
+#: ../src/cdemu:1134 ../src/cdemu:1149
+#, c-format
+msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
+msgstr ""
+"გადაცემის სიჩქარის ემულაციის ალმის დაყენების შეცდომა მოწყობილობისთვის %i "
+"მნიშვნელობაზე %i. %s"
+
+#: ../src/cdemu:1144
+#, c-format
+msgid "Setting transfer rate emulation flag of device %i to %i."
+msgstr ""
+"გადაცემის სიჩქარის ემულაციის ალმის დაყენება მოწყობილობისთვის %i "
+"მნიშვნელობაზე %i."
+
+#: ../src/cdemu:1162
+msgid "Devices' transfer rate emulation flag:"
+msgstr "მოწყობილობების გადაცემის სიჩქარის ემულაციის ალამი:"
+
+#: ../src/cdemu:1169 ../src/cdemu:1178
+#, c-format
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr ""
+"გადაცემის სიჩქარის ემულაციის ალმის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:1182
+#, c-format
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "გადაცემის სიჩქარის ემულაციის ალამი მოწყობილობისთვის %i: %i"
+
+#: ../src/cdemu:1192
+msgid "displays/sets bad sector emulation flag"
+msgstr "აჩვენებს/დააყენებს ცუდი სექტორის ემულაციის ალამს"
+
+#: ../src/cdemu:1229
+#, c-format
+msgid "Setting bad sector emulation flag of all devices to %i."
+msgstr ""
+"ცუდი სექტორის ემულაციის ალმის დაყენება ყველა მოწყობილობისთვის მნიშვნელობაზე "
+"%i."
+
+#: ../src/cdemu:1235 ../src/cdemu:1250
+#, c-format
+msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
+msgstr ""
+"ცუდი სექტორის ემულაციის ალმის დაყენების შეცდომა მოწყობილობისთვის %i "
+"მნიშვნელობაზე %i. %s"
+
+#: ../src/cdemu:1245
+#, c-format
+msgid "Setting bad sector emulation flag of device %i to %i."
+msgstr ""
+"ცუდი სექტორის ემულაციის ალმის დაყენება მოწყობილობისთვის %i მნიშვნელობაზე %i."
+
+#: ../src/cdemu:1263
+msgid "Devices' bad sector emulation flag:"
+msgstr "მოწყობილობების ცუდი სექტორის ემულაციის ალამი:"
+
+#: ../src/cdemu:1270 ../src/cdemu:1279
+#, c-format
+msgid "Failed to get bad sector emulation flag of device %i: %s"
+msgstr "ცუდი სექტორის ემულაციის ალმის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:1283
+#, c-format
+msgid "Bad sector emulation flag of device %i: %i"
+msgstr "ცუდი სექტორის ემულაციის ალამი მოწყობილობისთვის %i: %i"
+
+#: ../src/cdemu:1293
+msgid "displays/sets DVD report CSS/CPPM flag"
+msgstr "გამოიტანს/დააყენებს DVD ანგარიშის CSS/CPPM ალამს"
+
+#: ../src/cdemu:1330
+#, c-format
+msgid "Setting DVD report CSS/CPPM flag of all devices to %i."
+msgstr ""
+"DVD ანგარიშის CSS/CPPM ალმის დაყენება ყველა მოწყობილობისთვის მნიშვნელობაზე "
+"%i."
+
+#: ../src/cdemu:1336 ../src/cdemu:1351
+#, c-format
+msgid "Failed to set DVD report CSS/CPPM flag of device %i to %i: %s"
+msgstr ""
+"DVD ანგარიშის CSS/CPPM ალმის დაყენების შეცდომა მოწყობილობისთვის %i "
+"მნიშვნელობაზე %i: %s"
+
+#: ../src/cdemu:1346
+#, c-format
+msgid "Setting DVD report CSS/CPPM flag of device %i to %i."
+msgstr ""
+"DVD ანგარიშის CSS/CPPM ალმის დაყენება მოწყობილობისთვის %i მნიშვნელობაზე %i."
+
+#: ../src/cdemu:1364
+msgid "Devices' DVD report CSS/CPPM flag:"
+msgstr "მოწყობილობების DVD ანგარიშის CSS/CPPM ალამი:"
+
+#: ../src/cdemu:1371 ../src/cdemu:1380
+#, c-format
+msgid "Failed to get DVD report CSS/CPPM flag of device %i: %s"
+msgstr "DVD ანგარიშის CSS/CPPM ალმის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:1384
+#, c-format
+msgid "DVD report CSS/CPPM flag of device %i: %i"
+msgstr "DVD ანგარიშის CSS/CPPM ალამი მოწყობილობისთვის %i: %i"
+
+#: ../src/cdemu:1394
+msgid "displays/sets device ID"
+msgstr "აჩვენებს/დააყენებს მოწყობილობის ID-ს"
+
+#: ../src/cdemu:1414
+msgid ""
+"new device ID: vendor ID, product ID, revision and vendor-specific string"
+msgstr ""
+"ახალი მოწყობილობის ID: მომწოდებლის ID, პროდუქტის ID, რევიზია და მომწოდებლის "
+"სპეციფიკური სტრიქონი"
+
+#: ../src/cdemu:1423
+msgid "New device ID must consist of exactly four strings!"
+msgstr "ახალი მოწყობილობის ID ზუსტად ოთხი სტრიქონისგან უნდა შედგებოდეს!"
+
+#: ../src/cdemu:1431
+#, c-format
+msgid "Setting device ID of all devices to %s."
+msgstr "მოწყობილობის ID-ის დაყენება ყველა მოწყობილობისთვის მნიშვნელობაზე %s."
+
+#: ../src/cdemu:1436 ../src/cdemu:1448
+#, c-format
+msgid "Failed to set device ID of device %i to %s: %s"
+msgstr ""
+"მოწყობილობის ID-ის დაყენების შეცდომა მოწყობილობისთვის %i მნიშვნელობაზე %s: %s"
+
+#: ../src/cdemu:1444
+#, c-format
+msgid "Setting device ID of device %i to %s."
+msgstr "მოწყობილობის ID-ის დაყენება მოწყობილობისთვის %i მნიშვნელობაზე %s."
+
+#: ../src/cdemu:1459
+msgid "Devices' IDs:"
+msgstr "მოწყობილობის ID-ები:"
+
+#: ../src/cdemu:1460
+msgid "DEVICE ID"
+msgstr "მოწყობილობის ID"
+
+#: ../src/cdemu:1467 ../src/cdemu:1477
+#, c-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr "მოწყობილობის ID-ის მიღების შეცდომა მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:1481
+#, c-format
+msgid "Device ID of device %i: %s"
+msgstr "მოწყობილობის ID მოწყობილობისთვის %i: %s"
+
+#: ../src/cdemu:1491
+msgid "enumerates supported parsers"
+msgstr "ჩამოთვლის მხარდაჭერილ დამმუშავებლებს"
+
+#: ../src/cdemu:1507
+#, c-format
+msgid "Failed to enumerate supported parsers: %s"
+msgstr "მხარდაჭერილი დამმუშავებლების ჩამოთვლის შეცდომა: %s"
+
+#: ../src/cdemu:1511
+msgid "Supported parsers:"
+msgstr "მხარდაჭერილი დამმუშავებლები:"
+
+#: ../src/cdemu:1525
+msgid "enumerates supported writers"
+msgstr "ჩამოთვლის მხარდაჭერილ ჩამწერებს"
+
+#: ../src/cdemu:1541
+#, c-format
+msgid "Failed to enumerate supported writers: %s"
+msgstr "მხარდაჭერილი ჩამწერების ჩამოთვლის შეცდომა: %s"
+
+#: ../src/cdemu:1544
+msgid "Supported writers:"
+msgstr "მხარდაჭერილი ჩამწერები:"
+
+#: ../src/cdemu:1556
+msgid "enumerates supported filter streams"
+msgstr "ჩამოთვლის მხარდაჭერილ ფილტრის ნაკადებს"
+
+#: ../src/cdemu:1572
+#, c-format
+msgid "Failed to enumerate supported filter streams: %s"
+msgstr "მხარდაჭერილი ფილტრის ნაკადების ჩამოთვლის შეცდომა: %s"
+
+#: ../src/cdemu:1575
+msgid "Supported filter streams:"
+msgstr "მხარდაჭერილი ფილტრის ნაკადები:"
+
+#: ../src/cdemu:1578
+#, c-format
+msgid "    write support: %d"
+msgstr "    ჩაწერის მხარდაჭერა: %d"
+
+#: ../src/cdemu:1590
+msgid "enumerates valid daemon debug masks"
+msgstr "ჩამოთვლის სწორ დემონის გამართვის ნიღბებს"
+
+#: ../src/cdemu:1608
+msgid "Supported daemon debug masks:"
+msgstr "მხარდაჭერილი დემონის გამართვის ნიღბები:"
+
+#: ../src/cdemu:1620
+msgid "enumerates valid library debug masks"
+msgstr "ჩამოთვლის სწორ ბიბლიოთეკის გამართვის ნიღბებს"
+
+#: ../src/cdemu:1638
+msgid "Supported library debug masks:"
+msgstr "მხარდაჭერილი ბიბლიოთეკის გამართვის ნიღბები:"
+
+#: ../src/cdemu:1650
+msgid "prints the list of writer's parameters"
+msgstr "გამოიტანს ჩამწერის პარამეტრების სიას"
+
+#: ../src/cdemu:1661
+msgid "writer ID"
+msgstr "ჩამწერის ID"
+
+#: ../src/cdemu:1671
+msgid "Writer's parameter sheet:"
+msgstr "ჩამწერების პარამეტრის ფურცელი:"
+
+#: ../src/cdemu:1676
+#, c-format
+msgid "  Name: %s"
+msgstr "  სახელი: %s"
+
+#: ../src/cdemu:1677
+#, c-format
+msgid "  Description: %s"
+msgstr "  აღწერა: %s"
+
+#: ../src/cdemu:1678
+#, c-format
+msgid "  Type: %s"
+msgstr "  ტიპი: %s"
+
+#: ../src/cdemu:1679
+#, c-format
+msgid "  Default value: %s"
+msgstr "  ნაგულისხმევი მნიშვნელობა: %s"
+
+#: ../src/cdemu:1682
+#, c-format
+msgid "  Possible value: %s"
+msgstr "  შესაძლო მნიშვნელობა: %s"
+
+#: ../src/cdemu:1687
+msgid "enum"
+msgstr "ჩამონათვალი"
+
+#: ../src/cdemu:1689
+msgid "string"
+msgstr "სტრიქონი"
+
+#: ../src/cdemu:1691
+msgid "boolean"
+msgstr "ლოგიკური"
+
+#: ../src/cdemu:1693
+msgid "integer"
+msgstr "მთელი რიცხვი"
+
+#: ../src/cdemu:1695
+msgid "unknown"
+msgstr "უცნობი"
+
+#: ../src/cdemu:1705
+msgid "displays version information"
+msgstr "გამოიტანს ვერსიის ინფორმაციას"
+
+#: ../src/cdemu:1721
+#, c-format
+msgid "Failed to get library version: %s"
+msgstr "ბიბლიოთეკის ვერსიის მიღების შეცდომა: %s"
+
+#: ../src/cdemu:1726
+#, c-format
+msgid "Failed to get daemon version: %s"
+msgstr "დემონის ვერსიის მიღების შეცდომა: %s"
+
+#: ../src/cdemu:1728
+#, c-format
+msgid "Library version: %s"
+msgstr "ბიბლიოთეკის ვერსია: %s"
+
+#: ../src/cdemu:1729
+#, c-format
+msgid "Daemon version: %s"
+msgstr "დემონის ვერსია: %s"
+
+#: ../src/cdemu:1739
+msgid "creates another virtual device"
+msgstr "შექმნის კიდევ ერთ ვირტუალურ მოწყობილობას"
+
+#: ../src/cdemu:1756
+msgid "Device added successfully."
+msgstr "მოწყობილობა წარმატებით დაემატა."
+
+#: ../src/cdemu:1766
+msgid "removes the last virtual device"
+msgstr "წაშლის ბოლო ვირტუალურ მოწყობილობას"
+
+#: ../src/cdemu:1781
+#, c-format
+msgid "Failed to remove device: %s"
+msgstr "მოწყობილობის წაშლა ჩავარდა: %s"
+
+#: ../src/cdemu:1783
+msgid "Device removed successfully."
+msgstr "მოწყობილობა წარმატებით წაიშალა."
+
+#: ../src/cdemu:1804
+msgid "Command-line CDEmu client."
+msgstr "CDEmu-is ბრძანების სტრიქონის კლიენტი."
+
+#: ../src/cdemu:1812
+msgid "sets D-BUS bus type to use"
+msgstr "დააყენებს D-BUS-ის სალტეს ტიპს გამოსაყენებლად"
+
+#: ../src/cdemu:1821
+msgid "valid commands"
+msgstr "სწორი ბრძანებები"
+
+#: ../src/cdemu:1823
+msgid "command help"
+msgstr "ბრძანების დახმარება"
+
+#: ../src/cdemu:1867
+#, c-format
+msgid "Invalid bus parameter '%s', using default!"
+msgstr "არასწორი სალტეს არგუმენტი '%s'. გამოიყენება ნაგულისხმევი!"
+
+#: ../src/cdemu:1880
+#, c-format
+msgid "Failed to connect to CDEmu daemon: %s"
+msgstr "CDEmu-ის დემონთან დაკავშირების შეცდომა: %s"
+
+#: ../src/cdemu:1887
+#, c-format
+msgid ""
+"Failed to acquire daemon interface version (this most likely means your "
+"daemon is out-of-date): %s"
+msgstr ""
+"დემონის ინტერფეისის ვერსიის მიღების შეცდომა (რაც დიდი შანსით ნიშნავს, რომ "
+"დემონი ძველია): %s"
+
+#: ../src/cdemu:1900
+#, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"აღმოჩენილია CDEmu-ის დემონის ინტერფეისის ვერსია %i.%i. მაგრამ საჭიროა ვერსია "
+"%i.%i!"
+
+#: ../src/cdemu:1995
+#, c-format
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "კონფიგურაციის ჩატვირთვის შეცდომა ფაილიდან '%s': %s"
+
+#: ../src/cdemu:2029
+#, c-format
+msgid "Failed to report error via zenity: %s"
+msgstr "zenity-ით შეცდომის გაგზავნა ჩავარდა: %s"
+
+#: ../data/cdemu-client.desktop.in.h:2
+msgid "Client for handling optical media (CD/DVD) images"
+msgstr "კლიენტი ოპტიკური მედიის (CD/DVD) ასლის ფაილებთან სამუშაოდ"
