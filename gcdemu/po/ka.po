@@ -1,0 +1,648 @@
+# Georgian translation for gcdemu.
+# Copyright (C) 2026 gcdemu's authors.
+# This file is distributed under the same license as the gcdemu package.
+# Ekaterine Papava <papava.e@gtu.ge>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gcdemu\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-08 22:02+0100\n"
+"PO-Revision-Date: 2026-02-12 12:44+0100\n"
+"Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+#: ../data/gcdemu.desktop.in.h:1
+msgid "gCDEmu"
+msgstr "gCDEmu"
+
+#: ../data/gcdemu.desktop.in.h:2
+msgid "gCDEmu GUI"
+msgstr "gCDEmu GUI"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:1
+msgid "Show notifications"
+msgstr "გაფრთხილებების ჩვენება"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:2
+msgid ""
+"Whether to show notifications on events such as daemon start/stop and device "
+"state changes."
+msgstr ""
+"მოხდება თუ არა გაფრთხილებების ჩვენება ისეთი მოვლენებისას, როგორიცაა დემონის "
+"გაშვება/გაჩერება და მოწყობილობის მდგომარეობის ცვლილება."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
+msgid "Use system bus"
+msgstr "სისტემური სალტეს გამოყენება"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:4
+msgid "Whether system bus should be used instead of session one."
+msgstr "იქნება, თუ არა გამოყენებული სისტემური სალტე სესიის მაგიერ."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:5
+msgid "Use D-Bus service activation facility"
+msgstr "D-Bus-ის სერვისის გააქტიურების გამოყენება"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:6
+msgid ""
+"Whether to use D-Bus service activation facility or not. If enabled, D-Bus "
+"will attempt to autostart the daemon when gCDEmu tries to establish "
+"connection with it."
+msgstr ""
+"მოხდება, თუ არა D-Bus-ის სერვისის აქტივაციის გამოყენება. თუ ჩართულია, D-Bus "
+"სცდის, ავტომატურად გაუშვას დემონი, როცა gCDEmu მასთან დაკავშირებას სცდის."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
+msgid "Icon name (connected)"
+msgstr "ხატულას სახელი (დაკავშირებულია)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:8
+msgid ""
+"Name of icon to display in the tray when connected to daemon. It should be "
+"either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"ხატულას სახელი, რომელიც გამოჩნდება საათთან, როცა დემონთან დაკავშირება "
+"წარმატებულია. უნდა იყოს ან სწორი სახელი, ან ფაილის სახელი სურათისთვის, "
+"რომლის პოვნაც სტანდარტულ საქაღალდეშია შესაძლებელი (მაგ: /usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
+msgid "Icon name (disconnected)"
+msgstr "ხატულას სახელი (დაკავშირებული არაა)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:10
+msgid ""
+"Name of icon to display in the tray when disconnected from daemon. It should "
+"be either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"ხატულას სახელი, რომელიც გამოჩნდება საათთან, როცა დემონთან კავშირი "
+"გაწყვეტილია. უნდა იყოს ან სწორი სახელი, ან ფაილის სახელი სურათისთვის, რომლის "
+"პოვნაც სტანდარტულ საქაღალდეშია შესაძლებელი (მაგ: /usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
+msgid "Icon display policy."
+msgstr "ხატულას ჩვენების პოლიტიკა."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:12
+msgid ""
+"Icon display policy. Valid options are \"always\", \"never\" and "
+"\"when_connected\". If set to \"always\", the icon is always shown. If set "
+"to \"never\", the icon is never shown. If set to \"when_connected\", the "
+"icon is shown only when gCDEmu is connected to a daemon."
+msgstr ""
+"ხატულას ჩვენების პოლიტიკა. სწორი პარამეტრებია \"ყოველთვის\", \"არასდროს\" და "
+"\"როცა_დაკავშირებულია\". თუ დაყენებულია \"ყოველთვისზე\", ხატულა ყოველთვისაა "
+"ნაჩვენები. თუ დაყენებულია \"არასოდესზე\", ხატულა არასოდესაა ნაჩვენები და თუ "
+"დაყენებულია \"როცა_დაკავშირებულიაზე\", ხატულა, მხოლოდ, მაშინაა ნაჩვენები, "
+"როცა gCDEmu დაკავშირებულია დემონთან."
+
+#: ../src/gcdemu:337
+msgid "Daemon autostart error"
+msgstr "დემონის ავტოგაშვების შეცდომა"
+
+#: ../src/gcdemu:338
+#, c-format
+msgid ""
+"Daemon autostart failed. Error:\n"
+"%s"
+msgstr ""
+"დემონის ავტოგაშვება ჩავარდა. შეცდომა:\n"
+"%s"
+
+#: ../src/gcdemu:352
+msgid "Incompatible daemon interface"
+msgstr "შეუთავსებელი დემონის ინტერფეისი"
+
+#: ../src/gcdemu:353
+#, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"აღმოჩენილია CDEmu-ის დემონის ინტერფეისის ვერსია %i.%i. მაგრამ საჭიროა ვერსია "
+"%i.%i!"
+
+#: ../src/gcdemu:420
+msgid "Failed to add device"
+msgstr "მოწყობილობის დამატების შეცდომა"
+
+#: ../src/gcdemu:421
+#, c-format
+msgid ""
+"Failed to add new device. Error:\n"
+"%s"
+msgstr ""
+"მოწყობილობის დამატება ჩავარდა. შეცდომა:\n"
+"%s"
+
+#: ../src/gcdemu:430
+msgid "Failed to remove device"
+msgstr "მოწყობილობის წაშლა ჩავარდა"
+
+#: ../src/gcdemu:431
+#, c-format
+msgid ""
+"Failed to remove device. Error:\n"
+"%s"
+msgstr ""
+"მოწყობილობის წაშლა ჩავარდა. შეცდომა:\n"
+"%s"
+
+#: ../src/gcdemu:603
+#, c-format
+msgid ""
+"Failed to unload device #%02d:\n"
+"%s"
+msgstr ""
+"გამოტვირთვის შეცდომა მოწყობილობისთვის #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:615
+#, c-format
+msgid ""
+"Failed to load image %s to device #%02d:\n"
+"%s"
+msgstr ""
+"დისკის ასლის ფაილის %s ჩატვირთვის შეცდომა მოწყობილობაში #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:625
+#, c-format
+msgid ""
+"Failed to create blank disc on device #%02d:\n"
+"%s"
+msgstr ""
+"ცარიელი დისკის ასლის ფაილის შექმნის შეცდომა მოწყობილობაზე #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:638
+#, c-format
+msgid ""
+"Failed to set device ID for device #%02d to %s:\n"
+"%s"
+msgstr ""
+"მოწყობილობის ID-ის დაყენების შეცდომა მოწყობილობისთვის #%02d მნიშვნელობაზე "
+"%s:\n"
+"%s"
+
+#: ../src/gcdemu:651
+#, c-format
+msgid ""
+"Failed to set DPM emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"DPM სიმულაციის დაყენების შეცდომა მოწყობილობისთვის #%02d მნიშვნელობაზე %i:\n"
+"%s"
+
+#: ../src/gcdemu:664
+#, c-format
+msgid ""
+"Failed to set TR emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"TR ემულაციის დაყენების შეცდომა მოწყობილობისთვის #%02d მნიშვნელობაზე %i:\n"
+"%s"
+
+#: ../src/gcdemu:677
+#, c-format
+msgid ""
+"Failed to set bad sector emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"ცუდი სექტორის ემულაციის დაყენების შეცდომა მოწყობილობისთვის #%02d "
+"მნიშვნელობაზე %i:\n"
+"%s"
+
+#: ../src/gcdemu:690
+#, c-format
+msgid ""
+"Failed to set DVD report CSS/CPPM for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"DVD ანგარიშის CSS/CPPM დაყენების შეცდომა მოწყობილობისთვის #%02d "
+"მნიშვნელობაზე %i:\n"
+"%s"
+
+#: ../src/gcdemu:703
+#, c-format
+msgid ""
+"Failed to set daemon debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"დემონის გამართვის ნიღბის დაყენების შეცდომა მოწყობილობისთვის #%02d "
+"მნიშვნელობაზე 0x%X:\n"
+"%s"
+
+#: ../src/gcdemu:716
+#, c-format
+msgid ""
+"Failed to set library debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"ბიბლიოთეკის გამართვის ნიღბის დაყენების შეცდომა მოწყობილობისთვის #%02d "
+"მნიშვნელობაზე 0x%X:\n"
+"%s"
+
+#: ../src/gcdemu:815 ../src/gcdemu:1757
+msgid "Status"
+msgstr "სტატუსი"
+
+#: ../src/gcdemu:828
+msgid "Loaded: "
+msgstr "ჩატვირთულია: "
+
+#: ../src/gcdemu:838
+msgid "File name(s): "
+msgstr "ფაილის სახელ(ებ)-ი: "
+
+#: ../src/gcdemu:854 ../src/gcdemu:927
+msgid "Load"
+msgstr "ჩატვირთვა"
+
+#: ../src/gcdemu:860
+msgid "Create blank"
+msgstr "ცარიელის შექმნა"
+
+#: ../src/gcdemu:867
+msgid "Device mapping"
+msgstr "მოწყობილობის ასახვა"
+
+#: ../src/gcdemu:879
+msgid "SCSI CD-ROM device: "
+msgstr "SCSI CD-ROM მოწყობილობა: "
+
+#: ../src/gcdemu:889
+msgid "SCSI generic device: "
+msgstr "SCSI ზოგადი მოწყობილობა: "
+
+#: ../src/gcdemu:900
+msgid "Remove device"
+msgstr "მოწყობილობის წაშლა"
+
+#: ../src/gcdemu:919
+msgid "Yes"
+msgstr "დიახ"
+
+#: ../src/gcdemu:921
+msgid "Unload"
+msgstr "გამოტვირთვა"
+
+#: ../src/gcdemu:925
+msgid "No"
+msgstr "არა"
+
+#: ../src/gcdemu:973
+msgid "Device ID"
+msgstr "მოწყობილობის ID"
+
+#: ../src/gcdemu:986
+msgid "Vendor ID: "
+msgstr "მომწოდებლის ID: "
+
+#: ../src/gcdemu:997
+msgid "Product ID: "
+msgstr "პროდუქტის ID: "
+
+#: ../src/gcdemu:1008
+msgid "Revision: "
+msgstr "რევიზია: "
+
+#: ../src/gcdemu:1019
+msgid "Vendor-specific: "
+msgstr "მომწოდებლის სპეციფიკური: "
+
+#: ../src/gcdemu:1034
+msgid "Set device ID"
+msgstr "მოწყობილობის ID-ის დაყენება"
+
+#: ../src/gcdemu:1040
+msgid "DPM emulation"
+msgstr "DPM ემულაცია"
+
+#: ../src/gcdemu:1046
+msgid "Transfer rate emulation"
+msgstr "გადაცემის სიჩქარის ემულაცია"
+
+#: ../src/gcdemu:1052
+msgid "Bad sector emulation"
+msgstr "ცუდი სექტორის ემულაცია"
+
+#: ../src/gcdemu:1058
+msgid "DVD report CSS/CPPM"
+msgstr "DVD ანგარიშის CSS/CPPM"
+
+#: ../src/gcdemu:1170
+msgid "Set debug mask"
+msgstr "გამართვის ნიღბის დაყენება"
+
+#: ../src/gcdemu:1206
+msgid "Open file"
+msgstr "ფაილის გახსნა"
+
+#: ../src/gcdemu:1208 ../src/gcdemu:1358 ../src/gcdemu:1409 ../src/gcdemu:1504
+msgid "Cancel"
+msgstr "გაუქმება"
+
+#: ../src/gcdemu:1209
+msgid "Open"
+msgstr "გახსნა"
+
+#: ../src/gcdemu:1217
+msgid "All files"
+msgstr "ყველა ფაილი"
+
+#: ../src/gcdemu:1222
+msgid "All image files"
+msgstr "ყველა გამოსახულების ფაილი"
+
+#: ../src/gcdemu:1277
+msgid "Extra Options"
+msgstr "დამატებითი პარამეტრები"
+
+#: ../src/gcdemu:1286
+msgid "Encoding: "
+msgstr "კოდირება: "
+
+#: ../src/gcdemu:1304 ../src/gcdemu:1374
+msgid "Password: "
+msgstr "პაროლი: "
+
+#: ../src/gcdemu:1355
+msgid "Enter password"
+msgstr "შეიყვანეთ პაროლი"
+
+#: ../src/gcdemu:1357 ../src/gcdemu:1408
+msgid "OK"
+msgstr "დიახ"
+
+#: ../src/gcdemu:1370
+msgid "The image you are trying to load is encrypted."
+msgstr "ასლის ფაილი, რომლის ჩატვირთვასაც ცდილობთ, დაშიფრულია."
+
+#: ../src/gcdemu:1406
+msgid "Create blank disc image"
+msgstr "ცარიელი დისკის ასლის ფაილის შექმნა"
+
+#: ../src/gcdemu:1415
+msgid "Image"
+msgstr "დისკის ასლის ფაილი"
+
+#: ../src/gcdemu:1427
+msgid "Filename: "
+msgstr "ფაილის სახელი: "
+
+#: ../src/gcdemu:1435 ../src/gcdemu:1505
+msgid "Choose"
+msgstr "არჩევა"
+
+#: ../src/gcdemu:1440
+msgid "Medium type: "
+msgstr "მედიის ტიპი: "
+
+#: ../src/gcdemu:1464
+msgid "Writer: "
+msgstr "ჩამწერი: "
+
+#: ../src/gcdemu:1484
+msgid "Writer options"
+msgstr "ჩამწერის პარამეტრები"
+
+#: ../src/gcdemu:1499
+msgid "Choose file"
+msgstr "ფაილის არჩევა"
+
+#: ../src/gcdemu:1664
+msgid "Image filename/basename not set!"
+msgstr "ასლის ფაილის სახელი/საბაზისო სახელი დაყენებული არაა!"
+
+#: ../src/gcdemu:1667
+msgid "No image writer is chosen!"
+msgstr "ასლის ფაილის ჩამწერი არჩეული არაა!"
+
+#: ../src/gcdemu:1677
+msgid "Invalid option"
+msgstr "არასწორი პარამეტრი"
+
+#: ../src/gcdemu:1725
+#, c-format
+msgid "Device #%02d: properties"
+msgstr "მოწყობილობა #%02d: თვისებები"
+
+#: ../src/gcdemu:1726
+msgid "Close"
+msgstr "დახურვა"
+
+#: ../src/gcdemu:1742
+#, c-format
+msgid "Device #%02d"
+msgstr "მოწყობილობა #%02d"
+
+#: ../src/gcdemu:1777
+msgid "Options"
+msgstr "მორგება"
+
+#: ../src/gcdemu:1805
+msgid "Daemon debug mask"
+msgstr "დემონის გამართვის ნიღაბი"
+
+#: ../src/gcdemu:1806
+msgid "Daemon"
+msgstr "Daemon"
+
+#: ../src/gcdemu:1814
+msgid "Library debug mask"
+msgstr "ბიბლიოთეკის გამართვის ნიღაბი"
+
+#: ../src/gcdemu:1815
+msgid "Library"
+msgstr "ბიბლიოთეკა"
+
+#: ../src/gcdemu:1916 ../src/gcdemu:1918
+msgid "Device"
+msgstr "მოწყობილობა"
+
+#: ../src/gcdemu:1918
+msgid "Empty"
+msgstr "ცარიელი"
+
+#: ../src/gcdemu:1928 ../src/gcdemu:1934
+msgid "Device status change"
+msgstr "მოწყობილობის სტატუსის ცვლილება"
+
+#: ../src/gcdemu:1929
+#, c-format
+msgid "Device #%02d has been loaded."
+msgstr "მოწყობილობა #%02d ჩაიტვირთა."
+
+#: ../src/gcdemu:1935
+#, c-format
+msgid "Device #%02d has been emptied."
+msgstr "მოწყობილობა #%02d დაცარიელდა."
+
+#: ../src/gcdemu:1943 ../src/gcdemu:1959 ../src/gcdemu:1969 ../src/gcdemu:1979
+#: ../src/gcdemu:1989 ../src/gcdemu:1999 ../src/gcdemu:2009
+msgid "Device option change"
+msgstr "მოწყობილობის პარამეტრის ცვლილება"
+
+#: ../src/gcdemu:1944
+#, c-format
+msgid ""
+"Device #%02d has had its device ID changed:\n"
+"  Vendor ID: '%s'\n"
+"  Product ID: '%s'\n"
+"  Revision: '%s'\n"
+"  Vendor-specific: '%s'"
+msgstr ""
+"მოწყობილობას #%02d მისი მოწყობილობის ID შეეცვალა:\n"
+"  მომწოდებლის ID: '%s'\n"
+"  პროდუქტის ID: '%s'\n"
+"  რევიზია: '%s'\n"
+"  მომწოდებლის სპეციფიკური: '%s'"
+
+#: ../src/gcdemu:1960
+#, c-format
+msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
+msgstr ""
+"მოწყობილობას #%02d მისი DPM ემულაციის პარამეტრი შეეცვალა. ახალი მნიშვნელობა: "
+"%s"
+
+#: ../src/gcdemu:1970
+#, c-format
+msgid "Device #%02d has had its TR emulation option changed. New value: %s"
+msgstr ""
+"მოწყობილობას #%02d მისი TR ემულაციის პარამეტრი შეეცვალა. ახალი მნიშვნელობაა: "
+"%s"
+
+#: ../src/gcdemu:1980
+#, c-format
+msgid ""
+"Device #%02d has had its bad sector emulation option changed. New value: %s"
+msgstr ""
+"მოწყობილობას #%02d მისი ცუდი სექტორის ემულაციის პარამეტრი შეეცვალა. ახალი "
+"მნიშვნელობა: %s"
+
+#: ../src/gcdemu:1990
+#, c-format
+msgid ""
+"Device #%02d has had its DVD report CSS/CPPM option changed. New value: %s"
+msgstr ""
+"მოწყობილობას #%02d მისი DVD ანგარიშის CSS/CPPM პარამეტრი შეეცვალა. ახალი "
+"მნიშვნელობა: %s"
+
+#: ../src/gcdemu:2000
+#, c-format
+msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
+msgstr ""
+"მოწყობილობას #%02d მისი დემონის გამართვის ნიღაბი შეეცვალა. ახალი "
+"მნიშვნელობაა: 0x%X"
+
+#: ../src/gcdemu:2010
+#, c-format
+msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
+msgstr ""
+"მოწყობილობას #%02d მისი ბიბლიოთეკის გამართვის ნიღაბი შეეცვალა. ახალი "
+"მნიშვნელობა: 0x%X"
+
+#: ../src/gcdemu:2062
+msgid "Device error"
+msgstr "მოწყობილობის შეცდომა"
+
+#: ../src/gcdemu:2107
+msgid "Left click for Property Dialog, right click to unload."
+msgstr "მარცხენა წკაპი თვისების დიალოგისთვის, მარჯვენა წკაპი გამოსატვირთად."
+
+#: ../src/gcdemu:2109
+msgid "Left click for Property Dialog, right click to load."
+msgstr "მარცხენა წკაპი თვისების დიალოგისთვის, მარჯვენა წკაპი ჩასატვირთად."
+
+#: ../src/gcdemu:2116
+msgid "Click for Property Dialog"
+msgstr "წკაპი თვისების დიალოგისთვის"
+
+#: ../src/gcdemu:2212
+msgid "A GUI for controlling CDEmu devices."
+msgstr "გრაფიკული ინტერფეისი CDEmu მოწყობილობების სამართავად."
+
+#: ../src/gcdemu:2214
+msgid "The CDEmu project website"
+msgstr "CDEmu-ის პროექტის ვებგვერდი"
+
+#: ../src/gcdemu:2217
+msgid "translator-credits"
+msgstr "ეკატერინე პაპავა"
+
+#: ../src/gcdemu:2224
+msgid "Devices"
+msgstr "მოწყობილობები"
+
+#: ../src/gcdemu:2228
+msgid "New device..."
+msgstr "ახალი მოწყობილობა..."
+
+#: ../src/gcdemu:2239
+msgid "Use _system bus"
+msgstr "_სისტემური სალტეს გამოყენება"
+
+#: ../src/gcdemu:2246
+msgid "Show _notifications"
+msgstr "გაფრთხილებების ჩვე_ნება"
+
+#: ../src/gcdemu:2256
+msgid "About"
+msgstr "შესახებ"
+
+#: ../src/gcdemu:2264
+msgid "Quit"
+msgstr "გასვლა"
+
+#: ../src/gcdemu:2334
+msgid "Daemon started"
+msgstr "დემონი გაეშვა"
+
+#: ../src/gcdemu:2335
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu დემონი გაეშვა."
+
+#: ../src/gcdemu:2341
+msgid "Daemon stopped"
+msgstr "დემონი გაჩერდა"
+
+#: ../src/gcdemu:2342
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu დემონი გაჩერდა."
+
+#: ../src/gcdemu:2376
+msgid "Device added"
+msgstr "მოწყობილობა დაემატა"
+
+#: ../src/gcdemu:2377
+#, c-format
+msgid "Device #%02d has been created."
+msgstr "მოწყობილობა #%02d შეიქმნა."
+
+#: ../src/gcdemu:2384
+msgid "Device removed"
+msgstr "მოწყობილობა წაიშალა"
+
+#: ../src/gcdemu:2385
+#, c-format
+msgid "Device #%02d has been removed."
+msgstr "მოწყობილობა #%02d წაიშალა."
+
+#: ../src/gcdemu:2583
+msgid "Failed to load AppIndicator library!"
+msgstr "ბიბლიოთეკის AppIndicator ჩატვირთვის შეცდომა!"
+
+#: ../src/gcdemu:2585
+msgid "AppIndicator not available"
+msgstr "AppIndicator ხელმისაწვდომი არაა"
+
+#: ../src/gcdemu:2628
+msgid "gCDEmu tray mode"
+msgstr "gCDEmu-ის სისტემურ საათთან ჩაკეცვის რეჟიმი"

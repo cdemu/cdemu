@@ -1,0 +1,862 @@
+# Georgian translation for image-analyzer.
+# Copyright (C) 2026 image-analyzer's authors.
+# This file is distributed under the same license as the image-analyzer package.
+# Ekaterine Papava <papava.e@gtu.ge>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: image-analyzer\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-08 22:02+0100\n"
+"PO-Revision-Date: 2026-02-12 13:10+0100\n"
+"Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
+"Language-Team: Georgain <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+#: ../data/image-analyzer.desktop.in.h:1
+msgid "Image Analyzer"
+msgstr "დისკის ასლის ფაილების ანალიზატორი"
+
+#: ../data/image-analyzer.desktop.in.h:2
+msgid "Utility for CD/DVD image analysis and manipulation"
+msgstr "პროგრამა CD/DVD ასლის ფაილების ანალიზისა და მანიპულაციისთვის"
+
+#: ../src/image-analyzer:67
+msgid "CD-ROM"
+msgstr "CD-ROM"
+
+#: ../src/image-analyzer:68
+msgid "DVD-ROM"
+msgstr "DVD-ROM"
+
+#: ../src/image-analyzer:69
+msgid "BlueRay Disc"
+msgstr "BlueRay დისკი"
+
+#: ../src/image-analyzer:70
+msgid "HD-DVD Disc"
+msgstr "HD-DVD დისკი"
+
+#: ../src/image-analyzer:71
+msgid "Hard-disk"
+msgstr "მყარი დისკი"
+
+#: ../src/image-analyzer:78 ../src/image-analyzer:79
+msgid "CD-DA/CD-ROM"
+msgstr "CD-DA/CD-ROM"
+
+#: ../src/image-analyzer:80
+msgid "CD-I"
+msgstr "CD-I"
+
+#: ../src/image-analyzer:81
+msgid "CD-ROM XA"
+msgstr "CD-ROM XA"
+
+#: ../src/image-analyzer:88
+msgid "four channel audio"
+msgstr "ოთხარხიანი აუდიო"
+
+#: ../src/image-analyzer:89
+msgid "copy permitted"
+msgstr "კოპირება ნებადართულია"
+
+#: ../src/image-analyzer:90
+msgid "pre-emphasis"
+msgstr "წინასწარი მახვილი"
+
+#: ../src/image-analyzer:101
+msgid "Mode 0"
+msgstr "რეჟიმი 0"
+
+#: ../src/image-analyzer:102
+msgid "Audio"
+msgstr "აუდიო"
+
+#: ../src/image-analyzer:103
+msgid "Mode 1"
+msgstr "რეჟიმი 1"
+
+#: ../src/image-analyzer:104
+msgid "Mode 2 Formless"
+msgstr "რეჟიმი 2 უფორმო"
+
+#: ../src/image-analyzer:105
+msgid "Mode 2 Form 1"
+msgstr "რეჟიმი 2 ფორმა 1"
+
+#: ../src/image-analyzer:106
+msgid "Mode 2 Form 2"
+msgstr "რეჟიმი 2 ფორმა 2"
+
+#: ../src/image-analyzer:107
+msgid "Mode 2 Mixed"
+msgstr "რეჟიმი 2 შერეული"
+
+#: ../src/image-analyzer:114
+msgid "Binary data"
+msgstr "ბინარული მონაცემები"
+
+#: ../src/image-analyzer:115
+msgid "Audio data"
+msgstr "აუდიომონაცემები"
+
+#: ../src/image-analyzer:116
+msgid "Audio data (swapped)"
+msgstr "აუდიომონაცემები (ჩატვირთული)"
+
+#: ../src/image-analyzer:127
+msgid "internal"
+msgstr "შიდა"
+
+#: ../src/image-analyzer:128
+msgid "external"
+msgstr "გარე"
+
+#: ../src/image-analyzer:129
+msgid "PW96 interleaved"
+msgstr "PW96 ხაზგამოტოვებით"
+
+#: ../src/image-analyzer:130
+msgid "PW96 linear"
+msgstr "PW96 წრფივი"
+
+#: ../src/image-analyzer:131
+msgid "RW96"
+msgstr "RW96"
+
+#: ../src/image-analyzer:132
+msgid "Q16"
+msgstr "Q16"
+
+#: ../src/image-analyzer:152
+#, c-format
+msgid "Read sector (#%02d)"
+msgstr "წაკითხულია სექტორი (#%02d)"
+
+#: ../src/image-analyzer:232
+msgid "Read"
+msgstr "წაკითხვა"
+
+#: ../src/image-analyzer:251 ../src/image-analyzer:568
+#: ../src/image-analyzer:958
+msgid "Ready!"
+msgstr "მზადაა!"
+
+#: ../src/image-analyzer:256 ../src/image-analyzer:571
+#: ../src/image-analyzer:819 ../src/image-analyzer:964
+msgid "No disc loaded!"
+msgstr "დისკი ჩატვირთული არაა!"
+
+#: ../src/image-analyzer:272
+#, c-format
+msgid "Failed to get sector: %s"
+msgstr "მიღების შეცდომა სექტორისთვის: %s"
+
+#: ../src/image-analyzer:278
+msgid "Sector address: "
+msgstr "სექტორის მისამართი: "
+
+#: ../src/image-analyzer:290
+msgid "Sector address MSF: "
+msgstr "სექტორის მისამართის MSF: "
+
+#: ../src/image-analyzer:302
+msgid "Sector type: "
+msgstr "სექტორის ტიპი: "
+
+#: ../src/image-analyzer:325
+msgid "Sector angle: "
+msgstr "სექტორის კუთხე: "
+
+#: ../src/image-analyzer:330
+#, c-format
+msgid "%f rotations"
+msgstr "%f ბრუნვა"
+
+#: ../src/image-analyzer:340
+msgid "Sector density: "
+msgstr "სექტორის სიმკვრივე: "
+
+#: ../src/image-analyzer:345
+#, c-format
+msgid "%f degrees per sector"
+msgstr "%f გრადუსი თითო სექტორისთვის"
+
+#: ../src/image-analyzer:359
+msgid "Q subchannel:"
+msgstr "Q ქვეარხი:"
+
+#: ../src/image-analyzer:378
+msgid "Subchannel CRC verification: "
+msgstr "ქვეარხის CRC-ის გადამოწმება: "
+
+#: ../src/image-analyzer:384 ../src/image-analyzer:405
+msgid "passed"
+msgstr "გაიარა"
+
+#: ../src/image-analyzer:389
+msgid "bad CRC"
+msgstr "არასწორი CRC"
+
+#: ../src/image-analyzer:399
+msgid "Sector data L-EC verification: "
+msgstr "სექტორის მონაცემების L-EC გადამოწმება: "
+
+#: ../src/image-analyzer:410
+msgid "bad sector"
+msgstr "ცუდი სექტორი"
+
+#: ../src/image-analyzer:420
+msgid "Sector data dump:"
+msgstr "სექტორის მონაცემთა დამპი:"
+
+#: ../src/image-analyzer:504
+#, c-format
+msgid "Sector analysis (#%02d)"
+msgstr "სექტორის ანალიზი (#%02d)"
+
+#: ../src/image-analyzer:537
+msgid "Analyze"
+msgstr "ანალიზი"
+
+#: ../src/image-analyzer:552 ../src/image-analyzer:1090
+#: ../src/image-analyzer:1136 ../src/image-analyzer:1186
+#: ../src/image-analyzer:1212 ../src/image-analyzer:1239
+#: ../src/image-analyzer:1298 ../src/image-analyzer:3044
+#: ../src/image-analyzer:3098
+msgid "Cancel"
+msgstr "გაუქმება"
+
+#: ../src/image-analyzer:587
+msgid "Analyzing sectors..."
+msgstr "სექტორების ანალიზი..."
+
+#: ../src/image-analyzer:598
+msgid "Performing sector analysis..."
+msgstr "მიმდინარეობს სექტორის ანალიზი..."
+
+#: ../src/image-analyzer:617
+#, c-format
+msgid "Session #%d: "
+msgstr "სესია #%d: "
+
+#: ../src/image-analyzer:622
+#, c-format
+msgid "start: %d, length %d, %d tracks"
+msgstr "დასაწყისი: %d, სიგრძე %d, %d ტრეკი"
+
+#: ../src/image-analyzer:639
+#, c-format
+msgid "Track #%d: "
+msgstr "ტრეკი #%d: "
+
+#: ../src/image-analyzer:644
+#, c-format
+msgid "start: %d, length %d"
+msgstr "დასაწყისი: %d, სიგრძე %d"
+
+#: ../src/image-analyzer:663 ../src/image-analyzer:678
+#: ../src/image-analyzer:692
+#, c-format
+msgid "Sector %d (0x%X): "
+msgstr "სექტორი %d (0x%X): "
+
+#: ../src/image-analyzer:697
+msgid "Failed to get sector!"
+msgstr "სექტორის მიღების შეცდომა!"
+
+#: ../src/image-analyzer:735
+msgid "Sector analysis cancelled!"
+msgstr "სექტორის ანალიზი გაუქმდა!"
+
+#: ../src/image-analyzer:740
+msgid "Sector analysis complete!"
+msgstr "სექტორის ანალიზი დასრულდა!"
+
+#: ../src/image-analyzer:759
+#, c-format
+msgid "Disc topology (#%02d)"
+msgstr "დისკის ტოპოლოგია (#%02d)"
+
+#: ../src/image-analyzer:800
+msgid "Matplotlib and/or its Gtk3 backend are missing!"
+msgstr "Matplotlib ან/და მისი Gtk3 უკანაბოლო აღმოჩენილი არაა!"
+
+#: ../src/image-analyzer:835
+msgid "No DPM data provided!"
+msgstr "DPM მონაცემები მოწოდებული არაა!"
+
+#: ../src/image-analyzer:872
+msgid "Sector address"
+msgstr "სექტორის მისამართი"
+
+#: ../src/image-analyzer:873
+msgid "Sector density [degrees/sector]"
+msgstr "სექტორის სიმკვრივე [გრადუსი/სექტორი]"
+
+#: ../src/image-analyzer:886
+#, c-format
+msgid "Disc structures (#%02d)"
+msgstr "დისკის სტრუქტურები (#%02d)"
+
+#: ../src/image-analyzer:916
+msgid "Layer: "
+msgstr "ფენა: "
+
+#: ../src/image-analyzer:927
+msgid "Type: "
+msgstr "ტიპი: "
+
+#: ../src/image-analyzer:938
+msgid "Get structure"
+msgstr "სტრუქტურის მიღება"
+
+#: ../src/image-analyzer:961
+msgid "Unsupported medium type!"
+msgstr "მხარდაუჭერელი მედიის ტიპი!"
+
+#: ../src/image-analyzer:975
+#, c-format
+msgid "Layer %d, structure %d (0x%X):\n"
+msgstr "ფენა %d, სტრუქტურა %d (0x%X):\n"
+
+#: ../src/image-analyzer:983
+#, c-format
+msgid "Failed to get structure: %s"
+msgstr "სტრუქტურის მიღების შეცდომა: %s"
+
+#: ../src/image-analyzer:994
+#, c-format
+msgid "%d bytes"
+msgstr "%d ბაიტი"
+
+#: ../src/image-analyzer:1013
+#, c-format
+msgid "Log (#%02d)"
+msgstr "ჟურნალი (#%02d)"
+
+#: ../src/image-analyzer:1036
+msgid "Mirror to stdout"
+msgstr "ანარეკლი stdout-ზე"
+
+#: ../src/image-analyzer:1041
+msgid "Clear"
+msgstr "გასუფთავება"
+
+#: ../src/image-analyzer:1046 ../src/image-analyzer:1085
+msgid "Debug mask"
+msgstr "გამართვის ნიღაბი"
+
+#: ../src/image-analyzer:1089 ../src/image-analyzer:1238
+#: ../src/image-analyzer:3097
+msgid "OK"
+msgstr "დიახ"
+
+#: ../src/image-analyzer:1132 ../src/image-analyzer:3211
+msgid "Open image"
+msgstr "გამოსახულების გახსნა"
+
+#: ../src/image-analyzer:1135 ../src/image-analyzer:1185
+msgid "Open"
+msgstr "გახსნა"
+
+#: ../src/image-analyzer:1144 ../src/image-analyzer:1199
+#: ../src/image-analyzer:1226
+msgid "All files"
+msgstr "ყველა ფაილი"
+
+#: ../src/image-analyzer:1150
+msgid "All images"
+msgstr "ყველა გამოსახულება"
+
+#: ../src/image-analyzer:1182
+msgid "Open image dump"
+msgstr "დისკის ასლის ფაილის დამპის გახსნა"
+
+#: ../src/image-analyzer:1193 ../src/image-analyzer:1220
+msgid "XML files"
+msgstr "XML ფაილები"
+
+#: ../src/image-analyzer:1208
+msgid "Save image dump"
+msgstr "დისკის ასლის ფაილის დამპის შენახვა"
+
+#: ../src/image-analyzer:1211 ../src/image-analyzer:1299
+msgid "Save"
+msgstr "შენახვა"
+
+#: ../src/image-analyzer:1243
+msgid "Output image"
+msgstr "გამოტანილი გამოსახულება"
+
+#: ../src/image-analyzer:1253
+msgid "Filename: "
+msgstr "ფაილის სახელი: "
+
+#: ../src/image-analyzer:1261
+msgid "Choose"
+msgstr "არჩევა"
+
+#: ../src/image-analyzer:1266
+msgid "Writer: "
+msgstr "ჩამწერი: "
+
+#: ../src/image-analyzer:1280
+msgid "Writer options"
+msgstr "ჩამწერის პარამეტრები"
+
+#: ../src/image-analyzer:1293
+msgid "Select output image file"
+msgstr "აირჩიეთ გამოტანის ასლის ფაილი"
+
+#: ../src/image-analyzer:1576
+#, c-format
+msgid "Invalid XML dump file (root tag is '%s', expected '%s'!"
+msgstr "არასწორი XML დამპის ფაილი (ძირითადი ჭდეა '%s'. მოველოდი ჭდეს '%s'!"
+
+#: ../src/image-analyzer:2141
+#, c-format
+msgid "Medium type: 0x%X (%s)"
+msgstr "მედიის ტიპი: 0x%X (%s)"
+
+#: ../src/image-analyzer:2148
+msgid "Filename(s)"
+msgstr "ფაილის სახელ(ებ)-ი"
+
+#: ../src/image-analyzer:2157 ../src/image-analyzer:2252
+msgid "Layout"
+msgstr "განლაგება"
+
+#: ../src/image-analyzer:2163
+#, c-format
+msgid "First sesssion: %d"
+msgstr "პირველი სესია: %d"
+
+#: ../src/image-analyzer:2170 ../src/image-analyzer:2259
+#, c-format
+msgid "First track: %d"
+msgstr "პირველი ტრეკი: %d"
+
+#: ../src/image-analyzer:2177 ../src/image-analyzer:2266
+#: ../src/image-analyzer:2386 ../src/image-analyzer:2599
+#, c-format
+msgid "Start sector: %d (0x%X)"
+msgstr "საწყისი სექტორი: %d (0x%X)"
+
+#: ../src/image-analyzer:2184 ../src/image-analyzer:2273
+#: ../src/image-analyzer:2394 ../src/image-analyzer:2465
+#, c-format
+msgid "Length: %d (0x%X)"
+msgstr "სიგრძე: %d (0x%X)"
+
+#: ../src/image-analyzer:2192
+#, c-format
+msgid "Number of sessions: %d"
+msgstr "სესიების რაოდენობა: %d"
+
+#: ../src/image-analyzer:2199
+#, c-format
+msgid "Number of tracks: %d"
+msgstr "ტრეკებსი რაოდენობა: %d"
+
+#: ../src/image-analyzer:2206
+#, c-format
+msgid "Sessions (%d)"
+msgstr "სესიები (%d)"
+
+#: ../src/image-analyzer:2223
+#, c-format
+msgid "Session %02d"
+msgstr "სესია %02d"
+
+#: ../src/image-analyzer:2231
+#, c-format
+msgid "Session type: 0x%X (%s)"
+msgstr "სესიის ტიპი: 0x%X (%s)"
+
+#: ../src/image-analyzer:2240
+#, c-format
+msgid "MCN: %s"
+msgstr "MCN: %s"
+
+#: ../src/image-analyzer:2246 ../src/image-analyzer:2372
+#, c-format
+msgid "Session number: %d"
+msgstr "სესიის ნომერი: %d"
+
+#: ../src/image-analyzer:2281
+#, c-format
+msgid "Lead-out length: %d (0x%X)"
+msgstr "გამოყვანის სიგრძე: %d (0x%X)"
+
+#: ../src/image-analyzer:2291
+#, c-format
+msgid "Tracks (%d)"
+msgstr "ტრეკები (%d)"
+
+#: ../src/image-analyzer:2303 ../src/image-analyzer:2440
+#, c-format
+msgid "Languages (%d)"
+msgstr "ენები (%d)"
+
+#: ../src/image-analyzer:2315
+msgid "Lead-in"
+msgstr "შეყვნაა"
+
+#: ../src/image-analyzer:2317
+msgid "Lead-out"
+msgstr "გამოყვანა"
+
+#: ../src/image-analyzer:2319
+#, c-format
+msgid "Track %02d"
+msgstr "ტრეკი %02d"
+
+#: ../src/image-analyzer:2331
+#, c-format
+msgid "Flags: 0x%X (%s)"
+msgstr "ალმები: 0x%X (%s)"
+
+#: ../src/image-analyzer:2339
+#, c-format
+msgid "Sector type: 0x%X (%s)"
+msgstr "სექტორის ტიპი: 0x%X (%s)"
+
+#: ../src/image-analyzer:2347
+#, c-format
+msgid "ADR: %d"
+msgstr "ADR: %d"
+
+#: ../src/image-analyzer:2355
+#, c-format
+msgid "CTL: %d"
+msgstr "CTL: %d"
+
+#: ../src/image-analyzer:2364
+#, c-format
+msgid "ISRC: %s"
+msgstr "ISRC: %s"
+
+#: ../src/image-analyzer:2378
+#, c-format
+msgid "Track number: %d"
+msgstr "ტრეკის ნომერი: %d"
+
+#: ../src/image-analyzer:2404
+#, c-format
+msgid "Fragments (%d)"
+msgstr "ფრაგმენტები (%d)"
+
+#: ../src/image-analyzer:2417
+#, c-format
+msgid "Track start: %d (0x%X)"
+msgstr "ტრეკის დასაწყისი: %d (0x%X)"
+
+#: ../src/image-analyzer:2427
+#, c-format
+msgid "Indices (%d)"
+msgstr "ინდექსტები (%d)"
+
+#: ../src/image-analyzer:2449
+#, c-format
+msgid "Fragment #%d"
+msgstr "ფრაგმენტი #%d"
+
+#: ../src/image-analyzer:2457
+#, c-format
+msgid "Address: %d (0x%X)"
+msgstr "მისამართი: %d (0x%X)"
+
+#: ../src/image-analyzer:2469
+msgid "Main data"
+msgstr "მთავარი მონაცემები"
+
+#: ../src/image-analyzer:2475 ../src/image-analyzer:2507
+#, c-format
+msgid "Filename: %s"
+msgstr "ფაილის სახელი: %s"
+
+#: ../src/image-analyzer:2482 ../src/image-analyzer:2513
+#, c-format
+msgid "Offset: %d (0x%X)"
+msgstr "წანაცვლება: %d (0x%X)"
+
+#: ../src/image-analyzer:2489 ../src/image-analyzer:2520
+#, c-format
+msgid "Size: %d (0x%X)"
+msgstr "ზომა: %d (0x%X)"
+
+#: ../src/image-analyzer:2496 ../src/image-analyzer:2527
+#, c-format
+msgid "Format: 0x%X (%s)"
+msgstr "ფორმატი: 0x%X (%s)"
+
+#: ../src/image-analyzer:2502
+msgid "Subchannel data"
+msgstr "ქვეარხის მონაცემები"
+
+#: ../src/image-analyzer:2538
+#, c-format
+msgid "Language %d"
+msgstr "ენა %d"
+
+#: ../src/image-analyzer:2544
+#, c-format
+msgid "Language code: %d"
+msgstr "ენის კოდი: %d"
+
+#: ../src/image-analyzer:2549
+msgid "Title"
+msgstr "სათაური"
+
+#: ../src/image-analyzer:2550
+msgid "Performer"
+msgstr "შემსრულებელი"
+
+#: ../src/image-analyzer:2551
+msgid "Songwriter"
+msgstr "სიმღერის ავტორი"
+
+#: ../src/image-analyzer:2552
+msgid "Composer"
+msgstr "კომპოზიტორი"
+
+#: ../src/image-analyzer:2553
+msgid "Arranger"
+msgstr "ხმის რეჟისორი"
+
+#: ../src/image-analyzer:2554
+msgid "Message"
+msgstr "შეტყობინება"
+
+#: ../src/image-analyzer:2555
+msgid "Disc ID"
+msgstr "დისკის ID"
+
+#: ../src/image-analyzer:2556
+msgid "Genre"
+msgstr "ჟანრი"
+
+#: ../src/image-analyzer:2557
+msgid "TOC"
+msgstr "TOC"
+
+#: ../src/image-analyzer:2558
+msgid "TOC2"
+msgstr "TOC2"
+
+#: ../src/image-analyzer:2559
+msgid "Reserved 8A"
+msgstr "დაცული 8A"
+
+#: ../src/image-analyzer:2560
+msgid "Reserved 8B"
+msgstr "დაცული 8B"
+
+#: ../src/image-analyzer:2561
+msgid "Reserved 8C"
+msgstr "დაცული 8C"
+
+#: ../src/image-analyzer:2562
+msgid "Closed info"
+msgstr "დახურული ინფორმაცია"
+
+#: ../src/image-analyzer:2563
+msgid "UPC/ISRC"
+msgstr "UPC/ISRC"
+
+#: ../src/image-analyzer:2564
+msgid "Size"
+msgstr "ზომა"
+
+#: ../src/image-analyzer:2592
+msgid "DPM"
+msgstr "DPM"
+
+#: ../src/image-analyzer:2607
+#, c-format
+msgid "Resolution: %d (0x%X)"
+msgstr "გაფართოება: %d (0x%X)"
+
+#: ../src/image-analyzer:2616
+#, c-format
+msgid "Entries (%d)"
+msgstr "ჩანაწერები (%d)"
+
+#: ../src/image-analyzer:2786
+msgid "ERROR"
+msgstr "ERROR"
+
+#: ../src/image-analyzer:2789
+msgid "CRITICAL"
+msgstr "კრიტიკული"
+
+#: ../src/image-analyzer:2792
+msgid "WARNING"
+msgstr "გაფრთხილება"
+
+#: ../src/image-analyzer:2798
+#, c-format
+msgid "Image analyzer #%02d"
+msgstr "დისკის ასლის ფაილების ანალიზატორი #%02d"
+
+#: ../src/image-analyzer:2841
+msgid "Image filename/basename not set!"
+msgstr "ასლის ფაილის სახელი/საბაზისო სახელი დაყენებული არაა!"
+
+#: ../src/image-analyzer:2856
+msgid "No image writer chosen!"
+msgstr "ასლის ფაილის ჩამწერი არჩეული არაა!"
+
+#: ../src/image-analyzer:2935
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "დისკის ასლის ფაილის ჩატვირთვის შეცდომა: %s"
+
+#: ../src/image-analyzer:2980
+#, c-format
+msgid "Failed to load XML dump: %s"
+msgstr "XML დამპის ჩატვირთვა ჩავარდა: %s"
+
+#: ../src/image-analyzer:3015
+#, c-format
+msgid "Failed to save XML dump: %s"
+msgstr "XML დამპის შენახვა ჩავარდა: %s"
+
+#: ../src/image-analyzer:3036
+msgid "Converting..."
+msgstr "გადაყვანა..."
+
+#: ../src/image-analyzer:3039
+msgid "Image conversion progress"
+msgstr "დისკის ასლის ფაილის გადაყვანის მიმდინარეობა"
+
+#: ../src/image-analyzer:3070
+msgid "Image conversion succeeded."
+msgstr "დისკის ასლის ფაილის გადაყვანა წარმატებულია."
+
+#: ../src/image-analyzer:3080
+#, c-format
+msgid "Image conversion failed: %s"
+msgstr "დისკის ასლის ფაილის გადაყვანა ჩავარდა: %s"
+
+#: ../src/image-analyzer:3091
+msgid "Enter password"
+msgstr "შეიყვანეთ პაროლი"
+
+#: ../src/image-analyzer:3109
+msgid "The image you are trying to load is encrypted."
+msgstr "ასლის ფაილი, რომლის ჩატვირთვასაც ცდილობთ, დაშიფრულია."
+
+#: ../src/image-analyzer:3115
+msgid "Password: "
+msgstr "პაროლი: "
+
+#: ../src/image-analyzer:3154
+msgid "Print libMirage debug to stdout"
+msgstr "libMirage-ის გამართვის ინფორამციის გამოტანა stdout-ზე"
+
+#: ../src/image-analyzer:3162
+msgid "libMirage debug mask"
+msgstr "libMirage-ის გამართვის ნიღაბი"
+
+#: ../src/image-analyzer:3194
+msgid "New window"
+msgstr "ახალი ფანჯარა"
+
+#: ../src/image-analyzer:3198 ../src/image-analyzer:3240
+msgid "About"
+msgstr "შესახებ"
+
+#: ../src/image-analyzer:3199
+msgid "Quit"
+msgstr "გასვლა"
+
+#: ../src/image-analyzer:3215
+msgid "Convert image"
+msgstr "გამოსახულების გარდაქმნა"
+
+#: ../src/image-analyzer:3219
+msgid "Open dump"
+msgstr "დამპის გახსნა"
+
+#: ../src/image-analyzer:3220
+msgid "Save dump"
+msgstr "დამპის შენახვა"
+
+#: ../src/image-analyzer:3224
+msgid "Close"
+msgstr "დახურვა"
+
+#: ../src/image-analyzer:3227
+msgid "File"
+msgstr "ფაილი"
+
+#: ../src/image-analyzer:3231
+msgid "Log"
+msgstr "ჟურნალი"
+
+#: ../src/image-analyzer:3232
+msgid "Read sector"
+msgstr "წაკითხულია სექტორი"
+
+#: ../src/image-analyzer:3233
+msgid "Sector analysis"
+msgstr "სექტორის ანალიზი"
+
+#: ../src/image-analyzer:3234
+msgid "Disc topology"
+msgstr "დისკის ტოპოლოგია"
+
+#: ../src/image-analyzer:3235
+msgid "Disc structures"
+msgstr "დისკის სტრუქტურები"
+
+#: ../src/image-analyzer:3236
+msgid "Tools"
+msgstr "ხელსაწყოები"
+
+#: ../src/image-analyzer:3241
+msgid "Help"
+msgstr "დახმარება"
+
+#: ../src/image-analyzer:3246
+msgid "<Primary>o"
+msgstr "<ძირითადი>o"
+
+#: ../src/image-analyzer:3247
+msgid "<Primary>x"
+msgstr "<ძირითადი>x"
+
+#: ../src/image-analyzer:3248
+msgid "<Primary>s"
+msgstr "<ძირითადი>s"
+
+#: ../src/image-analyzer:3249
+msgid "<Primary>w"
+msgstr "<ძირითადი>w"
+
+#: ../src/image-analyzer:3250
+msgid "<Primary>l"
+msgstr "<ძირითადი>l"
+
+#: ../src/image-analyzer:3251
+msgid "<Primary>r"
+msgstr "<ძირითადი>r"
+
+#: ../src/image-analyzer:3291
+msgid "Utility for CD/DVD image analysis and manipulation."
+msgstr "პროგრამა CD/DVD ასლის ფაილების ანალიზისა და მანიპულაციისთვის."
+
+#: ../src/image-analyzer:3293
+msgid "The CDEmu project website"
+msgstr "CDEmu-ის პროექტის ვებგვერდი"
+
+#: ../src/image-analyzer:3295
+msgid "translator-credits"
+msgstr "ეკატერინე პაპავა"
