@@ -93,6 +93,13 @@ if(ENABLE_LOGIND_SLEEP_HANDLER)
         ${PROJECT_BINARY_DIR}/freedesktop-login-manager.h
         ${PROJECT_BINARY_DIR}/freedesktop-login-manager.c
     )
+
+    # Before GLib 2.74, the `gio/gunixfdlist.h` header (required by the
+    # above GDBus bindings) belonged to UNIX-specific GIO interfaces,
+    # exposed through `gio-unix-2.0.pc` pkg-config file.
+    if(GLIB_glib-2.0_VERSION VERSION_LESS "2.74")
+        pkg_check_modules(GIO_UNIX REQUIRED gio-unix-2.0>=${MIN_GLIB_VERSION} IMPORTED_TARGET)
+    endif()
 endif()
 
 add_executable(cdemu-daemon ${cdemu-daemon_SOURCES})
@@ -100,6 +107,10 @@ add_executable(cdemu-daemon ${cdemu-daemon_SOURCES})
 target_link_libraries(cdemu-daemon PRIVATE PkgConfig::GLIB)
 target_link_libraries(cdemu-daemon PRIVATE PkgConfig::LIBMIRAGE)
 target_link_libraries(cdemu-daemon PRIVATE PkgConfig::AO)
+
+if(ENABLE_LOGIND_SLEEP_HANDLER AND GLIB_glib-2.0_VERSION VERSION_LESS "2.74")
+    target_link_libraries(cdemu-daemon PRIVATE PkgConfig::GIO_UNIX)
+endif()
 
 # Installation
 install(TARGETS cdemu-daemon DESTINATION ${CMAKE_INSTALL_BINDIR})
