@@ -1015,7 +1015,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, MirageStre
     /* Read descriptor data */
     self->priv->nrg_data = g_malloc(self->priv->nrg_data_length);
     mirage_stream_seek(self->priv->nrg_stream, trailer_offset, G_SEEK_SET, NULL);
-    if (mirage_stream_read(self->priv->nrg_stream, self->priv->nrg_data, self->priv->nrg_data_length, NULL) != self->priv->nrg_data_length) {
+    if ((gsize)mirage_stream_read(self->priv->nrg_stream, self->priv->nrg_data, self->priv->nrg_data_length, NULL) != self->priv->nrg_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read descriptor!"));
         succeeded = FALSE;

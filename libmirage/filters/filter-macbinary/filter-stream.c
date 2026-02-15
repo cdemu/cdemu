@@ -289,7 +289,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
         }
 
         mirage_stream_seek(stream, rsrc_fork_pos, G_SEEK_SET, NULL);
-        if (mirage_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL) != header->resfork_len) {
+        if ((gsize)mirage_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL) != header->resfork_len) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to read resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to read resource-fork!"));
             return FALSE;

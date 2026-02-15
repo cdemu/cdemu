@@ -643,7 +643,7 @@ static gboolean mirage_filter_stream_daa_read_from_stream (MirageFilterStreamDaa
             return FALSE;
         }
 
-        if (mirage_stream_read(part->stream, buffer, read_length, NULL) != read_length) {
+        if ((gsize)mirage_stream_read(part->stream, buffer, read_length, NULL) != read_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 0x%X bytes!\n", __debug__, read_length);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, Q_("Failed to read 0x%X bytes!"), read_length);
             return FALSE;
