@@ -408,11 +408,11 @@ guint8 *mdx_crypto_decipher_and_decompress_descriptor(
     /* Sanity check - ensure decompression consumed the expected amount
      * of input data, and produced expected amount of output data! */
     if (zlib_stream.total_in != header->compressed_size) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Decompression input data length mismatch (expected %d, actual %" G_GINT64_MODIFIER "d)!", header->compressed_size, zlib_stream.total_in);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Decompression input data length mismatch (expected %d, actual %lu)!", header->compressed_size, zlib_stream.total_in);
         goto error;
     }
     if (zlib_stream.total_out != header->decompressed_size) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Decompression output data length mismatch (expected %d, actual %" G_GINT64_MODIFIER "d)!", header->decompressed_size, zlib_stream.total_out);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Decompression output data length mismatch (expected %d, actual %lu)!", header->decompressed_size, zlib_stream.total_out);
         goto error;
     }
 

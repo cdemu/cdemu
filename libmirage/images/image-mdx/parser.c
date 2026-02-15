@@ -925,7 +925,7 @@ static gboolean mirage_parser_mdx_parser_disc_structures_data (MirageParserMdx *
         cur_ptr += 2048;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: final offset: 0x%lX\n", __debug__, cur_ptr - self->priv->descriptor_data);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: final offset: 0x%" G_GINTPTR_MODIFIER "X\n", __debug__, (guintptr)cur_ptr - (guintptr)self->priv->descriptor_data);
 
     return TRUE;
 }
@@ -1119,7 +1119,7 @@ static gboolean mirage_parser_mdx_read_descriptor (MirageParserMdx *self, const 
     read_bytes = mirage_stream_read(self->priv->stream, descriptor_raw, descriptor_size, NULL);
     if ((gsize)read_bytes != descriptor_size) {
         g_free(descriptor_raw);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read all descriptor data (read %" G_GINT64_MODIFIER "d out of %" G_GINT64_MODIFIER "d)!\n", __debug__, read_bytes, descriptor_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read all descriptor data (read %" G_GSSIZE_MODIFIER "d out of %" G_GINT64_MODIFIER "d)!\n", __debug__, read_bytes, descriptor_size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read all descriptor data!"));
         return FALSE;
     }
@@ -1171,7 +1171,7 @@ static gboolean mirage_parser_mdx_read_data_encryption_header (MirageParserMdx *
     /* Sanity check - encryption header should be located at the end of descriptor */
     guint32 encryption_header_size = self->priv->descriptor_size - descriptor_header->encryption_header_offset;
     if (encryption_header_size != sizeof(MDX_EncryptionHeader)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected size of encryption header for image data - expected %" G_GINT64_MODIFIER "d, found %d!\n", __debug__, sizeof(MDX_EncryptionHeader), encryption_header_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected size of encryption header for image data - expected %" G_GSIZE_MODIFIER "d, found %d!\n", __debug__, sizeof(MDX_EncryptionHeader), encryption_header_size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unexpected size of encryption header for image data!"));
         return FALSE;
     }
