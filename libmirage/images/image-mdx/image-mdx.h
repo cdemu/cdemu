@@ -164,7 +164,7 @@ typedef struct
     guint8 has_header : 1;
     guint8 has_unknown : 1;
     guint8 has_edc_ecc : 1;
-    guint6 sector_mode : 3;
+    guint8 sector_mode : 3;
 #else
     guint8 sector_mode : 3;
     guint8 has_edc_ecc : 1;
