@@ -1,3 +1,9 @@
+vhba-module (20260313-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Fri, 13 Mar 2026 16:22:23 +0100
+
 vhba-module (20250329-1) unstable; urgency=medium
 
   * New upstream version, closes: #1104419.
