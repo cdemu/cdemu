@@ -582,7 +582,7 @@ msgstr "Pagina proiectului CDEmu"
 
 #: ../src/gcdemu:2217
 msgid "translator-credits"
-msgstr "mulțumiri-traducători"
+msgstr "Sergiu Bivol <sergiu@cip.md>"
 
 #: ../src/gcdemu:2224
 msgid "Devices"
