@@ -1,0 +1,655 @@
+# Copyright (C) 2026 Sergiu Bivol
+# This file is distributed under the same license as the gCDEmu package.
+# SPDX-FileCopyrightText: 2026 Sergiu Bivol <sergiu@cip.md>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gcdemu\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-01 13:18+0100\n"
+"PO-Revision-Date: 2026-04-03 12:46+0100\n"
+"Last-Translator: Sergiu Bivol <sergiu@cip.md>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)"
+") ? 1 : 2;\n"
+"X-Generator: Lokalize 25.12.3\n"
+
+#: ../data/gcdemu.desktop.in.h:1
+msgid "gCDEmu"
+msgstr "gCDEmu"
+
+#: ../data/gcdemu.desktop.in.h:2
+msgid "gCDEmu GUI"
+msgstr "Interfață grafică gCDEmu"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:1
+msgid "Show notifications"
+msgstr "Arată notificări"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:2
+msgid ""
+"Whether to show notifications on events such as daemon start/stop and device "
+"state changes."
+msgstr ""
+"Dacă să fie afișate notificări pentru evenimente cum ar fi pornirea/oprirea de"
+"monului și schimbările de stare ale dispozitivelor."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
+msgid "Use system bus"
+msgstr "Folosește magistrala sistemului"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:4
+msgid "Whether system bus should be used instead of session one."
+msgstr ""
+"Dacă să fie folosită magistrala sistemului în locul magistralei sesiunii."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:5
+msgid "Use D-Bus service activation facility"
+msgstr "Folosește funcționalitatea D-Bus de activare a serviciului"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:6
+msgid ""
+"Whether to use D-Bus service activation facility or not. If enabled, D-Bus "
+"will attempt to autostart the daemon when gCDEmu tries to establish "
+"connection with it."
+msgstr ""
+"Dacă să fie folosită facilitatea D-Bus de activare a serviciului. Când e activ"
+"ă, D-Bus va încerca pornirea automată a demonului când gCDEmu încearcă să stab"
+"ilească o conexiune cu acesta."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
+msgid "Icon name (connected)"
+msgstr "Denumirea pictogramei (conectat)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:8
+msgid ""
+"Name of icon to display in the tray when connected to daemon. It should be "
+"either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"Denumirea pictogramei de afișat în tavă când e conectat la demon. Aceasta treb"
+"uie să fie o denumire validă din stoc sau denumirea de fișier a unei imagini c"
+"u hartă de pixeli ce poate fi găsită în unul dintre dosarele standard cu hărți"
+" de pixeli (ca /usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
+msgid "Icon name (disconnected)"
+msgstr "Denumirea pictogramei (deconectat)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:10
+msgid ""
+"Name of icon to display in the tray when disconnected from daemon. It should "
+"be either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"Denumirea pictogramei de afișat în tavă când e deconectat de la demon. Aceasta"
+" trebuie să fie o denumire validă din stoc sau denumirea de fișier a unei imag"
+"ini cu hartă de pixeli ce poate fi găsită în unul dintre dosarele standard cu "
+"hărți de pixeli (ca /usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
+msgid "Icon display policy."
+msgstr "Politica de afișare a pictogramei."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:12
+msgid ""
+"Icon display policy. Valid options are \"always\", \"never\" and "
+"\"when_connected\". If set to \"always\", the icon is always shown. If set "
+"to \"never\", the icon is never shown. If set to \"when_connected\", the "
+"icon is shown only when gCDEmu is connected to a daemon."
+msgstr ""
+"Politica de afișare a pictogramei. Opțiunile valide sunt „întotdeauna”, „nicio"
+"dată” și „când_e_conectat”. Dacă e ales „întotdeauna”, pictograma e afișată me"
+"reu. Dacă e ales „niciodată”, pictograma nu e afișată niciodată. Dacă e ales „"
+"când_e_conectat”, pictograma e afișată numai atunci când gCDEmu e conectat la "
+"un demon."
+
+#: ../src/gcdemu:337
+msgid "Daemon autostart error"
+msgstr "Eroare de pornire automată a demonului"
+
+#: ../src/gcdemu:338
+#, c-format
+msgid ""
+"Daemon autostart failed. Error:\n"
+"%s"
+msgstr ""
+"Pornirea automată a demonului a eșuat. Eroare:\n"
+"%s"
+
+#: ../src/gcdemu:352
+msgid "Incompatible daemon interface"
+msgstr "Interfață incompatibilă a demonului"
+
+#: ../src/gcdemu:353
+#, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"A fost depistată interfața demonului cu versiunea %i.%i, dar se cere versiunea"
+" %i.%i!"
+
+#: ../src/gcdemu:420
+msgid "Failed to add device"
+msgstr "Adăugarea dispozitivului a eșuat"
+
+#: ../src/gcdemu:421
+#, c-format
+msgid ""
+"Failed to add new device. Error:\n"
+"%s"
+msgstr ""
+"Adăugarea noului dispozitivu a eșuat. Eroare:\n"
+"%s"
+
+#: ../src/gcdemu:430
+msgid "Failed to remove device"
+msgstr "Eliminarea dispozitivului a eșuat"
+
+#: ../src/gcdemu:431
+#, c-format
+msgid ""
+"Failed to remove device. Error:\n"
+"%s"
+msgstr ""
+"Eliminarea dispozitivului a eșuat. Eroare:\n"
+"%s"
+
+#: ../src/gcdemu:603
+#, c-format
+msgid ""
+"Failed to unload device #%02d:\n"
+"%s"
+msgstr ""
+"Scoaterea dispozitivului #%02d a eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:615
+#, c-format
+msgid ""
+"Failed to load image %s to device #%02d:\n"
+"%s"
+msgstr ""
+"Încărcarea imaginii %s în dispozitivul #%02d a eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:625
+#, c-format
+msgid ""
+"Failed to create blank disc on device #%02d:\n"
+"%s"
+msgstr ""
+"Crearea unui disc gol pe dispozitivul #%02d a eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:638
+#, c-format
+msgid ""
+"Failed to set device ID for device #%02d to %s:\n"
+"%s"
+msgstr ""
+"Stabilirea identificatorului de dispozitiv pentru dispozitivul #%02d la %s a e"
+"șuat:\n"
+"%s"
+
+#: ../src/gcdemu:651
+#, c-format
+msgid ""
+"Failed to set DPM emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Stabilirea emulării DPM pentru dispozitivul #%02d la %i a eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:664
+#, c-format
+msgid ""
+"Failed to set TR emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Stabilirea emulării TR pentru dispozitivul #%02d la %i a eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:677
+#, c-format
+msgid ""
+"Failed to set bad sector emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Stabilirea emulării de sector defect pentru dispozitivul #%02d la %i a eșuat:"
+"\n"
+"%s"
+
+#: ../src/gcdemu:690
+#, c-format
+msgid ""
+"Failed to set DVD report CSS/CPPM for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Stabilirea de raportare DVD pentru CSS/CPPM pentru dispozitivul #%02d la %i a "
+"eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:703
+#, c-format
+msgid ""
+"Failed to set daemon debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"Stabilirea măștii de depanare a demonului pentru dispozitivul #%02d la 0x%X a "
+"eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:716
+#, c-format
+msgid ""
+"Failed to set library debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"Stabilirea măștii de depanare a bibliotecii pentru dispozitivul #%02d la 0x%X "
+"a eșuat:\n"
+"%s"
+
+#: ../src/gcdemu:815 ../src/gcdemu:1757
+msgid "Status"
+msgstr "Stare"
+
+#: ../src/gcdemu:828
+msgid "Loaded: "
+msgstr "Încărcat: "
+
+#: ../src/gcdemu:838
+msgid "File name(s): "
+msgstr "Denumire fișier(e): "
+
+#: ../src/gcdemu:854 ../src/gcdemu:927
+msgid "Load"
+msgstr "Încarcă"
+
+#: ../src/gcdemu:860
+msgid "Create blank"
+msgstr "Creează suport gol"
+
+#: ../src/gcdemu:867
+msgid "Device mapping"
+msgstr "Corespondență dispozitive"
+
+#: ../src/gcdemu:879
+msgid "SCSI CD-ROM device: "
+msgstr "Dispozitiv de CD-ROM SCSI: "
+
+#: ../src/gcdemu:889
+msgid "SCSI generic device: "
+msgstr "Dispozitiv SCSI generic: "
+
+#: ../src/gcdemu:900
+msgid "Remove device"
+msgstr "Elimină dispozitivul"
+
+#: ../src/gcdemu:919
+msgid "Yes"
+msgstr "Da"
+
+#: ../src/gcdemu:921
+msgid "Unload"
+msgstr "Scoate"
+
+#: ../src/gcdemu:925
+msgid "No"
+msgstr "Nu"
+
+#: ../src/gcdemu:973
+msgid "Device ID"
+msgstr "Id. dispozitiv"
+
+#: ../src/gcdemu:986
+msgid "Vendor ID: "
+msgstr "Id. vânzător: "
+
+#: ../src/gcdemu:997
+msgid "Product ID: "
+msgstr "Id. produs: "
+
+#: ../src/gcdemu:1008
+msgid "Revision: "
+msgstr "Revizie: "
+
+#: ../src/gcdemu:1019
+msgid "Vendor-specific: "
+msgstr "Specific vânzătorului: "
+
+#: ../src/gcdemu:1034
+msgid "Set device ID"
+msgstr "Stabilește identificatorul dispozitivului"
+
+#: ../src/gcdemu:1040
+msgid "DPM emulation"
+msgstr "Emulare DPM"
+
+#: ../src/gcdemu:1046
+msgid "Transfer rate emulation"
+msgstr "Emulare a ratei de transfer"
+
+#: ../src/gcdemu:1052
+msgid "Bad sector emulation"
+msgstr "Emulare de sector defect"
+
+#: ../src/gcdemu:1058
+msgid "DVD report CSS/CPPM"
+msgstr "Raportare DVD pentru CSS/CPPM"
+
+#: ../src/gcdemu:1170
+msgid "Set debug mask"
+msgstr "Stabilește masca de depanare"
+
+#: ../src/gcdemu:1206
+msgid "Open file"
+msgstr "Deschide fișier"
+
+#: ../src/gcdemu:1208 ../src/gcdemu:1358 ../src/gcdemu:1409 ../src/gcdemu:1504
+msgid "Cancel"
+msgstr "Renunță"
+
+#: ../src/gcdemu:1209
+msgid "Open"
+msgstr "Deschide"
+
+#: ../src/gcdemu:1217
+msgid "All files"
+msgstr "Toate fișierele"
+
+#: ../src/gcdemu:1222
+msgid "All image files"
+msgstr "Toate fișierele cu imagine"
+
+#: ../src/gcdemu:1277
+msgid "Extra Options"
+msgstr "Opțiuni suplimentare"
+
+#: ../src/gcdemu:1286
+msgid "Encoding: "
+msgstr "Codare: "
+
+#: ../src/gcdemu:1304 ../src/gcdemu:1374
+msgid "Password: "
+msgstr "Parolă: "
+
+#: ../src/gcdemu:1355
+msgid "Enter password"
+msgstr "Introduceți parola"
+
+#: ../src/gcdemu:1357 ../src/gcdemu:1408
+msgid "OK"
+msgstr "Bine"
+
+#: ../src/gcdemu:1370
+msgid "The image you are trying to load is encrypted."
+msgstr "Imaginea pe care doriți s-o încărcați e criptată."
+
+#: ../src/gcdemu:1406
+msgid "Create blank disc image"
+msgstr "Creează imagine de disc gol"
+
+#: ../src/gcdemu:1415
+msgid "Image"
+msgstr "Imagine"
+
+#: ../src/gcdemu:1427
+msgid "Filename: "
+msgstr "Denumire fișier: "
+
+#: ../src/gcdemu:1435 ../src/gcdemu:1505
+msgid "Choose"
+msgstr "Alege"
+
+#: ../src/gcdemu:1440
+msgid "Medium type: "
+msgstr "Tipul suportului: "
+
+#: ../src/gcdemu:1464
+msgid "Writer: "
+msgstr "Inscriptor: "
+
+#: ../src/gcdemu:1484
+msgid "Writer options"
+msgstr "Opțiuni inscriptor"
+
+#: ../src/gcdemu:1499
+msgid "Choose file"
+msgstr "Alege fișier"
+
+#: ../src/gcdemu:1664
+msgid "Image filename/basename not set!"
+msgstr "Denumirea de fișier sau cea de bază nu sunt stabilite!"
+
+#: ../src/gcdemu:1667
+msgid "No image writer is chosen!"
+msgstr "Nu e ales niciun inscriptor de imagini!"
+
+#: ../src/gcdemu:1677
+msgid "Invalid option"
+msgstr "Opțiune eronată"
+
+#: ../src/gcdemu:1725
+#, c-format
+msgid "Device #%02d: properties"
+msgstr "Dispozitiv #%02d: proprietăți"
+
+#: ../src/gcdemu:1726
+msgid "Close"
+msgstr "Închide"
+
+#: ../src/gcdemu:1742
+#, c-format
+msgid "Device #%02d"
+msgstr "Dispozitiv #%02d"
+
+#: ../src/gcdemu:1777
+msgid "Options"
+msgstr "Opțiuni"
+
+#: ../src/gcdemu:1805
+msgid "Daemon debug mask"
+msgstr "Masca de depanare a demonului"
+
+#: ../src/gcdemu:1806
+msgid "Daemon"
+msgstr "Demon"
+
+#: ../src/gcdemu:1814
+msgid "Library debug mask"
+msgstr "Masca de depanare a bibliotecii"
+
+#: ../src/gcdemu:1815
+msgid "Library"
+msgstr "Bibliotecă"
+
+#: ../src/gcdemu:1916 ../src/gcdemu:1918
+msgid "Device"
+msgstr "Dispozitiv"
+
+#: ../src/gcdemu:1918
+msgid "Empty"
+msgstr "Gol"
+
+#: ../src/gcdemu:1928 ../src/gcdemu:1934
+msgid "Device status change"
+msgstr "Schimbarea stării dispozitivului"
+
+#: ../src/gcdemu:1929
+#, c-format
+msgid "Device #%02d has been loaded."
+msgstr "Dispozitivul #%02d a fost încărcat."
+
+#: ../src/gcdemu:1935
+#, c-format
+msgid "Device #%02d has been emptied."
+msgstr "Dispozitivul #%02d a fost golit."
+
+#: ../src/gcdemu:1943 ../src/gcdemu:1959 ../src/gcdemu:1969 ../src/gcdemu:1979
+#: ../src/gcdemu:1989 ../src/gcdemu:1999 ../src/gcdemu:2009
+msgid "Device option change"
+msgstr "Schimbarea opțiunii dispozitivului"
+
+#: ../src/gcdemu:1944
+#, c-format
+msgid ""
+"Device #%02d has had its device ID changed:\n"
+"  Vendor ID: '%s'\n"
+"  Product ID: '%s'\n"
+"  Revision: '%s'\n"
+"  Vendor-specific: '%s'"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat identificatorul de dispozitiv:\n"
+"  Id. vânzător: „%s”\n"
+"  Id. produs: „%s”\n"
+"  Revizie: „%s”\n"
+"  Specific vânzătorului: „%s”"
+
+#: ../src/gcdemu:1960
+#, c-format
+msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat opțiunea de emulare DPM. Valoarea nouă: %s"
+
+#: ../src/gcdemu:1970
+#, c-format
+msgid "Device #%02d has had its TR emulation option changed. New value: %s"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat opțiunea de emulare TR. Valoarea nouă: %s"
+
+#: ../src/gcdemu:1980
+#, c-format
+msgid ""
+"Device #%02d has had its bad sector emulation option changed. New value: %s"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat opțiunea de emulare de sector defect. Valo"
+"area nouă: %s"
+
+#: ../src/gcdemu:1990
+#, c-format
+msgid ""
+"Device #%02d has had its DVD report CSS/CPPM option changed. New value: %s"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat opțiunea de raportare DVD pentru CSS/CPPM."
+" Valoarea nouă: %s"
+
+#: ../src/gcdemu:2000
+#, c-format
+msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat opțiunea de mască de depanare a demonului."
+" Valoarea nouă: 0x%X"
+
+#: ../src/gcdemu:2010
+#, c-format
+msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
+msgstr ""
+"Dispozitivului #%02d i s-a schimbat opțiunea de mască de depanare a biblioteci"
+"i. Valoarea nouă: 0x%X"
+
+#: ../src/gcdemu:2062
+msgid "Device error"
+msgstr "Eroare de dispozitiv"
+
+#: ../src/gcdemu:2107
+msgid "Left click for Property Dialog, right click to unload."
+msgstr ""
+"Apăsați clic stâng pentru dialogul cu proprietăți și clic drept pentru a scoat"
+"e."
+
+#: ../src/gcdemu:2109
+msgid "Left click for Property Dialog, right click to load."
+msgstr ""
+"Apăsați clic stâng pentru dialogul cu proprietăți și clic drept pentru a încăr"
+"ca."
+
+#: ../src/gcdemu:2116
+msgid "Click for Property Dialog"
+msgstr "Apăsați pentru dialogul cu proprietăți"
+
+#: ../src/gcdemu:2212
+msgid "A GUI for controlling CDEmu devices."
+msgstr "Interfață grafică pentru controlul dispozitivelor CDEmu."
+
+#: ../src/gcdemu:2214
+msgid "The CDEmu project website"
+msgstr "Pagina proiectului CDEmu"
+
+#: ../src/gcdemu:2217
+msgid "translator-credits"
+msgstr "mulțumiri-traducători"
+
+#: ../src/gcdemu:2224
+msgid "Devices"
+msgstr "Dispozitive"
+
+#: ../src/gcdemu:2228
+msgid "New device..."
+msgstr "Dispozitiv nou…"
+
+#: ../src/gcdemu:2239
+msgid "Use _system bus"
+msgstr "Folosește magistrala _sistemului"
+
+#: ../src/gcdemu:2246
+msgid "Show _notifications"
+msgstr "Arată _notificări"
+
+#: ../src/gcdemu:2256
+msgid "About"
+msgstr "Despre"
+
+#: ../src/gcdemu:2264
+msgid "Quit"
+msgstr "Termină"
+
+#: ../src/gcdemu:2334
+msgid "Daemon started"
+msgstr "Demon pornit"
+
+#: ../src/gcdemu:2335
+msgid "CDEmu daemon has been started."
+msgstr "Demonul CDEmu a fost pornit."
+
+#: ../src/gcdemu:2341
+msgid "Daemon stopped"
+msgstr "Demon oprit"
+
+#: ../src/gcdemu:2342
+msgid "CDEmu daemon has been stopped."
+msgstr "Demonul CDEmu a fost oprit."
+
+#: ../src/gcdemu:2376
+msgid "Device added"
+msgstr "Dispozitiv adăugat"
+
+#: ../src/gcdemu:2377
+#, c-format
+msgid "Device #%02d has been created."
+msgstr "Dispozitivul #%02d a fost creat."
+
+#: ../src/gcdemu:2384
+msgid "Device removed"
+msgstr "Dispozitiv eliminat"
+
+#: ../src/gcdemu:2385
+#, c-format
+msgid "Device #%02d has been removed."
+msgstr "Dispozitivul #%02d a fost eliminat."
+
+#: ../src/gcdemu:2583
+msgid "Failed to load AppIndicator library!"
+msgstr "Încărcarea bibliotecii AppIndicator a eșuat!"
+
+#: ../src/gcdemu:2585
+msgid "AppIndicator not available"
+msgstr "AppIndicator indisponibil"
+
+#: ../src/gcdemu:2628
+msgid "gCDEmu tray mode"
+msgstr "Regim de tavă gCDEmu"
