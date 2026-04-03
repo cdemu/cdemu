@@ -861,4 +861,4 @@ msgstr "Pagina proiectului CDEmu"
 
 #: ../src/image-analyzer:3295
 msgid "translator-credits"
-msgstr "mulțumiri-traducători"
+msgstr "Sergiu Bivol <sergiu@cip.md>"
