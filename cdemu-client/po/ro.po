@@ -1,0 +1,800 @@
+# Copyright (C) 2026 Sergiu Bivol
+# This file is distributed under the same license as the cdemu-client package.
+# SPDX-FileCopyrightText: 2026 Sergiu Bivol <sergiu@cip.md>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cdemu-client\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-01 14:43+0100\n"
+"PO-Revision-Date: 2026-04-03 13:53+0100\n"
+"Last-Translator: Sergiu Bivol <sergiu@cip.md>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)"
+") ? 1 : 2;\n"
+"X-Generator: Lokalize 25.12.3\n"
+
+#: ../src/cdemu:83
+#, c-format
+msgid "ERROR: %s"
+msgstr "EROARE: %s"
+
+#: ../src/cdemu:89
+#, c-format
+msgid "WARNING: %s"
+msgstr "AVERTISMENT: %s"
+
+#: ../src/cdemu:111
+msgid "loads an image to the device"
+msgstr "încarcă o imagine în dispozitiv"
+
+#: ../src/cdemu:125 ../src/cdemu:365 ../src/cdemu:558 ../src/cdemu:686
+#: ../src/cdemu:846 ../src/cdemu:1004 ../src/cdemu:1105 ../src/cdemu:1206
+#: ../src/cdemu:1307 ../src/cdemu:1408
+msgid "device"
+msgstr "dispozitiv"
+
+#: ../src/cdemu:131
+msgid "image file(s)"
+msgstr "fișier(e) cu imagine"
+
+#: ../src/cdemu:136
+msgid "encoding for text-based images"
+msgstr "codarea pentru imagine bazate pe text"
+
+#: ../src/cdemu:144
+msgid "unload image from a loaded device if necessary"
+msgstr "scoate imaginea dintr-un dispozitiv încărcat dacă e necesar"
+
+#: ../src/cdemu:151
+msgid "create a new device if necessary"
+msgstr "creează un nou dispozitiv dacă e necesar"
+
+#: ../src/cdemu:168 ../src/cdemu:210 ../src/cdemu:421 ../src/cdemu:567
+#: ../src/cdemu:608 ../src/cdemu:651 ../src/cdemu:710 ../src/cdemu:744
+#: ../src/cdemu:869 ../src/cdemu:903 ../src/cdemu:1025 ../src/cdemu:1059
+#: ../src/cdemu:1126 ../src/cdemu:1160 ../src/cdemu:1227 ../src/cdemu:1261
+#: ../src/cdemu:1328 ../src/cdemu:1362 ../src/cdemu:1429 ../src/cdemu:1457
+#, c-format
+msgid "Failed to get number of devices: %s"
+msgstr "nu s-a putut obține numărul de dispozitive: %s"
+
+#: ../src/cdemu:175 ../src/cdemu:428 ../src/cdemu:616
+#, c-format
+msgid "Failed to get status of device %i: %s"
+msgstr "Starea dispozitivului %i nu s-a putut obține: %s"
+
+#: ../src/cdemu:195 ../src/cdemu:227
+#, c-format
+msgid "Error while trying to unload device %d: %s"
+msgstr "Eroare la tentativa de scoatere a dispozitivului %d: %s"
+
+#: ../src/cdemu:204 ../src/cdemu:1754
+#, c-format
+msgid "Failed to add device: %s"
+msgstr "Adăugarea dispozitivului a eșuat: %s"
+
+#: ../src/cdemu:215 ../src/cdemu:439
+msgid "No empty device found"
+msgstr "Nu a fost găsit niciun dispozitiv gol"
+
+#: ../src/cdemu:220 ../src/cdemu:444 ../src/cdemu:582 ../src/cdemu:726
+#: ../src/cdemu:772 ../src/cdemu:885 ../src/cdemu:930 ../src/cdemu:1019
+#: ../src/cdemu:1041 ../src/cdemu:1079 ../src/cdemu:1120 ../src/cdemu:1142
+#: ../src/cdemu:1180 ../src/cdemu:1221 ../src/cdemu:1243 ../src/cdemu:1281
+#: ../src/cdemu:1322 ../src/cdemu:1344 ../src/cdemu:1382 ../src/cdemu:1442
+#: ../src/cdemu:1479
+#, c-format
+msgid "String '%s' is not a number"
+msgstr "Șirul „%s” nu e un număr"
+
+#: ../src/cdemu:277
+#, c-format
+msgid "Failed to obtain password for encrypted image: %s"
+msgstr "Obținerea parolei pentru imaginea criptată a eșuat: %s"
+
+#: ../src/cdemu:283
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Încărcarea imaginii a eșuat: %s"
+
+#: ../src/cdemu:311 ../src/cdemu:2022 ../data/cdemu-client.desktop.in.h:1
+msgid "CDEmu client"
+msgstr "Client CDEmu"
+
+#: ../src/cdemu:313
+msgid "Please enter password for encrypted image"
+msgstr "Introduceți parola pentru imaginea criptată"
+
+#: ../src/cdemu:318
+#, c-format
+msgid "Failed to obtain password via zenity: %s"
+msgstr "Obținerea parolei prin intermediul zenity a eșuat: %s"
+
+#: ../src/cdemu:326
+#, c-format
+msgid ""
+"Failed to run password agent defined via CDEMU_ASKPASS environment variable: "
+"%s"
+msgstr ""
+"Rularea agentului de parole definit în variabila de mediu CDEMU_ASKPASS a eșua"
+"t: %s"
+
+#: ../src/cdemu:330
+msgid "The image you are trying to load is encrypted."
+msgstr "Imaginea pe care doriți s-o încărcați e criptată."
+
+#: ../src/cdemu:331
+msgid "Password: "
+msgstr "Parolă: "
+
+#: ../src/cdemu:339
+#, c-format
+msgid ""
+"Failed to run password agent defined via SSH_ASKPASS environment variable: %s"
+msgstr ""
+"Rularea agentului de parole definit în variabila de mediu SSH_ASKPASS a eșuat:"
+" %s"
+
+#: ../src/cdemu:341
+msgid "No password agent was supplied."
+msgstr "Nu a fost furnizat niciun agent de parole."
+
+#: ../src/cdemu:351
+msgid "load blank/recordable image to the device"
+msgstr "încarcă o imagine goală/inscriptibilă în dispozitiv"
+
+#: ../src/cdemu:370
+msgid "image filename/basename"
+msgstr "denumirea de fișier sau cea de bază a imaginii"
+
+#: ../src/cdemu:377
+msgid "ID of image writer to use"
+msgstr "identificatorului inscriptorului de imagini de folosit"
+
+#: ../src/cdemu:384
+msgid "medium type"
+msgstr "tipul suportului"
+
+#: ../src/cdemu:391
+msgid "additional writer parameter(s)"
+msgstr "parametri suplimentari pentru inscriptor"
+
+#: ../src/cdemu:454
+#, c-format
+msgid "Failed to load blank image: %s"
+msgstr "Încărcarea imaginii goale a eșuat: %s"
+
+#: ../src/cdemu:472
+#, c-format
+msgid "Parameter token '%s' is not a key=value pair!"
+msgstr "Jetonul de parametru „%s” nu este o pereche cheie=valoare!"
+
+#: ../src/cdemu:485 ../src/cdemu:1668
+#, c-format
+msgid "Failed to get parameter sheet for writer: %s"
+msgstr "Obținerea foii de parametri pentru inscriptor a eșuat: %s"
+
+#: ../src/cdemu:500
+#, c-format
+msgid "Parameter '%s' not found in writer's parameter sheet!"
+msgstr ""
+"Parametrul „%s” nu a fost găsit în foaia de parametri ai inscriptorului!"
+
+#: ../src/cdemu:513
+#, c-format
+msgid "Invalid value '%s' given for parameter '%s'!"
+msgstr "Valoare eronată „%s” dată pentru parametrul „%s”!"
+
+#: ../src/cdemu:526
+#, c-format
+msgid "String '%s' given as value for parameter '%s' is not a number!"
+msgstr "Șirul „%s”, dat ca valoare pentru parametrul „%s”, nu e un număr!"
+
+#: ../src/cdemu:529
+#, c-format
+msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
+msgstr "Tip neprevăzut de parametru „%s” declarat pentru parametrul „%s”!"
+
+#: ../src/cdemu:544
+msgid "unloads the device"
+msgstr "scoate dispozitivul"
+
+#: ../src/cdemu:573 ../src/cdemu:580
+#, c-format
+msgid "Failed to unload device %i: %s"
+msgstr "Scoaterea dispozitivului %i a eșuat: %s"
+
+#: ../src/cdemu:592
+msgid "displays the devices' status"
+msgstr "afișează starea dispozitivelor"
+
+#: ../src/cdemu:610
+msgid "Devices' status:"
+msgstr "Starea dispozitivelor:"
+
+#: ../src/cdemu:611 ../src/cdemu:654 ../src/cdemu:747 ../src/cdemu:906
+#: ../src/cdemu:1062 ../src/cdemu:1163 ../src/cdemu:1264 ../src/cdemu:1365
+#: ../src/cdemu:1460
+msgid "DEV"
+msgstr "DISP"
+
+#: ../src/cdemu:611
+msgid "LOADED"
+msgstr "ÎNCĂRCAT"
+
+#: ../src/cdemu:611
+msgid "FILENAME"
+msgstr "DENUMIRE FIȘIER"
+
+#: ../src/cdemu:635
+msgid "displays the device mapping information"
+msgstr "afișează informații despre corespondența dispozitivelor"
+
+#: ../src/cdemu:653
+msgid "Device mapping:"
+msgstr "Corespondența dispozitivelor:"
+
+#: ../src/cdemu:654
+msgid "SCSI CD-ROM"
+msgstr "CD-ROM SCSI"
+
+#: ../src/cdemu:654
+msgid "SCSI generic"
+msgstr "General SCSI"
+
+#: ../src/cdemu:659
+#, c-format
+msgid "Failed to get device mapping of device %i: %s"
+msgstr ""
+"Obținerea corespondenței de dispozitiv pentru dispozitivul %i a eșuat: %s"
+
+#: ../src/cdemu:672
+msgid "displays/sets daemon debug mask"
+msgstr "arată/stabilește masca de depanare a demonului"
+
+#: ../src/cdemu:692 ../src/cdemu:852 ../src/cdemu:1010 ../src/cdemu:1111
+#: ../src/cdemu:1212 ../src/cdemu:1313
+msgid "new value"
+msgstr "valoare nouă"
+
+#: ../src/cdemu:712
+#, c-format
+msgid "Setting daemon debug mask of all devices to 0x%X."
+msgstr ""
+"Se stabilește masca de depanare a demonului pentru toate dispozitivele la 0x%X"
+"."
+
+#: ../src/cdemu:718 ../src/cdemu:733
+#, c-format
+msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
+msgstr ""
+"Stabilirea măștii de depanare a demonului pentru dispozitivul %i la 0x%X a eșu"
+"at: %s"
+
+#: ../src/cdemu:728
+#, c-format
+msgid "Setting daemon debug mask of device %i to 0x%X."
+msgstr ""
+"Se stabilește masca de depanare a demonului pentru dispozitivul %i la 0x%X."
+
+#: ../src/cdemu:746
+msgid "Devices' daemon debug masks:"
+msgstr "Măștile de depanare a demonului ale dispozitivelor:"
+
+#: ../src/cdemu:747 ../src/cdemu:906
+msgid "DEBUG MASK"
+msgstr "MASCĂ DE DEPANARE"
+
+#: ../src/cdemu:747 ../src/cdemu:906
+msgid "MEANING"
+msgstr "SEMNIFICAȚIE"
+
+#: ../src/cdemu:754 ../src/cdemu:768
+#, c-format
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr ""
+"Obținerea măștii de depanare a demonului pentru dispozitivul %i a eșuat: %s"
+
+#: ../src/cdemu:777
+#, c-format
+msgid "Daemon debug mask of device %i: 0x%X (%s)"
+msgstr "Masca de depanare a demonului pentru dispozitivul %i: 0x%X (%s)"
+
+#: ../src/cdemu:796 ../src/cdemu:954
+#, c-format
+msgid ""
+"String '%s' is not a number nor was it found in the list of valid debug mask "
+"identifiers"
+msgstr ""
+"Șirul „%s” nu este un număr și nici nu a fost găsit în lista cu identificatori"
+" valabili pentru măști de depanare"
+
+#: ../src/cdemu:819 ../src/cdemu:1606
+#, c-format
+msgid "Failed to enumerate supported daemon debug masks: %s"
+msgstr "Enumerarea măștilor de depanare a demonului susținute a eșuat: %s"
+
+#: ../src/cdemu:832
+msgid "displays/sets library debug mask"
+msgstr "arată/stabilește masca de depanare a bibliotecii"
+
+#: ../src/cdemu:871
+#, c-format
+msgid "Setting library debug mask of all devices to 0x%X."
+msgstr ""
+"Se stabilește masca de depanare a bibliotecii pentru toate dispozitivele la 0x"
+"%X."
+
+#: ../src/cdemu:877 ../src/cdemu:892
+#, c-format
+msgid "Failed to set library debug mask of device %i to 0x%X: %s"
+msgstr ""
+"Stabilirea măștii de depanare a bibliotecii pentru dispozitivul %i la 0x%X a e"
+"șuat: %s"
+
+#: ../src/cdemu:887
+#, c-format
+msgid "Setting library debug mask of device %i to 0x%X."
+msgstr ""
+"Se stabilește masca de depanare a bibliotecii pentru dispozitivul %i la 0x%X."
+
+#: ../src/cdemu:905
+msgid "Devices' library debug masks:"
+msgstr "Măștile de depanare a bibliotecii ale dispozitivelor:"
+
+#: ../src/cdemu:913 ../src/cdemu:926
+#, c-format
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr ""
+"Obținerea măștii de depanare a bibliotecii pentru dispozitivul %i a eșuat: %s"
+
+#: ../src/cdemu:935
+#, c-format
+msgid "Library debug mask of device %i: 0x%X (%s)"
+msgstr "Masca de depanare a bibliotecii pentru dispozitivul %i: 0x%X (%s)"
+
+#: ../src/cdemu:977 ../src/cdemu:1636
+#, c-format
+msgid "Failed to enumerate supported library debug masks: %s"
+msgstr "Enumerarea măștilor de depanare a bibliotecii susținute a eșuat: %s"
+
+#: ../src/cdemu:990
+msgid "displays/sets DPM emulation flag"
+msgstr "arată/stabilește fanionul de emulare DPM"
+
+#: ../src/cdemu:1027
+#, c-format
+msgid "Setting DPM emulation flag of all devices to %i."
+msgstr ""
+"Se stabilește fanionul de emulare DPM pentru toate dispozitivele la %i."
+
+#: ../src/cdemu:1033 ../src/cdemu:1048
+#, c-format
+msgid "Failed to set DPM emulation flag of device %i to %i: %s"
+msgstr ""
+"Stabilirea fanionului de emulare DPM pentru dispozitivul %i la %i a eșuat: %s"
+
+#: ../src/cdemu:1043
+#, c-format
+msgid "Setting DPM emulation flag of device %i to %i."
+msgstr "Se stabilește fanionul de emulare DPM pentru dispozitivul %i la %i."
+
+#: ../src/cdemu:1061
+msgid "Devices' DPM emulation flag:"
+msgstr "Fanionul de emulare DPM al dispozitivelor:"
+
+#: ../src/cdemu:1062 ../src/cdemu:1163 ../src/cdemu:1264 ../src/cdemu:1365
+msgid "ENABLED"
+msgstr "ACTIVAT"
+
+#: ../src/cdemu:1068 ../src/cdemu:1077
+#, c-format
+msgid "Failed to get DPM emulation flag of device %i: %s"
+msgstr "Citirea fanionului de emulare DPM pentru dispozitivul %i a eșuat: %s"
+
+#: ../src/cdemu:1081
+#, c-format
+msgid "DPM emulation flag of device %i: %i"
+msgstr "Fanionul de emulare DPM pentru dispozitivul %i: %i"
+
+#: ../src/cdemu:1091
+msgid "displays/sets transfer rate emulation flag"
+msgstr "arată/stabilește fanionul de emulare a ratei de transfer"
+
+#: ../src/cdemu:1128
+#, c-format
+msgid "Setting transfer rate emulation flag of all devices to %i."
+msgstr ""
+"Se stabilește fanionul de emulare a ratei de transfer pentru toate dispozitive"
+"le la %i."
+
+#: ../src/cdemu:1134 ../src/cdemu:1149
+#, c-format
+msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
+msgstr ""
+"Stabilirea fanionului de emulare a ratei de transfer pentru dispozitivul %i la"
+" %i a eșuat: %s"
+
+#: ../src/cdemu:1144
+#, c-format
+msgid "Setting transfer rate emulation flag of device %i to %i."
+msgstr ""
+"Se stabilește fanionul de emulare a ratei de transfer pentru dispozitivul %i l"
+"a %i."
+
+#: ../src/cdemu:1162
+msgid "Devices' transfer rate emulation flag:"
+msgstr "Fanionul de emulare a ratei de transfer al dispozitivelor:"
+
+#: ../src/cdemu:1169 ../src/cdemu:1178
+#, c-format
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr ""
+"Citirea fanionului de emulare a ratei de transfer pentru dispozitivul %i a eșu"
+"at: %s"
+
+#: ../src/cdemu:1182
+#, c-format
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "Fanionul de emulare a ratei de transfer pentru dispozitivul %i: %i"
+
+#: ../src/cdemu:1192
+msgid "displays/sets bad sector emulation flag"
+msgstr "arată/stabilește fanionul de emulare a sectorului defect"
+
+#: ../src/cdemu:1229
+#, c-format
+msgid "Setting bad sector emulation flag of all devices to %i."
+msgstr ""
+"Se stabilește fanionul de emulare a sectorului defect pentru toate dispozitive"
+"le la %i."
+
+#: ../src/cdemu:1235 ../src/cdemu:1250
+#, c-format
+msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
+msgstr ""
+"Stabilirea fanionului de emulare a sectorului defect pentru dispozitivul %i la"
+" %i a eșuat: %s"
+
+#: ../src/cdemu:1245
+#, c-format
+msgid "Setting bad sector emulation flag of device %i to %i."
+msgstr ""
+"Se stabilește fanionul de emulare a sectorului defect pentru dispozitivul %i l"
+"a %i."
+
+#: ../src/cdemu:1263
+msgid "Devices' bad sector emulation flag:"
+msgstr "Fanionul de emulare a sectorului defect al dispozitivelor:"
+
+#: ../src/cdemu:1270 ../src/cdemu:1279
+#, c-format
+msgid "Failed to get bad sector emulation flag of device %i: %s"
+msgstr ""
+"Citirea fanionului de emulare a sectorului defect pentru dispozitivul %i a eșu"
+"at: %s"
+
+#: ../src/cdemu:1283
+#, c-format
+msgid "Bad sector emulation flag of device %i: %i"
+msgstr "Fanionul de emulare a sectorului defect pentru dispozitivul %i: %i"
+
+#: ../src/cdemu:1293
+msgid "displays/sets DVD report CSS/CPPM flag"
+msgstr "arată/stabilește fanionul de raportare DVD pentru CSS/CPPM"
+
+#: ../src/cdemu:1330
+#, c-format
+msgid "Setting DVD report CSS/CPPM flag of all devices to %i."
+msgstr ""
+"Se stabilește fanionul de raportare DVD pentru CSS/CPPM pentru toate dispoziti"
+"vele la %i."
+
+#: ../src/cdemu:1336 ../src/cdemu:1351
+#, c-format
+msgid "Failed to set DVD report CSS/CPPM flag of device %i to %i: %s"
+msgstr ""
+"Stabilirea fanionului de raportare DVD pentru CSS/CPPM pentru dispozitivul %i "
+"la %i a eșuat: %s"
+
+#: ../src/cdemu:1346
+#, c-format
+msgid "Setting DVD report CSS/CPPM flag of device %i to %i."
+msgstr ""
+"Se stabilește fanionul de raportare DVD pentru CSS/CPPM pentru dispozitivul %i"
+" la %i."
+
+#: ../src/cdemu:1364
+msgid "Devices' DVD report CSS/CPPM flag:"
+msgstr "Fanionul de raportare DVD pentru CSS/CPPM al dispozitivelor:"
+
+#: ../src/cdemu:1371 ../src/cdemu:1380
+#, c-format
+msgid "Failed to get DVD report CSS/CPPM flag of device %i: %s"
+msgstr ""
+"Citirea fanionului de raportare DVD pentru CSS/CPPM pentru dispozitivul %i a e"
+"șuat: %s"
+
+#: ../src/cdemu:1384
+#, c-format
+msgid "DVD report CSS/CPPM flag of device %i: %i"
+msgstr "Fanionul de raportare DVD pentru CSS/CPPM pentru dispozitivul %i: %i"
+
+#: ../src/cdemu:1394
+msgid "displays/sets device ID"
+msgstr "arată/stabilește identificatorul dispozitivului"
+
+#: ../src/cdemu:1414
+msgid ""
+"new device ID: vendor ID, product ID, revision and vendor-specific string"
+msgstr ""
+"identificator de dispozitiv nou: id. vânzător, id. produs, revizie și șirul sp"
+"ecific vânzătorului"
+
+#: ../src/cdemu:1423
+msgid "New device ID must consist of exactly four strings!"
+msgstr ""
+"Noul identificator de dispozitiv trebuie să fie compus din exact patru șiruri!"
+
+#: ../src/cdemu:1431
+#, c-format
+msgid "Setting device ID of all devices to %s."
+msgstr ""
+"Se stabilește identificatorul de dispozitiv al tuturor dispozitivelor la %s."
+
+#: ../src/cdemu:1436 ../src/cdemu:1448
+#, c-format
+msgid "Failed to set device ID of device %i to %s: %s"
+msgstr ""
+"Stabilirea identificatorului de dispozitiv al dispozitivului %i la %s a eșuat:"
+" %s"
+
+#: ../src/cdemu:1444
+#, c-format
+msgid "Setting device ID of device %i to %s."
+msgstr ""
+"Se stabilește identificatorul de dispozitiv al dispozitivului %i la %s."
+
+#: ../src/cdemu:1459
+msgid "Devices' IDs:"
+msgstr "Identificatorii dispozitivelor:"
+
+#: ../src/cdemu:1460
+msgid "DEVICE ID"
+msgstr "ID. DISPOZITIV"
+
+#: ../src/cdemu:1467 ../src/cdemu:1477
+#, c-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr ""
+"Obținerea identificatorului de dispozitiv pentru dispozitivul %i a eșuat: %s"
+
+#: ../src/cdemu:1481
+#, c-format
+msgid "Device ID of device %i: %s"
+msgstr "Identificatorul de dispozitiv al dispozitivului %i: %s"
+
+#: ../src/cdemu:1491
+msgid "enumerates supported parsers"
+msgstr "enumeră parcurgătorii susținuți"
+
+#: ../src/cdemu:1507
+#, c-format
+msgid "Failed to enumerate supported parsers: %s"
+msgstr "Enumerarea parcurgătorilor susținuți a eșuat: %s"
+
+#: ../src/cdemu:1511
+msgid "Supported parsers:"
+msgstr "Parcurgători susținuți:"
+
+#: ../src/cdemu:1525
+msgid "enumerates supported writers"
+msgstr "enumeră inscriptorii susținuți"
+
+#: ../src/cdemu:1541
+#, c-format
+msgid "Failed to enumerate supported writers: %s"
+msgstr "Enumerarea inscriptorilor susținuți a eșuat: %s"
+
+#: ../src/cdemu:1544
+msgid "Supported writers:"
+msgstr "Inscriptori susținuți:"
+
+#: ../src/cdemu:1556
+msgid "enumerates supported filter streams"
+msgstr "enumeră fluxurile de filtrare susținute"
+
+#: ../src/cdemu:1572
+#, c-format
+msgid "Failed to enumerate supported filter streams: %s"
+msgstr "Enumerarea fluxurilor de filtrare susținute a eșuat: %s"
+
+#: ../src/cdemu:1575
+msgid "Supported filter streams:"
+msgstr "Fluxuri de filtrare susținute:"
+
+#: ../src/cdemu:1578
+#, c-format
+msgid "    write support: %d"
+msgstr "    susținerea scrierii: %d"
+
+#: ../src/cdemu:1590
+msgid "enumerates valid daemon debug masks"
+msgstr "enumeră măștile valabile de depanare a demonului"
+
+#: ../src/cdemu:1608
+msgid "Supported daemon debug masks:"
+msgstr "Măștile de depanare a demonului susținute:"
+
+#: ../src/cdemu:1620
+msgid "enumerates valid library debug masks"
+msgstr "enumeră măștile valabile de depanare a bibliotecii"
+
+#: ../src/cdemu:1638
+msgid "Supported library debug masks:"
+msgstr "Măștile de depanare a bibliotecii susținute:"
+
+#: ../src/cdemu:1650
+msgid "prints the list of writer's parameters"
+msgstr "tipărește lista de parametri ai inscriptorului"
+
+#: ../src/cdemu:1661
+msgid "writer ID"
+msgstr "identificatorul inscriptorului"
+
+#: ../src/cdemu:1671
+msgid "Writer's parameter sheet:"
+msgstr "Foaia de parametri ai inscriptorului:"
+
+#: ../src/cdemu:1676
+#, c-format
+msgid "  Name: %s"
+msgstr "  Denumire: %s"
+
+#: ../src/cdemu:1677
+#, c-format
+msgid "  Description: %s"
+msgstr "  Descriere: %s"
+
+#: ../src/cdemu:1678
+#, c-format
+msgid "  Type: %s"
+msgstr "  Tip: %s"
+
+#: ../src/cdemu:1679
+#, c-format
+msgid "  Default value: %s"
+msgstr "  Valoare implicită: %s"
+
+#: ../src/cdemu:1682
+#, c-format
+msgid "  Possible value: %s"
+msgstr "  Valoare posibilă: %s"
+
+#: ../src/cdemu:1687
+msgid "enum"
+msgstr "enum"
+
+#: ../src/cdemu:1689
+msgid "string"
+msgstr "șir"
+
+#: ../src/cdemu:1691
+msgid "boolean"
+msgstr "boolean"
+
+#: ../src/cdemu:1693
+msgid "integer"
+msgstr "întreg"
+
+#: ../src/cdemu:1695
+msgid "unknown"
+msgstr "necunoscut"
+
+#: ../src/cdemu:1705
+msgid "displays version information"
+msgstr "afișează informații despre versiune"
+
+#: ../src/cdemu:1721
+#, c-format
+msgid "Failed to get library version: %s"
+msgstr "Obținerea versiunii bibliotecii a eșuat: %s"
+
+#: ../src/cdemu:1726
+#, c-format
+msgid "Failed to get daemon version: %s"
+msgstr "Obținerea versiunii demonului a eșuat: %s"
+
+#: ../src/cdemu:1728
+#, c-format
+msgid "Library version: %s"
+msgstr "Versiunea bibliotecii: %s"
+
+#: ../src/cdemu:1729
+#, c-format
+msgid "Daemon version: %s"
+msgstr "Versiunea demonului: %s"
+
+#: ../src/cdemu:1739
+msgid "creates another virtual device"
+msgstr "creează încă un dispozitiv virtual"
+
+#: ../src/cdemu:1756
+msgid "Device added successfully."
+msgstr "Dispozitiv adăugat cu succes."
+
+#: ../src/cdemu:1766
+msgid "removes the last virtual device"
+msgstr "elimină ultimul dispozitiv virtual"
+
+#: ../src/cdemu:1781
+#, c-format
+msgid "Failed to remove device: %s"
+msgstr "Eliminarea dispozitivului a eșuat: %s"
+
+#: ../src/cdemu:1783
+msgid "Device removed successfully."
+msgstr "Dispozitiv eliminat cu succes."
+
+#: ../src/cdemu:1804
+msgid "Command-line CDEmu client."
+msgstr "Client CDEmu în linie de comandă."
+
+#: ../src/cdemu:1812
+msgid "sets D-BUS bus type to use"
+msgstr "stabilește tipul magistralei D-BUS de utilizat"
+
+#: ../src/cdemu:1821
+msgid "valid commands"
+msgstr "comenzi valabile"
+
+#: ../src/cdemu:1823
+msgid "command help"
+msgstr "ajutor pentru comandă"
+
+#: ../src/cdemu:1867
+#, c-format
+msgid "Invalid bus parameter '%s', using default!"
+msgstr ""
+"Parametru eronat „%s” pentru magistrală, se folosesc valorile implicite!"
+
+#: ../src/cdemu:1880
+#, c-format
+msgid "Failed to connect to CDEmu daemon: %s"
+msgstr "Conectarea la demonul CDEmu a eșuat: %s"
+
+#: ../src/cdemu:1887
+#, c-format
+msgid ""
+"Failed to acquire daemon interface version (this most likely means your "
+"daemon is out-of-date): %s"
+msgstr ""
+"Obținerea versiunii de interfață a demonului a eșuat (de obicei înseamnă că de"
+"monul dumneavoastră e învechit): %s"
+
+#: ../src/cdemu:1900
+#, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"A fost depistată interfața demonului cu versiunea %i.%i, dar se cere versiunea"
+" %i.%i!"
+
+#: ../src/cdemu:1995
+#, c-format
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "Încărcarea configurației din fișierul „%s” a eșuat: %s"
+
+#: ../src/cdemu:2029
+#, c-format
+msgid "Failed to report error via zenity: %s"
+msgstr "Raportarea erorii prin intermediul zenity a eșuat: %s"
+
+#: ../data/cdemu-client.desktop.in.h:2
+msgid "Client for handling optical media (CD/DVD) images"
+msgstr "Client pentru manipularea imaginilor de suport optic (CD/DVD)"

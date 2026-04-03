@@ -1,0 +1,864 @@
+# Copyright (C) 2026 Sergiu Bivol
+# This file is distributed under the same license as the image-analyzer package.
+# SPDX-FileCopyrightText: 2026 Sergiu Bivol <sergiu@cip.md>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-01 14:48+0100\n"
+"PO-Revision-Date: 2026-04-03 13:37+0100\n"
+"Last-Translator: Sergiu Bivol <sergiu@cip.md>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)"
+") ? 1 : 2;\n"
+"X-Generator: Lokalize 25.12.3\n"
+
+#: ../data/image-analyzer.desktop.in.h:1
+msgid "Image Analyzer"
+msgstr "Analizor de imagini"
+
+#: ../data/image-analyzer.desktop.in.h:2
+msgid "Utility for CD/DVD image analysis and manipulation"
+msgstr "Utilitar pentru analiza și manipularea imaginilor de CD/DVD"
+
+#: ../src/image-analyzer:67
+msgid "CD-ROM"
+msgstr "CD-ROM"
+
+#: ../src/image-analyzer:68
+msgid "DVD-ROM"
+msgstr "DVD-ROM"
+
+#: ../src/image-analyzer:69
+msgid "BlueRay Disc"
+msgstr "Disc Bluray"
+
+#: ../src/image-analyzer:70
+msgid "HD-DVD Disc"
+msgstr "Disc HD-DVD"
+
+#: ../src/image-analyzer:71
+msgid "Hard-disk"
+msgstr "Disc dur"
+
+#: ../src/image-analyzer:78 ../src/image-analyzer:79
+msgid "CD-DA/CD-ROM"
+msgstr "CD-DA/CD-ROM"
+
+#: ../src/image-analyzer:80
+msgid "CD-I"
+msgstr "CD-I"
+
+#: ../src/image-analyzer:81
+msgid "CD-ROM XA"
+msgstr "CD-ROM XA"
+
+#: ../src/image-analyzer:88
+msgid "four channel audio"
+msgstr "sunet cu patru canale"
+
+#: ../src/image-analyzer:89
+msgid "copy permitted"
+msgstr "copiere permisă"
+
+#: ../src/image-analyzer:90
+msgid "pre-emphasis"
+msgstr "preaccentuare"
+
+#: ../src/image-analyzer:101
+msgid "Mode 0"
+msgstr "Regim 0"
+
+#: ../src/image-analyzer:102
+msgid "Audio"
+msgstr "Audio"
+
+#: ../src/image-analyzer:103
+msgid "Mode 1"
+msgstr "Regim 1"
+
+#: ../src/image-analyzer:104
+msgid "Mode 2 Formless"
+msgstr "Regim 1 fără formă"
+
+#: ../src/image-analyzer:105
+msgid "Mode 2 Form 1"
+msgstr "Regim 2 Forma 1"
+
+#: ../src/image-analyzer:106
+msgid "Mode 2 Form 2"
+msgstr "Regim 2 Forma 2"
+
+#: ../src/image-analyzer:107
+msgid "Mode 2 Mixed"
+msgstr "Regim 2 mixt"
+
+#: ../src/image-analyzer:114
+msgid "Binary data"
+msgstr "Date binare"
+
+#: ../src/image-analyzer:115
+msgid "Audio data"
+msgstr "Date sonore"
+
+#: ../src/image-analyzer:116
+msgid "Audio data (swapped)"
+msgstr "Date audio (schimbate)"
+
+#: ../src/image-analyzer:127
+msgid "internal"
+msgstr "intern"
+
+#: ../src/image-analyzer:128
+msgid "external"
+msgstr "extern"
+
+#: ../src/image-analyzer:129
+msgid "PW96 interleaved"
+msgstr "PW96 intercalat"
+
+#: ../src/image-analyzer:130
+msgid "PW96 linear"
+msgstr "PW96 liniar"
+
+#: ../src/image-analyzer:131
+msgid "RW96"
+msgstr "RW96"
+
+#: ../src/image-analyzer:132
+msgid "Q16"
+msgstr "Q16"
+
+#: ../src/image-analyzer:152
+#, c-format
+msgid "Read sector (#%02d)"
+msgstr "Sector citit (#%02d)"
+
+#: ../src/image-analyzer:232
+msgid "Read"
+msgstr "Citit"
+
+#: ../src/image-analyzer:251 ../src/image-analyzer:568
+#: ../src/image-analyzer:958
+msgid "Ready!"
+msgstr "Pregătit!"
+
+#: ../src/image-analyzer:256 ../src/image-analyzer:571
+#: ../src/image-analyzer:819 ../src/image-analyzer:964
+msgid "No disc loaded!"
+msgstr "Niciun disc încărcat!"
+
+#: ../src/image-analyzer:272
+#, c-format
+msgid "Failed to get sector: %s"
+msgstr "Obținerea sectorului a eșuat: %s"
+
+#: ../src/image-analyzer:278
+msgid "Sector address: "
+msgstr "Adresă sector: "
+
+#: ../src/image-analyzer:290
+msgid "Sector address MSF: "
+msgstr "Adresă sector MSF: "
+
+#: ../src/image-analyzer:302
+msgid "Sector type: "
+msgstr "Tip sector: "
+
+#: ../src/image-analyzer:325
+msgid "Sector angle: "
+msgstr "Unghi sector: "
+
+#: ../src/image-analyzer:330
+#, c-format
+msgid "%f rotations"
+msgstr "%f rotații"
+
+#: ../src/image-analyzer:340
+msgid "Sector density: "
+msgstr "Densitate sectoare: "
+
+#: ../src/image-analyzer:345
+#, c-format
+msgid "%f degrees per sector"
+msgstr "%f grade pe sector"
+
+#: ../src/image-analyzer:359
+msgid "Q subchannel:"
+msgstr "Subcanal Q:"
+
+#: ../src/image-analyzer:378
+msgid "Subchannel CRC verification: "
+msgstr "Verificare CRC subcanal: "
+
+#: ../src/image-analyzer:384 ../src/image-analyzer:405
+msgid "passed"
+msgstr "trecut"
+
+#: ../src/image-analyzer:389
+msgid "bad CRC"
+msgstr "CRC rău"
+
+#: ../src/image-analyzer:399
+msgid "Sector data L-EC verification: "
+msgstr "Verificare L-EC pentru datele sectorului: "
+
+#: ../src/image-analyzer:410
+msgid "bad sector"
+msgstr "sector defect"
+
+#: ../src/image-analyzer:420
+msgid "Sector data dump:"
+msgstr "Captura datelor sectorului:"
+
+#: ../src/image-analyzer:504
+#, c-format
+msgid "Sector analysis (#%02d)"
+msgstr "Analiză sector (#%02d)"
+
+#: ../src/image-analyzer:537
+msgid "Analyze"
+msgstr "Analizează"
+
+#: ../src/image-analyzer:552 ../src/image-analyzer:1090
+#: ../src/image-analyzer:1136 ../src/image-analyzer:1186
+#: ../src/image-analyzer:1212 ../src/image-analyzer:1239
+#: ../src/image-analyzer:1298 ../src/image-analyzer:3044
+#: ../src/image-analyzer:3098
+msgid "Cancel"
+msgstr "Renunță"
+
+#: ../src/image-analyzer:587
+msgid "Analyzing sectors..."
+msgstr "Se analizează sectoarele…"
+
+#: ../src/image-analyzer:598
+msgid "Performing sector analysis..."
+msgstr "Se efectuează analiza sectoarelor…"
+
+#: ../src/image-analyzer:617
+#, c-format
+msgid "Session #%d: "
+msgstr "Sesiunea #%d: "
+
+#: ../src/image-analyzer:622
+#, c-format
+msgid "start: %d, length %d, %d tracks"
+msgstr "început: %d, lungime %d, %d piste"
+
+#: ../src/image-analyzer:639
+#, c-format
+msgid "Track #%d: "
+msgstr "Pista #%d: "
+
+#: ../src/image-analyzer:644
+#, c-format
+msgid "start: %d, length %d"
+msgstr "început: %d, lungime %d"
+
+#: ../src/image-analyzer:663 ../src/image-analyzer:678
+#: ../src/image-analyzer:692
+#, c-format
+msgid "Sector %d (0x%X): "
+msgstr "Sectorul %d (0x%X): "
+
+#: ../src/image-analyzer:697
+msgid "Failed to get sector!"
+msgstr "Obținerea sectorului a eșuat!"
+
+#: ../src/image-analyzer:735
+msgid "Sector analysis cancelled!"
+msgstr "Analiza sectoarelor a fost anulată!"
+
+#: ../src/image-analyzer:740
+msgid "Sector analysis complete!"
+msgstr "Analiza sectoarelor s-a încheiat!"
+
+#: ../src/image-analyzer:759
+#, c-format
+msgid "Disc topology (#%02d)"
+msgstr "Topologia discului (#%02d)"
+
+#: ../src/image-analyzer:800
+msgid "Matplotlib and/or its Gtk3 backend are missing!"
+msgstr "Lipsește Matplotlib și/sau platforma Gtk3 a acestuia!"
+
+#: ../src/image-analyzer:835
+msgid "No DPM data provided!"
+msgstr "Nu au fost furnizate date DPM!"
+
+#: ../src/image-analyzer:872
+msgid "Sector address"
+msgstr "Adresa sectorului"
+
+#: ../src/image-analyzer:873
+msgid "Sector density [degrees/sector]"
+msgstr "Densitate sectoare [grade/sector]"
+
+#: ../src/image-analyzer:886
+#, c-format
+msgid "Disc structures (#%02d)"
+msgstr "Structuri de disc (#%02d)"
+
+#: ../src/image-analyzer:916
+msgid "Layer: "
+msgstr "Strat: "
+
+#: ../src/image-analyzer:927
+msgid "Type: "
+msgstr "Tip: "
+
+#: ../src/image-analyzer:938
+msgid "Get structure"
+msgstr "Obține structura"
+
+#: ../src/image-analyzer:961
+msgid "Unsupported medium type!"
+msgstr "Tip de suport nesusținut!"
+
+#: ../src/image-analyzer:975
+#, c-format
+msgid "Layer %d, structure %d (0x%X):\n"
+msgstr "Strat %d, structură %d (0x%X):\n"
+
+#: ../src/image-analyzer:983
+#, c-format
+msgid "Failed to get structure: %s"
+msgstr "Obținerea structurii a eșuat: %s"
+
+#: ../src/image-analyzer:994
+#, c-format
+msgid "%d bytes"
+msgstr "%d octeți"
+
+#: ../src/image-analyzer:1013
+#, c-format
+msgid "Log (#%02d)"
+msgstr "Jurnal (#%02d)"
+
+#: ../src/image-analyzer:1036
+msgid "Mirror to stdout"
+msgstr "Oglindește la ieșirea standard"
+
+#: ../src/image-analyzer:1041
+msgid "Clear"
+msgstr "Curăță"
+
+#: ../src/image-analyzer:1046 ../src/image-analyzer:1085
+msgid "Debug mask"
+msgstr "Mască de depanare"
+
+#: ../src/image-analyzer:1089 ../src/image-analyzer:1238
+#: ../src/image-analyzer:3097
+msgid "OK"
+msgstr "Bine"
+
+#: ../src/image-analyzer:1132 ../src/image-analyzer:3211
+msgid "Open image"
+msgstr "Deschide imagine"
+
+#: ../src/image-analyzer:1135 ../src/image-analyzer:1185
+msgid "Open"
+msgstr "Deschide"
+
+#: ../src/image-analyzer:1144 ../src/image-analyzer:1199
+#: ../src/image-analyzer:1226
+msgid "All files"
+msgstr "Toate fișierele"
+
+#: ../src/image-analyzer:1150
+msgid "All images"
+msgstr "Toate imaginile"
+
+#: ../src/image-analyzer:1182
+msgid "Open image dump"
+msgstr "Deschide captură de imagine"
+
+#: ../src/image-analyzer:1193 ../src/image-analyzer:1220
+msgid "XML files"
+msgstr "Fișiere XML"
+
+#: ../src/image-analyzer:1208
+msgid "Save image dump"
+msgstr "Salvează captură de imagine"
+
+#: ../src/image-analyzer:1211 ../src/image-analyzer:1299
+msgid "Save"
+msgstr "Salvează"
+
+#: ../src/image-analyzer:1243
+msgid "Output image"
+msgstr "Imaginea de ieșire"
+
+#: ../src/image-analyzer:1253
+msgid "Filename: "
+msgstr "Denumire fișier: "
+
+#: ../src/image-analyzer:1261
+msgid "Choose"
+msgstr "Alege"
+
+#: ../src/image-analyzer:1266
+msgid "Writer: "
+msgstr "Inscriptor: "
+
+#: ../src/image-analyzer:1280
+msgid "Writer options"
+msgstr "Opțiuni inscriptor"
+
+#: ../src/image-analyzer:1293
+msgid "Select output image file"
+msgstr "Alegeți fișierul cu imagine de ieșire"
+
+#: ../src/image-analyzer:1576
+#, c-format
+msgid "Invalid XML dump file (root tag is '%s', expected '%s'!"
+msgstr ""
+"Fișier eronat cu captură XML (marcajul-rădăcină e „%s”, se aștepta „%s”!)"
+
+#: ../src/image-analyzer:2141
+#, c-format
+msgid "Medium type: 0x%X (%s)"
+msgstr "Tipul suportului: 0x%X (%s)"
+
+#: ../src/image-analyzer:2148
+msgid "Filename(s)"
+msgstr "Denumire de fișier(e)"
+
+#: ../src/image-analyzer:2157 ../src/image-analyzer:2252
+msgid "Layout"
+msgstr "Aranjament"
+
+#: ../src/image-analyzer:2163
+#, c-format
+msgid "First sesssion: %d"
+msgstr "Prima sesiune: %d"
+
+#: ../src/image-analyzer:2170 ../src/image-analyzer:2259
+#, c-format
+msgid "First track: %d"
+msgstr "Prima pistă: %d"
+
+#: ../src/image-analyzer:2177 ../src/image-analyzer:2266
+#: ../src/image-analyzer:2386 ../src/image-analyzer:2599
+#, c-format
+msgid "Start sector: %d (0x%X)"
+msgstr "Sector de început: %d (0x%X)"
+
+#: ../src/image-analyzer:2184 ../src/image-analyzer:2273
+#: ../src/image-analyzer:2394 ../src/image-analyzer:2465
+#, c-format
+msgid "Length: %d (0x%X)"
+msgstr "Lungime: %d (0x%X)"
+
+#: ../src/image-analyzer:2192
+#, c-format
+msgid "Number of sessions: %d"
+msgstr "Număr de sesiuni: %d"
+
+#: ../src/image-analyzer:2199
+#, c-format
+msgid "Number of tracks: %d"
+msgstr "Număr de piste: %d"
+
+#: ../src/image-analyzer:2206
+#, c-format
+msgid "Sessions (%d)"
+msgstr "Sesiuni (%d)"
+
+#: ../src/image-analyzer:2223
+#, c-format
+msgid "Session %02d"
+msgstr "Sesiunea %02d"
+
+#: ../src/image-analyzer:2231
+#, c-format
+msgid "Session type: 0x%X (%s)"
+msgstr "Tipul sesiunii: 0x%X (%s)"
+
+#: ../src/image-analyzer:2240
+#, c-format
+msgid "MCN: %s"
+msgstr "MCN: %s"
+
+#: ../src/image-analyzer:2246 ../src/image-analyzer:2372
+#, c-format
+msgid "Session number: %d"
+msgstr "Numărul sesiunii: %d"
+
+#: ../src/image-analyzer:2281
+#, c-format
+msgid "Lead-out length: %d (0x%X)"
+msgstr "Lungimea sfârșitului de sesiune: %d (0x%X)"
+
+#: ../src/image-analyzer:2291
+#, c-format
+msgid "Tracks (%d)"
+msgstr "Piste (%d)"
+
+#: ../src/image-analyzer:2303 ../src/image-analyzer:2440
+#, c-format
+msgid "Languages (%d)"
+msgstr "Limbi (%d)"
+
+#: ../src/image-analyzer:2315
+msgid "Lead-in"
+msgstr "Început de sesiune"
+
+#: ../src/image-analyzer:2317
+msgid "Lead-out"
+msgstr "Sfârșit de sesiune"
+
+#: ../src/image-analyzer:2319
+#, c-format
+msgid "Track %02d"
+msgstr "Pista %02d"
+
+#: ../src/image-analyzer:2331
+#, c-format
+msgid "Flags: 0x%X (%s)"
+msgstr "Fanioane: 0x%X (%s)"
+
+#: ../src/image-analyzer:2339
+#, c-format
+msgid "Sector type: 0x%X (%s)"
+msgstr "Tipul sectorului: 0x%X (%s)"
+
+#: ../src/image-analyzer:2347
+#, c-format
+msgid "ADR: %d"
+msgstr "ADR: %d"
+
+#: ../src/image-analyzer:2355
+#, c-format
+msgid "CTL: %d"
+msgstr "CTL: %d"
+
+#: ../src/image-analyzer:2364
+#, c-format
+msgid "ISRC: %s"
+msgstr "ISRC: %s"
+
+#: ../src/image-analyzer:2378
+#, c-format
+msgid "Track number: %d"
+msgstr "Numărul pistei: %d"
+
+#: ../src/image-analyzer:2404
+#, c-format
+msgid "Fragments (%d)"
+msgstr "Fragmente (%d)"
+
+#: ../src/image-analyzer:2417
+#, c-format
+msgid "Track start: %d (0x%X)"
+msgstr "Începutul pistei: %d (0x%X)"
+
+#: ../src/image-analyzer:2427
+#, c-format
+msgid "Indices (%d)"
+msgstr "Indici (%d)"
+
+#: ../src/image-analyzer:2449
+#, c-format
+msgid "Fragment #%d"
+msgstr "Fragmentul #%d"
+
+#: ../src/image-analyzer:2457
+#, c-format
+msgid "Address: %d (0x%X)"
+msgstr "Adresă: %d (0x%X)"
+
+#: ../src/image-analyzer:2469
+msgid "Main data"
+msgstr "Data principale"
+
+#: ../src/image-analyzer:2475 ../src/image-analyzer:2507
+#, c-format
+msgid "Filename: %s"
+msgstr "Denumire de fișier: %s"
+
+#: ../src/image-analyzer:2482 ../src/image-analyzer:2513
+#, c-format
+msgid "Offset: %d (0x%X)"
+msgstr "Decalaj: %d (0x%X)"
+
+#: ../src/image-analyzer:2489 ../src/image-analyzer:2520
+#, c-format
+msgid "Size: %d (0x%X)"
+msgstr "Dimensiune: %d (0x%X)"
+
+#: ../src/image-analyzer:2496 ../src/image-analyzer:2527
+#, c-format
+msgid "Format: 0x%X (%s)"
+msgstr "Format: 0x%X (%s)"
+
+#: ../src/image-analyzer:2502
+msgid "Subchannel data"
+msgstr "Date de sub-canal"
+
+#: ../src/image-analyzer:2538
+#, c-format
+msgid "Language %d"
+msgstr "Limba %d"
+
+#: ../src/image-analyzer:2544
+#, c-format
+msgid "Language code: %d"
+msgstr "Codul limbii: %d"
+
+#: ../src/image-analyzer:2549
+msgid "Title"
+msgstr "Titlu"
+
+#: ../src/image-analyzer:2550
+msgid "Performer"
+msgstr "Interpret"
+
+#: ../src/image-analyzer:2551
+msgid "Songwriter"
+msgstr "Textier"
+
+#: ../src/image-analyzer:2552
+msgid "Composer"
+msgstr "Compozitor"
+
+#: ../src/image-analyzer:2553
+msgid "Arranger"
+msgstr "Aranjor"
+
+#: ../src/image-analyzer:2554
+msgid "Message"
+msgstr "Mesaj"
+
+#: ../src/image-analyzer:2555
+msgid "Disc ID"
+msgstr "Identificatorul discului"
+
+#: ../src/image-analyzer:2556
+msgid "Genre"
+msgstr "Gen"
+
+#: ../src/image-analyzer:2557
+msgid "TOC"
+msgstr "TOC"
+
+#: ../src/image-analyzer:2558
+msgid "TOC2"
+msgstr "TOC2"
+
+#: ../src/image-analyzer:2559
+msgid "Reserved 8A"
+msgstr "Rezervat 8A"
+
+#: ../src/image-analyzer:2560
+msgid "Reserved 8B"
+msgstr "Rezervat 8B"
+
+#: ../src/image-analyzer:2561
+msgid "Reserved 8C"
+msgstr "Rezervat 8C"
+
+#: ../src/image-analyzer:2562
+msgid "Closed info"
+msgstr "Informații închise"
+
+#: ../src/image-analyzer:2563
+msgid "UPC/ISRC"
+msgstr "UPC/ISRC"
+
+#: ../src/image-analyzer:2564
+msgid "Size"
+msgstr "Dimensiune"
+
+#: ../src/image-analyzer:2592
+msgid "DPM"
+msgstr "DPM"
+
+#: ../src/image-analyzer:2607
+#, c-format
+msgid "Resolution: %d (0x%X)"
+msgstr "Rezoluție: %d (0x%X)"
+
+#: ../src/image-analyzer:2616
+#, c-format
+msgid "Entries (%d)"
+msgstr "Înregistrări (%d)"
+
+#: ../src/image-analyzer:2786
+msgid "ERROR"
+msgstr "EROARE"
+
+#: ../src/image-analyzer:2789
+msgid "CRITICAL"
+msgstr "CRITIC"
+
+#: ../src/image-analyzer:2792
+msgid "WARNING"
+msgstr "AVERTISMENT"
+
+#: ../src/image-analyzer:2798
+#, c-format
+msgid "Image analyzer #%02d"
+msgstr "Analizor de imagini #%02d"
+
+#: ../src/image-analyzer:2841
+msgid "Image filename/basename not set!"
+msgstr "Denumirea de fișier sau cea de bază nu sunt stabilite!"
+
+#: ../src/image-analyzer:2856
+msgid "No image writer chosen!"
+msgstr "Nu e ales niciun inscriptor de imagini!"
+
+#: ../src/image-analyzer:2935
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Încărcarea imaginii a eșuat: %s"
+
+#: ../src/image-analyzer:2980
+#, c-format
+msgid "Failed to load XML dump: %s"
+msgstr "Încărcarea capturii XML a eșuat: %s"
+
+#: ../src/image-analyzer:3015
+#, c-format
+msgid "Failed to save XML dump: %s"
+msgstr "Salvarea capturii XML a eșuat: %s"
+
+#: ../src/image-analyzer:3036
+msgid "Converting..."
+msgstr "Se convertește…"
+
+#: ../src/image-analyzer:3039
+msgid "Image conversion progress"
+msgstr "Progresul conversiei imaginii"
+
+#: ../src/image-analyzer:3070
+msgid "Image conversion succeeded."
+msgstr "Conversia imaginii a reușit."
+
+#: ../src/image-analyzer:3080
+#, c-format
+msgid "Image conversion failed: %s"
+msgstr "Conversia imaginii a eșuat: %s"
+
+#: ../src/image-analyzer:3091
+msgid "Enter password"
+msgstr "Introduceți parola"
+
+#: ../src/image-analyzer:3109
+msgid "The image you are trying to load is encrypted."
+msgstr "Imaginea pe care doriți s-o încărcați e criptată."
+
+#: ../src/image-analyzer:3115
+msgid "Password: "
+msgstr "Parolă: "
+
+#: ../src/image-analyzer:3154
+msgid "Print libMirage debug to stdout"
+msgstr "Tipărește informații de depanare libMirage la ieșirea standard"
+
+#: ../src/image-analyzer:3162
+msgid "libMirage debug mask"
+msgstr "mască de depanare libMirage"
+
+#: ../src/image-analyzer:3194
+msgid "New window"
+msgstr "Fereastră nouă"
+
+#: ../src/image-analyzer:3198 ../src/image-analyzer:3240
+msgid "About"
+msgstr "Despre"
+
+#: ../src/image-analyzer:3199
+msgid "Quit"
+msgstr "Termină"
+
+#: ../src/image-analyzer:3215
+msgid "Convert image"
+msgstr "Convertește imagine"
+
+#: ../src/image-analyzer:3219
+msgid "Open dump"
+msgstr "Deschide captură"
+
+#: ../src/image-analyzer:3220
+msgid "Save dump"
+msgstr "Salvează captură"
+
+#: ../src/image-analyzer:3224
+msgid "Close"
+msgstr "Închide"
+
+#: ../src/image-analyzer:3227
+msgid "File"
+msgstr "Fișier"
+
+#: ../src/image-analyzer:3231
+msgid "Log"
+msgstr "Jurnal"
+
+#: ../src/image-analyzer:3232
+msgid "Read sector"
+msgstr "Citește sector"
+
+#: ../src/image-analyzer:3233
+msgid "Sector analysis"
+msgstr "Analiza sectorului"
+
+#: ../src/image-analyzer:3234
+msgid "Disc topology"
+msgstr "Topologia discului"
+
+#: ../src/image-analyzer:3235
+msgid "Disc structures"
+msgstr "Structuri de disc"
+
+#: ../src/image-analyzer:3236
+msgid "Tools"
+msgstr "Unelte"
+
+#: ../src/image-analyzer:3241
+msgid "Help"
+msgstr "Ajutor"
+
+#: ../src/image-analyzer:3246
+msgid "<Primary>o"
+msgstr "<Primar>o"
+
+#: ../src/image-analyzer:3247
+msgid "<Primary>x"
+msgstr "<Primar>x"
+
+#: ../src/image-analyzer:3248
+msgid "<Primary>s"
+msgstr "<Primar>s"
+
+#: ../src/image-analyzer:3249
+msgid "<Primary>w"
+msgstr "<Primar>w"
+
+#: ../src/image-analyzer:3250
+msgid "<Primary>l"
+msgstr "<Primar>l"
+
+#: ../src/image-analyzer:3251
+msgid "<Primary>r"
+msgstr "<Primar>r"
+
+#: ../src/image-analyzer:3291
+msgid "Utility for CD/DVD image analysis and manipulation."
+msgstr "Utilitar pentru analiza și manipularea imaginilor de CD/DVD."
+
+#: ../src/image-analyzer:3293
+msgid "The CDEmu project website"
+msgstr "Pagina proiectului CDEmu"
+
+#: ../src/image-analyzer:3295
+msgid "translator-credits"
+msgstr "mulțumiri-traducători"
