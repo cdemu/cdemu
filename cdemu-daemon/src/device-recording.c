@@ -430,9 +430,31 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
 
 static gint cdemu_device_tao_recording_get_next_writable_address (CdemuDevice *self)
 {
-    /* NWA base is at the beginning of first track */
-    gint nwa_base = 0; /* FIXME: multisession! */
-    return nwa_base + self->priv->num_written_sectors;
+    gint base;
+
+    if (self->priv->open_session) {
+        /* Session in progress: data area starts 150 sectors after lead-in on CD,
+         * at the session start on BD/DVD (no lead-in gap). */
+        base = mirage_session_layout_get_start_sector(self->priv->open_session);
+        if (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_CD) {
+            base += 150;
+        }
+    } else {
+        /* Between sessions: probe where libmirage would place the next session
+         * to get the correct start_sector without committing to it. */
+        MirageSession *probe = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(self->priv->disc, -1, probe);
+        base = mirage_session_layout_get_start_sector(probe);
+        if (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_CD) {
+            base += 150;
+        }
+        gint last_idx = mirage_disc_get_number_of_sessions(self->priv->disc) - 1;
+        mirage_disc_remove_session_by_index(self->priv->disc, last_idx, NULL);
+        g_object_unref(probe);
+        /* num_written_sectors was reset to 0 when the prior session closed */
+    }
+
+    return base + self->priv->num_written_sectors;
 }
 
 /* Commands structure */
@@ -640,9 +662,20 @@ static gboolean cdemu_device_raw_recording_write_sectors (CdemuDevice *self, gin
 
 static gint cdemu_device_raw_recording_get_next_writable_address (CdemuDevice *self)
 {
-    /* NWA base is at the beginning of lead-in */
-    gint nwa_base = self->priv->medium_leadin; /* FIXME: multisession! */
-    return nwa_base + self->priv->num_written_sectors;
+    gint base;
+
+    if (self->priv->open_session) {
+        base = mirage_session_layout_get_start_sector(self->priv->open_session);
+    } else {
+        MirageSession *probe = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(self->priv->disc, -1, probe);
+        base = mirage_session_layout_get_start_sector(probe);
+        gint last_idx = mirage_disc_get_number_of_sessions(self->priv->disc) - 1;
+        mirage_disc_remove_session_by_index(self->priv->disc, last_idx, NULL);
+        g_object_unref(probe);
+    }
+
+    return base + self->priv->num_written_sectors;
 }
 
 
@@ -1212,9 +1245,21 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
 static gint cdemu_device_sao_recording_get_next_writable_address (CdemuDevice *self)
 {
-    /* NWA base is at the beginning of first-track's pregap */
-    gint nwa_base = -150; /* FIXME: multisession! */
-    return nwa_base + self->priv->num_written_sectors;
+    gint base;
+
+    if (self->priv->open_session) {
+        /* SAO writes from the session lead-in start (150 sectors before data area on CD) */
+        base = mirage_session_layout_get_start_sector(self->priv->open_session);
+    } else {
+        MirageSession *probe = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(self->priv->disc, -1, probe);
+        base = mirage_session_layout_get_start_sector(probe);
+        gint last_idx = mirage_disc_get_number_of_sessions(self->priv->disc) - 1;
+        mirage_disc_remove_session_by_index(self->priv->disc, last_idx, NULL);
+        g_object_unref(probe);
+    }
+
+    return base + self->priv->num_written_sectors;
 }
 
 
