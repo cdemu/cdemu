@@ -1373,6 +1373,7 @@ static gboolean command_read_disc_information (CdemuDevice *self, const guint8 *
                 /* Disc type is determined from first session, as per INF8090 */
                 disc_type = map_session_type(mirage_session_get_session_type(session));
                 g_object_unref(session);
+                session = NULL;
             } else if (self->priv->recordable_disc && self->priv->open_session) {
                 /* If the only session on disc is incomplete, get disc type from it */
                 disc_type = map_session_type(mirage_session_get_session_type(self->priv->open_session));
