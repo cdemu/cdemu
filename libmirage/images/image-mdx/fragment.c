@@ -577,101 +577,83 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
 /**********************************************************************\
  *                          MirageFragment methods                    *
 \**********************************************************************/
-static gboolean mirage_fragment_mdx_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error)
+static gint mirage_fragment_mdx_read_main_data_impl (MirageFragment *_self, gint address, guint8 *buffer, GError **error)
 {
     MirageFragmentMdx *self = MIRAGE_FRAGMENT_MDX(_self);
 
 #if 0
     if (!self->priv->crypt_handle && !self->priv->compression_table)  {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: neither compression nor encryption is not used; using parent implementation of read_main_data()...\n", __debug__);
-        return MIRAGE_FRAGMENT_CLASS(mirage_fragment_mdx_parent_class)->read_main_data(_self, address, buffer, length, error);
+        return MIRAGE_FRAGMENT_CLASS(mirage_fragment_mdx_parent_class)->read_main_data_impl(_self, address, buffer, error);
     }
 #endif
 
-    /* Clear both variables */
-    *length = 0;
-    if (buffer) {
-        *buffer = NULL;
+    /* No need to read anything if we don't have a buffer */
+    if (!buffer) {
+        return self->priv->main_size;
     }
 
     /* Ensure sector data is available in cache */
     if (!mirage_fragment_mdx_read_sector_data(MIRAGE_FRAGMENT_MDX(_self), address, error)) {
-        return FALSE;
+        return -1;
     }
-
-    /* Length */
-    *length = self->priv->main_size;
 
     /* Data */
-    if (buffer) {
-        guint offset = 0;
-        if (self->priv->sectors_in_group > 1) {
-            guint sector_index = address % self->priv->sectors_in_group;
-            offset = sector_index * (self->priv->main_size + self->priv->subchannel_size);
-        }
-
-        guint8 *data_buffer = g_malloc0(self->priv->main_size);
-        memcpy(data_buffer, self->priv->buffer + offset, self->priv->main_size);
-        *buffer = data_buffer;
+    guint offset = 0;
+    if (self->priv->sectors_in_group > 1) {
+        guint sector_index = address % self->priv->sectors_in_group;
+        offset = sector_index * (self->priv->main_size + self->priv->subchannel_size);
     }
 
-    return TRUE;
+    memcpy(buffer, self->priv->buffer + offset, self->priv->main_size);
+
+    return self->priv->main_size;
 }
 
-static gboolean mirage_fragment_mdx_read_subchannel_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error)
+static gint mirage_fragment_mdx_read_subchannel_data_impl (MirageFragment *_self, gint address, guint8 *buffer, GError **error)
 {
     MirageFragmentMdx *self = MIRAGE_FRAGMENT_MDX(_self);
 
 #if 0
     if (!self->priv->crypt_handle && !self->priv->compression_table)  {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: neither compression nor encryption is not used; using parent implementation of read_subchannel_data()...\n", __debug__);
-        return MIRAGE_FRAGMENT_CLASS(mirage_fragment_mdx_parent_class)->read_subchannel_data(_self, address, buffer, length, error);
+        return MIRAGE_FRAGMENT_CLASS(mirage_fragment_mdx_parent_class)->read_subchannel_data_impl(_self, address, buffer, error);
     }
 #endif
-
-    /* Clear both variables */
-    *length = 0;
-    if (buffer) {
-        *buffer = NULL;
-    }
-
-    /* Ensure sector data is available in cache */
-    if (!mirage_fragment_mdx_read_sector_data(MIRAGE_FRAGMENT_MDX(_self), address, error)) {
-        return FALSE;
-    }
 
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->subchannel_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
-        return TRUE;
+        return 0;
     }
 
-    /* Length */
-    *length = 96; /* Always 96, because we do the processing here */
+    /* No need to read anything if we don't have a buffer */
+    if (!buffer) {
+        return 96;
+    }
+
+    /* Ensure sector data is available in cache */
+    if (!mirage_fragment_mdx_read_sector_data(MIRAGE_FRAGMENT_MDX(_self), address, error)) {
+        return -1;
+    }
 
     /* Data */
-    if (buffer) {
-        guint offset = 0;
-        if (self->priv->sectors_in_group > 1) {
-            guint sector_index = address % self->priv->sectors_in_group;
-            offset = sector_index * (self->priv->main_size + self->priv->subchannel_size);
-        }
-        offset += self->priv->main_size;
+    guint offset = 0;
+    if (self->priv->sectors_in_group > 1) {
+        guint sector_index = address % self->priv->sectors_in_group;
+        offset = sector_index * (self->priv->main_size + self->priv->subchannel_size);
+    }
+    offset += self->priv->main_size;
 
-        guint8 *data_buffer = g_malloc0(96);
-
-        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
-            /* 16-byte Q; interleave it and pretend everything else's 0 */
-            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, self->priv->buffer + offset, data_buffer);
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
-            /* 96-byte interleaved PW; just copy it */
-            memcpy(data_buffer, self->priv->buffer + offset, 96);
-        }
-
-        *buffer = data_buffer;
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
+        /* 16-byte Q; interleave it and pretend everything else's 0 */
+        mirage_helper_subchannel_interleave(SUBCHANNEL_Q, self->priv->buffer + offset, buffer);
+    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
+        /* 96-byte interleaved PW; just copy it */
+        memcpy(buffer, self->priv->buffer + offset, 96);
     }
 
-    return TRUE;
+    return 96;
 }
 
 
@@ -748,6 +730,6 @@ static void mirage_fragment_mdx_class_init (MirageFragmentMdxClass *klass)
     gobject_class->dispose = mirage_fragment_mdx_dispose;
     gobject_class->finalize = mirage_fragment_mdx_finalize;
 
-    fragment_class->read_main_data = mirage_fragment_mdx_read_main_data;
-    fragment_class->read_subchannel_data = mirage_fragment_mdx_read_subchannel_data;
+    fragment_class->read_main_data_impl = mirage_fragment_mdx_read_main_data_impl;
+    fragment_class->read_subchannel_data_impl = mirage_fragment_mdx_read_subchannel_data_impl;
 }

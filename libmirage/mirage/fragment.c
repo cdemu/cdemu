@@ -384,6 +384,29 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
     return self->priv->main_offset + (guint64)address * (guint64)size_full;
 }
 
+/**
+ * mirage_fragment_read_main_data_fast:
+ * @self: a #MirageFragment
+ * @address: (in): address
+ * @buffer: (in) (optional) (array length=length): location of a buffer to read the data into, or %NULL
+ * @length: (in): length of @buffer
+ * @error: (out) (optional): location to store error, or %NULL
+ *
+ * Reads main channel data for sector at fragment-relative @address (given
+ * in sectors). Unlike mirage_fragment_read_main_data(), the buffer is
+ * allocated by the caller.
+ *
+ * The buffer must have a size equal to or larger than the return value of
+ * mirage_fragment_main_data_get_size().
+ *
+ * Returns: size of the read data in bytes, or -1 on failure
+ */
+gint mirage_fragment_read_main_data_fast (MirageFragment *self, gint address, guint8 *buffer, gint length, GError **error)
+{
+    g_return_val_if_fail (length >= self->priv->main_size, FALSE);
+
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data_impl(self, address, buffer, error);
+}
 
 /**
  * mirage_fragment_read_main_data:
@@ -403,14 +426,8 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
  */
 gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
 {
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data(self, address, buffer, length, error);
-}
-
-/* Default implementation of virtual method */
-static gboolean mirage_fragment_read_main_data_impl (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
-{
-    guint64 position;
-    gint read_len;
+    guint8 *data_buffer;
+    gint len;
 
     /* Clear both variables */
     *length = 0;
@@ -418,47 +435,62 @@ static gboolean mirage_fragment_read_main_data_impl (MirageFragment *self, gint 
         *buffer = NULL;
     }
 
+    data_buffer = g_malloc0(self->priv->main_size);
+
+    len = MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data_impl(self, address, data_buffer, error);
+
+    if (len >= 0) {
+        *buffer = data_buffer;
+        *length = len;
+    } else {
+        g_free(data_buffer);
+    }
+
+    return len >= 0;
+}
+
+/* Default implementation of virtual method */
+static gint mirage_fragment_read_main_data_impl (MirageFragment *self, gint address, guint8 *buffer, GError **error G_GNUC_UNUSED)
+{
+    guint64 position;
+    gint read_len;
+
+    /* Don't read anything if there's no buffer */
+    if (!buffer) {
+        return self->priv->main_size;
+    }
+
     /* We need a stream to read data from... but if it's missing, we
      * don't read anything and this is not considered an error */
     if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no main channel data input stream!\n", __debug__);
-        return TRUE;
+        return 0;
     }
 
     /* Determine position within file */
     position = mirage_fragment_main_data_get_position(self, address);
 
-    /* Length */
-    *length = self->priv->main_size;
-
     /* Data */
-    if (buffer) {
-        guint8 *data_buffer = g_malloc0(self->priv->main_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
+    /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
+    mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
+    read_len = mirage_stream_read(self->priv->main_stream, buffer, self->priv->main_size, NULL);
 
-        /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
-        mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
-        read_len = mirage_stream_read(self->priv->main_stream, data_buffer, self->priv->main_size, NULL);
+    /*if (read_len != self->priv->main_size) {
+        mirage_error(MIRAGE_E_READFAILED, error);
+        return -1;
+    }*/
 
-        /*if (read_len != self->priv->main_size) {
-            mirage_error(MIRAGE_E_READFAILED, error);
-            g_free(data_buffer);
-            return FALSE;
-        }*/
-
-        /* Binary audio files may need to be swapped from BE to LE */
-        if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
-            for (gint i = 0; i < read_len; i += 2) {
-                guint16 *ptr = (guint16 *)(void *)(data_buffer + i);
-                *ptr = GUINT16_SWAP_LE_BE(*ptr);
-            }
+    /* Binary audio files may need to be swapped from BE to LE */
+    if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
+        for (gint i = 0; i < read_len; i += 2) {
+            guint16 *ptr = (guint16 *)(void *)(buffer + i);
+            *ptr = GUINT16_SWAP_LE_BE(*ptr);
         }
-
-        *buffer = data_buffer;
     }
 
-    return TRUE;
+    return read_len;
 }
 
 
@@ -720,15 +752,8 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
  */
 gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
 {
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data(self, address, buffer, length, error);
-}
-
-/* Default implementation of virtual method */
-static gboolean mirage_fragment_read_subchannel_data_impl (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
-{
-    MirageStream *stream;
-    guint64 position;
-    gint read_len;
+    guint8 *data_buffer;
+    gint len;
 
     /* Clear both variables */
     *length = 0;
@@ -736,10 +761,59 @@ static gboolean mirage_fragment_read_subchannel_data_impl (MirageFragment *self,
         *buffer = NULL;
     }
 
+    data_buffer = g_malloc0(96);
+
+    len = MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data_impl(self, address, data_buffer, error);
+
+    if (len >= 0) {
+        *buffer = data_buffer;
+        *length = len;
+    } else {
+        g_free(data_buffer);
+    }
+
+    return len >= 0;
+}
+
+/**
+ * mirage_fragment_read_subchannel_data_fast:
+ * @self: a #MirageFragment
+ * @address: (in): address
+ * @buffer: (in) (optional) (array length=length): location of a buffer to read the data into, or %NULL
+ * @length: (in): length of @buffer
+ * @error: (out) (optional): location to store error, or %NULL
+ *
+ * Reads subchannel data for sector at fragment-relative @address (given
+ * in sectors). Unlike mirage_fragment_read_subchannel_data(), the buffer
+ * is allocated by the caller.
+ *
+ * The buffer must have a size equal to or larger than 96 bytes.
+ *
+ * Returns: size of the read data in bytes, or -1 on failure
+ */
+gint mirage_fragment_read_subchannel_data_fast (MirageFragment *self, gint address, guint8 *buffer, gint length, GError **error)
+{
+    g_return_val_if_fail (length >= 96, FALSE);
+
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data_impl(self, address, buffer, error);
+}
+
+/* Default implementation of virtual method */
+static gint mirage_fragment_read_subchannel_data_impl (MirageFragment *self, gint address, guint8 *buffer, GError **error G_GNUC_UNUSED)
+{
+    MirageStream *stream;
+    guint64 position;
+    gint read_len;
+
+    /* Don't read anything if there's no buffer */
+    if (!buffer) {
+        return self->priv->subchannel_size;
+    }
+
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->subchannel_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
-        return TRUE;
+        return 0;
     }
 
     /* We need a stream to read data from... but if it's missing, we
@@ -754,57 +828,50 @@ static gboolean mirage_fragment_read_subchannel_data_impl (MirageFragment *self,
 
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no input stream!\n", __debug__);
-        return TRUE;
+        return 0;
     }
 
 
     /* Determine position within file */
     position = mirage_fragment_subchannel_data_get_position(self, address);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
+    /* We read into temporary buffer, because we might need to perform some
+     * magic on the data */
+    mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
 
-    /* Length */
-    *length = 96; /* Always 96, because we do the processing here */
+    /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
+     * we transform it into that here... less fuss for upper level stuff this way */
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR) {
+        guint8 raw_buffer[96];
 
-    /* Data */
-    if (buffer) {
-        guint8 *data_buffer = g_malloc0(96);
-        guint8 *raw_buffer = g_malloc0(self->priv->subchannel_size);
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%" G_GINT64_MODIFIER "X\n", __debug__, position);
-        /* We read into temporary buffer, because we might need to perform some
-         * magic on the data */
-        mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
         read_len = mirage_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL);
 
-        if (read_len != self->priv->subchannel_size) {
-            /*mirage_error(MIRAGE_E_READFAILED, error);
-            g_free(raw_buffer);
-            g_free(data_buffer);
-            return FALSE;*/
+        /* 96-byte deinterleaved PW; grab each subchannel and interleave it
+         * into destination buffer */
+        for (gint i = 0; i < 8; i++) {
+            mirage_helper_subchannel_interleave(7 - i, raw_buffer + i*12, buffer);
         }
+    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
+        /* 96-byte interleaved PW; just copy it */
+        read_len = mirage_stream_read(stream, buffer, self->priv->subchannel_size, NULL);
+    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
+        guint8 raw_buffer[96];
 
-        /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
-         * we transform it into that here... less fuss for upper level stuff this way */
-        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR) {
-            /* 96-byte deinterleaved PW; grab each subchannel and interleave it
-             * into destination buffer */
-            for (gint i = 0; i < 8; i++) {
-                mirage_helper_subchannel_interleave(7 - i, raw_buffer + i*12, data_buffer);
-            }
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
-            /* 96-byte interleaved PW; just copy it */
-            memcpy(data_buffer, raw_buffer, 96);
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
-            /* 16-byte Q; interleave it and pretend everything else's 0 */
-            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, raw_buffer, data_buffer);
-        }
+        read_len = mirage_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL);
 
-        g_free(raw_buffer);
-
-        *buffer = data_buffer;
+        /* 16-byte Q; interleave it and pretend everything else's 0 */
+        mirage_helper_subchannel_interleave(SUBCHANNEL_Q, raw_buffer, buffer);
+    } else {
+        read_len = 0;
     }
 
-    return TRUE;
+    /*if (read_len != self->priv->subchannel_size) {
+        mirage_error(MIRAGE_E_READFAILED, error);
+        return -1;
+    }*/
+
+    return read_len;
 }
 
 
@@ -946,8 +1013,8 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
 
     gobject_class->dispose = mirage_fragment_dispose;
 
-    klass->read_main_data = mirage_fragment_read_main_data_impl;
-    klass->read_subchannel_data = mirage_fragment_read_subchannel_data_impl;
+    klass->read_main_data_impl = mirage_fragment_read_main_data_impl;
+    klass->read_subchannel_data_impl = mirage_fragment_read_subchannel_data_impl;
 
     /* Signals */
     /**

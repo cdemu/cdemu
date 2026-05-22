@@ -188,98 +188,79 @@ static gboolean mirage_fragment_chd_read_sector_data (MirageFragmentChd *self, g
 /**********************************************************************\
  *                          MirageFragment methods                    *
 \**********************************************************************/
-static gboolean mirage_fragment_chd_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error)
+static gint mirage_fragment_chd_read_main_data_impl (MirageFragment *_self, gint address, guint8 *buffer, GError **error)
 {
     MirageFragmentChd *self = MIRAGE_FRAGMENT_CHD(_self);
 
-    /* Clear both variables */
-    *length = 0;
-    if (buffer) {
-        *buffer = NULL;
+    /* No need to read anything if we don't have a buffer */
+    if (!buffer) {
+        return self->priv->main_size;
     }
 
     /* Ensure sector data is available in cache */
     if (!mirage_fragment_chd_read_sector_data(MIRAGE_FRAGMENT_CHD(_self), address, error)) {
-        return FALSE;
+        return -1;
     }
-
-    /* Length */
-    *length = self->priv->main_size;
 
     /* Data */
-    if (buffer) {
-        guint offset = 0;
-        if (self->priv->sectors_in_hunk > 1) {
-            guint64 chd_address = self->priv->start_sector + address; /* Fragment-relative address to CHD-global address */
-            guint sector_index = chd_address % self->priv->sectors_in_hunk; /* Sector index inside hunk */
-            offset = sector_index * self->priv->sector_size; /* Sector address inside hunk */
-        }
-
-        guint8 *data_buffer = g_malloc0(self->priv->main_size);
-        memcpy(data_buffer, self->priv->buffer + offset, self->priv->main_size);
-
-        /* Audio data may need to be swapped from BE to LE */
-        if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
-            for (gint i = 0; i < self->priv->main_size; i += 2) {
-                guint16 *ptr = (guint16 *)(void *)(data_buffer + i);
-                *ptr = GUINT16_SWAP_LE_BE(*ptr);
-            }
-        }
-
-        *buffer = data_buffer;
+    guint offset = 0;
+    if (self->priv->sectors_in_hunk > 1) {
+        guint64 chd_address = self->priv->start_sector + address; /* Fragment-relative address to CHD-global address */
+        guint sector_index = chd_address % self->priv->sectors_in_hunk; /* Sector index inside hunk */
+        offset = sector_index * self->priv->sector_size; /* Sector address inside hunk */
     }
 
-    return TRUE;
+    memcpy(buffer, self->priv->buffer + offset, self->priv->main_size);
+
+    /* Audio data may need to be swapped from BE to LE */
+    if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
+        for (gint i = 0; i < self->priv->main_size; i += 2) {
+            guint16 *ptr = (guint16 *)(void *)(buffer + i);
+            *ptr = GUINT16_SWAP_LE_BE(*ptr);
+        }
+    }
+
+    return self->priv->main_size;
 }
 
-static gboolean mirage_fragment_chd_read_subchannel_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error)
+static gint mirage_fragment_chd_read_subchannel_data_impl (MirageFragment *_self, gint address, guint8 *buffer, GError **error)
 {
     MirageFragmentChd *self = MIRAGE_FRAGMENT_CHD(_self);
-
-    /* Clear both variables */
-    *length = 0;
-    if (buffer) {
-        *buffer = NULL;
-    }
-
-    /* Ensure sector data is available in cache */
-    if (!mirage_fragment_chd_read_sector_data(MIRAGE_FRAGMENT_CHD(_self), address, error)) {
-        return FALSE;
-    }
 
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->subchannel_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
-        return TRUE;
+        return 0;
     }
 
-    /* Length */
-    *length = 96; /* Always 96, because we do the processing here */
+    /* No need to read anything if we don't have a buffer */
+    if (!buffer) {
+        return 96;
+    }
+
+    /* Ensure sector data is available in cache */
+    if (!mirage_fragment_chd_read_sector_data(MIRAGE_FRAGMENT_CHD(_self), address, error)) {
+        return -1;
+    }
 
     /* Data */
-    if (buffer) {
-        guint offset = 0;
-        if (self->priv->sectors_in_hunk > 1) {
-            guint64 chd_address = self->priv->start_sector + address; /* Fragment-relative address to CHD-global address */
-            guint sector_index = chd_address % self->priv->sectors_in_hunk; /* Sector index inside hunk */
-            offset = sector_index * self->priv->sector_size; /* Sector address inside hunk */
-        }
-        offset += self->priv->main_size;
+    guint offset = 0;
+    if (self->priv->sectors_in_hunk > 1) {
+        guint64 chd_address = self->priv->start_sector + address; /* Fragment-relative address to CHD-global address */
+        guint sector_index = chd_address % self->priv->sectors_in_hunk; /* Sector index inside hunk */
+        offset = sector_index * self->priv->sector_size; /* Sector address inside hunk */
+    }
+    offset += self->priv->main_size;
 
-        guint8 *data_buffer = g_malloc0(96);
-
-        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
-            /* 16-byte Q; interleave it and pretend everything else's 0 */
-            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, self->priv->buffer + offset, data_buffer);
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
-            /* 96-byte interleaved PW; just copy it */
-            memcpy(data_buffer, self->priv->buffer + offset, 96);
-        }
-
-        *buffer = data_buffer;
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
+        /* 16-byte Q; interleave it and pretend everything else's 0 */
+        mirage_helper_subchannel_interleave(SUBCHANNEL_Q, self->priv->buffer + offset, buffer);
+    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
+        /* 96-byte interleaved PW; just copy it */
+        memcpy(buffer, self->priv->buffer + offset, 96);
     }
 
-    return TRUE;
+    return 96;
 }
 
 
@@ -328,6 +309,6 @@ static void mirage_fragment_chd_class_init (MirageFragmentChdClass *klass)
     gobject_class->dispose = mirage_fragment_chd_dispose;
     gobject_class->finalize = mirage_fragment_chd_finalize;
 
-    fragment_class->read_main_data = mirage_fragment_chd_read_main_data;
-    fragment_class->read_subchannel_data = mirage_fragment_chd_read_subchannel_data;
+    fragment_class->read_main_data_impl = mirage_fragment_chd_read_main_data_impl;
+    fragment_class->read_subchannel_data_impl = mirage_fragment_chd_read_subchannel_data_impl;
 }
