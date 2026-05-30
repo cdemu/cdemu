@@ -465,6 +465,8 @@ static void mirage_parser_chd_update_session_type (MirageSession *session)
                 break;
             }
         }
+
+        g_object_unref(track);
     }
 
     /* This is how cdrdao's cue2toc determine's session type. */
