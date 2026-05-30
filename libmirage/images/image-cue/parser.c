@@ -184,6 +184,8 @@ static gboolean mirage_parser_cue_finish_last_session (MirageParserCue *self, GE
                 break;
             }
         }
+
+        g_object_unref(track);
     }
 
     /* this is how cdrdao's cue2toc determine's session type */
