@@ -650,6 +650,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
         }
 
         mirage_session_add_track_by_index(session, -1, track);
+        g_object_unref(track);
 
         /* Update offset for next track */
         /* NOTE: in CHD image, the CD tracks are padded to multiples of
