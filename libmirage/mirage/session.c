@@ -101,6 +101,7 @@ static MirageTrack *mirage_session_find_track_with_subchannel (MirageSession *se
 static gchar *mirage_session_scan_for_mcn (MirageSession *self)
 {
     MirageTrack *track = mirage_session_find_track_with_subchannel(self);
+    MirageSector *sector;
     gchar *mcn = NULL;
 
     if (!track) {
@@ -114,14 +115,14 @@ static gchar *mirage_session_scan_for_mcn (MirageSession *self)
     gint start_address = mirage_fragment_get_address(fragment);
     g_object_unref(fragment);
 
+    sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+
     for (gint address = start_address; address < start_address+100; address++) {
-        MirageSector *sector;
         const guint8 *buf;
         gint buflen;
 
         /* Get sector */
-        sector = mirage_track_get_sector(track, address, FALSE, NULL);
-        if (!sector) {
+        if (!mirage_track_read_sector(track, address, FALSE, sector, NULL)) {
             break;
         }
 
@@ -143,13 +144,12 @@ static gchar *mirage_session_scan_for_mcn (MirageSession *self)
             mcn = g_strndup(tmp_mcn, 13);
         }
 
-        g_object_unref(sector);
-
         if (mcn) {
             break;
         }
     }
 
+    g_object_unref(sector);
     g_object_unref(track);
 
     return mcn;
