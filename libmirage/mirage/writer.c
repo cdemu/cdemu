@@ -610,6 +610,8 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
         return FALSE;
     }
 
+    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+
     /* Iterate over sessions and tracks, and copy them */
     gint num_sessions = mirage_disc_get_number_of_sessions(original_disc);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: disc has %d sessions...\n", __debug__, num_sessions);
@@ -716,6 +718,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 }
 
                 if (!fragment) {
+                    g_object_unref(sector);
                     g_object_unref(new_track);
                     g_object_unref(original_track);
                     g_object_unref(new_session);
@@ -740,8 +743,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 gboolean succeeded = TRUE;
 
                 /* Get sector from original track using track-relative address... */
-                MirageSector *sector = mirage_track_get_sector(original_track, sector_address, FALSE, error);
-                if (sector) {
+                if (mirage_track_read_sector(original_track, sector_address, FALSE, sector, error)) {
                     if (progress_step_size) {
                         guint sector_count = mirage_sector_get_address(sector) - disc_layout_start;
 
@@ -753,8 +755,6 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
                     /* ... and put it into new track */
                     succeeded = mirage_track_put_sector(new_track, sector, error);
-
-                    g_object_unref(sector);
                 } else {
                     succeeded = FALSE;
                 }
@@ -763,6 +763,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 succeeded &= !g_cancellable_set_error_if_cancelled(cancellable, error);
 
                 if (!succeeded) {
+                    g_object_unref(sector);
                     g_object_unref(new_track);
                     g_object_unref(original_track);
                     g_object_unref(new_session);
@@ -779,6 +780,8 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
         g_object_unref(new_session);
         g_object_unref(original_session);
     }
+
+    g_object_unref(sector);
 
     /* Finalize image */
     if (!mirage_writer_finalize_image(self, new_disc, error)) {
