@@ -149,6 +149,7 @@ const gchar *mirage_track_get_isrc (MirageTrack *self);
 
 /* Get/put sector */
 MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error);
+gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, MirageSector *sector, GError **error);
 gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GError **error);
 
 /* Layout */
