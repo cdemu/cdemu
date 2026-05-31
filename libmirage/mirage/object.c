@@ -83,6 +83,10 @@ static void mirage_object_parent_context_changed_handler (MirageObject *self, Mi
  */
 void mirage_object_set_parent (MirageObject *self, gpointer parent)
 {
+    if (self->priv->parent == parent) {
+        return;
+    }
+
     if (self->priv->parent) {
         /* Remove "debug-context-change" signal handler */
         mirage_signal_handlers_disconnect_by_func(self->priv->parent, G_CALLBACK(mirage_object_parent_context_changed_handler), self);
