@@ -1374,6 +1374,39 @@ MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **e
     return sector;
 }
 
+
+/**
+ * mirage_disc_read_sector:
+ * @self: a #MirageDisc
+ * @address: (in): sector address
+ * @sector: (in): the #MirageSector to read data into
+ * @error: (out) (optional): location to store error, or %NULL
+ *
+ * Reads sector data for sector at @address into caller-supplied instance of #MirageSector.
+ *
+ * This function attempts to retrieve appropriate track using
+ * mirage_disc_get_track_by_address(),
+ * then reads sector data using mirage_track_read_sector().
+ *
+ * Unlike mirage_disc_get_sector(), this function avoids allocating a new buffer and
+ * sector, and is thus faster when reading multiple sectors in a row.
+ *
+ * Returns: %TRUE on success, %FALSE otherwise.
+ */
+gboolean mirage_disc_read_sector (MirageDisc *self, gint address, MirageSector *sector, GError **error)
+{
+    MirageTrack *track;
+
+    /* Fetch the right track */
+    track = mirage_disc_get_track_by_address(self, address, error);
+    if (!track) {
+        return FALSE;
+    }
+
+    return mirage_track_read_sector(track, address, TRUE, sector, error);
+}
+
+
 /**
  * mirage_disc_put_sector:
  * @self: a #MirageDisc
