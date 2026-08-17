@@ -33,6 +33,10 @@ struct IsoFileInfo
     MirageStream *stream;
 };
 
+/* High Sierra Format (HSF) patterns */
+static const guint8 pattern_hsf_lbn[8] = {0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10}; /* Value 16 encoded as 32-bit integer in both endian formats */
+static const guint8 pattern_hsf_cdrom[5] = {'C', 'D', 'R', 'O', 'M'};
+
 /* Nintendo ISO image patterns */
 static const guint8 pattern_nintendo_gamecube_iso[4] = {0xC2, 0x33, 0x9F, 0x3D};
 static const guint8 pattern_nintendo_wii_iso[4] = {0x5D, 0x1C, 0x9E, 0xA3};
@@ -146,16 +150,17 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
                 continue;
             }
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size check passed; looking for CD001/BEA01 pattern at sector 16...", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size check passed; looking for standard patterns at sector 16...", __debug__);
 
-            /* Check for CD001 or BEA01 at sector 16 */
-            guint8 buf[8];
+            /* Read first 16 bytes of data for sector 16 */
+            guint8 buf[16];
             goffset offset = 16*full_sector_size + valid_sector_sizes[j].data_offset;
 
-            if (!mirage_parser_iso_read_data_from_offset(self, stream, offset, buf, 8, error)) {
+            if (!mirage_parser_iso_read_data_from_offset(self, stream, offset, buf, 16, error)) {
                 return FALSE;
             }
 
+            /* Check for CD001/BEA01 pattern of ISO9660/UDF Volume Descriptor */
             if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
                 || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
                 file_info->main_data_size = valid_sector_sizes[j].sector_size;
@@ -164,9 +169,34 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is an ISO9660/UDF image, with %d-byte sector data and %d-byte subchannel data", __debug__, file_info->main_data_size, file_info->subchannel_data_size);
                 return TRUE;
-            } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: CD001/BEA01 pattern not found!", __debug__);
             }
+
+            /* Check for High Sierra Volume Descriptor:
+             * - first eight bytes are Volume Descriptor Logical Block Number (LBN),
+             *   i.e., the 32-bit sector address (= 16), encoded in both endian formats
+             *   (Section 10.3.3 in High Sierra spec);
+             * - ninth byte is Volume Descriptor Type;
+             * - tenth to fourteenth byte: Volume Structure Standard Identifier,
+             *   which must be CDROM;
+             * - fifteenth byte: Volume Structure Standard Version, which is
+             *   most likely always 1.
+             * For details, see resources at http://fileformats.archiveteam.org/wiki/High_Sierra
+             *
+             * Although we could probably assume the complete sequence of the first fifteen
+             * bytes (i.e., Standard File Structure Volume Descriptor with type byte set to 1,
+             * and standard version being 1), we check only the LBN part and the standard
+             * identifier part. */
+            if (!memcmp(buf, pattern_hsf_lbn, sizeof(pattern_hsf_lbn))
+                && !memcmp(buf + 9, pattern_hsf_cdrom, sizeof(pattern_hsf_cdrom))) {
+                file_info->main_data_size = valid_sector_sizes[j].sector_size;
+                file_info->subchannel_data_size = valid_subchannel_sizes[i];
+                file_info->main_data_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a High Sierra image, with %d-byte sector data and %d-byte subchannel data", __debug__, file_info->main_data_size, file_info->subchannel_data_size);
+                return TRUE;
+            }
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: no standard patterns found!", __debug__);
         }
     }
 
