@@ -67,6 +67,7 @@ function(gobject_introspection)
         COMPILER_ARGS
         HEADERS
         IDENTIFIER_PREFIXES
+        EXPORT_PACKAGES
         INCLUDES
         PACKAGES
         SCANNER_ARGS
@@ -154,6 +155,10 @@ function(gobject_introspection)
         _gir_list_prefix(GIR_REAL_IDENTIFIER_PREFIXES GIR_IDENTIFIER_PREFIXES "--identifier-prefix=")
     endif(GIR_IDENTIFIER_PREFIXES)
 
+    if(GIR_EXPORT_PACKAGES)
+        _gir_list_prefix(GIR_REAL_EXPORT_PACKAGES GIR_EXPORT_PACKAGES "--pkg-export=")
+    endif(GIR_EXPORT_PACKAGES)
+
     # if the user specified SYMBOL_PREFIXES we need to prefix each with --symbol-prefix=
     if(GIR_SYMBOL_PREFIXES)
         _gir_list_prefix(GIR_REAL_SYMBOL_PREFIXES GIR_SYMBOL_PREFIXES "--symbol-prefix=")
@@ -195,6 +200,7 @@ function(gobject_introspection)
             ${GIR_PROGRAM} ${GIR_PROGRAM_ARGS}
             ${GIR_QUIET} ${GIR_VERBOSE}
             ${GIR_REAL_IDENTIFIER_PREFIXES}
+            ${GIR_REAL_EXPORT_PACKAGES}
             ${GIR_REAL_SYMBOL_PREFIXES}
             ${GIR_REAL_INCLUDES}
             ${GIR_REAL_PACKAGES}
