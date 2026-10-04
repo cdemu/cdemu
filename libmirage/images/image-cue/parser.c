@@ -385,7 +385,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 return FALSE;
             }
 
-            if (!g_strcmp0(self->priv->cur_data_type, "BINARY")) {
+            if (!g_strcmp0(self->priv->cur_data_type, "BINARY") || !g_strcmp0(self->priv->cur_data_type, "MOTOROLA")) {
                 /* Binary data */
                 gint main_size = 0;
                 gint subchannel_size = 0;
@@ -405,7 +405,12 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 mirage_fragment_main_data_set_stream(fragment, data_stream);
                 mirage_fragment_main_data_set_size(fragment, main_size);
                 mirage_fragment_main_data_set_offset(fragment, self->priv->binary_offset);
-                mirage_fragment_main_data_set_format(fragment, self->priv->cur_data_format);
+
+                if (!g_strcmp0(self->priv->cur_data_type, "MOTOROLA") && self->priv->cur_data_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO) {
+                    mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP); // Raw audio in big-endian format; needs to be swapped
+                } else {
+                    mirage_fragment_main_data_set_format(fragment, self->priv->cur_data_format);
+                }
 
                 if (subchannel_size) {
                     mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
