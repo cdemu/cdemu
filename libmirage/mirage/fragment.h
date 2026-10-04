@@ -27,8 +27,8 @@ G_BEGIN_DECLS
 /**
  * MirageMainDataFormat:
  * @MIRAGE_MAIN_DATA_FORMAT_DATA: binary data
- * @MIRAGE_MAIN_DATA_FORMAT_AUDIO: audio data
- * @MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP: audio data that needs to be swapped
+ * @MIRAGE_MAIN_DATA_FORMAT_AUDIO: audio data in little-endian byte order (as per CD-DA Data Format spec).
+ * @MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP: audio data in big-endian byte order; internally swapped to little-endian.
  *
  * Track file data formats.
  */
