@@ -50,9 +50,27 @@ def buffer_to_hex(buffer):
     ])
 
 
-def compare_attribute_value(value_a, value_b, name):
+def _fuzzy_compare_sector_type(value_a, value_b):
+    def _check_mixed_mode2(a, b):
+        return (
+            a == Mirage.SectorType.MODE2_MIXED and
+            b in {Mirage.SectorType.MODE2_FORM1, Mirage.SectorType.MODE2_FORM2}
+        )
+
+    return _check_mixed_mode2(value_a, value_b) or _check_mixed_mode2(value_b, value_a)
+
+
+def compare_attribute(object_a, object_b, get_method, name, fuzzy_compare_fn=None):
+    value_a = get_method(object_a)
+    value_b = get_method(object_b)
+
     # Compare
+    fuzzy = False
     ok = value_a == value_b
+
+    if not ok and fuzzy_compare_fn is not None:
+        ok = fuzzy_compare_fn(value_a, value_b)
+        fuzzy = ok
 
     # Construct output string
     output = []
@@ -65,10 +83,19 @@ def compare_attribute_value(value_a, value_b, name):
 
     output += [f"{value_a}"]
     if ok:
-        output += [
-            colorama.Fore.GREEN,
-            " [OK]",
-        ]
+        if fuzzy:
+            # Fuzzy match; display both with added [OK]
+            output += [
+                f" ~= {value_b}",
+                colorama.Fore.GREEN,
+                " [OK]",
+            ]
+        else:
+            # Strict match
+            output += [
+                colorama.Fore.GREEN,
+                " [OK]",
+            ]
     else:
         output += [
             colorama.Fore.RED,
@@ -79,14 +106,6 @@ def compare_attribute_value(value_a, value_b, name):
     print("".join(output))
 
     return ok
-
-
-def compare_attribute(object_a, object_b, get_method, name):
-    return compare_attribute_value(
-        get_method(object_a),
-        get_method(object_b),
-        name
-    )
 
 
 def compare_sectors(sector_a, sector_b, sector_address, check_main_data_only):
@@ -109,6 +128,8 @@ def compare_sectors(sector_a, sector_b, sector_address, check_main_data_only):
         )
         return False
 
+    # NOTE: sector type should be fully resolved here, so we directly compare
+    # the two values.
     sector_type_a = sector_a.get_sector_type()
     sector_type_b = sector_b.get_sector_type()
 
@@ -277,7 +298,8 @@ def compare_discs(disc_a, disc_b, check_sector_data, check_pregaps, check_main_d
         ok &= compare_attribute(track_a, track_b, Mirage.Track.layout_get_start_sector, "  Start sector")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_track_start, "  Track start")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.layout_get_length, "  Length")
-        ok &= compare_attribute(track_a, track_b, Mirage.Track.get_sector_type, "  Sector type")
+        ok &= compare_attribute(track_a, track_b, Mirage.Track.get_sector_type, "  Sector type",
+                                fuzzy_compare_fn=_fuzzy_compare_sector_type)  # Additional fuzzy matching!
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_flags, "  Flags")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_adr, "  Adr")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_ctl, "  Ctl")
