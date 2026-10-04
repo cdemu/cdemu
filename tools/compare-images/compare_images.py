@@ -60,7 +60,58 @@ def _fuzzy_compare_sector_type(value_a, value_b):
     return _check_mixed_mode2(value_a, value_b) or _check_mixed_mode2(value_b, value_a)
 
 
-def compare_attribute(object_a, object_b, get_method, name, fuzzy_compare_fn=None):
+def _value_name_medium_type(value):
+    _names = {
+        Mirage.MediumType.CD: 'CD',
+        Mirage.MediumType.DVD: 'DVD',
+        Mirage.MediumType.BD: 'BD',
+        Mirage.MediumType.HD: 'HD',
+        Mirage.MediumType.HDD: 'HDD',
+    }
+    return _names.get(value, None)
+
+
+def _value_name_session_type(value):
+    _names = {
+        Mirage.SessionType.CDDA: 'CDDA',
+        Mirage.SessionType.CDROM: 'CDROM',
+        Mirage.SessionType.CDI: 'CDI',
+        Mirage.SessionType.CDROM_XA: 'CDROM_XA',
+    }
+    return _names.get(value, None)
+
+
+def _value_name_sector_type(value):
+    _names = {
+        Mirage.SectorType.MODE0: 'MODE0',
+        Mirage.SectorType.AUDIO: 'AUDIO',
+        Mirage.SectorType.MODE1: 'MODE1',
+        Mirage.SectorType.MODE2: 'MODE2',
+        Mirage.SectorType.MODE2_FORM1: 'MODE2_FORM1',
+        Mirage.SectorType.MODE2_FORM2: 'MODE2_FORM2',
+        Mirage.SectorType.MODE2_MIXED: 'MODE2_MIXED',
+        Mirage.SectorType.RAW: 'RAW',
+        Mirage.SectorType.RAW_SCRAMBLED: 'RAW_SCRAMBLED',
+    }
+    return _names.get(value, None)
+
+
+def _value_name_track_flags(value):
+    _flags = {
+        Mirage.TrackFlag.FOURCHANNEL: 'FOURCHANNEL',
+        Mirage.TrackFlag.COPYPERMITTED: 'COPYPERMITTED',
+        Mirage.TrackFlag.PREEMPHASIS: 'PREEMPHASIS',
+    }
+    applicable_names = [
+        flag_name for flag_value, flag_name in _flags.items()
+        if value & flag_value != 0
+    ]
+    if not applicable_names:
+        return None
+    return "|".join(applicable_names)
+
+
+def compare_attribute(object_a, object_b, get_method, name, fuzzy_compare_fn=None, value_name_fn=None):
     value_a = get_method(object_a)
     value_b = get_method(object_b)
 
@@ -72,6 +123,10 @@ def compare_attribute(object_a, object_b, get_method, name, fuzzy_compare_fn=Non
         ok = fuzzy_compare_fn(value_a, value_b)
         fuzzy = ok
 
+    # Try to get descriptive names for enum-based values
+    value_name_a = value_name_fn(value_a) if value_name_fn is not None else None
+    value_name_b = value_name_fn(value_b) if value_name_fn is not None else None
+
     # Construct output string
     output = []
 
@@ -79,27 +134,31 @@ def compare_attribute(object_a, object_b, get_method, name, fuzzy_compare_fn=Non
         colorama.Fore.BLUE,
         f"{name}: ",
         colorama.Style.RESET_ALL,
+        f"{value_a}",
+        "" if value_name_a is None else f" ({value_name_a})",
     ]
 
-    output += [f"{value_a}"]
     if ok:
         if fuzzy:
-            # Fuzzy match; display both with added [OK]
+            # Fuzzy match; display the second value with added [OK]
             output += [
                 f" ~= {value_b}",
+                "" if value_name_b is None else f" ({value_name_b})",
                 colorama.Fore.GREEN,
                 " [OK]",
             ]
         else:
-            # Strict match
+            # Strict match; just display status
             output += [
                 colorama.Fore.GREEN,
                 " [OK]",
             ]
     else:
+        # Mismatch; display the second value in red
         output += [
             colorama.Fore.RED,
             f" != {value_b}",
+            "" if value_name_b is None else f" ({value_name_b})",
         ]
     output += [colorama.Style.RESET_ALL]
 
@@ -256,7 +315,8 @@ def compare_discs(disc_a, disc_b, check_sector_data, check_pregaps, check_main_d
 
     print(colorama.Fore.BLUE + "Comparing disc layout..." + colorama.Style.RESET_ALL)
 
-    ok &= compare_attribute(disc_a, disc_b, Mirage.Disc.get_medium_type, "  Medium type")
+    ok &= compare_attribute(disc_a, disc_b, Mirage.Disc.get_medium_type, "  Medium type",
+                            value_name_fn=_value_name_medium_type)
     ok &= compare_attribute(disc_a, disc_b, Mirage.Disc.layout_get_first_session, "  First session number")
     ok &= compare_attribute(disc_a, disc_b, Mirage.Disc.get_number_of_sessions, "  Number of sessions")
     ok &= compare_attribute(disc_a, disc_b, Mirage.Disc.get_number_of_tracks, "  Number of tracks")
@@ -274,7 +334,8 @@ def compare_discs(disc_a, disc_b, check_sector_data, check_pregaps, check_main_d
         session_b = disc_b.get_session_by_index(idx)
 
         ok &= compare_attribute(session_a, session_b, Mirage.Session.layout_get_session_number, "  Session number")
-        ok &= compare_attribute(session_a, session_b, Mirage.Session.get_session_type, "  Session type")
+        ok &= compare_attribute(session_a, session_b, Mirage.Session.get_session_type, "  Session type",
+                                value_name_fn=_value_name_session_type)
         ok &= compare_attribute(session_a, session_b, Mirage.Session.layout_get_first_track, "  First track number")
         ok &= compare_attribute(session_a, session_b, Mirage.Session.layout_get_start_sector, "  Start sector")
         ok &= compare_attribute(session_a, session_b, Mirage.Session.layout_get_length, "  Length")
@@ -299,8 +360,10 @@ def compare_discs(disc_a, disc_b, check_sector_data, check_pregaps, check_main_d
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_track_start, "  Track start")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.layout_get_length, "  Length")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_sector_type, "  Sector type",
-                                fuzzy_compare_fn=_fuzzy_compare_sector_type)  # Additional fuzzy matching!
-        ok &= compare_attribute(track_a, track_b, Mirage.Track.get_flags, "  Flags")
+                                fuzzy_compare_fn=_fuzzy_compare_sector_type,  # Additional fuzzy matching!
+                                value_name_fn=_value_name_sector_type)
+        ok &= compare_attribute(track_a, track_b, Mirage.Track.get_flags, "  Flags",
+                                value_name_fn=_value_name_track_flags)
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_adr, "  Adr")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_ctl, "  Ctl")
         ok &= compare_attribute(track_a, track_b, Mirage.Track.get_isrc, "  ISRC")
