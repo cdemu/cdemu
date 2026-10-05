@@ -411,6 +411,9 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
     guint8 *cur_ptr;
     gint medium_type;
 
+    gint raw_session_type = 0;
+    gboolean is_cdda = TRUE;
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks", __debug__);
 
     /* Fetch medium type which we'll need later */
@@ -500,6 +503,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X", __debug__, converted_mode);
             mirage_track_set_sector_type(track, converted_mode);
 
+            is_cdda &= (converted_mode == MIRAGE_SECTOR_AUDIO);
+
             /* Flags: decoded from Ctl */
             mirage_track_set_ctl(track, block->adr_ctl & 0x0F);
 
@@ -572,7 +577,6 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     }
                 }
 
-
                 /* Track file */
                 gchar *mdf_filename = mirage_parser_mds_get_track_filename(self, footer_block, error);
                 if (!mdf_filename) {
@@ -633,9 +637,49 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
 
             g_object_unref(track);
         } else {
+            /* In entry with Point 0xA0, PSec field encodes the session type;
+             * store the value so we can set session type later on. */
+            if (block->point == 0xA0) {
+                raw_session_type = block->psec;
+            }
+
             /* Non-track block; skip */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track entry 0x%X", __debug__, block->point);
         }
+    }
+
+    /* Set session type (applicable only to CD images), by converting the
+     * value extracted from PSec field of TOC entry with Point 0xA0 */
+    if (medium_type == MIRAGE_MEDIUM_CD) {
+        gint session_type;
+        switch (raw_session_type) {
+            case 0x00: {
+                if (is_cdda) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-DA", __debug__);
+                    session_type = MIRAGE_SESSION_CDDA;
+                } else {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-ROM", __debug__);
+                    session_type = MIRAGE_SESSION_CDROM;
+                }
+                break;
+            }
+            case 0x10: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-I", __debug__);
+                session_type = MIRAGE_SESSION_CDI;
+                break;
+            }
+            case 0x20: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-ROM XA", __debug__);
+                session_type = MIRAGE_SESSION_CDROM_XA;
+                break;
+            }
+            default: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled session type code: %d (0x%X)", __debug__, raw_session_type, raw_session_type);
+                session_type = MIRAGE_SESSION_CDROM;
+                break;
+            }
+        }
+        mirage_session_set_session_type(session, session_type);
     }
 
     g_object_unref(session);
