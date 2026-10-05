@@ -38,7 +38,7 @@ typedef struct
     guint32 __dummy1__;
     gchar mcn[13];
     guint8 __dummy2__;
-    guint8 _session_type; /* ? */
+    guint8 session_type; /* session/disc type: 0x00 (CD-DA/CD-ROM), 0x10 (CD-I), 0x20 (CD-ROM XA) */
     guint8 _num_sessions; /* ? */
     guint8 first_track;
     guint8 last_track;

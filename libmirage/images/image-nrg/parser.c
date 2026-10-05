@@ -557,6 +557,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
     }
 
     /* Use DAO blocks to build tracks */
+    gboolean is_cdda = TRUE; /* To distinguish between CD-DA and CD-ROM session later on */
     for (gint i = 0; i < self->priv->num_dao_blocks; i++) {
         NRG_DAO_Block *dao_block = self->priv->dao_blocks + i;
 
@@ -574,6 +575,8 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
         /* Decode mode */
         mirage_parser_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize);
         mirage_track_set_sector_type(track, mode);
+
+        is_cdda &= (mode == MIRAGE_SECTOR_AUDIO);
 
         /* Shouldn't happen, but just in case I misinterpreted something */
         if (main_sectsize + sub_sectsize != dao_block->sector_size) {
@@ -742,6 +745,45 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
         }
     }
 
+    /* Set session type based on the value stored in DAO header; this
+     * value seems to correspond to PSec field of entry with Point 0xA0
+     * returned by the READ TOC/PMA/ATIP command. */
+    gint session_type;
+    switch (self->priv->dao_header->session_type) {
+        case 0x00: {
+            if (is_cdda) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-DA", __debug__);
+                session_type = MIRAGE_SESSION_CDDA;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-ROM", __debug__);
+                session_type = MIRAGE_SESSION_CDROM;
+            }
+            break;
+        }
+        case 0x10: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-I", __debug__);
+            session_type = MIRAGE_SESSION_CDI;
+            break;
+        }
+        case 0x20: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-ROM XA", __debug__);
+            session_type = MIRAGE_SESSION_CDROM_XA;
+            break;
+        }
+        case 0x40: {
+            /* 0x40 seems to be used with DVD-ROM images; map to CD-ROM
+             * and avoid emitting a warning in the default-case codepath. */
+            session_type = MIRAGE_SESSION_CDROM;
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled session type code: %d (0x%X)", __debug__, self->priv->dao_header->session_type, self->priv->dao_header->session_type);
+            session_type = MIRAGE_SESSION_CDROM;
+            break;
+        }
+    }
+    mirage_session_set_session_type(session, session_type);
+
     g_object_unref(session);
 
 end:
@@ -857,6 +899,10 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
 
         g_object_unref(track);
     }
+
+    /* Infer and update session type from its tracks */
+    gint session_type = mirage_parser_guess_session_type(MIRAGE_PARSER(self), session);
+    mirage_session_set_session_type(session, session_type);
 
     g_object_unref(session);
 
