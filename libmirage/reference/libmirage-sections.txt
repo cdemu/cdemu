@@ -335,6 +335,7 @@ mirage_parser_create_text_stream
 mirage_parser_generate_info
 mirage_parser_get_info
 mirage_parser_guess_medium_type
+mirage_parser_guess_session_type
 mirage_parser_info_copy
 mirage_parser_info_free
 mirage_parser_load_image

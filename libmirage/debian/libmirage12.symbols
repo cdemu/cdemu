@@ -191,6 +191,7 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_parser_get_info@Base 1.2.0
  mirage_parser_get_type@Base 1.2.0
  mirage_parser_guess_medium_type@Base 1.2.0
+ mirage_parser_guess_session_type@Base 3.3.4
  mirage_parser_info_copy@Base 2.0.0
  mirage_parser_info_free@Base 2.0.0
  mirage_parser_load_image@Base 1.2.0

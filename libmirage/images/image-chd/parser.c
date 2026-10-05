@@ -470,49 +470,6 @@ static gboolean mirage_parser_chd_parse_cd_track_metadata (const guint32 metadat
     return TRUE;
 }
 
-static void mirage_parser_chd_update_session_type (MirageSession *session)
-{
-    gboolean has_audio = FALSE;
-    gboolean has_mode1 = FALSE;
-    gboolean has_mode2 = FALSE;
-
-    gint num_tracks = mirage_session_get_number_of_tracks(session);
-
-    for (gint i = 0; i < num_tracks; i++) {
-        MirageTrack *track = mirage_session_get_track_by_index(session, i, NULL);
-        gint sector_type = mirage_track_get_sector_type(track);
-
-        switch (sector_type) {
-            case MIRAGE_SECTOR_AUDIO: {
-                has_audio = TRUE;
-                break;
-            }
-            case MIRAGE_SECTOR_MODE1: {
-                has_mode1 = TRUE;
-                break;
-            }
-            case MIRAGE_SECTOR_MODE2:
-            case MIRAGE_SECTOR_MODE2_FORM1:
-            case MIRAGE_SECTOR_MODE2_FORM2:
-            case MIRAGE_SECTOR_MODE2_MIXED: {
-                has_mode2 = TRUE;
-                break;
-            }
-        }
-
-        g_object_unref(track);
-    }
-
-    /* This is how cdrdao's cue2toc determine's session type. */
-    if (has_audio && !has_mode1 && !has_mode2) {
-        mirage_session_set_session_type(session, MIRAGE_SESSION_CDDA);
-    } else if ((has_audio && has_mode1 && !has_mode2) || (!has_audio && has_mode1 && !has_mode2)) {
-        mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
-    } else if ((has_audio && !has_mode1 && has_mode2) || (!has_audio && !has_mode1 && has_mode2)) {
-        mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM_XA);
-    }
-}
-
 static MirageTrack *mirage_parser_chd_create_track (
     MirageParserChd *self,
     const chd_header *header,
@@ -701,7 +658,8 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
     }
 
     /* Infer and update session type from its tracks */
-    mirage_parser_chd_update_session_type(session);
+    gint session_type = mirage_parser_guess_session_type(MIRAGE_PARSER(self), session);
+    mirage_session_set_session_type(session, session_type);
 
     g_object_unref(session);
 

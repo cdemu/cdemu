@@ -149,10 +149,6 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GErr
 
 static gboolean mirage_parser_cue_finish_last_session (MirageParserCue *self, GError **error)
 {
-    gboolean has_audio = FALSE;
-    gboolean has_mode1 = FALSE;
-    gboolean has_mode2 = FALSE;
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last session", __debug__);
 
     /* Current session needs to be set at this point */
@@ -162,40 +158,10 @@ static gboolean mirage_parser_cue_finish_last_session (MirageParserCue *self, GE
         return FALSE;
     }
 
-    gint num_tracks = mirage_session_get_number_of_tracks(self->priv->cur_session);
-    for (gint i = 0; i < num_tracks; i++) {
-        MirageTrack *track = mirage_session_get_track_by_index(self->priv->cur_session, i, NULL);
-        gint sector_type = mirage_track_get_sector_type(track);
+    /* Determine session type based on its tracks */
+    gint session_type = mirage_parser_guess_session_type(MIRAGE_PARSER(self), self->priv->cur_session);
+    mirage_session_set_session_type(self->priv->cur_session, session_type);
 
-        switch (sector_type) {
-            case MIRAGE_SECTOR_AUDIO: {
-                has_audio = TRUE;
-                break;
-            }
-            case MIRAGE_SECTOR_MODE1: {
-                has_mode1 = TRUE;
-                break;
-            }
-            case MIRAGE_SECTOR_MODE2:
-            case MIRAGE_SECTOR_MODE2_FORM1:
-            case MIRAGE_SECTOR_MODE2_FORM2:
-            case MIRAGE_SECTOR_MODE2_MIXED: {
-                has_mode2 = TRUE;
-                break;
-            }
-        }
-
-        g_object_unref(track);
-    }
-
-    /* this is how cdrdao's cue2toc determine's session type */
-    if (has_audio && !has_mode1 && !has_mode2) {
-        mirage_session_set_session_type(self->priv->cur_session, MIRAGE_SESSION_CDDA);
-    } else if ((has_audio && has_mode1 && !has_mode2) || (!has_audio && has_mode1 && !has_mode2)) {
-        mirage_session_set_session_type(self->priv->cur_session, MIRAGE_SESSION_CDROM);
-    } else if ((has_audio && !has_mode1 && has_mode2) || (!has_audio && !has_mode1 && has_mode2)) {
-        mirage_session_set_session_type(self->priv->cur_session, MIRAGE_SESSION_CDROM_XA);
-    }
     return TRUE;
 }
 

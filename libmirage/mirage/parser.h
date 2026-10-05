@@ -102,6 +102,8 @@ MirageDisc *mirage_parser_load_image (MirageParser *self, MirageStream **streams
 gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc);
 void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc);
 
+gint mirage_parser_guess_session_type (MirageParser *self, MirageSession *session);
+
 GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageStream *stream, GError **error);
 
 

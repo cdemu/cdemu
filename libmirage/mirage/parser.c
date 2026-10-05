@@ -282,6 +282,75 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 
 
 /**
+ * mirage_parser_guess_session_type:
+ * @self: a #MirageParser
+ * @session: (in): session object
+ *
+ * Attempts to guess session type based on the type of tracks present in
+ * by the session.
+ *
+ * Note that this function does not set the session type to session object;
+ * you still need to do it via mirage_session_set_session_type(). It is
+ * meant to be used in simple parsers whose image files don't provide
+ * session type information.
+ *
+ * Returns: a value from #MirageSessionType, according to the guessed session type.
+ */
+gint mirage_parser_guess_session_type (MirageParser *self, MirageSession *session)
+{
+    gboolean has_audio = FALSE;
+    gboolean has_mode1 = FALSE;
+    gboolean has_mode2 = FALSE;
+
+    gint num_tracks = mirage_session_get_number_of_tracks(session);
+    if (!num_tracks) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no tracks found - assuming CD-ROM session", __debug__);
+        return MIRAGE_SESSION_CDROM;
+    }
+
+    for (gint i = 0; i < num_tracks; i++) {
+        MirageTrack *track = mirage_session_get_track_by_index(session, i, NULL);
+        gint sector_type = mirage_track_get_sector_type(track);
+
+        switch (sector_type) {
+            case MIRAGE_SECTOR_AUDIO: {
+                has_audio = TRUE;
+                break;
+            }
+            case MIRAGE_SECTOR_MODE1: {
+                has_mode1 = TRUE;
+                break;
+            }
+            case MIRAGE_SECTOR_MODE2:
+            case MIRAGE_SECTOR_MODE2_FORM1:
+            case MIRAGE_SECTOR_MODE2_FORM2:
+            case MIRAGE_SECTOR_MODE2_MIXED: {
+                has_mode2 = TRUE;
+                break;
+            }
+        }
+
+        g_object_unref(track);
+    }
+
+    /* This is how cdrdao's cue2toc determines session type. */
+    if (has_audio && !has_mode1 && !has_mode2) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-DA", __debug__);
+        return MIRAGE_SESSION_CDDA;
+    } else if ((has_audio && has_mode1 && !has_mode2) || (!has_audio && has_mode1 && !has_mode2)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-ROM", __debug__);
+        return MIRAGE_SESSION_CDROM;
+    } else if ((has_audio && !has_mode1 && has_mode2) || (!has_audio && !has_mode1 && has_mode2)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: CD-ROM XA", __debug__);
+        return MIRAGE_SESSION_CDROM_XA;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: could not determine session type - assuming CD-ROM session", __debug__);
+    return MIRAGE_SESSION_CDROM;
+}
+
+
+/**
  * mirage_parser_create_text_stream:
  * @self: a #MirageParser
  * @stream: (in) (transfer full): a #MirageStream
