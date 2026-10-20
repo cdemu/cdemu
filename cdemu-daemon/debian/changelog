@@ -8,9 +8,16 @@ cdemu-daemon (3.3.1-1) unstable; urgency=medium
 
 cdemu-daemon (3.3.0-1) unstable; urgency=medium
 
-  * New upstream version.
+  * New upstream version (closes: #1124511).
+  * debian/appstream/net.sf.cdemu.daemon.metainfo.xml:
+    - Add 3.2.7 and 3.3.0 releases.
+  * debian/control:
+    - Bump cmake minimum required version to 3.16.
+    - Bump Standards-Version to 4.7.4.
+  * debian/patches/00_hardening-flags.patch:
+    - Refresh patch for new upstream release.
 
- -- Matteo Bini <matteobin@tiepi.it>  Mon, 09 Feb 2026 17:00:00 +0100
+ -- Matteo Bini <matteobin@tiepi.it>  Wed, 29 Apr 2026 21:26:37 +0200
 
 cdemu-daemon (3.2.7-2) unstable; urgency=medium
 

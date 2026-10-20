@@ -3,10 +3,10 @@ Description: Add environment variables CPPFLAGS and CFLAGS to compiler
  options and LDFLAGS to linker options,
  to fix hardening Lintian warning (bindnow).
 Forwarded: not-needed
-Last-Update: 2024-10-12
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -55,9 +55,12 @@ set(cdemu-daemon_SOURCES
+Last-Update: 2026-04-29
+--- a/CMakeLists.txt	2026-02-14 16:57:38.000000000 +0100
++++ b/CMakeLists.txt	2026-04-29 21:20:24.659445562 +0200
+@@ -104,9 +104,12 @@ endif()
  
  add_executable(cdemu-daemon ${cdemu-daemon_SOURCES})
  
@@ -17,5 +17,5 @@ Last-Update: 2024-10-12
  target_link_libraries(cdemu-daemon PRIVATE PkgConfig::AO)
 +target_link_options(cdemu-daemon PRIVATE "SHELL:$ENV{LDFLAGS}")
  
- # Installation
- install(TARGETS cdemu-daemon DESTINATION ${CMAKE_INSTALL_BINDIR})
+ if(ENABLE_LOGIND_SLEEP_HANDLER AND GLIB_glib-2.0_VERSION VERSION_LESS "2.74")
+     target_link_libraries(cdemu-daemon PRIVATE PkgConfig::GIO_UNIX)

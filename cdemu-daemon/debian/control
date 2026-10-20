@@ -9,7 +9,7 @@ Build-Depends: cmake (>= 3.16.0),
                libao-dev (>= 0.8.0),
                libglib2.0-dev (>= 2.38),
                libmirage-dev (>= 3.2.0)
-Standards-Version: 4.7.0
+Standards-Version: 4.7.4
 Rules-Requires-Root: no
 
 
