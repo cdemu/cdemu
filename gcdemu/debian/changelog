@@ -7,8 +7,14 @@ gcdemu (3.3.1-1) unstable; urgency=medium
 gcdemu (3.3.0-1) unstable; urgency=medium
 
   * New upstream version.
+  * debian/appstream/net.sf.cdemu.gtk_client.metainfo.xml
+    - Add 3.3.0 release.
+  * debian/control:
+    - Bump cmake minimum required version to 3.16.
+    - Bump python3 minimum required version to 3.8.
+    - Bump Standards-Version to 4.7.4.
 
- -- Matteo Bini <matteobin@tiepi.it>  Mon, 09 Feb 2026 17:00:00 +0100
+ -- Matteo Bini <matteobin@tiepi.it>  Mon, 03 May 2026 12:45:33 +0200
 
 gcdemu (3.2.6-1.2) unstable; urgency=low
 
