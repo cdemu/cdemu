@@ -7,8 +7,14 @@ cdemu-client (3.3.1-1) unstable; urgency=medium
 cdemu-client (3.3.0-1) unstable; urgency=medium
 
   * New upstream version.
+  * debian/appstream/net.sf.cdemu.client.metainfo.xml:
+    - Add 3.3.0 release.
+  * debian/control:
+    - Bump cmake minimum required version to 3.16.
+    - Bump python3 minimum required version to 3.8.
+    - Bump Standards-Version to 4.7.4.
 
- -- Matteo Bini <matteobin@tiepi.it>  Mon, 09 Feb 2026 17:00:00 +0100
+ -- Matteo Bini <matteobin@tiepi.it>  Thu, 30 Apr 2026 18:04:38 +0200
 
 cdemu-client (3.2.5-2) unstable; urgency=medium
 

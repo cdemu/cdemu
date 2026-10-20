@@ -10,7 +10,7 @@ Build-Depends-Indep: bash-completion,
                      intltool,
                      pkgconf,
                      python3 (>= 3.8.0)
-Standards-Version: 4.7.0
+Standards-Version: 4.7.4
 Rules-Requires-Root: no
 
 
