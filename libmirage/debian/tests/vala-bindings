@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -eu
+
+cd "$AUTOPKGTEST_TMP"
+
+cat >trivial.vala <<EOF
+int main (string[] args) {
+	try {
+		Mirage.initialize ();
+	} catch (Error e) {
+		error ("Failed to initialize libMirage");
+	}
+	return 0;
+}
+EOF
+
+valac --pkg=gio-2.0 --pkg=libmirage trivial.vala
+./trivial

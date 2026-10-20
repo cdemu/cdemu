@@ -4,31 +4,36 @@ Upstream-Contact: Rok Mandeljc <rok.mandeljc@gmail.com>
 Source: https://cdemu.sourceforge.io/
 
 Files: *
-Copyright: © 2006-2014 Henrik Stokseth <hstokset@users.sourceforge.net>
-           © 2006-2014 Rok Mandeljc <rok.mandeljc@gmail.com>
+Copyright: 2006-2014 Henrik Stokseth <hstokset@users.sourceforge.net>
+           2006-2014 Rok Mandeljc <rok.mandeljc@gmail.com>
 License: GPL-2+
 
 Files: cmake/GObjectIntrospection.cmake
-Copyright: © 2011-2014 Gary Kramlich <grim@reaperworld.com>
+Copyright: 2011-2014 Gary Kramlich <grim@reaperworld.com>
 License: GPL-2+
 
 Files: debian/*
-Copyright: © 2007 Henrik Stokseth <hstokset@users.sourceforge.net>
-           © 2024 Matteo Bini <matteobin@tiepi.it>
+Copyright: 2007 Henrik Stokseth <hstokset@users.sourceforge.net>
+           2024 Matteo Bini <matteobin@tiepi.it>
 License: GPL-2+
 
 Files: debian/appstream/net.sf.cdemu.libmirage.metainfo.xml
-Copyright: © 2024 Matteo Bini <matteobin@tiepi.it>
+Copyright: 2024 Matteo Bini <matteobin@tiepi.it>
 License: CC0-1.0
 
+Files: images/image-mdx/gf128mul.c
+Copyright: 2003 Dr Brian Gladman (Worcester, UK)
+           2006 Rik Snel <rsnel@cube.dyndns.org>
+License: GPL-2+
+
 Files: po/ru.po
-Copyright: © 2006-2015 Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>
+Copyright: 2006-2015 Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>
 License: GPL-2+
 
 License: CC0-1.0
  On Debian systems, the complete text of the Creative Commons 0 1.0
- Universal license can be found in "/usr/share/common-licenses/CC0-1.0".
+ Universal license can be found in /usr/share/common-licenses/CC0-1.0
 
 License: GPL-2+
  On Debian systems, the complete text of the GNU General Public License
- version 2 can be found in "/usr/share/common-licenses/GPL-2".
+ version 2 can be found in /usr/share/common-licenses/GPL-2

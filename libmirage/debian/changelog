@@ -14,17 +14,66 @@ libmirage (3.3.2-1) unstable; urgency=medium
 
  -- Matteo Bini <matteobin@tiepi.it>  Sun, 07 Jun 2026 18:30:00 +0200
 
-libmirage (3.3.1-1) unstable; urgency=medium
+libmirage (3.3.1-3) unstable; urgency=medium
+
+  * debian/rules:
+    - Remove commented export.
+    - Reorder targets.
+    - Remove override_dh_makeshlibs and override_dh_shlibdeps, since
+      they served no actual purpose and they made listing test
+      dependencies harder.
+  * debian/tests/control:
+    - Add build-essential missing dependency that broke autopkgtest
+      (closes: #1143977). Thanks to Sébastien Noel
+      <sebastien@twolife.be> for the support.
+    - Remove libsamplerate0 and libsndfile1 dependencies, since they
+      will be automatically listed by "@" dependency, since
+      override_dh_shlibdeps was removed from debian/rules.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sun, 23 Aug 2026 17:22:43 +0200
+
+libmirage (3.3.1-2) unstable; urgency=medium
+
+  * Upload to unstable.
+  * debian/copyright:
+    - Add missing copyright notices as pointed out by Mechtilde Stehmann
+      at <https://dfsg-new-queue.debian.org/reviews/libmirage/3.3.1-1/0df7e028>.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sat, 08 Aug 2026 09:15:32 +0200
+
+libmirage (3.3.1-1) experimental; urgency=medium
 
   * New upstream version.
+  * debian/appstream/net.sf.cdemu.libmirage.metainfo.xml:
+    - Change provided library soname from 11 to 12.
+    - Add 3.3.0 and 3.3.1 releases.
+  * debian/control:
+    - Bump cmake minimum required version to 3.16.
+    - Remove libgirepository1.0-dev dependency (closes: #1118877)
+      and replace it with individual packages: gir1.2-gio-2.0-dev,
+      gir1.2-gmodule-2.0-dev and gir1.2-gobject-2.0-dev.
+      Also add minimum required version for gobject-introspection set
+      to 1.80, to catch unsupported systems.
+    - Add valac as build dependency to provide Vala bindings.
+    - Bump Standards-Version to 4.7.4.
+    - Change library soname from 11 to 12.
+    - Remove devhelp recommendation (closes: #1121875).
+  * debian/copyright:
+    - Make the copyright fields as ASCII as possible.
+    - Small edits to license fields.
+  * debian/libmirage-dev.install:
+    - Provide Vala bindings (closes: #1128922).
+  * debian/libmirage11.*:
+    - rename libmirage11 .docs, .install and .symbols files to new
+      libmirage12 suffix.
+  * debian/rules:
+    - Change library version from 3.2 to 3.3.
+  * debian/tests/*:
+    - Add tests control file and vala-bindings one. Thanks to Sébastien
+      Noel <sebastien@twolife.be> for the patch to provide Vala bindings
+      and to test them.
 
- -- Matteo Bini <matteobin@tiepi.it>  Sun, 15 Feb 2026 19:15:00 +0100
-
-libmirage (3.3.0-1) unstable; urgency=medium
-
-  * New upstream version.
-
- -- Matteo Bini <matteobin@tiepi.it>  Mon, 09 Feb 2026 17:00:00 +0100
+ -- Matteo Bini <matteobin@tiepi.it>  Mon, 20 Jul 2026 20:16:10 +0200
 
 libmirage (3.2.10-1) unstable; urgency=medium
 

@@ -5,22 +5,23 @@ Homepage: https://cdemu.sourceforge.io/
 Maintainer: Matteo Bini <matteobin@tiepi.it>
 Build-Depends: cmake (>= 3.16.0),
                debhelper-compat (= 13),
+               gir1.2-gio-2.0-dev,
+               gir1.2-gmodule-2.0-dev,
+               gir1.2-gobject-2.0-dev,
+               gobject-introspection (>= 1.80),
                gtk-doc-tools,
                intltool,
                libbz2-dev,
+               libchdr-dev,
+               libgcrypt20-dev,
                liblzma-dev,
                libglib2.0-dev (>= 2.38),
                libsamplerate0-dev,
                libsndfile1-dev,
                pkgconf,
-               zlib1g-dev,
-               libgcrypt20-dev,
-               libchdr-dev,
-               gobject-introspection (>= 1.80),
-               gir1.2-gobject-2.0-dev,
-               gir1.2-gio-2.0-dev,
-               gir1.2-gmodule-2.0-dev
-Standards-Version: 4.7.2
+               valac,
+               zlib1g-dev
+Standards-Version: 4.7.4
 Rules-Requires-Root: no
 
 
@@ -76,7 +77,6 @@ Package: libmirage-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: devhelp
 Multi-Arch: foreign
 Description: Reference manual for libMirage
  libMirage is a CD-ROM image access library, part of the CDEmu suite,

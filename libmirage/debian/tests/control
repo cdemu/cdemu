@@ -1,0 +1,2 @@
+Tests: vala-bindings
+Depends: @, build-essential, valac
