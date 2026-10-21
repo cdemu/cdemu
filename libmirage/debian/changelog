@@ -24,7 +24,7 @@ libmirage (3.3.1-3) unstable; urgency=medium
       dependencies harder.
   * debian/tests/control:
     - Add build-essential missing dependency that broke autopkgtest
-      (closes: #1143977). Thanks to Sébastien Noel
+      (closes: #1143977). Thanks to SÃ©bastien Noel
       <sebastien@twolife.be> for the support.
     - Remove libsamplerate0 and libsndfile1 dependencies, since they
       will be automatically listed by "@" dependency, since
@@ -69,7 +69,7 @@ libmirage (3.3.1-1) experimental; urgency=medium
   * debian/rules:
     - Change library version from 3.2 to 3.3.
   * debian/tests/*:
-    - Add tests control file and vala-bindings one. Thanks to Sébastien
+    - Add tests control file and vala-bindings one. Thanks to SÃ©bastien
       Noel <sebastien@twolife.be> for the patch to provide Vala bindings
       and to test them.
 
