@@ -76,6 +76,23 @@ static gboolean cdemu_device_recording_close_track (CdemuDevice *self)
     return TRUE;
 }
 
+static gint _compare_cdtext_packs (gconstpointer a, gconstpointer b)
+{
+    const guint8 *ptr_a = (const guint8 *)a;
+    const guint8 *ptr_b = (const guint8 *)b;
+
+    const gint block_a = (ptr_a[3] & 0x70) >> 4;
+    const gint block_b = (ptr_b[3] & 0x70) >> 4;
+
+    if (block_a == block_b) {
+        const gint seq_a = ptr_a[2];
+        const gint seq_b = ptr_b[2];
+        return seq_a - seq_b;
+    }
+
+    return block_a - block_b;
+}
+
 static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
 {
     if (self->priv->open_session) {
@@ -108,14 +125,20 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             guint8 *cdtext_data = g_malloc0(cdtext_data_len);
             guint8 *ptr = cdtext_data;
 
-            self->priv->leadin_cdtext_packs = g_slist_reverse(self->priv->leadin_cdtext_packs);
+            /* Sort the list by block number and sequence number within
+             * the block - mostly to make the final CD-TEXT data buffer
+             * easier to inspect during debugging. As noted above, the
+             * libMirage's CD-TEXT decoder requires sequence numbers to
+             * be increasing within a block, but permits blocks to be
+             * interleaved; so a g_slist_reverse() would also suffice. */
+            self->priv->leadin_cdtext_packs = g_slist_sort(self->priv->leadin_cdtext_packs, (GCompareFunc)_compare_cdtext_packs);
 
             for (GSList *iter = self->priv->leadin_cdtext_packs; iter; iter = g_slist_next(iter)) {
                 memcpy(ptr, iter->data, 18);
                 ptr += 18;
             }
 
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: loading CD-TEXT data:", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: loading CD-TEXT data (%d bytes):", __debug__, cdtext_data_len);
             CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 18, cdtext_data, cdtext_data_len);
 
             if (!mirage_session_set_cdtext_data(self->priv->open_session, cdtext_data, cdtext_data_len, &local_error)) {
