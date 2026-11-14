@@ -366,7 +366,9 @@ static void cdemu_device_init (CdemuDevice *self)
     self->priv->recording = NULL;
 
     self->priv->leadin_cdtext_packs = NULL;
-    self->priv->num_leadin_cdtext_packs = 0;
+    for (gint i = 0; i < 8; i++) {
+        self->priv->num_leadin_cdtext_packs[i] = 0;
+    }
 }
 
 static void cdemu_device_dispose (GObject *gobject)

@@ -127,7 +127,7 @@ struct _CdemuDevicePrivate
     MirageTrack *cue_entry;
     gint sao_leadin_format;
 
-    gint num_leadin_cdtext_packs;
+    gint num_leadin_cdtext_packs[8]; /* keep separate count for each language block */
     GSList *leadin_cdtext_packs;
 
     /* Raw burning emulation */

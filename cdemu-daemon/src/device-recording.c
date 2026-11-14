@@ -92,11 +92,19 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
         if (self->priv->leadin_cdtext_packs) {
             GError *local_error = NULL;
 
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)", __debug__, self->priv->num_leadin_cdtext_packs);
+            gint total_packs = 0;
+            for (gint i = 0; i < 8; i++) {
+                total_packs += self->priv->num_leadin_cdtext_packs[i];
+            }
+
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)", __debug__, total_packs);
 
             /* Copy all packs' data into single buffer, and decode it
-             * into session */
-            gint cdtext_data_len = self->priv->num_leadin_cdtext_packs * 18;
+             * into session. The entries were being prepended into the
+             * list, so we need to reverse it to obtain increasing
+             * sequence numbers, which are required by libMirage's
+             * CD-TEXT decoder. */
+            gint cdtext_data_len = total_packs * 18;
             guint8 *cdtext_data = g_malloc0(cdtext_data_len);
             guint8 *ptr = cdtext_data;
 
@@ -106,6 +114,9 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
                 memcpy(ptr, iter->data, 18);
                 ptr += 18;
             }
+
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: loading CD-TEXT data:", __debug__);
+            CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 18, cdtext_data, cdtext_data_len);
 
             if (!mirage_session_set_cdtext_data(self->priv->open_session, cdtext_data, cdtext_data_len, &local_error)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set CD-TEXT data: %s", __debug__, local_error->message);
@@ -117,7 +128,9 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             /* Free CD-TEXT packs data */
             g_slist_free_full(self->priv->leadin_cdtext_packs, (GDestroyNotify)g_free);
             self->priv->leadin_cdtext_packs = NULL;
-            self->priv->num_leadin_cdtext_packs = 0;
+            for (gint i = 0; i < 8; i++) {
+                self->priv->num_leadin_cdtext_packs[i] = 0;
+            }
         }
 
         /* Release the reference we hold */
@@ -188,6 +201,9 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
         ptr += 3;
     }
 
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in CD-TEXT:", __debug__);
+    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 18, cdtext_data, 72);
+
     /* Process CD-TEXT packs */
     ptr = cdtext_data;
     for (gint i = 0; i < 4; i++) {
@@ -197,22 +213,25 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
             continue;
         }
 
-        /* This assumes that CD-TEXT packs are ordered, which is hopefully
-         * reasonable */
-        if (ptr[2] >= self->priv->num_leadin_cdtext_packs) {
+        /* The sequence number is supposed to be incrementally increased
+         * from the the first pack to the last pack in each block, going
+         * from 00h to FFh. There can be at most eight blocks, so we need
+         * to keep separate counts. This assumes that the given packs are
+         * ordered, which is hopefully reasonable enough... */
+        gint block_number = (ptr[3] & 0x70) >> 4; /* bits 4-6 of byte 3 */
+        gint sequence_number = ptr[2];
+
+        if (sequence_number >= self->priv->num_leadin_cdtext_packs[block_number]) {
 #if GLIB_CHECK_VERSION(2, 68, 0)
             self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup2(ptr, 18));
 #else
             self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup(ptr, 18));
 #endif
-            self->priv->num_leadin_cdtext_packs++;
+            self->priv->num_leadin_cdtext_packs[block_number]++;
         }
 
         ptr += 18;
     }
-
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in CD-TEXT:", __debug__);
-    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 18, cdtext_data, 72);
 
     return TRUE;
 }
