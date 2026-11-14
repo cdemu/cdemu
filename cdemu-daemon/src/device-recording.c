@@ -193,6 +193,7 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
     for (gint i = 0; i < 4; i++) {
         /* Make sure data is CD-TEXT pack */
         if ((ptr[0] & 0x80) != 0x80) {
+            ptr += 18;
             continue;
         }
 
