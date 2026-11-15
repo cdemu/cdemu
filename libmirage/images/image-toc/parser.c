@@ -492,6 +492,35 @@ static void mirage_parser_toc_cdtext_parse_language (MirageParserToc *self, gcha
             }
         }
 
+        /* Use SIZE_INFO data to infer encoding for the language block.
+         * This is relevant for TOC images that were read from the device
+         * (rather than created manually), as they do not contain ENCODING_
+         * directives. */
+        if (!g_strcmp0(type_str, "SIZE_INFO") && content_len >= 1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to infer character set/encoding from SIZE_INFO data...", __debug__);
+            guint8 charset_code = content[0]; /* First data field */
+            switch (charset_code) {
+                case MIRAGE_LANGUAGE_ENCODING_ISO88591: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: character set declared in SIZE_INFO: ISO-8859-1", __debug__);
+                    mirage_language_set_encoding(language, MIRAGE_LANGUAGE_ENCODING_ISO88591);
+                    break;
+                }
+                case MIRAGE_LANGUAGE_ENCODING_ASCII: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: character set declared in SIZE_INFO: ASCII", __debug__);
+                    mirage_language_set_encoding(language, MIRAGE_LANGUAGE_ENCODING_ASCII);
+                    break;
+                }
+                case MIRAGE_LANGUAGE_ENCODING_MS_JIS: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: character set declared in SIZE_INFO: MS-JIS", __debug__);
+                    mirage_language_set_encoding(language, MIRAGE_LANGUAGE_ENCODING_MS_JIS);
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported character-set code found in SIZE_INFO pack (0x%02hhX) - ignoring!", __debug__, charset_code);
+                }
+            }
+        }
+
         g_free(content);
 
         g_free(content_str);
@@ -549,6 +578,12 @@ static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *
         mirage_language_set_encoding(language, language_info->encoding);
         if (mirage_session_add_language(self->priv->cur_session, language_info->code, language, NULL)) {
             mirage_parser_toc_cdtext_parse_language(self, data_str, language);
+            /* The above parsing of language data might have altered the
+             * encoding setting on the language object (i.e., if SIZE_INFO
+             * entry is present); copy the current value back into
+             * language_info structure to be made available when we create
+             * language objects for tracks... */
+            language_info->encoding = mirage_language_get_encoding(language);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add disc language (index %i, code %i)!", __debug__, language_index, language_info->code);
         }
