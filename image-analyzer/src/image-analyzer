@@ -138,6 +138,15 @@ def print_binary_fragment_subchannel_format(value):
     return "; ".join(strings)
 
 
+def print_cdtext_encoding(value):
+    dictionary = {
+        Mirage.LanguageEncoding.ISO88591: "ISO-8859-1",
+        Mirage.LanguageEncoding.ASCII: "ASCII",
+        Mirage.LanguageEncoding.MS_JIS: "MS-JIS",
+    }
+    return dictionary.get(value, _("unknown"))
+
+
 def print_raw_buffer(buffer):
     return " ".join([f"{element:02X}" for element in buffer])
 
@@ -1483,6 +1492,7 @@ class DiscDump:
 
     TAG_LANGUAGE = "language"
     TAG_LANGUAGE_CODE = "language-code"
+    TAG_LANGUAGE_ENCODING = "language-encoding"
     TAG_CONTENT = "content"
     TAG_LENGTH = "length"
     TAG_TITLE = "title"
@@ -1995,6 +2005,15 @@ class DiscDump:
             f"{language.get_code():d}",
         )
 
+        # Encoding
+        if hasattr(language, 'get_encoding'):  # libMirage >= 3.3.4
+            self.add_node(
+                language_node,
+                DiscDump.TAG_LANGUAGE_ENCODING,
+                f"{language.get_encoding():d}",
+            )
+
+        # Packs
         for node_name, pack_type in packs.items():
             try:
                 pack_data = language.get_pack_data(pack_type)
@@ -2543,6 +2562,15 @@ class DiscTreeStore(Gtk.TreeStore):
             language_iter,
             _("Language code: %d") % (language_code),
         )
+
+        # Language encoding
+        node = root_node.find(DiscDump.TAG_LANGUAGE_ENCODING)
+        if node is not None:
+            encoding = int(node.text, 0)
+            self.add_node(
+                language_iter,
+                _("Encoding: 0x%02X (%s)") % (encoding, print_cdtext_encoding(encoding)),
+            )
 
         # Add all data entries
         entries = {
