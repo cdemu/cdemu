@@ -43,7 +43,6 @@ struct _MirageParserTocPrivate
     gint cur_subchannel_size;
     gint cur_subchannel_format;
 
-    gint cur_langcode;
     GHashTable *lang_map;
 
     gchar *mixed_mode_bin;
@@ -1157,7 +1156,6 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     self->priv->cur_subchannel_size = 0;
     self->priv->cur_subchannel_format = 0;
 
-    self->priv->cur_langcode = 0;
     g_hash_table_destroy(self->priv->lang_map);
 
     g_free(self->priv->mixed_mode_bin);
