@@ -491,12 +491,19 @@ static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *
     while (g_match_info_matches(match_info)) {
         gchar *index_str = g_match_info_fetch_named(match_info, "lang_idx");
         gchar *data_str = g_match_info_fetch_named(match_info, "lang_data");
+        gchar *encoding_str = g_match_info_fetch_named(match_info, "encoding_info");
+
         gint index = atoi(index_str);
         gint code = GPOINTER_TO_INT(g_hash_table_lookup(self->priv->lang_map, GINT_TO_POINTER(index)));
 
         MirageLanguage *language;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding disc language: index %i -> code %i", __debug__, index, code);
+
+        if (encoding_str && strlen(encoding_str)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found encoding directive: %s", __debug__, encoding_str);
+            /* TODO: set the encoding/charset on language object(s) */
+        }
 
         language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
         if (mirage_session_add_language(self->priv->cur_session, code, language, NULL)) {
@@ -508,6 +515,7 @@ static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *
 
         g_free(data_str);
         g_free(index_str);
+        g_free(encoding_str);
 
         g_match_info_next(match_info, NULL);
     }
@@ -934,11 +942,12 @@ static void mirage_parser_toc_init_regex_parser (MirageParserToc *self)
             "(?<languages>"
                 "(LANGUAGE(\\s)*(\\d)+(\\s)*"
                 "{(\\s)*"
+                    "(ENCODING_(\\w)+)*(\\s)*"
                     "("
                         "("
                             "((\\w)+( )*\"(.)*\"(\\s)*)" /* PACK_TYPE "DATA_STR" */
                         "|"
-                            "((\\w)+( )*{([\\d,\\s])*}(\\s)*)" /* PACK_TYPE "DATA_STR" */
+                            "((\\w)+( )*{([\\d,\\s])*}(\\s)*)" /* PACK_TYPE {x,y,z} */
                         ")"
                     ")*"
                 "}(\\s)*)*"
@@ -953,11 +962,12 @@ static void mirage_parser_toc_init_regex_parser (MirageParserToc *self)
     self->priv->regex_language = g_regex_new(
         "\\s*LANGUAGE\\s*(?<lang_idx>\\d+)\\s*"
         "{\\s*"
+            "(?<encoding_info>ENCODING_(\\w)+)*(\\s)*"
             "(?<lang_data>"
                 "("
                     "(\\w+[ \\t]*\".*\"\\s*)" /* PACK_TYPE "DATA_STR" */
                 "|"
-                    "(\\w+[ \\t]*{[\\d,\\s]*}\\s*)" /* PACK_TYPE "DATA_STR" */
+                    "(\\w+[ \\t]*{[\\d,\\s]*}\\s*)" /* PACK_TYPE {x,y,z} */
                 ")*"
             ")"
         "}\\s*",
