@@ -137,27 +137,15 @@ G_DEFINE_TYPE_WITH_PRIVATE(MirageCdTextCoder, mirage_cdtext_coder, MIRAGE_TYPE_O
 /***********************************************************************\
  *                          Private functions                          *
 \***********************************************************************/
-static gint sort_pack_data (CDTextDecodedPack *pack1, CDTextDecodedPack *pack2)
+static gint sort_pack_data (const CDTextDecodedPack *pack1, const CDTextDecodedPack *pack2)
 {
-    if (pack1->block_number < pack2->block_number) {
-        return -1;
-    } else if (pack1->block_number > pack2->block_number) {
-        return 1;
-    } else {
-        if (pack1->pack_type < pack2->pack_type) {
-            return -1;
-        } else if (pack1->pack_type > pack2->pack_type) {
-            return 1;
-        } else {
-            if (pack1->track_number < pack2->track_number) {
-                return -1;
-            } else if (pack1->track_number > pack2->track_number) {
-                return 1;
-            } else {
-                return 0;
-            }
+    if (pack1->block_number == pack2->block_number) {
+        if (pack1->pack_type == pack2->pack_type) {
+            return pack1->track_number - pack2->track_number;
         }
+        return pack1->pack_type - pack2->pack_type;
     }
+    return pack1->block_number - pack2->block_number;
 }
 
 
