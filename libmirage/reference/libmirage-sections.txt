@@ -291,9 +291,12 @@ mirage_index_get_type
 MirageLanguage
 MirageLanguageClass
 MirageLanguagePackType
+MirageLanguageEncoding
 mirage_language_get_code
+mirage_language_get_encoding
 mirage_language_get_pack_data
 mirage_language_set_code
+mirage_language_set_encoding
 mirage_language_set_pack_data
 <SUBSECTION Standard>
 MIRAGE_IS_LANGUAGE

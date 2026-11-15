@@ -52,6 +52,8 @@ struct _MirageLanguagePrivate
 {
     gint code;
 
+    MirageLanguageEncoding encoding;
+
     /* 16 packs, for type codes from 0x80 (MIRAGE_LANGUAGE_PACK_TITLE)
      * to 0x8F (MIRAGE_LANGUAGE_PACK_SIZE) */
     MirageLanguage_Pack packs[16];
@@ -91,6 +93,36 @@ gint mirage_language_get_code (MirageLanguage *self)
 
 
 /**
+ * mirage_language_set_encoding:
+ * @self: a #MirageLanguage
+ * @encoding: (in): character set / encoding code
+ *
+ * Sets encoding for the language's text data. The encoding information
+ * does not affect the text data representation in @MirageLanguage object
+ * (which always uses UTF-8); instead, it is intended to be passed on to
+ * the @MirageCdTextCoder object when encoding or decoding CD-TEXT data
+ * block.
+ */
+void mirage_language_set_encoding (MirageLanguage *self, MirageLanguageEncoding encoding)
+{
+    self->priv->encoding = encoding;
+}
+
+/**
+ * mirage_language_get_encoding:
+ * @self: a #MirageLanguage
+ *
+ * Retrieves encoding for the language's text data.
+ *
+ * Returns: character set code
+ */
+MirageLanguageEncoding mirage_language_get_encoding (MirageLanguage *self)
+{
+    return self->priv->encoding;
+}
+
+
+/**
  * mirage_language_set_pack_data:
  * @self: a #MirageLanguage
  * @pack_type: (in): pack type
@@ -99,7 +131,11 @@ gint mirage_language_get_code (MirageLanguage *self)
  * @error: (out) (optional): location to store error, or %NULL
  *
  * Sets pack data of type @pack_type to data in @pack_data. @length is length of
- * data in @pack_data. @pack_type must be one of #MirageLanguagePackType.
+ * data in @pack_data. @pack_type must be one of #MirageLanguagePackType. For
+ * pack types 0x80 to 0x85, the data should be a NUL terminated text, encoded
+ * in UTF-8. For other pack types, data should be either binary or text
+ * with fixed encoding, as per the corresponding specification for the given
+ * pack type.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
@@ -141,7 +177,10 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
  *
  * Retrieves pack data of type @pack_type. A pointer to buffer containing pack
  * data is stored in @pack data; the buffer belongs to the object and therefore
- * should not be modified.
+ * should not be modified. For pack types 0x80 to 0x85, the data is NUL terminated
+ * text, encoded in UTF-8. For other pack types, data is either binary or text
+ * with fixed encoding, as per the corresponding specification for the given
+ * pack type.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
@@ -180,6 +219,8 @@ static void mirage_language_init (MirageLanguage *self)
 
     /* Initialize fields */
     self->priv->code = 0;
+
+    self->priv->encoding = MIRAGE_LANGUAGE_ENCODING_ISO88591;
 
     memset(self->priv->packs, 0, sizeof(self->priv->packs));
 }

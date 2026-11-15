@@ -178,9 +178,11 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_index_set_number@Base 1.0.0
  mirage_initialize@Base 2.0.0
  mirage_language_get_code@Base 2.0.0
+ mirage_language_get_encoding@Base 3.3.4
  mirage_language_get_pack_data@Base 1.0.0
  mirage_language_get_type@Base 1.0.0
  mirage_language_set_code@Base 2.0.0
+ mirage_language_set_encoding@Base 3.3.4
  mirage_language_set_pack_data@Base 1.0.0
  mirage_object_get_parent@Base 1.0.0
  mirage_object_get_type@Base 1.0.0

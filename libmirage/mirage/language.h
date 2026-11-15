@@ -66,6 +66,22 @@ typedef enum _MirageLanguagePackType
 } MirageLanguagePackType;
 
 
+/**
+ * MirageLanguageEncoding
+ * @MIRAGE_LANGUAGE_ENCODING_ISO88591: ISO-8859-1 (Latin1)
+ * @MIRAGE_LANGUAGE_ENCODING_ASCII: ASCII
+ * @MIRAGE_LANGUAGE_ENCODING_MS_JIS: Music Shift-JIS Kanji (CP932)
+ *
+ * Known/supported encodings (character sets) for CD-TEXT data.
+ */
+typedef enum _MirageLanguageEncoding
+{
+    MIRAGE_LANGUAGE_ENCODING_ISO88591 = 0x00,
+    MIRAGE_LANGUAGE_ENCODING_ASCII = 0x01,
+    MIRAGE_LANGUAGE_ENCODING_MS_JIS = 0x80,
+} MirageLanguageEncoding;
+
+
 /**********************************************************************\
  *                        MirageLanguage object                       *
 \**********************************************************************/
@@ -112,7 +128,11 @@ GType mirage_language_get_type (void);
 void mirage_language_set_code (MirageLanguage *self, gint code);
 gint mirage_language_get_code (MirageLanguage *self);
 
-/* Field: set/get */
+/* Encoding / character set: set/get */
+void mirage_language_set_encoding (MirageLanguage *self, MirageLanguageEncoding encoding);
+MirageLanguageEncoding mirage_language_get_encoding (MirageLanguage *self);
+
+/* Pack: set/get */
 gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 *pack_data, gint length, GError **error);
 gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 **pack_data, gint *length, GError **error);
 
