@@ -106,12 +106,12 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
         }
 
         /* CD-TEXT */
-        if (self->priv->leadin_cdtext_packs) {
+        if (self->priv->cdtext_packs) {
             GError *local_error = NULL;
 
             gint total_packs = 0;
-            for (gint i = 0; i < 8; i++) {
-                total_packs += self->priv->num_leadin_cdtext_packs[i];
+            for (guint i = 0; i < G_N_ELEMENTS(self->priv->num_cdtext_packs); i++) {
+                total_packs += self->priv->num_cdtext_packs[i];
             }
 
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)", __debug__, total_packs);
@@ -131,9 +131,9 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
              * libMirage's CD-TEXT decoder requires sequence numbers to
              * be increasing within a block, but permits blocks to be
              * interleaved; so a g_slist_reverse() would also suffice. */
-            self->priv->leadin_cdtext_packs = g_slist_sort(self->priv->leadin_cdtext_packs, (GCompareFunc)_compare_cdtext_packs);
+            self->priv->cdtext_packs = g_slist_sort(self->priv->cdtext_packs, (GCompareFunc)_compare_cdtext_packs);
 
-            for (GSList *iter = self->priv->leadin_cdtext_packs; iter; iter = g_slist_next(iter)) {
+            for (GSList *iter = self->priv->cdtext_packs; iter; iter = g_slist_next(iter)) {
                 memcpy(ptr, iter->data, 18);
                 ptr += 18;
             }
@@ -149,10 +149,10 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             g_free(cdtext_data);
 
             /* Free CD-TEXT packs data */
-            g_slist_free_full(self->priv->leadin_cdtext_packs, (GDestroyNotify)g_free);
-            self->priv->leadin_cdtext_packs = NULL;
-            for (gint i = 0; i < 8; i++) {
-                self->priv->num_leadin_cdtext_packs[i] = 0;
+            g_slist_free_full(self->priv->cdtext_packs, (GDestroyNotify)g_free);
+            self->priv->cdtext_packs = NULL;
+            for (guint i = 0; i < G_N_ELEMENTS(self->priv->num_cdtext_packs); i++) {
+                self->priv->num_cdtext_packs[i] = 0;
             }
         }
 
@@ -244,13 +244,13 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
         gint block_number = (ptr[3] & 0x70) >> 4; /* bits 4-6 of byte 3 */
         gint sequence_number = ptr[2];
 
-        if (sequence_number >= self->priv->num_leadin_cdtext_packs[block_number]) {
+        if (sequence_number >= self->priv->num_cdtext_packs[block_number]) {
 #if GLIB_CHECK_VERSION(2, 68, 0)
-            self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup2(ptr, 18));
+            self->priv->cdtext_packs = g_slist_prepend(self->priv->cdtext_packs, g_memdup2(ptr, 18));
 #else
-            self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup(ptr, 18));
+            self->priv->cdtext_packs = g_slist_prepend(self->priv->cdtext_packs, g_memdup(ptr, 18));
 #endif
-            self->priv->num_leadin_cdtext_packs[block_number]++;
+            self->priv->num_cdtext_packs[block_number]++;
         }
 
         ptr += 18;

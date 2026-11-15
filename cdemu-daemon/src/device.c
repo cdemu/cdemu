@@ -365,9 +365,9 @@ static void cdemu_device_init (CdemuDevice *self)
     self->priv->image_writer = NULL;
     self->priv->recording = NULL;
 
-    self->priv->leadin_cdtext_packs = NULL;
-    for (gint i = 0; i < 8; i++) {
-        self->priv->num_leadin_cdtext_packs[i] = 0;
+    self->priv->cdtext_packs = NULL;
+    for (guint i = 0; i < G_N_ELEMENTS(self->priv->num_cdtext_packs); i++) {
+        self->priv->num_cdtext_packs[i] = 0;
     }
 }
 

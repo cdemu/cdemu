@@ -325,12 +325,12 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, GError **error)
         self->priv->rewritable_disc = FALSE;
         self->priv->num_written_sectors = 0;
 
-        if (self->priv->leadin_cdtext_packs) {
-            g_slist_free_full(self->priv->leadin_cdtext_packs, (GDestroyNotify)g_free);
-            self->priv->leadin_cdtext_packs = NULL;
+        if (self->priv->cdtext_packs) {
+            g_slist_free_full(self->priv->cdtext_packs, (GDestroyNotify)g_free);
+            self->priv->cdtext_packs = NULL;
         }
-        for (gint i = 0; i < 8; i++) {
-            self->priv->num_leadin_cdtext_packs[i] = 0;
+        for (guint i = 0; i < G_N_ELEMENTS(self->priv->num_cdtext_packs); i++) {
+            self->priv->num_cdtext_packs[i] = 0;
         }
 
         /* Current profile: None */
