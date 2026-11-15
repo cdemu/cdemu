@@ -839,7 +839,8 @@ static gboolean cdemu_device_sao_recording_open_session (CdemuDevice *self)
         return FALSE;
     }
 
-    /* Copy MCN from CUE sheet */
+    /* Copy session type and MCN from CUE sheet */
+    mirage_session_set_session_type(self->priv->open_session, mirage_session_get_session_type(self->priv->cue_sheet));
     mirage_session_set_mcn(self->priv->open_session, mirage_session_get_mcn(self->priv->cue_sheet));
 
     return TRUE;
