@@ -21,7 +21,6 @@ import datetime
 import gettext
 import os
 import signal
-import string
 import sys
 import xml.etree.ElementTree
 import xml.dom.minidom
@@ -1975,22 +1974,22 @@ class DiscDump:
     def dump_language(self, root_node, language):
         # Language pack types
         packs = {
-            DiscDump.TAG_TITLE: Mirage.LanguagePackType.TITLE,
-            DiscDump.TAG_PERFORMER: Mirage.LanguagePackType.PERFORMER,
-            DiscDump.TAG_SONGWRITER: Mirage.LanguagePackType.SONGWRITER,
-            DiscDump.TAG_COMPOSER: Mirage.LanguagePackType.COMPOSER,
-            DiscDump.TAG_ARRANGER: Mirage.LanguagePackType.ARRANGER,
-            DiscDump.TAG_MESSAGE: Mirage.LanguagePackType.MESSAGE,
-            DiscDump.TAG_DISC_ID: Mirage.LanguagePackType.DISC_ID,
-            DiscDump.TAG_GENRE: Mirage.LanguagePackType.GENRE,
-            DiscDump.TAG_TOC: Mirage.LanguagePackType.TOC,
-            DiscDump.TAG_TOC2: Mirage.LanguagePackType.TOC2,
-            DiscDump.TAG_RESERVED_8A: Mirage.LanguagePackType.RES_8A,
-            DiscDump.TAG_RESERVED_8B: Mirage.LanguagePackType.RES_8B,
-            DiscDump.TAG_RESERVED_8C: Mirage.LanguagePackType.RES_8C,
-            DiscDump.TAG_CLOSED_INFO: Mirage.LanguagePackType.CLOSED_INFO,
-            DiscDump.TAG_UPC_ISRC: Mirage.LanguagePackType.UPC_ISRC,
-            DiscDump.TAG_SIZE: Mirage.LanguagePackType.SIZE,
+            DiscDump.TAG_TITLE: (Mirage.LanguagePackType.TITLE, "text"),
+            DiscDump.TAG_PERFORMER: (Mirage.LanguagePackType.PERFORMER, "text"),
+            DiscDump.TAG_SONGWRITER: (Mirage.LanguagePackType.SONGWRITER, "text"),
+            DiscDump.TAG_COMPOSER: (Mirage.LanguagePackType.COMPOSER, "text"),
+            DiscDump.TAG_ARRANGER: (Mirage.LanguagePackType.ARRANGER, "text"),
+            DiscDump.TAG_MESSAGE: (Mirage.LanguagePackType.MESSAGE, "text"),
+            DiscDump.TAG_DISC_ID: (Mirage.LanguagePackType.DISC_ID, "binary"),
+            DiscDump.TAG_GENRE: (Mirage.LanguagePackType.GENRE, "binary"),
+            DiscDump.TAG_TOC: (Mirage.LanguagePackType.TOC, "binary"),
+            DiscDump.TAG_TOC2: (Mirage.LanguagePackType.TOC2, "binary"),
+            DiscDump.TAG_RESERVED_8A: (Mirage.LanguagePackType.RES_8A, "binary"),
+            DiscDump.TAG_RESERVED_8B: (Mirage.LanguagePackType.RES_8B, "binary"),
+            DiscDump.TAG_RESERVED_8C: (Mirage.LanguagePackType.RES_8C, "binary"),
+            DiscDump.TAG_CLOSED_INFO: (Mirage.LanguagePackType.CLOSED_INFO, "binary"),
+            DiscDump.TAG_UPC_ISRC: (Mirage.LanguagePackType.UPC_ISRC, "text"),
+            DiscDump.TAG_SIZE: (Mirage.LanguagePackType.SIZE, "binary"),
         }
 
         language_node = self.add_node(
@@ -2014,19 +2013,25 @@ class DiscDump:
             )
 
         # Packs
-        for node_name, pack_type in packs.items():
+        for node_name, (pack_type, data_format) in packs.items():
             try:
                 pack_data = language.get_pack_data(pack_type)
             except Exception:
                 continue
 
             # Convert the data to printable format
-            printables = string.printable.encode('ascii')
-            pack_str = [
-                f'{element:c}' if element in printables else f'\\x{element:02x}'
-                for element in pack_data[1]
-            ]
-            pack_str = ''.join(pack_str)
+            assert data_format in {'text', 'binary'}
+            if data_format == 'text':
+                pack_str = pack_data[1].decode('utf-8')
+                # Escape non-printable characters - primarily the terminating
+                # NUL.
+                pack_str = [
+                    element if element.isprintable() else f'\\x{ord(element):02x}'
+                    for element in pack_str
+                ]
+                pack_str = ''.join(pack_str)
+            else:
+                pack_str = print_raw_buffer(pack_data[1])
 
             data_node = self.add_node(
                 language_node,
