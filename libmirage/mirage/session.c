@@ -1375,6 +1375,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
     for (guint i = 0; i < num_languages; i++) {
         MirageLanguage* session_language;
         gint code;
+        gint encoding;
 
         session_language = mirage_session_get_language_by_index(self, i, error);
         if (!session_language) {
@@ -1384,7 +1385,8 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
         }
 
         code = mirage_language_get_code(session_language);
-        mirage_cdtext_encoder_set_block_info(encoder, i, code, 0, 0, NULL);
+        encoding = mirage_language_get_encoding(session_language);
+        mirage_cdtext_encoder_set_block_info(encoder, i, code, encoding, 0, NULL);
 
         /* Pack all supported pack types */
         for (guint j = 0; j < G_N_ELEMENTS(pack_types); j++) {
