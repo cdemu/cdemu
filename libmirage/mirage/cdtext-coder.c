@@ -267,9 +267,31 @@ static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDe
         /* Internally, we store data as UTF-8 */
         const gchar *source_encoding = "UTF-8";
 
-        /* Currently, only ISO-8859-1 is supported, as the charset field
-         * of MirageCdTextCoderBlock is left at the default value of 0 */
+        /* Determine target encoding, by looking it up in the pack's
+         * language block */
+        const MirageCdTextCoderBlock *block = &self->priv->blocks[pack->block_number];
         const gchar *target_encoding = "ISO-8859-1";
+        switch (block->charset) {
+            /* Language codes as per EN 60908:1999 (see also
+             * https://libcdio.github.io/cd-text-format.html). The same
+             * values are also used by MirageLanguageEncoding enum. */
+            case MIRAGE_LANGUAGE_ENCODING_ISO88591: {
+                target_encoding = "ISO-8859-1";
+                break;
+            }
+            case MIRAGE_LANGUAGE_ENCODING_ASCII: {
+                target_encoding = "ASCII";
+                break;
+            }
+            case MIRAGE_LANGUAGE_ENCODING_MS_JIS: {
+                target_encoding = "CP932"; /* cdrdao uses CP932 for MS-JIS */
+                break;
+            }
+            default: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported charset/encoding code 0x%X; falling back to ISO-8859-1", __debug__, block->charset);
+                break;
+            }
+        }
 
         converted_text = g_convert(
             (const gchar *)pack->data,
