@@ -93,14 +93,14 @@ GType mirage_cdtext_coder_get_type (void);
 
 /* API: Encoder */
 void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen);
-gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block, gint code, gint charset, gint copyright, GError **error);
+gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block_number, gint code, gint charset, gint copyright, GError **error);
 void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint code, gint type, gint track, const guint8 *data, gint data_len);
 void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gint *buflen);
 
 /* API: Decoder */
 void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen);
-gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block, gint *code, gint *charset, gint *copyright, GError **error);
-gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, MirageCdTextDataCallback callback_func, gpointer user_data);
+gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block_number, gint *code, gint *charset, gint *copyright, GError **error);
+gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block_number, MirageCdTextDataCallback callback_func, gpointer user_data);
 
 
 G_END_DECLS
