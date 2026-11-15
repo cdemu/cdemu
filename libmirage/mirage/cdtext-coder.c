@@ -253,6 +253,44 @@ static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDe
     gint cur_len = pack->data_len;
     const guint8 *ptr = pack->data;
     gint carry_len = 0; /* How many of characters are contained in previous pack(s) */
+
+    /* Text in packs 0x80 to 0x85 needs to be converted to the block's
+     * character set. The rest of the packs either contain binary data,
+     * or have a fixed encoding (for example, 0x8E is supposed to contain
+     * ASCII text). */
+    gchar *converted_text = NULL;
+    if (pack->pack_type >= 0x80 && pack->pack_type <= 0x85) {
+        GError *error = NULL;
+        gsize bytes_read;
+        gsize bytes_written;
+
+        /* Internally, we store data as UTF-8 */
+        const gchar *source_encoding = "UTF-8";
+
+        /* Currently, only ISO-8859-1 is supported, as the charset field
+         * of MirageCdTextCoderBlock is left at the default value of 0 */
+        const gchar *target_encoding = "ISO-8859-1";
+
+        converted_text = g_convert(
+            (const gchar *)pack->data,
+            pack->data_len, /* includes terminating NUL */
+            target_encoding,
+            source_encoding,
+            &bytes_read,
+            &bytes_written,
+            &error
+        );
+
+        if (converted_text) {
+            ptr = (const guint8 *)converted_text;
+            cur_len = bytes_written; /* includes NUL from the input data */
+        } else {
+            /* Conversion failed; display a warning, and use original data... */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to convert CD-TEXT data (block number: %d, pack type: 0x%02X, track number: %d) from UTF-8 to target encoding (%s): %s", __debug__, pack->block_number, pack->pack_type, pack->track_number, target_encoding, error->message);
+            g_error_free(error);
+        }
+    }
+
     while (cur_len > 0) {
         gint copy_len;
 
@@ -276,6 +314,8 @@ static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDe
         ptr += copy_len;
         carry_len += copy_len;
     }
+
+    g_free(converted_text);
 }
 
 static void mirage_cdtext_encoder_generate_size_info (MirageCdTextCoder *self, gint block_number, guint8 **data, gint *len)
