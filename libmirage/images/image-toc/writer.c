@@ -120,7 +120,7 @@ static void mirage_writer_toc_rename_track_image_files (MirageWriterToc *self, M
     }
 }
 
-static void dump_language (GString *toc_contents, gint index, MirageLanguage *language)
+static void dump_language (GString *toc_contents, gint index, MirageLanguage *language, gboolean include_encoding)
 {
     static const struct {
         gchar *pack_id;
@@ -141,6 +141,26 @@ static void dump_language (GString *toc_contents, gint index, MirageLanguage *la
     };
 
     g_string_append_printf(toc_contents, "  LANGUAGE %d {\n", index);
+
+    if (include_encoding) {
+        MirageLanguageEncoding encoding = mirage_language_get_encoding(language);
+        switch (encoding) {
+            case MIRAGE_LANGUAGE_ENCODING_ASCII: {
+                g_string_append_printf(toc_contents, "    ENCODING_ASCII\n");
+                break;
+            }
+            case MIRAGE_LANGUAGE_ENCODING_MS_JIS: {
+                g_string_append_printf(toc_contents, "    ENCODING_MS_JIS\n");
+                break;
+            }
+            case MIRAGE_LANGUAGE_ENCODING_ISO88591:
+            default: {
+                /* ISO-8859-1 is implicit default, so omit the ENCODING_ directive */
+                /*g_string_append_printf(toc_contents, "    ENCODING_ISO_8859_1\n");*/
+                break;
+            }
+        }
+    }
 
     for (guint i = 0; i < G_N_ELEMENTS(packs); i++) {
         const guint8 *pack_data;
@@ -203,7 +223,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
         /* Second pass: dump session's languages */
         for (gint i = 0; i < num_languages; i++) {
             MirageLanguage *language = mirage_session_get_language_by_index(session, i, NULL);
-            dump_language(toc_contents, i, language);
+            dump_language(toc_contents, i, language, TRUE);
             g_object_unref(language);
         }
 
@@ -320,7 +340,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
             /* Dump track's languages */
             for (gint j = 0; j < num_languages; j++) {
                 MirageLanguage *language = mirage_track_get_language_by_index(track, j, NULL);
-                dump_language(toc_contents, j, language);
+                dump_language(toc_contents, j, language, FALSE);
                 g_object_unref(language);
             }
 
