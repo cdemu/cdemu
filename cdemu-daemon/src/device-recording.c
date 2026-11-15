@@ -1106,8 +1106,19 @@ finish:
     return succeeded;
 }
 
-static void cdemu_device_sao_recording_create_cue_sheet (CdemuDevice *self)
+gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const guint8 *cue_sheet, gint cue_sheet_size)
 {
+    gint num_entries = cue_sheet_size / 8;
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: number of CUE sheet entries: %d", __debug__, num_entries);
+
+    /* We build our internal representation of a CUE sheet inside a
+     * MirageSession object. In order to minimize necessary book-keeping,
+     * we process CUE sheet in several passes:
+     * 1. create all tracks
+     * 2. determine tracks' lengths and pregaps
+     * 3. determine indices and set MCN and ISRCs */
+
     /* Clear old CUE sheet model and create new session for it */
     if (self->priv->cue_entry) {
         g_object_unref(self->priv->cue_entry);
@@ -1127,38 +1138,7 @@ static void cdemu_device_sao_recording_create_cue_sheet (CdemuDevice *self)
     mirage_session_layout_set_start_sector(self->priv->cue_sheet, start_sector);
     mirage_session_layout_set_first_track(self->priv->cue_sheet, first_track);
 
-    /* Grab session type from Mode Page 0x05 */
-    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-    switch (p_0x05->session_format) {
-        case 0x00: {
-            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDROM);
-            break;
-        }
-        case 0x10: {
-            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDI);
-            break;
-        }
-        case 0x20: {
-            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDROM_XA);
-            break;
-        }
-    }
-}
-
-gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const guint8 *cue_sheet, gint cue_sheet_size)
-{
-    gint num_entries = cue_sheet_size / 8;
-
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: number of CUE sheet entries: %d", __debug__, num_entries);
-
-    /* We build our internal representation of a CUE sheet inside a
-     * MirageSession object. In order to minimize necessary book-keeping,
-     * we process CUE sheet in several passes:
-     * 1. create all tracks
-     * 2. determine tracks' lengths and pregaps
-     * 3. determine indices and set MCN and ISRCs */
-
-    cdemu_device_sao_recording_create_cue_sheet(self);
+    gboolean has_data_tracks = FALSE; /* Used to distinguish between CD-DA vs. CD-ROM session */
 
     /* First pass */
     CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first pass: creating tracks...", __debug__);
@@ -1191,6 +1171,8 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
         if (idx > 1) {
             continue;
         }
+
+        has_data_tracks |= ((ctl & 0x04) != 0); /* Data tracks have set bit 3 of CTL field */
 
         MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
         if (!track) {
@@ -1331,6 +1313,24 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
             }
 
             i++;
+        }
+    }
+
+    /* Grab session type from Mode Page 0x05 */
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: session format: %d, has_data: %d", __debug__, p_0x05->session_format, has_data_tracks);
+    switch (p_0x05->session_format) {
+        case 0x00: {
+            mirage_session_set_session_type(self->priv->cue_sheet, has_data_tracks ? MIRAGE_SESSION_CDROM : MIRAGE_SESSION_CDDA);
+            break;
+        }
+        case 0x10: {
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDI);
+            break;
+        }
+        case 0x20: {
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDROM_XA);
+            break;
         }
     }
 
