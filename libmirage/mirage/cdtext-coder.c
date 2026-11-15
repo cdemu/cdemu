@@ -708,12 +708,78 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
                 pack_data->block_number = block_number;
                 pack_data->pack_type = self->priv->cur_pack->pack_type;
                 pack_data->track_number = cur_track;
+
+                /* Text in packs 0x80 to 0x85 is encoded using the block's character
+                 * set, and we need to convert it to UTF-8 for our internal
+                 * representation. The rest of the packs either contain binary data,
+                 * or have a fixed encoding (for example, 0x8E is supposed to contain
+                 * ASCII text).*/
+                if (pack_data->pack_type >= 0x80 && pack_data->pack_type <= 0x85) {
+                    GError *error = NULL;
+                    gsize bytes_read;
+                    gsize bytes_written;
+
+                    /* Source encoding */
+                    const gchar *source_encoding = "ISO-8859-1";
+                    switch (block->charset) {
+                        /* Language codes as per EN 60908:1999 (see also
+                         * https://libcdio.github.io/cd-text-format.html). The same
+                         * values are also used by MirageLanguageEncoding enum. */
+                        case MIRAGE_LANGUAGE_ENCODING_ISO88591: {
+                            source_encoding = "ISO-8859-1";
+                            break;
+                        }
+                        case MIRAGE_LANGUAGE_ENCODING_ASCII: {
+                            source_encoding = "ASCII";
+                            break;
+                        }
+                        case MIRAGE_LANGUAGE_ENCODING_MS_JIS: {
+                            source_encoding = "CP932"; /* cdrdao uses CP932 for MS-JIS */
+                            break;
+                        }
+                        default: {
+                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported charset/encoding code 0x%X; falling back to ISO-8859-1", __debug__, block->charset);
+                            break;
+                        }
+                    }
+
+                    /* Internally, we store data as UTF-8 */
+                    const gchar *target_encoding = "UTF-8";
+
+                    gchar *converted_text = g_convert(
+                        (const gchar *)tmp_buffer,
+                        tmp_len, /* includes terminating NUL */
+                        target_encoding,
+                        source_encoding,
+                        &bytes_read,
+                        &bytes_written,
+                        &error
+                    );
+
+                    if (converted_text) {
+                        pack_data->data = (guint8 *)converted_text;
+                        pack_data->data_len = bytes_written; /* includes NUL from the input data */
+                    } else {
+                        /* Conversion failed; display a warning, and use original data... */
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to convert CD-TEXT data (block number: %d, pack type: 0x%02X, track number: %d) from %s to UTF-8: %s", __debug__, pack_data->block_number, pack_data->pack_type, pack_data->track_number, source_encoding, error->message);
+                        g_error_free(error);
+
 #if GLIB_CHECK_VERSION(2, 68, 0)
-                pack_data->data = g_memdup2(tmp_buffer, tmp_len);
+                        pack_data->data = g_memdup2(tmp_buffer, tmp_len);
 #else
-                pack_data->data = g_memdup(tmp_buffer, tmp_len);
+                        pack_data->data = g_memdup(tmp_buffer, tmp_len);
 #endif
-                pack_data->data_len = tmp_len;
+                        pack_data->data_len = tmp_len;
+                    }
+                } else {
+                    /* Copy as-is */
+#if GLIB_CHECK_VERSION(2, 68, 0)
+                    pack_data->data = g_memdup2(tmp_buffer, tmp_len);
+#else
+                    pack_data->data = g_memdup(tmp_buffer, tmp_len);
+#endif
+                    pack_data->data_len = tmp_len;
+                }
 
                 block->packs_list = g_list_insert_sorted(block->packs_list, pack_data, (GCompareFunc)sort_pack_data);
 
