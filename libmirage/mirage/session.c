@@ -1295,17 +1295,63 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
     MirageCdTextCoder *decoder;
     gboolean succeeded = TRUE;
 
+    gint block_code;
+    gint block_charset;
+
     /* Create decoder object and hope it'll do all the dirty work correctly... */
     decoder = g_object_new(MIRAGE_TYPE_CDTEXT_CODER, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(decoder), self);
 
     mirage_cdtext_decoder_init(decoder, data, len);
 
-    for (gint i = 0; mirage_cdtext_decoder_get_block_info(decoder, i, NULL, NULL, NULL, NULL); i++) {
+    for (gint i = 0; mirage_cdtext_decoder_get_block_info(decoder, i, &block_code, &block_charset, NULL, NULL); i++) {
         succeeded = mirage_cdtext_decoder_get_data(decoder, i, (MirageCdTextDataCallback)set_cdtext_data, self);
         if (!succeeded) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, Q_("Failed to decode CD-TEXT data!"));
             break;
+        }
+
+        /* The above call created and populated language objects for
+         * session and its tracks, but did not set character set / encoding
+         * information (which is unavailable in the context of the set_cdtext_data()
+         * callback). So set it here, in a post-processing step. */
+        MirageLanguageEncoding encoding;
+        switch (block_charset) {
+            case MIRAGE_LANGUAGE_ENCODING_ASCII: {
+                encoding = MIRAGE_LANGUAGE_ENCODING_ASCII;
+                break;
+            }
+            case MIRAGE_LANGUAGE_ENCODING_MS_JIS: {
+                encoding = MIRAGE_LANGUAGE_ENCODING_MS_JIS;
+                break;
+            }
+            case MIRAGE_LANGUAGE_ENCODING_ISO88591:
+            default: {
+                encoding = MIRAGE_LANGUAGE_ENCODING_ISO88591;
+                break;
+            }
+        }
+
+        /* Session */
+        MirageLanguage *language = mirage_session_get_language_by_code(self, block_code, NULL);
+        if (language) {
+            mirage_language_set_encoding(language, encoding);
+            g_object_unref(language);
+        }
+
+        /* Tracks */
+        gint num_tracks = mirage_session_get_number_of_tracks(self);
+        for (gint t = 0; t < num_tracks; t++) {
+            MirageTrack *track = mirage_session_get_track_by_index(self, t, NULL);
+            if (!track) {
+                continue;
+            }
+            language = mirage_track_get_language_by_code(track, block_code, NULL);
+            if (language) {
+                mirage_language_set_encoding(language, encoding);
+                g_object_unref(language);
+            }
+            g_object_unref(track);
         }
     }
 
