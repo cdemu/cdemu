@@ -25,6 +25,12 @@
 /**********************************************************************\
  *                  Object and its private structure                  *
 \**********************************************************************/
+typedef struct
+{
+    gint code; /* Language code */
+    MirageLanguageEncoding encoding; /* Encoding */
+} TocLanguageInfo;
+
 struct _MirageParserTocPrivate
 {
     MirageDisc *disc;
@@ -43,7 +49,7 @@ struct _MirageParserTocPrivate
     gint cur_subchannel_size;
     gint cur_subchannel_format;
 
-    GHashTable *lang_map;
+    TocLanguageInfo *language_blocks[8];
 
     gchar *mixed_mode_bin;
     gint mixed_mode_offset;
@@ -379,7 +385,7 @@ static gboolean mirage_parser_toc_cdtext_parse_binary (MirageParserToc *self, gc
     return TRUE;
 }
 
-static gboolean mirage_parser_toc_cdtext_parse_langmaps (MirageParserToc *self, gchar *langmaps_str, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_toc_cdtext_parse_langmaps (MirageParserToc *self, gchar *langmaps_str)
 {
     GMatchInfo *match_info;
 
@@ -387,21 +393,38 @@ static gboolean mirage_parser_toc_cdtext_parse_langmaps (MirageParserToc *self, 
     while (g_match_info_matches(match_info)) {
         gchar *index_str = g_match_info_fetch_named(match_info, "lang_idx");
         gchar *code_str = g_match_info_fetch_named(match_info, "lang_code");
-        gint index, code;
+        gint language_index;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: language map: index: %s, code: %s", __debug__, index_str, code_str);
 
         /* Index */
-        index = atoi(index_str);
+        language_index = atoi(index_str);
+        if ((guint)language_index >= G_N_ELEMENTS(self->priv->language_blocks)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid block index in language map: %d", __debug__, language_index);
+            return FALSE;
+        }
+
+        /* Ensure that language with that index is not yet defined */
+        if (self->priv->language_blocks[language_index]) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: language with block index %d is already defined!", __debug__, language_index);
+            return FALSE;
+        }
+
+        /* Prepare new language info entry */
+        TocLanguageInfo *language_info = g_new0(TocLanguageInfo, 1);
 
         /* Code; try to match known language names, then simply try to convert */
         if (!g_ascii_strcasecmp(code_str, "EN")) {
-            code = 9; /* EN */
+            language_info->code = 9; /* EN */
         } else {
-            code = atoi(code_str);
+            language_info->code = atoi(code_str);
         }
 
-        g_hash_table_insert(self->priv->lang_map, GINT_TO_POINTER(index), GINT_TO_POINTER(code));
+        /* Set default encoding */
+        language_info->encoding = MIRAGE_LANGUAGE_ENCODING_ISO88591;
+
+        self->priv->language_blocks[language_index] = language_info;
+
 
         g_free(code_str);
         g_free(index_str);
@@ -414,7 +437,7 @@ static gboolean mirage_parser_toc_cdtext_parse_langmaps (MirageParserToc *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_toc_cdtext_parse_language (MirageParserToc *self, gchar *data_str, MirageLanguage *language, GError **error G_GNUC_UNUSED)
+static void mirage_parser_toc_cdtext_parse_language (MirageParserToc *self, gchar *data_str, MirageLanguage *language)
 {
     GMatchInfo *match_info;
 
@@ -478,11 +501,9 @@ static gboolean mirage_parser_toc_cdtext_parse_language (MirageParserToc *self, 
     }
 
     g_match_info_free(match_info);
-
-    return TRUE;
 }
 
-static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *self, gchar *languages_str, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *self, gchar *languages_str)
 {
     GMatchInfo *match_info;
 
@@ -492,23 +513,44 @@ static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *
         gchar *data_str = g_match_info_fetch_named(match_info, "lang_data");
         gchar *encoding_str = g_match_info_fetch_named(match_info, "encoding_info");
 
-        gint index = atoi(index_str);
-        gint code = GPOINTER_TO_INT(g_hash_table_lookup(self->priv->lang_map, GINT_TO_POINTER(index)));
+        gint language_index = atoi(index_str);
+        if ((guint)language_index >= G_N_ELEMENTS(self->priv->language_blocks)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid language index: %d", __debug__, language_index);
+            return FALSE;
+        }
 
-        MirageLanguage *language;
+        TocLanguageInfo *language_info = self->priv->language_blocks[language_index]; /* non-const because we might need to set encoding! */
+        if (!language_info) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: undefined language for index: %d", __debug__, language_index);
+            return FALSE;
+        }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding disc language: index %i -> code %i", __debug__, index, code);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding disc language: index %i -> code %i", __debug__, language_index, language_info->code);
 
         if (encoding_str && strlen(encoding_str)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found encoding directive: %s", __debug__, encoding_str);
-            /* TODO: set the encoding/charset on language object(s) */
+
+            /* Set encoding in language info, so it will be available
+             * when parsing language blocks for tracks... */
+            /* NOTE: ENCODING_KOREAN and ENCODING_MANDARIN are not handled,
+             * because we do not know what codepage to use for them! */
+            if (!g_strcmp0(encoding_str, "ENCODING_ISO_8859_1")) {
+                language_info->encoding = MIRAGE_LANGUAGE_ENCODING_ISO88591;
+            } else if (!g_strcmp0(encoding_str, "ENCODING_ASCII")) {
+                language_info->encoding = MIRAGE_LANGUAGE_ENCODING_ASCII;
+            } else if (!g_strcmp0(encoding_str, "ENCODING_MS_JIS")) {
+                language_info->encoding = MIRAGE_LANGUAGE_ENCODING_MS_JIS;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported encoding directive (%s) - ignoring and using default ISO-8859-1 encoding!", __debug__, encoding_str);
+            }
         }
 
-        language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
-        if (mirage_session_add_language(self->priv->cur_session, code, language, NULL)) {
-            mirage_parser_toc_cdtext_parse_language(self, data_str, language, NULL);
+        MirageLanguage *language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
+        mirage_language_set_encoding(language, language_info->encoding);
+        if (mirage_session_add_language(self->priv->cur_session, language_info->code, language, NULL)) {
+            mirage_parser_toc_cdtext_parse_language(self, data_str, language);
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add disc language (index %i, code %i)!", __debug__, index, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add disc language (index %i, code %i)!", __debug__, language_index, language_info->code);
         }
         g_object_unref(language);
 
@@ -524,7 +566,7 @@ static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MirageParserToc *
     return TRUE;
 }
 
-static gboolean mirage_parser_toc_cdtext_parse_track_languages (MirageParserToc *self, gchar *languages_str, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_toc_cdtext_parse_track_languages (MirageParserToc *self, gchar *languages_str)
 {
     GMatchInfo *match_info;
 
@@ -532,18 +574,27 @@ static gboolean mirage_parser_toc_cdtext_parse_track_languages (MirageParserToc 
     while (g_match_info_matches(match_info)) {
         gchar *index_str = g_match_info_fetch_named(match_info, "lang_idx");
         gchar *data_str = g_match_info_fetch_named(match_info, "lang_data");
-        gint index = atoi(index_str);
-        gint code = GPOINTER_TO_INT(g_hash_table_lookup(self->priv->lang_map, GINT_TO_POINTER(index)));
 
-        MirageLanguage *language;
+        gint language_index = atoi(index_str);
+        if ((guint)language_index >= G_N_ELEMENTS(self->priv->language_blocks)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid language index: %d", __debug__, language_index);
+            return FALSE;
+        }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track language: index %i -> code %i", __debug__, index, code);
+        const TocLanguageInfo *language_info = self->priv->language_blocks[language_index];
+        if (!language_info) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: undefined language for index: %d", __debug__, language_index);
+            return FALSE;
+        }
 
-        language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
-        if (mirage_track_add_language(self->priv->cur_track, code, language, NULL)) {
-            mirage_parser_toc_cdtext_parse_language(self, data_str, language, NULL);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track language: index %i -> code %i", __debug__, language_index, language_info->code);
+
+        MirageLanguage *language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
+        mirage_language_set_encoding(language, language_info->encoding);
+        if (mirage_track_add_language(self->priv->cur_track, language_info->code, language, NULL)) {
+            mirage_parser_toc_cdtext_parse_language(self, data_str, language);
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track language (index %i, code %i)!", __debug__, index, code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track language (index %i, code %i)!", __debug__, language_index, language_info->code);
         }
         g_object_unref(language);
 
@@ -558,8 +609,10 @@ static gboolean mirage_parser_toc_cdtext_parse_track_languages (MirageParserToc 
     return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_cdtext (MirageParserToc *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_toc_callback_cdtext (MirageParserToc *self, GMatchInfo *match_info)
 {
+    gboolean succeeded = TRUE;
+
     if (!self->priv->cur_track) {
         /* Disc CD-TEXT */
         gchar *langmaps_str, *languages_str;
@@ -569,8 +622,10 @@ static gboolean mirage_parser_toc_callback_cdtext (MirageParserToc *self, GMatch
         langmaps_str = g_match_info_fetch_named(match_info, "langmaps");
         languages_str = g_match_info_fetch_named(match_info, "languages");
 
-        mirage_parser_toc_cdtext_parse_langmaps(self, langmaps_str, NULL);
-        mirage_parser_toc_cdtext_parse_disc_languages(self, languages_str, NULL);
+        succeeded = mirage_parser_toc_cdtext_parse_langmaps(self, langmaps_str);
+        if (succeeded) {
+            succeeded = mirage_parser_toc_cdtext_parse_disc_languages(self, languages_str);
+        }
 
         g_free(langmaps_str);
         g_free(languages_str);
@@ -581,12 +636,12 @@ static gboolean mirage_parser_toc_callback_cdtext (MirageParserToc *self, GMatch
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track CD-TEXT", __debug__);
 
         languages_str = g_match_info_fetch_named(match_info, "languages");
-        mirage_parser_toc_cdtext_parse_track_languages(self, languages_str, NULL);
+        succeeded = mirage_parser_toc_cdtext_parse_track_languages(self, languages_str);
 
         g_free(languages_str);
     }
 
-    return TRUE;
+    return succeeded;
 }
 
 
@@ -1093,8 +1148,10 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
             g_string_append(cdtext_string, "\n");
 
             if (g_regex_match(self->priv->regex_cdtext, cdtext_string->str, G_REGEX_MATCH_PARTIAL, &match_info)) {
-                /* FIXME: can we live with failure? */
-                mirage_parser_toc_callback_cdtext(self, match_info, NULL);
+                /* Warn on error, but keep it non-fatal for now */
+                if (!mirage_parser_toc_callback_cdtext(self, match_info)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: error while processing CD-TEXT!", __debug__);
+                }
 
                 matched = TRUE;
                 g_string_free(cdtext_string, TRUE);
@@ -1136,12 +1193,6 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
 /**********************************************************************\
  *                            Helper functions                        *
 \**********************************************************************/
-static void mirage_parser_toc_init_session_data (MirageParserToc *self)
-{
-    /* Init langmap */
-    self->priv->lang_map = g_hash_table_new(g_direct_hash, g_direct_equal);
-}
-
 static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
 {
     /* No reference is kept for these, so just set them to NULL */
@@ -1156,7 +1207,11 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     self->priv->cur_subchannel_size = 0;
     self->priv->cur_subchannel_format = 0;
 
-    g_hash_table_destroy(self->priv->lang_map);
+    /* Clear the language-blocks array */
+    for (guint i = 0; i < G_N_ELEMENTS(self->priv->language_blocks); i++) {
+        g_free(self->priv->language_blocks[i]); /* valid or NULL */
+        self->priv->language_blocks[i] = NULL;
+    }
 
     g_free(self->priv->mixed_mode_bin);
     self->priv->mixed_mode_bin = NULL;
@@ -1273,7 +1328,6 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
         self->priv->toc_filename = mirage_stream_get_filename(streams[i]);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: TOC file '%s'!", __debug__, i, self->priv->toc_filename);
-        mirage_parser_toc_init_session_data(self);
 
         /* There's slight problem with multi-session TOC images, namely that each
          * TOC can be used independently... in order words, there's no way to determine
@@ -1354,12 +1408,21 @@ static void mirage_parser_toc_init (MirageParserToc *self)
         Q_("cdrdao images (*.toc)"), "application/x-cdrdao-toc"
     );
 
+    /* Initialize language-blocks array */
+    memset(self->priv->language_blocks, 0, sizeof(self->priv->language_blocks));
+
+    /* Initialize regex parser engine */
     mirage_parser_toc_init_regex_parser(self);
 }
 
 static void mirage_parser_toc_finalize (GObject *gobject)
 {
     MirageParserToc *self = MIRAGE_PARSER_TOC(gobject);
+
+    /* Cleanup language-blocks array */
+    for (guint i = 0; i < G_N_ELEMENTS(self->priv->language_blocks); i++) {
+        g_free(self->priv->language_blocks[i]); /* valid or NULL */
+    }
 
     /* Cleanup regex parser engine */
     mirage_parser_toc_cleanup_regex_parser(self);
