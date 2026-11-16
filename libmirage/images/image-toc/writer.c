@@ -371,9 +371,15 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
             } else {
                 /* Pregap fragment */
                 if (i == 0 && j == 0) {
-                    /* TOC does not list first track's pregap. Unless it
-                     * is greater than standard 150? But the first fragment
-                     * (j == 0) always model the standard pregap */
+                    /* The first fragment of the first track should
+                     * correspond to the standard 150-sector Red Book
+                     * pregap, which is not listed in the .toc file.
+                     * Longer non-standard pregap should be modeled
+                     * with two fragments, so that the Red Book part
+                     * is skipped and the extra part is captured. */
+                    if (length != 150) {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: first fragment of first track has length of %d sectors instead of expected 150 sectors!", __debug__, length);
+                    }
                     g_free(length_msf);
                     g_object_unref(fragment);
                     continue;
