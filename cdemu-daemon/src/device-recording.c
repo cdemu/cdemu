@@ -876,6 +876,31 @@ static gboolean cdemu_device_sao_recording_open_track (CdemuDevice *self)
         }
         g_object_unref(entry_fragment);
 
+        /* If this is the first track on the disc and it has a pregap
+         * with size greater than standard 2-second Red Book pregap,
+         * split it into two parts. */
+        if (role == MIRAGE_FRAGMENT_PREGAP && mirage_track_layout_get_track_number(self->priv->open_track) == 1 && fragment_length > 150) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: splitting non-standard pregap for first track with %d sectors into Book part with 150 sectors and remainder with %d sectors...", __debug__, fragment_length, fragment_length - 150);
+
+            /* Create Red Book pregap
+             *
+             * TODO: introduce a special fragment role for writers that
+             * support writing data for pregaps but do not store data for
+             * Red Book pregap? */
+            track_fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_PREGAP, &local_error);
+            if (!track_fragment) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create Red Book pregap fragment for track: %s", __debug__, local_error->message);
+                g_error_free(local_error);
+                return FALSE;
+            }
+
+            mirage_fragment_set_length(track_fragment, 150);
+
+            mirage_track_add_fragment(self->priv->open_track, -1, track_fragment);
+
+            fragment_length -= 150;
+        }
+
         /* Create fragment */
         track_fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, role, &local_error);
         if (!track_fragment) {
